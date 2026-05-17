@@ -37,7 +37,7 @@ export function Navbar() {
           <img
             src="/logo-color.png"
             alt="ImmoVia"
-            className="h-9 w-auto object-contain"
+            className="h-14 w-auto object-contain"
           />
         </Link>
 
