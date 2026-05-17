@@ -32,7 +32,7 @@ export async function sendNewProjectNotification(project: {
   }
 
   const { error } = await client.emails.send({
-    from: "ImmoVia <notifications@immovia.al>",
+    from: "ImmoVia <onboarding@resend.dev>",
     to,
     subject: `New Project Request — ${project.projectType} in ${project.city}`,
     html: `
@@ -89,7 +89,7 @@ export async function sendNewCompanyNotification(company: {
   }
 
   const { error } = await client.emails.send({
-    from: "ImmoVia <notifications@immovia.al>",
+    from: "ImmoVia <onboarding@resend.dev>",
     to,
     subject: `New Company Registration — ${company.companyName}`,
     html: `
