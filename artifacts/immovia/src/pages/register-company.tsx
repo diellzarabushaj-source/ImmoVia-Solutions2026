@@ -67,11 +67,11 @@ export default function RegisterCompany() {
   };
 
   const servicesList = [
-    { id: "renovation", label: t.services.renovation },
-    { id: "construction", label: t.services.construction },
-    { id: "interior", label: t.services.interior },
-    { id: "exterior", label: t.services.exterior },
-    { id: "other", label: t.services.other },
+    { id: "renovation", label: t.offers.renovation },
+    { id: "construction", label: t.offers.construction },
+    { id: "interior", label: t.offers.interior },
+    { id: "exterior", label: t.offers.exterior },
+    { id: "other", label: t.offers.other },
   ];
 
   if (isSubmitted) {

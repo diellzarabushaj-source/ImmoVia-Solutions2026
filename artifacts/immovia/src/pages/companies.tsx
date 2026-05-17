@@ -102,7 +102,7 @@ export default function Companies() {
                 <div className="flex flex-wrap gap-1.5">
                   {company.serviceTypes.map(service => (
                     <Badge key={service} variant="secondary" className="font-normal capitalize">
-                      {t.services[service as keyof typeof t.services] || service}
+                      {t.offers[service as keyof typeof t.offers] || service}
                     </Badge>
                   ))}
                 </div>

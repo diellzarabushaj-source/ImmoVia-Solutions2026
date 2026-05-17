@@ -92,11 +92,11 @@ export default function SubmitProject() {
   };
 
   const projectTypes = [
-    { id: "renovation", icon: Hammer, label: t.services.renovation },
-    { id: "construction", icon: Building2, label: t.services.construction },
-    { id: "interior", icon: Sofa, label: t.services.interior },
-    { id: "exterior", icon: TreePine, label: t.services.exterior },
-    { id: "other", icon: Wrench, label: t.services.other },
+    { id: "renovation", icon: Hammer, label: t.offers.renovation },
+    { id: "construction", icon: Building2, label: t.offers.construction },
+    { id: "interior", icon: Sofa, label: t.offers.interior },
+    { id: "exterior", icon: TreePine, label: t.offers.exterior },
+    { id: "other", icon: Wrench, label: t.offers.other },
   ];
 
   if (isSubmitted) {
