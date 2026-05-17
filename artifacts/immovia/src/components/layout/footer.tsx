@@ -1,7 +1,6 @@
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { MapPin, Mail, Phone } from "lucide-react";
-import logoWhite from "@assets/Immovia_White_Logo_Dark_Background_1779046968293.png";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -21,7 +20,7 @@ export function Footer() {
           {/* Brand */}
           <div className="flex flex-col gap-4">
             <img
-              src={logoWhite}
+              src="/logo-white.png"
               alt="ImmoVia"
               className="h-10 w-auto object-contain object-left"
             />

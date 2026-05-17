@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Globe, Menu, X } from "lucide-react";
-import logoMain from "@assets/ImmoVIA_Twocolors_wordmark_1779046968293.png";
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
@@ -36,9 +35,9 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center" data-testid="link-home-logo">
           <img
-            src={logoMain}
+            src="/logo-color.png"
             alt="ImmoVia"
-            className="h-8 w-auto object-contain"
+            className="h-9 w-auto object-contain"
           />
         </Link>
 
