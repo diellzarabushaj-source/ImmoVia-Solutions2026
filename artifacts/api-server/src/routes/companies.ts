@@ -12,6 +12,7 @@ import {
   UpdateCompanyResponse,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/requireAdmin";
+import { sendNewCompanyNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -44,6 +45,19 @@ router.post("/companies", async (req, res): Promise<void> => {
     yearsExperience: parsed.data.yearsExperience ?? null,
     status: "pending",
   }).returning();
+
+  void sendNewCompanyNotification({
+    companyName: parsed.data.companyName,
+    contactName: parsed.data.contactName,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    serviceTypes: parsed.data.serviceTypes,
+    city: parsed.data.city,
+    description: parsed.data.description ?? null,
+    website: parsed.data.website ?? null,
+    licenseNumber: parsed.data.licenseNumber ?? null,
+    yearsExperience: parsed.data.yearsExperience ?? null,
+  });
 
   res.status(201).json(GetCompanyResponse.parse(company));
 });

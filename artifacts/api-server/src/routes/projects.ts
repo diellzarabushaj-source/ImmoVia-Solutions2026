@@ -12,6 +12,7 @@ import {
   UpdateProjectResponse,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/requireAdmin";
+import { sendNewProjectNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -42,6 +43,17 @@ router.post("/projects", async (req, res): Promise<void> => {
     timeline: parsed.data.timeline ?? null,
     status: "pending",
   }).returning();
+
+  void sendNewProjectNotification({
+    fullName: parsed.data.fullName,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    projectType: parsed.data.projectType,
+    description: parsed.data.description,
+    city: parsed.data.city,
+    budget: parsed.data.budget ?? null,
+    timeline: parsed.data.timeline ?? null,
+  });
 
   res.status(201).json(GetProjectResponse.parse(project));
 });
