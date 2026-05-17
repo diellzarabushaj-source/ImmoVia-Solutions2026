@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/lib/language-context";
 import { 
   useGetAdminStats, 
@@ -17,6 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Table, 
   TableBody, 
@@ -32,7 +34,10 @@ import {
   CheckCircle2, 
   XCircle,
   MoreHorizontal,
-  Trash2
+  Trash2,
+  LogOut,
+  Lock,
+  AlertCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -44,11 +49,103 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function AdminDashboard() {
+type AuthState = "loading" | "authenticated" | "unauthenticated";
+
+function AdminLogin({ onLogin }: { onLogin: () => void }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password }),
+      });
+      if (res.ok) {
+        onLogin();
+      } else {
+        setError("Invalid username or password.");
+      }
+    } catch {
+      setError("Connection error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-12 h-12 rounded-full bg-navy-900 bg-[#0f2044] flex items-center justify-center mb-4">
+            <Lock className="h-5 w-5 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#0f2044]">Admin Access</h1>
+          <p className="text-sm text-muted-foreground mt-1">Sign in to manage the platform</p>
+        </div>
+
+        <Card className="shadow-lg border border-border">
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter username"
+                  autoComplete="username"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full bg-[#1a3a6e] hover:bg-[#0f2044]"
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function AdminDashboardContent({ onLogout }: { onLogout: () => void }) {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   
-  const { data: stats, isLoading: statsLoading } = useGetAdminStats();
+  const { data: stats } = useGetAdminStats();
   const { data: projects, isLoading: projectsLoading } = useListProjects();
   const { data: companies, isLoading: companiesLoading } = useListCompanies();
   
@@ -109,6 +206,14 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    await fetch("/api/admin/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    onLogout();
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -128,9 +233,20 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8 flex-1">
-      <div className="mb-8">
-        <h1 className="text-3xl font-serif font-bold tracking-tight">{t.admin.title}</h1>
-        <p className="text-muted-foreground">Platform overview and management</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-serif font-bold tracking-tight">{t.admin.title}</h1>
+          <p className="text-muted-foreground">Platform overview and management</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-muted-foreground"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </Button>
       </div>
 
       {/* Stats Grid */}
@@ -317,4 +433,30 @@ export default function AdminDashboard() {
       </Tabs>
     </div>
   );
+}
+
+export default function AdminDashboard() {
+  const [authState, setAuthState] = useState<AuthState>("loading");
+
+  useEffect(() => {
+    fetch("/api/admin/auth/me", { credentials: "include" })
+      .then((res) => {
+        setAuthState(res.ok ? "authenticated" : "unauthenticated");
+      })
+      .catch(() => setAuthState("unauthenticated"));
+  }, []);
+
+  if (authState === "loading") {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="text-muted-foreground text-sm">Loading...</div>
+      </div>
+    );
+  }
+
+  if (authState === "unauthenticated") {
+    return <AdminLogin onLogin={() => setAuthState("authenticated")} />;
+  }
+
+  return <AdminDashboardContent onLogout={() => setAuthState("unauthenticated")} />;
 }

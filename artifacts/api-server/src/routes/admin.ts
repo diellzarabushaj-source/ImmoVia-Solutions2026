@@ -1,10 +1,11 @@
 import { Router, type IRouter } from "express";
 import { eq, count, sql } from "drizzle-orm";
 import { db, projectsTable, companiesTable } from "@workspace/db";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
-router.get("/admin/stats", async (req, res): Promise<void> => {
+router.get("/admin/stats", requireAdmin, async (req, res): Promise<void> => {
   const [[totalProjects], [pendingProjects], [totalCompanies], [pendingCompanies]] =
     await Promise.all([
       db.select({ count: count() }).from(projectsTable),

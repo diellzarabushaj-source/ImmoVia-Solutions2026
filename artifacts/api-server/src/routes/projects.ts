@@ -11,6 +11,7 @@ import {
   GetProjectResponse,
   UpdateProjectResponse,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -65,7 +66,7 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
   res.json(GetProjectResponse.parse(project));
 });
 
-router.patch("/projects/:id", async (req, res): Promise<void> => {
+router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateProjectParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -96,7 +97,7 @@ router.patch("/projects/:id", async (req, res): Promise<void> => {
   res.json(UpdateProjectResponse.parse(project));
 });
 
-router.delete("/projects/:id", async (req, res): Promise<void> => {
+router.delete("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteProjectParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

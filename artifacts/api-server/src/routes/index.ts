@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import projectsRouter from "./projects";
 import companiesRouter from "./companies";
 import adminRouter from "./admin";
+import authRouter from "./auth";
 import chatRouter from "./chat";
 
 const router: IRouter = Router();
@@ -10,6 +11,7 @@ const router: IRouter = Router();
 router.use(healthRouter);
 router.use(projectsRouter);
 router.use(companiesRouter);
+router.use(authRouter);
 router.use(adminRouter);
 router.use(chatRouter);
 

@@ -11,6 +11,7 @@ import {
   GetCompanyResponse,
   UpdateCompanyResponse,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -67,7 +68,7 @@ router.get("/companies/:id", async (req, res): Promise<void> => {
   res.json(GetCompanyResponse.parse(company));
 });
 
-router.patch("/companies/:id", async (req, res): Promise<void> => {
+router.patch("/companies/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateCompanyParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -98,7 +99,7 @@ router.patch("/companies/:id", async (req, res): Promise<void> => {
   res.json(UpdateCompanyResponse.parse(company));
 });
 
-router.delete("/companies/:id", async (req, res): Promise<void> => {
+router.delete("/companies/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteCompanyParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
