@@ -1,0 +1,24 @@
+import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod/v4";
+
+export const projectsTable = pgTable("projects", {
+  id: serial("id").primaryKey(),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  projectType: text("project_type").notNull(),
+  description: text("description").notNull(),
+  city: text("city").notNull(),
+  budget: text("budget"),
+  timeline: text("timeline"),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const insertProjectSchema = createInsertSchema(projectsTable).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type Project = typeof projectsTable.$inferSelect;

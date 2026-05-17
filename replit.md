@@ -1,44 +1,70 @@
-# [Project name]
+# ImmoVia
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A professional renovation and construction services platform connecting homeowners with vetted contractors across Albania, Germany, and Switzerland.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm --filter @workspace/immovia run dev` — run the frontend (port 25886)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `OPENAI_API_KEY` — OpenAI API key for the AI chatbot
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite, wouter routing, shadcn/ui, framer-motion, lucide-react
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
+- AI: OpenAI gpt-4o-mini
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — OpenAPI contract (source of truth)
+- `lib/db/src/schema/projects.ts` — Projects table schema
+- `lib/db/src/schema/companies.ts` — Companies table schema
+- `artifacts/api-server/src/routes/` — API route handlers (projects, companies, admin, chat)
+- `artifacts/immovia/src/` — React frontend
+- `artifacts/immovia/src/lib/translations.ts` — All i18n strings (sq/en/de)
+- `artifacts/immovia/src/contexts/LanguageContext.tsx` — Language switching context
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- OpenAPI-first: spec gates codegen which gates both the frontend types and the server Zod validators
+- Language context stored in localStorage; all visible strings come from `translations.ts` (never hardcoded)
+- OpenAI API key is stored as a Replit secret and only accessed server-side in `routes/chat.ts` — never exposed to the frontend
+- Admin dashboard is at `/admin` with a subtle footer link (no auth in prototype — add Clerk auth before production)
+- Service types are stored as a Postgres text array column
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **Homeowners** submit renovation/construction project requests via a 4-step wizard
+- **Companies & professionals** register their services through a structured form
+- **Language support**: Albanian (sq), English (en), German (de) switchable at any time
+- **AI Chatbot**: renovation assistant powered by GPT-4o-mini, responds in the selected language
+- **Admin dashboard**: manage all project requests and company registrations with status controls
+- **Company directory**: browse approved contractors filtered by city and service type
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Professional icons only (lucide-react), no emojis anywhere in the UI
+- Navy/blue/light-blue/white color palette
+- Trilingual: Albanian, English, German (Shqip, English, Deutsch)
+- Admin dashboard accessible via `/admin` (hidden footer link)
+- OPENAI_API_KEY must stay server-side only
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After any OpenAPI spec change: run `pnpm --filter @workspace/api-spec run codegen` before editing routes or frontend
+- `pnpm --filter @workspace/db run push` to apply schema changes to the DB
+- Do not run `pnpm run dev` at the workspace root
+- The DB schema uses `text().array()` for `serviceTypes` — use `{val1,val2}` Postgres array syntax when inserting via raw SQL
 
 ## Pointers
 
