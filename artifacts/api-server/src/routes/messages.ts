@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { asc, eq } from "drizzle-orm";
 import { db, messagesTable, offersTable, projectsTable, usersTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
+import { sendNewMessageNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -95,6 +96,50 @@ router.post("/messages/:offerId", requireAuth, async (req, res): Promise<void> =
     .insert(messagesTable)
     .values({ offerId, senderUserId: userId, content })
     .returning();
+
+  // Notify the other party (fire-and-forget)
+  void (async () => {
+    try {
+      const [offer] = await db
+        .select({ providerUserId: offersTable.providerUserId, projectId: offersTable.projectId })
+        .from(offersTable)
+        .where(eq(offersTable.id, offerId))
+        .limit(1);
+      if (!offer) return;
+
+      const [project] = await db
+        .select({ ownerUserId: projectsTable.ownerUserId })
+        .from(projectsTable)
+        .where(eq(projectsTable.id, offer.projectId))
+        .limit(1);
+      if (!project) return;
+
+      const recipientId = userId === offer.providerUserId ? project.ownerUserId! : offer.providerUserId;
+
+      const [sender] = await db
+        .select({ fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+      const [recipient] = await db
+        .select({ email: usersTable.email, fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, recipientId))
+        .limit(1);
+
+      if (sender && recipient) {
+        await sendNewMessageNotification({
+          recipientEmail: recipient.email,
+          recipientName: recipient.fullName,
+          senderName: sender.fullName,
+          preview: content,
+          offerId,
+        });
+      }
+    } catch (err) {
+      req.log.error({ err }, "Failed to send message notification");
+    }
+  })();
 
   res.status(201).json({ message: msg });
 });

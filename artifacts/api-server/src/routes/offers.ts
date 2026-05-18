@@ -10,6 +10,7 @@ import {
   getBalance,
   rollSubscriptionCycle,
 } from "../lib/credits";
+import { sendNewOfferNotification, sendOfferAcceptedNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -152,6 +153,38 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
     note: `Offer ${type} on project #${projectId}`,
   });
   const balanceAfter = await getBalance(userId);
+
+  // Notify client about the new offer (fire-and-forget)
+  void (async () => {
+    try {
+      const [clientUser] = await db
+        .select({ email: usersTable.email, fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, project.ownerUserId!))
+        .limit(1);
+      const [providerUser] = await db
+        .select({ fullName: usersTable.fullName, companyName: usersTable.companyName })
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+      if (clientUser && providerUser) {
+        await sendNewOfferNotification({
+          clientEmail: clientUser.email,
+          clientName: clientUser.fullName,
+          providerName: providerUser.fullName,
+          providerCompany: providerUser.companyName,
+          projectType: project.projectType,
+          city: project.city,
+          message,
+          priceEstimate,
+          projectId,
+        });
+      }
+    } catch (err) {
+      req.log.error({ err }, "Failed to send new offer notification");
+    }
+  })();
+
   res.status(201).json({ offer, cost, balanceAfter });
 });
 
@@ -180,6 +213,35 @@ router.post("/offers/:id/accept", requireAuth, async (req, res): Promise<void> =
     .update(projectsTable)
     .set({ status: "matched" })
     .where(eq(projectsTable.id, project.id));
+
+  // Notify provider that their offer was accepted (fire-and-forget)
+  void (async () => {
+    try {
+      const [providerUser] = await db
+        .select({ email: usersTable.email, fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, offer.providerUserId))
+        .limit(1);
+      const [clientUser] = await db
+        .select({ fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+      if (providerUser && clientUser) {
+        await sendOfferAcceptedNotification({
+          providerEmail: providerUser.email,
+          providerName: providerUser.fullName,
+          clientName: clientUser.fullName,
+          projectType: project.projectType,
+          city: project.city,
+          offerId,
+        });
+      }
+    } catch (err) {
+      req.log.error({ err }, "Failed to send offer accepted notification");
+    }
+  })();
+
   res.json({ ok: true });
 });
 
