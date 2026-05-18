@@ -19,11 +19,13 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
           {/* Brand */}
           <div className="flex flex-col gap-4">
-            <img
-              src="/logo-white.png"
-              alt="ImmoVia"
-              className="h-16 w-auto object-contain object-left"
-            />
+            <Link href="/">
+              <img
+                src="/logo-white.png"
+                alt="ImmoVia"
+                className="h-16 w-auto object-contain object-left"
+              />
+            </Link>
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
               {t.footer.tagline}
             </p>
