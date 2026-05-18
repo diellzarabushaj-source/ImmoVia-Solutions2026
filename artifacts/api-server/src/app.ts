@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
@@ -53,5 +53,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+// Global error handler — catches any unhandled async errors from routes
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction): void => {
+  const message =
+    err instanceof Error ? err.message : "Internal server error";
+  const isDbDown =
+    typeof message === "string" &&
+    (message.includes("ENOTFOUND") || message.includes("ECONNREFUSED") || message.includes("getaddrinfo"));
+  logger.error({ err }, "Unhandled route error");
+  res.status(503).json({
+    error: isDbDown ? "Service temporarily unavailable. Please try again later." : message,
+  });
+});
 
 export default app;
