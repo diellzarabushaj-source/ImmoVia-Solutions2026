@@ -10,8 +10,135 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Briefcase, Flame, Star } from "lucide-react";
+import { Loader2, Briefcase, Flame, Star, X } from "lucide-react";
 import { format } from "date-fns";
+
+// Inline star picker
+function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          onMouseEnter={() => setHovered(n)}
+          onMouseLeave={() => setHovered(0)}
+          onClick={() => onChange(n)}
+          className="focus:outline-none"
+          aria-label={String(n)}
+        >
+          <Star
+            className={`w-7 h-7 transition-colors ${
+              n <= (hovered || value)
+                ? "fill-amber-400 text-amber-400"
+                : "fill-muted text-muted-foreground/30"
+            }`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+interface ReviewModalProps {
+  offerId: number;
+  projectId: number;
+  providerName: string;
+  onClose: () => void;
+  onDone: (offerId: number) => void;
+}
+
+function ReviewModal({ offerId, projectId, providerName, onClose, onDone }: ReviewModalProps) {
+  const { t } = useLanguage();
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+
+  const submit = async () => {
+    if (rating < 1) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/projects/${projectId}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offerId, rating, comment: comment.trim() || null }),
+      });
+      if (res.status === 409) {
+        setError(t.reviews.alreadyReviewed);
+        setSubmitting(false);
+        return;
+      }
+      if (!res.ok) {
+        const body = (await res.json()) as { error?: string };
+        setError(body.error ?? "Error");
+        setSubmitting(false);
+        return;
+      }
+      setDone(true);
+      setTimeout(() => {
+        onDone(offerId);
+        onClose();
+      }, 1200);
+    } catch {
+      setError("Network error");
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold">{t.reviews.leaveReview}</h3>
+            <p className="text-sm text-muted-foreground">{providerName}</p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {done ? (
+          <div className="py-6 text-center text-primary font-semibold">{t.reviews.success}</div>
+        ) : (
+          <>
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-2">{t.reviews.rating}</p>
+              <StarPicker value={rating} onChange={setRating} />
+            </div>
+            <div className="mb-4">
+              <label className="text-sm font-medium block mb-2">{t.reviews.comment}</label>
+              <textarea
+                className="w-full border rounded-md p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 min-h-[80px] bg-background"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                maxLength={500}
+              />
+            </div>
+            {error && <p className="text-sm text-destructive mb-3">{error}</p>}
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={onClose}>
+                {t.common?.cancel ?? "Cancel"}
+              </Button>
+              <Button
+                size="sm"
+                onClick={submit}
+                disabled={rating < 1 || submitting}
+                data-testid="button-submit-review"
+              >
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t.reviews.submit}
+              </Button>
+            </div>
+          </>
+        )}
+      </Card>
+    </div>
+  );
+}
 
 export default function ClientDashboard() {
   const { user, loading } = useAuth();
@@ -19,6 +146,12 @@ export default function ClientDashboard() {
   const [, setLocation] = useLocation();
   const [projects, setProjects] = useState<ProviderProject[]>([]);
   const [offersByProject, setOffersByProject] = useState<Record<number, OfferWithProvider[]>>({});
+  const [reviewedOfferIds, setReviewedOfferIds] = useState<Set<number>>(new Set());
+  const [reviewModal, setReviewModal] = useState<{
+    offerId: number;
+    projectId: number;
+    providerName: string;
+  } | null>(null);
 
   const role = user ? normalizeRole(user.role) : null;
 
@@ -43,6 +176,17 @@ export default function ClientDashboard() {
           }
         }
         setOffersByProject(map);
+      } catch {
+        // ignore
+      }
+
+      // Fetch already-reviewed offer IDs
+      try {
+        const res = await fetch("/api/reviews/my-reviewed-offers");
+        if (res.ok) {
+          const data = (await res.json()) as { reviewedOfferIds: number[] };
+          setReviewedOfferIds(new Set(data.reviewedOfferIds));
+        }
       } catch {
         // ignore
       }
@@ -136,9 +280,33 @@ export default function ClientDashboard() {
                             <p className="text-sm font-semibold mt-1">{t.clientDashboard.price}: {o.priceEstimate}</p>
                           )}
                         </div>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 items-end">
                           {o.status === "accepted" ? (
-                            <Badge>{t.clientDashboard.accepted}</Badge>
+                            <>
+                              <Badge>{t.clientDashboard.accepted}</Badge>
+                              {reviewedOfferIds.has(o.id) ? (
+                                <Badge variant="outline" className="text-xs">
+                                  <Star className="w-3 h-3 mr-1 fill-amber-400 text-amber-400" />
+                                  {t.reviews.alreadyReviewed}
+                                </Badge>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    setReviewModal({
+                                      offerId: o.id,
+                                      projectId: p.id,
+                                      providerName: o.providerCompany ?? o.providerName ?? "—",
+                                    })
+                                  }
+                                  data-testid={`button-review-${o.id}`}
+                                >
+                                  <Star className="w-3.5 h-3.5 mr-1" />
+                                  {t.reviews.leaveReview}
+                                </Button>
+                              )}
+                            </>
                           ) : (
                             <Button size="sm" onClick={() => onAccept(o.id)} data-testid={`button-accept-${o.id}`}>
                               {t.clientDashboard.accept}
@@ -158,6 +326,16 @@ export default function ClientDashboard() {
           );
         })}
       </div>
+
+      {reviewModal && (
+        <ReviewModal
+          offerId={reviewModal.offerId}
+          projectId={reviewModal.projectId}
+          providerName={reviewModal.providerName}
+          onClose={() => setReviewModal(null)}
+          onDone={(id) => setReviewedOfferIds((prev) => new Set([...prev, id]))}
+        />
+      )}
     </div>
   );
 }

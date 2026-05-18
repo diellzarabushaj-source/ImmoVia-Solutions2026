@@ -13,6 +13,7 @@ import publicProfileRouter from "./public-profile";
 import billingRouter from "./billing";
 import offersRouter from "./offers";
 import adminBillingRouter from "./admin-billing";
+import reviewsRouter from "./reviews";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(publicProfileRouter);
 router.use(billingRouter);
 router.use(offersRouter);
 router.use(adminBillingRouter);
+router.use(reviewsRouter);
 
 export default router;

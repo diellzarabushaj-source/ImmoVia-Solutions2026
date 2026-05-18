@@ -420,6 +420,17 @@ export const translations = {
       totalRevenue: 'Total revenue',
       adjustCredits: 'Adjust credits',
     },
+    reviews: {
+      title: 'Vlerësimet',
+      noReviews: 'Asnjë vlerësim ende.',
+      average: 'mesatare',
+      leaveReview: 'Lër një vlerësim',
+      rating: 'Vlerësimi',
+      comment: 'Koment (opsional)',
+      submit: 'Dërgo Vlerësimin',
+      alreadyReviewed: 'Tashmë i vlerësuar',
+      success: 'Vlerësimi u dërgua!',
+    },
   },
   en: {
     nav: {
@@ -839,6 +850,17 @@ export const translations = {
       packRevenue: 'Pack revenue (total)',
       totalRevenue: 'Total revenue',
       adjustCredits: 'Adjust credits',
+    },
+    reviews: {
+      title: 'Reviews',
+      noReviews: 'No reviews yet.',
+      average: 'average',
+      leaveReview: 'Leave a review',
+      rating: 'Rating',
+      comment: 'Comment (optional)',
+      submit: 'Submit Review',
+      alreadyReviewed: 'Already reviewed',
+      success: 'Review submitted!',
     },
   },
   de: {
@@ -1260,6 +1282,17 @@ export const translations = {
       totalRevenue: 'Total revenue',
       adjustCredits: 'Adjust credits',
     },
+    reviews: {
+      title: 'Bewertungen',
+      noReviews: 'Noch keine Bewertungen.',
+      average: 'Durchschnitt',
+      leaveReview: 'Bewertung schreiben',
+      rating: 'Bewertung',
+      comment: 'Kommentar (optional)',
+      submit: 'Bewertung absenden',
+      alreadyReviewed: 'Bereits bewertet',
+      success: 'Bewertung eingereicht!',
+    },
   },
   fr: {
     nav: {
@@ -1679,6 +1712,17 @@ export const translations = {
       packRevenue: 'Pack revenue (total)',
       totalRevenue: 'Total revenue',
       adjustCredits: 'Adjust credits',
+    },
+    reviews: {
+      title: 'Avis',
+      noReviews: "Pas encore d'avis.",
+      average: 'moyenne',
+      leaveReview: 'Laisser un avis',
+      rating: 'Note',
+      comment: 'Commentaire (optionnel)',
+      submit: "Soumettre l'avis",
+      alreadyReviewed: 'Déjà évalué',
+      success: 'Avis soumis !',
     },
   }
 };

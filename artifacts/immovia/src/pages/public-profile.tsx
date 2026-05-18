@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Building2,
   Mail,
+  Star,
 } from "lucide-react";
 
 interface PortfolioItem {
@@ -41,6 +42,37 @@ interface PublicProfile {
   verified: boolean;
 }
 
+interface Review {
+  id: number;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  authorName: string | null;
+}
+
+interface ReviewStats {
+  reviews: Review[];
+  average: number | null;
+  count: number;
+}
+
+function StarRating({ value, max = 5 }: { value: number; max?: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: max }).map((_, i) => (
+        <Star
+          key={i}
+          className={`w-4 h-4 ${
+            i < Math.round(value)
+              ? "fill-amber-400 text-amber-400"
+              : "fill-muted text-muted-foreground/30"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function PublicProfilePage() {
   const [, params] = useRoute("/company/:slug");
   const { t } = useLanguage();
@@ -48,6 +80,7 @@ export default function PublicProfilePage() {
   const [data, setData] = useState<{ user: PublicProfile; portfolio: PortfolioItem[] } | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "notfound">("loading");
   const [lightbox, setLightbox] = useState<PortfolioItem | null>(null);
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -61,6 +94,15 @@ export default function PublicProfilePage() {
         const json = (await r.json()) as { user: PublicProfile; portfolio: PortfolioItem[] };
         setData(json);
         setStatus("ready");
+        // Fetch reviews for this provider
+        fetch(`/api/reviews/by-provider/${json.user.id}`)
+          .then(async (rr) => {
+            if (rr.ok) {
+              const stats = (await rr.json()) as ReviewStats;
+              setReviewStats(stats);
+            }
+          })
+          .catch(() => {});
       })
       .catch(() => setStatus("notfound"));
   }, [slug]);
@@ -139,6 +181,16 @@ export default function PublicProfilePage() {
                 <Building2 className="w-3.5 h-3.5 inline mr-1" />
                 {u.fullName}
               </p>
+            )}
+
+            {reviewStats && reviewStats.count > 0 && (
+              <div className="flex items-center gap-2 mb-3" data-testid="profile-rating">
+                <StarRating value={reviewStats.average ?? 0} />
+                <span className="text-sm font-semibold">{reviewStats.average}</span>
+                <span className="text-sm text-muted-foreground">
+                  ({reviewStats.count} {t.reviews.title.toLowerCase()})
+                </span>
+              </div>
             )}
 
             {u.serviceTypes && u.serviceTypes.length > 0 && (
@@ -225,6 +277,7 @@ export default function PublicProfilePage() {
         </div>
       </Card>
 
+      {/* Portfolio */}
       <div className="mb-4 flex items-baseline justify-between">
         <h2 className="text-xl font-serif font-bold">{t.publicProfile.portfolio}</h2>
         <span className="text-sm text-muted-foreground">
@@ -233,11 +286,11 @@ export default function PublicProfilePage() {
       </div>
 
       {data.portfolio.length === 0 ? (
-        <Card className="p-10 text-center text-muted-foreground">
+        <Card className="p-10 text-center text-muted-foreground mb-8">
           {t.publicProfile.noPortfolio}
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
           {data.portfolio.map((item) => (
             <button
               key={item.id}
@@ -269,6 +322,42 @@ export default function PublicProfilePage() {
         </div>
       )}
 
+      {/* Reviews */}
+      <div className="mb-4 flex items-baseline justify-between">
+        <h2 className="text-xl font-serif font-bold">{t.reviews.title}</h2>
+        {reviewStats && reviewStats.count > 0 && (
+          <span className="text-sm text-muted-foreground">
+            {reviewStats.average} {t.reviews.average} · {reviewStats.count}
+          </span>
+        )}
+      </div>
+
+      {!reviewStats || reviewStats.count === 0 ? (
+        <Card className="p-10 text-center text-muted-foreground">
+          {t.reviews.noReviews}
+        </Card>
+      ) : (
+        <div className="space-y-4" data-testid="reviews-list">
+          {reviewStats.reviews.map((review) => (
+            <Card key={review.id} className="p-5">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <p className="font-semibold text-sm">{review.authorName ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <StarRating value={review.rating} />
+              </div>
+              {review.comment && (
+                <p className="text-sm text-foreground/80 leading-relaxed">{review.comment}</p>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Lightbox */}
       {lightbox && (
         <div
           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 cursor-pointer"
