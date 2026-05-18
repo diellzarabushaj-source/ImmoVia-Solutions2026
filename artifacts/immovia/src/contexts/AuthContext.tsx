@@ -1,11 +1,19 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type UserRole = "homeowner" | "contractor";
+export type UserRole = "client" | "service_provider" | "admin" | "homeowner" | "contractor";
+export type ProviderType = "individual" | "small_team" | "company";
+
+export function normalizeRole(role: UserRole): "client" | "service_provider" | "admin" {
+  if (role === "homeowner" || role === "client") return "client";
+  if (role === "admin") return "admin";
+  return "service_provider";
+}
 
 export interface AuthUser {
   id: number;
   email: string;
   role: UserRole;
+  providerType?: ProviderType | null;
   fullName: string;
   slug: string | null;
   phone: string | null;
@@ -36,6 +44,7 @@ export interface SignupData {
   email: string;
   password: string;
   role: UserRole;
+  providerType?: ProviderType;
   fullName: string;
   phone?: string;
   city?: string;

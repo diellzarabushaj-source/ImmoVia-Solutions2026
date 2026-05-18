@@ -293,6 +293,7 @@ function AdminDashboardContent({ onLogout }: { onLogout: () => void }) {
         <TabsList className="mb-4">
           <TabsTrigger value="projects">{t.admin.projectsTab}</TabsTrigger>
           <TabsTrigger value="companies">{t.admin.companiesTab}</TabsTrigger>
+          <TabsTrigger value="billing" data-testid="tab-admin-billing">{t.adminBilling.title}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="projects" className="mt-0">
@@ -430,8 +431,79 @@ function AdminDashboardContent({ onLogout }: { onLogout: () => void }) {
             </div>
           </Card>
         </TabsContent>
+
+        <TabsContent value="billing" className="mt-0">
+          <AdminBillingPanel />
+        </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function AdminBillingPanel() {
+  const { t } = useLanguage();
+  const [metrics, setMetrics] = useState<{ mrr: number; activeSubscriptions: number; packRevenue: number; totalRevenue: number } | null>(null);
+  const [subs, setSubs] = useState<Array<{ id: string; userId: string; planName: string; status: string; priceCents: number; currency: string }>>([]);
+  const [txns, setTxns] = useState<Array<{ id: string; userId: string; delta: number; bucket: string; reason: string; createdAt: string }>>([]);
+  const [innerTab, setInnerTab] = useState<"metrics" | "subscriptions" | "transactions">("metrics");
+
+  useEffect(() => {
+    fetch("/api/admin/metrics", { credentials: "include" }).then((r) => r.ok ? r.json() : null).then(setMetrics).catch(() => {});
+    fetch("/api/admin/subscriptions", { credentials: "include" }).then((r) => r.ok ? r.json() : []).then((d) => setSubs(d?.items ?? d ?? [])).catch(() => {});
+    fetch("/api/admin/transactions", { credentials: "include" }).then((r) => r.ok ? r.json() : []).then((d) => setTxns(d?.items ?? d ?? [])).catch(() => {});
+  }, []);
+
+  const fmtMoney = (cents: number) => `${(cents / 100).toFixed(2)} EUR`;
+
+  return (
+    <Card className="p-4">
+      <div className="flex gap-2 mb-4">
+        <Button variant={innerTab === "metrics" ? "default" : "outline"} size="sm" onClick={() => setInnerTab("metrics")} data-testid="admin-billing-metrics">{t.adminBilling.tabMetrics}</Button>
+        <Button variant={innerTab === "subscriptions" ? "default" : "outline"} size="sm" onClick={() => setInnerTab("subscriptions")} data-testid="admin-billing-subs">{t.adminBilling.tabSubscriptions}</Button>
+        <Button variant={innerTab === "transactions" ? "default" : "outline"} size="sm" onClick={() => setInnerTab("transactions")} data-testid="admin-billing-txns">{t.adminBilling.tabTransactions}</Button>
+      </div>
+
+      {innerTab === "metrics" && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="p-4"><div className="text-xs text-muted-foreground">{t.adminBilling.mrr}</div><div className="text-2xl font-bold">{metrics ? fmtMoney(metrics.mrr) : "—"}</div></Card>
+          <Card className="p-4"><div className="text-xs text-muted-foreground">{t.adminBilling.activeSubscriptions}</div><div className="text-2xl font-bold">{metrics?.activeSubscriptions ?? "—"}</div></Card>
+          <Card className="p-4"><div className="text-xs text-muted-foreground">{t.adminBilling.packRevenue}</div><div className="text-2xl font-bold">{metrics ? fmtMoney(metrics.packRevenue) : "—"}</div></Card>
+          <Card className="p-4"><div className="text-xs text-muted-foreground">{t.adminBilling.totalRevenue}</div><div className="text-2xl font-bold">{metrics ? fmtMoney(metrics.totalRevenue) : "—"}</div></Card>
+        </div>
+      )}
+
+      {innerTab === "subscriptions" && (
+        <Table>
+          <TableHeader><TableRow><TableHead>User</TableHead><TableHead>Plan</TableHead><TableHead>Price</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+          <TableBody>
+            {subs.length === 0 ? (
+              <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-6">—</TableCell></TableRow>
+            ) : subs.map((s) => (
+              <TableRow key={s.id}><TableCell className="font-mono text-xs">{s.userId.slice(0, 8)}</TableCell><TableCell>{s.planName}</TableCell><TableCell>{fmtMoney(s.priceCents)}</TableCell><TableCell>{s.status}</TableCell></TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      {innerTab === "transactions" && (
+        <Table>
+          <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>User</TableHead><TableHead>Delta</TableHead><TableHead>Bucket</TableHead><TableHead>Reason</TableHead></TableRow></TableHeader>
+          <TableBody>
+            {txns.length === 0 ? (
+              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-6">—</TableCell></TableRow>
+            ) : txns.map((tx) => (
+              <TableRow key={tx.id}>
+                <TableCell className="text-xs">{format(new Date(tx.createdAt), 'MMM d')}</TableCell>
+                <TableCell className="font-mono text-xs">{tx.userId.slice(0, 8)}</TableCell>
+                <TableCell className={tx.delta < 0 ? "text-red-600" : "text-green-600"}>{tx.delta > 0 ? `+${tx.delta}` : tx.delta}</TableCell>
+                <TableCell>{tx.bucket}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">{tx.reason}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </Card>
   );
 }
 

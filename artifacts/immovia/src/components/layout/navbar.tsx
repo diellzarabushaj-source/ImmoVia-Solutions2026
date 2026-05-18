@@ -23,6 +23,7 @@ export function Navbar() {
     { href: "/submit-project", label: t.nav.submitProject },
     { href: "/register-company", label: t.nav.registerCompany },
     { href: "/companies", label: t.nav.companies },
+    { href: "/pricing", label: t.nav.pricing },
     { href: "/chat", label: t.nav.chat },
     { href: "/contact", label: t.nav.contact },
   ];

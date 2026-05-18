@@ -4,7 +4,10 @@ export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  // role: client | service_provider | admin
   role: text("role").notNull(),
+  // For service_provider only: individual | small_team | company
+  providerType: text("provider_type"),
   fullName: text("full_name").notNull(),
   slug: text("slug").unique(),
   phone: text("phone"),

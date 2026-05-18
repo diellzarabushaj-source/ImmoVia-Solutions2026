@@ -1,19 +1,20 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, type ProviderType } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Home, Building2, Loader2 } from "lucide-react";
+import { Home, Building2, Loader2, User, Users } from "lucide-react";
 
 export default function Signup() {
   const { signup } = useAuth();
   const { t, language } = useLanguage();
   const [, setLocation] = useLocation();
-  const [role, setRole] = useState<"homeowner" | "contractor" | null>(null);
+  const [role, setRole] = useState<"client" | "service_provider" | null>(null);
+  const [providerType, setProviderType] = useState<ProviderType>("individual");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,17 +41,18 @@ export default function Signup() {
         email: form.email,
         password: form.password,
         role,
+        providerType: role === "service_provider" ? providerType : undefined,
         fullName: form.fullName,
         phone: form.phone || undefined,
         city: form.city || undefined,
         language,
-        companyName: role === "contractor" ? form.companyName : undefined,
+        companyName: role === "service_provider" ? form.companyName : undefined,
         serviceTypes:
-          role === "contractor" && form.serviceTypes
+          role === "service_provider" && form.serviceTypes
             ? form.serviceTypes.split(",").map((s) => s.trim()).filter(Boolean)
             : undefined,
       });
-      setLocation("/dashboard");
+      setLocation(role === "service_provider" ? "/provider" : "/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
     } finally {
@@ -68,9 +70,9 @@ export default function Signup() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <button
             type="button"
-            onClick={() => setRole("homeowner")}
+            onClick={() => setRole("client")}
             className="text-left p-8 rounded-xl border-2 border-border hover:border-primary transition-all bg-card hover:shadow-lg group"
-            data-testid="role-homeowner"
+            data-testid="role-client"
           >
             <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
               <Home className="w-6 h-6 text-primary" />
@@ -80,9 +82,9 @@ export default function Signup() {
           </button>
           <button
             type="button"
-            onClick={() => setRole("contractor")}
+            onClick={() => setRole("service_provider")}
             className="text-left p-8 rounded-xl border-2 border-border hover:border-primary transition-all bg-card hover:shadow-lg group"
-            data-testid="role-contractor"
+            data-testid="role-provider"
           >
             <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
               <Building2 className="w-6 h-6 text-primary" />
@@ -105,7 +107,7 @@ export default function Signup() {
     <div className="container mx-auto px-4 py-16 max-w-xl">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-serif font-bold mb-2">
-          {role === "contractor" ? t.auth.signupContractor : t.auth.signupHomeowner}
+          {role === "service_provider" ? t.auth.signupContractor : t.auth.signupHomeowner}
         </h1>
         <button
           type="button"
@@ -130,15 +132,42 @@ export default function Signup() {
             />
           </div>
 
-          {role === "contractor" && (
+          {role === "service_provider" && (
             <>
+              <div>
+                <Label className="mb-2 block">{t.auth.providerType}</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["individual", "small_team", "company"] as ProviderType[]).map((pt) => (
+                    <button
+                      key={pt}
+                      type="button"
+                      onClick={() => setProviderType(pt)}
+                      className={`p-3 rounded-lg border-2 text-left transition ${
+                        providerType === pt ? "border-primary bg-primary/5" : "border-border"
+                      }`}
+                      data-testid={`provider-type-${pt}`}
+                    >
+                      <div className="flex items-center gap-1 mb-1">
+                        {pt === "individual" && <User className="w-4 h-4 text-primary" />}
+                        {pt === "small_team" && <Users className="w-4 h-4 text-primary" />}
+                        {pt === "company" && <Building2 className="w-4 h-4 text-primary" />}
+                      </div>
+                      <div className="text-xs font-semibold">
+                        {pt === "individual" && t.auth.providerTypeIndividual}
+                        {pt === "small_team" && t.auth.providerTypeSmallTeam}
+                        {pt === "company" && t.auth.providerTypeCompany}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div>
                 <Label htmlFor="companyName">{t.auth.companyName}</Label>
                 <Input
                   id="companyName"
                   value={form.companyName}
                   onChange={update("companyName")}
-                  required
+                  required={providerType === "company"}
                   data-testid="input-company"
                 />
               </div>

@@ -10,6 +10,9 @@ import contactRouter from "./contact";
 import storageRouter from "./storage";
 import portfolioRouter from "./portfolio";
 import publicProfileRouter from "./public-profile";
+import billingRouter from "./billing";
+import offersRouter from "./offers";
+import adminBillingRouter from "./admin-billing";
 
 const router: IRouter = Router();
 
@@ -24,5 +27,8 @@ router.use(contactRouter);
 router.use(storageRouter);
 router.use(portfolioRouter);
 router.use(publicProfileRouter);
+router.use(billingRouter);
+router.use(offersRouter);
+router.use(adminBillingRouter);
 
 export default router;

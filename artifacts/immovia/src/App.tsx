@@ -19,6 +19,8 @@ import Dashboard from "@/pages/dashboard";
 import Profile from "@/pages/profile";
 import Portfolio from "@/pages/portfolio";
 import PublicProfile from "@/pages/public-profile";
+import Pricing from "@/pages/pricing";
+import ProviderDashboard from "@/pages/provider";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -40,6 +42,8 @@ function Router() {
         <Route path="/dashboard/profile" component={Profile} />
         <Route path="/dashboard/portfolio" component={Portfolio} />
         <Route path="/company/:slug" component={PublicProfile} />
+        <Route path="/provider" component={ProviderDashboard} />
+        <Route path="/pricing" component={Pricing} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

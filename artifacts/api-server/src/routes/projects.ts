@@ -32,7 +32,14 @@ router.post("/projects", async (req, res): Promise<void> => {
     return;
   }
 
+  const rawBody = req.body as Record<string, unknown>;
+  const size = typeof rawBody.size === "string" && ["small", "medium", "large", "premium"].includes(rawBody.size)
+    ? (rawBody.size as string)
+    : "medium";
+  const ownerUserId = req.session?.userId ?? null;
+
   const [project] = await db.insert(projectsTable).values({
+    ownerUserId,
     fullName: parsed.data.fullName,
     email: parsed.data.email,
     phone: parsed.data.phone,
@@ -41,6 +48,7 @@ router.post("/projects", async (req, res): Promise<void> => {
     city: parsed.data.city,
     budget: parsed.data.budget ?? null,
     timeline: parsed.data.timeline ?? null,
+    size,
     status: "pending",
   }).returning();
 

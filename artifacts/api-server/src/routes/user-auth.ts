@@ -1,9 +1,16 @@
 import { Router, type IRouter } from "express";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
-import { db, usersTable, toPublicUser } from "@workspace/db";
+import {
+  db,
+  usersTable,
+  toPublicUser,
+  subscriptionPlansTable,
+  subscriptionsTable,
+} from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { generateUniqueSlug } from "../lib/slug";
+import { grantMonthlyCredits } from "../lib/credits";
 
 declare module "express-session" {
   interface SessionData {
@@ -13,8 +20,15 @@ declare module "express-session" {
 
 const router: IRouter = Router();
 
-const VALID_ROLES = ["homeowner", "contractor"] as const;
-type Role = (typeof VALID_ROLES)[number];
+const VALID_ROLES = ["client", "service_provider"] as const;
+const VALID_PROVIDER_TYPES = ["individual", "small_team", "company"] as const;
+
+function normalizeRole(v: unknown): "client" | "service_provider" | null {
+  if (typeof v !== "string") return null;
+  if (v === "homeowner" || v === "client") return "client";
+  if (v === "contractor" || v === "service_provider") return "service_provider";
+  return null;
+}
 
 function isEmail(v: unknown): v is string {
   return typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -24,7 +38,11 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
   const body = req.body as Record<string, unknown>;
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body.password === "string" ? body.password : "";
-  const role = body.role as Role;
+  const role = normalizeRole(body.role);
+  const providerType =
+    typeof body.providerType === "string" && (VALID_PROVIDER_TYPES as readonly string[]).includes(body.providerType)
+      ? (body.providerType as (typeof VALID_PROVIDER_TYPES)[number])
+      : null;
   const fullName = typeof body.fullName === "string" ? body.fullName.trim() : "";
   const phone = typeof body.phone === "string" ? body.phone.trim() : null;
   const city = typeof body.city === "string" ? body.city.trim() : null;
@@ -42,7 +60,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Password must be at least 6 characters" });
     return;
   }
-  if (!VALID_ROLES.includes(role)) {
+  if (!role || !(VALID_ROLES as readonly string[]).includes(role)) {
     res.status(400).json({ error: "Invalid role" });
     return;
   }
@@ -50,8 +68,8 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Full name required" });
     return;
   }
-  if (role === "contractor" && (!companyName || companyName.length < 2)) {
-    res.status(400).json({ error: "Company name required for contractors" });
+  if (role === "service_provider" && !providerType) {
+    res.status(400).json({ error: "Provider type required for service providers" });
     return;
   }
 
@@ -62,7 +80,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const slugBase = role === "contractor" && companyName ? companyName : fullName;
+  const slugBase = role === "service_provider" && companyName ? companyName : fullName;
   const slug = await generateUniqueSlug(slugBase);
   const [user] = await db
     .insert(usersTable)
@@ -70,19 +88,49 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
       email,
       passwordHash,
       role,
+      providerType: role === "service_provider" ? providerType : null,
       fullName,
       slug,
       phone,
       city,
       language,
-      companyName: role === "contractor" ? companyName : null,
-      serviceTypes: role === "contractor" ? serviceTypes : null,
+      companyName: role === "service_provider" ? companyName : null,
+      serviceTypes: role === "service_provider" ? serviceTypes : null,
     })
     .returning();
 
   if (!user) {
     res.status(500).json({ error: "Failed to create user" });
     return;
+  }
+
+  // Service providers get a Free plan subscription with 3 monthly credits.
+  if (role === "service_provider") {
+    try {
+      const [freePlan] = await db
+        .select()
+        .from(subscriptionPlansTable)
+        .where(eq(subscriptionPlansTable.slug, "free"))
+        .limit(1);
+      if (freePlan) {
+        const now = new Date();
+        const end = new Date(now);
+        end.setMonth(end.getMonth() + 1);
+        await db.insert(subscriptionsTable).values({
+          userId: user.id,
+          planId: freePlan.id,
+          status: "active",
+          currentPeriodStart: now,
+          currentPeriodEnd: end,
+          providerRef: `mock_free_${user.id}_${now.getTime()}`,
+        });
+        if (freePlan.monthlyCredits > 0) {
+          await grantMonthlyCredits(user.id, freePlan.monthlyCredits, end, "Free plan signup");
+        }
+      }
+    } catch (err) {
+      req.log.error({ err }, "Failed to provision free plan");
+    }
   }
 
   req.session.regenerate((regenErr) => {
