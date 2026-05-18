@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db, usersTable, toPublicUser } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
+import { generateUniqueSlug } from "../lib/slug";
 
 declare module "express-session" {
   interface SessionData {
@@ -61,6 +62,8 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const slugBase = role === "contractor" && companyName ? companyName : fullName;
+  const slug = await generateUniqueSlug(slugBase);
   const [user] = await db
     .insert(usersTable)
     .values({
@@ -68,6 +71,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
       passwordHash,
       role,
       fullName,
+      slug,
       phone,
       city,
       language,
