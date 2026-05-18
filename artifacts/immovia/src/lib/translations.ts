@@ -431,6 +431,14 @@ export const translations = {
       alreadyReviewed: 'Tashmë i vlerësuar',
       success: 'Vlerësimi u dërgua!',
     },
+    messaging: {
+      title: 'Mesazhet',
+      placeholder: 'Shkruaj një mesazh...',
+      send: 'Dërgo',
+      noMessages: 'Asnjë mesazh ende. Filloni bisedën.',
+      loadError: 'Mesazhet nuk mund të ngarkohen.',
+      open: 'Mesazhe',
+    },
   },
   en: {
     nav: {
@@ -861,6 +869,14 @@ export const translations = {
       submit: 'Submit Review',
       alreadyReviewed: 'Already reviewed',
       success: 'Review submitted!',
+    },
+    messaging: {
+      title: 'Messages',
+      placeholder: 'Type a message...',
+      send: 'Send',
+      noMessages: 'No messages yet. Start the conversation.',
+      loadError: 'Could not load messages.',
+      open: 'Messages',
     },
   },
   de: {
@@ -1293,6 +1309,14 @@ export const translations = {
       alreadyReviewed: 'Bereits bewertet',
       success: 'Bewertung eingereicht!',
     },
+    messaging: {
+      title: 'Nachrichten',
+      placeholder: 'Nachricht eingeben...',
+      send: 'Senden',
+      noMessages: 'Noch keine Nachrichten. Starten Sie das Gespräch.',
+      loadError: 'Nachrichten konnten nicht geladen werden.',
+      open: 'Nachrichten',
+    },
   },
   fr: {
     nav: {
@@ -1723,6 +1747,14 @@ export const translations = {
       submit: "Soumettre l'avis",
       alreadyReviewed: 'Déjà évalué',
       success: 'Avis soumis !',
+    },
+    messaging: {
+      title: 'Messages',
+      placeholder: 'Écrire un message...',
+      send: 'Envoyer',
+      noMessages: 'Pas encore de messages. Commencez la conversation.',
+      loadError: 'Impossible de charger les messages.',
+      open: 'Messages',
     },
   }
 };

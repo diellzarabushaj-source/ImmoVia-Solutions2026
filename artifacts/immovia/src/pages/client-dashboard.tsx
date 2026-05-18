@@ -10,7 +10,8 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Briefcase, Flame, Star, X } from "lucide-react";
+import { Loader2, Briefcase, Flame, Star, X, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import MessageThread from "@/components/MessageThread";
 import { format } from "date-fns";
 
 // Inline star picker
@@ -152,6 +153,16 @@ export default function ClientDashboard() {
     projectId: number;
     providerName: string;
   } | null>(null);
+  const [openThreads, setOpenThreads] = useState<Set<number>>(new Set());
+
+  const toggleThread = (offerId: number) => {
+    setOpenThreads((prev) => {
+      const next = new Set(prev);
+      if (next.has(offerId)) next.delete(offerId);
+      else next.add(offerId);
+      return next;
+    });
+  };
 
   const role = user ? normalizeRole(user.role) : null;
 
@@ -268,7 +279,8 @@ export default function ClientDashboard() {
                 ) : (
                   <div className="space-y-3">
                     {offers.map((o) => (
-                      <div key={o.id} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-muted/30 border">
+                      <div key={o.id}>
+                      <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-muted/30 border">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-medium text-sm">{o.providerCompany ?? o.providerName}</span>
@@ -284,6 +296,16 @@ export default function ClientDashboard() {
                           {o.status === "accepted" ? (
                             <>
                               <Badge>{t.clientDashboard.accepted}</Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => toggleThread(o.id)}
+                                data-testid={`button-messages-${o.id}`}
+                              >
+                                <MessageSquare className="w-3.5 h-3.5 mr-1" />
+                                {t.messaging.open}
+                                {openThreads.has(o.id) ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
+                              </Button>
                               {reviewedOfferIds.has(o.id) ? (
                                 <Badge variant="outline" className="text-xs">
                                   <Star className="w-3 h-3 mr-1 fill-amber-400 text-amber-400" />
@@ -313,6 +335,15 @@ export default function ClientDashboard() {
                             </Button>
                           )}
                         </div>
+                      </div>
+                      {o.status === "accepted" && openThreads.has(o.id) && (
+                        <div className="mt-2 px-1">
+                          <MessageThread
+                            offerId={o.id}
+                            otherPartyName={o.providerCompany ?? o.providerName ?? undefined}
+                          />
+                        </div>
+                      )}
                       </div>
                     ))}
                   </div>

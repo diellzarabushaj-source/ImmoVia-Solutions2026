@@ -36,7 +36,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Coins, Loader2, ArrowUpRight, Sparkles, Flame, Star } from "lucide-react";
+import { Coins, Loader2, ArrowUpRight, Sparkles, Flame, Star, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import MessageThread from "@/components/MessageThread";
 import { format } from "date-fns";
 
 function formatEUR(cents: number): string {
@@ -62,6 +63,16 @@ export default function ProviderDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [openThreads, setOpenThreads] = useState<Set<number>>(new Set());
+
+  const toggleThread = (offerId: number) => {
+    setOpenThreads((prev) => {
+      const next = new Set(prev);
+      if (next.has(offerId)) next.delete(offerId);
+      else next.add(offerId);
+      return next;
+    });
+  };
 
   const role = user ? normalizeRole(user.role) : null;
 
@@ -279,26 +290,53 @@ export default function ProviderDashboard() {
                   <TableHead>{t.provider.colCost}</TableHead>
                   <TableHead>{t.provider.colStatus}</TableHead>
                   <TableHead>{t.provider.colDate}</TableHead>
+                  <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {offers.map((o) => (
-                  <TableRow key={o.id}>
-                    <TableCell>
-                      <div className="font-medium">{o.projectFullName}</div>
-                      <div className="text-xs text-muted-foreground">{o.projectCity}</div>
-                    </TableCell>
-                    <TableCell>{typeBadge(o.type)}</TableCell>
-                    <TableCell>{o.creditsSpent}</TableCell>
-                    <TableCell><Badge variant="outline">{o.status}</Badge></TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {format(new Date(o.createdAt), "MMM d, yyyy")}
-                    </TableCell>
-                  </TableRow>
+                  <>
+                    <TableRow key={o.id}>
+                      <TableCell>
+                        <div className="font-medium">{o.projectFullName}</div>
+                        <div className="text-xs text-muted-foreground">{o.projectCity}</div>
+                      </TableCell>
+                      <TableCell>{typeBadge(o.type)}</TableCell>
+                      <TableCell>{o.creditsSpent}</TableCell>
+                      <TableCell><Badge variant="outline">{o.status}</Badge></TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {format(new Date(o.createdAt), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {o.status === "accepted" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => toggleThread(o.id)}
+                            data-testid={`button-messages-${o.id}`}
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 mr-1" />
+                            {t.messaging.open}
+                            {openThreads.has(o.id) ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                    {o.status === "accepted" && openThreads.has(o.id) && (
+                      <TableRow key={`thread-${o.id}`}>
+                        <TableCell colSpan={6} className="p-3">
+                          <MessageThread
+                            offerId={o.id}
+                            otherPartyName={o.projectFullName ?? undefined}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
                 ))}
                 {offers.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-sm text-muted-foreground h-24">
+                    <TableCell colSpan={6} className="text-center text-sm text-muted-foreground h-24">
                       {t.provider.noOffers}
                     </TableCell>
                   </TableRow>

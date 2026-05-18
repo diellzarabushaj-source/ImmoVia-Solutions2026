@@ -14,6 +14,7 @@ import billingRouter from "./billing";
 import offersRouter from "./offers";
 import adminBillingRouter from "./admin-billing";
 import reviewsRouter from "./reviews";
+import messagesRouter from "./messages";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use(billingRouter);
 router.use(offersRouter);
 router.use(adminBillingRouter);
 router.use(reviewsRouter);
+router.use(messagesRouter);
 
 export default router;
