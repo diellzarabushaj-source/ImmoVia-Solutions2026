@@ -12,6 +12,7 @@ A professional renovation and construction services platform connecting homeowne
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
 - Required env: `OPENAI_API_KEY` — OpenAI API key for the AI chatbot
+- Optional env: `VITE_APP_URL` — Public base URL (e.g. `https://immovia.replit.app`) — set this for production so OG/Twitter share images resolve as absolute URLs for crawlers
 
 ## Stack
 
