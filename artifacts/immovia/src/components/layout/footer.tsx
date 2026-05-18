@@ -76,13 +76,6 @@ export function Footer() {
           <p className="text-xs text-white/40">
             &copy; {new Date().getFullYear()} ImmoVia. {t.footer.rights}
           </p>
-          <Link
-            href="/admin"
-            className="text-xs text-white/20 hover:text-white/50 transition-colors"
-            data-testid="link-admin"
-          >
-            {t.footer.admin}
-          </Link>
         </div>
       </div>
     </footer>

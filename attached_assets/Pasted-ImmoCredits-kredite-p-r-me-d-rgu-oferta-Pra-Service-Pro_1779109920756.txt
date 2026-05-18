@@ -1,0 +1,966 @@
+ImmoCredits = kredite për me dërgu oferta
+
+Pra:
+
+Service Provider përdor ImmoCredits për me dërgu ofertë në projekte.
+
+Klienti poston projekt falas.
+Mjeshtri / ekipi / kompania përdor ImmoCredits për me apliku.
+
+Teksti i thjeshtë për platformë
+English
+
+ImmoCredits are used to send offers to projects.
+
+German
+
+Mit ImmoCredits können Sie Angebote für Projekte senden.
+
+Shqip
+
+ImmoCredits përdoren për të dërguar oferta në projekte.
+
+Si me ja shpjegu përdoruesit
+
+Në dashboard:
+
+You have 70 ImmoCredits.
+This project requires 5 ImmoCredits to send an offer.
+
+Në shqip:
+
+Ke 70 ImmoCredits.
+Ky projekt kërkon 5 ImmoCredits për të dërguar ofertë.
+
+Në gjermanisht:
+
+Sie haben 70 ImmoCredits.
+Dieses Projekt benötigt 5 ImmoCredits, um ein Angebot zu senden.
+Versioni më i thjeshtë
+ImmoCredits = your offer balance.
+Use them to send offers to projects.
+
+Në shqip:
+
+ImmoCredits = bilanci yt për oferta.
+Përdori për të dërguar oferta në projekte.
+
+Në gjermanisht:
+
+ImmoCredits = Ihr Guthaben für Angebote.
+Nutzen Sie sie, um Angebote für Projekte zu senden.
+Si duhet me funksionu
+Klienti
+
+Klienti nuk ka nevojë me kuptu shumë për ImmoCredits.
+
+Ai thjesht:
+
+poston projekt
+merr oferta
+zgjedh ofertën
+Service Provider
+
+Service Provider e sheh:
+
+sa ImmoCredits ka
+sa kushton një projekt
+sa i mbeten
+kur duhet me ble ose upgrade
+Termat në app
+
+Përdori këta emra:
+
+English	Shqip	German
+ImmoCredits	ImmoCredits	ImmoCredits
+Credit Balance	Bilanci i krediteve	Credit-Guthaben
+Buy ImmoCredits	Blej ImmoCredits	ImmoCredits kaufen
+Use ImmoCredits	Përdor ImmoCredits	ImmoCredits nutzen
+Required ImmoCredits	ImmoCredits të nevojshme	Benötigte ImmoCredits
+Remaining ImmoCredits	ImmoCredits të mbetura	Verbleibende ImmoCredits
+Paketat me ImmoCredits
+Plan	Çmimi	ImmoCredits / muaj
+Free	€0	3
+Starter	€19	20
+Pro	€49	70
+Business	€99	180
+Premium	€199	450
+Sa ImmoCredits kushton projekti
+Project size	ImmoCredits
+Small	2
+Medium	5
+Large	10
+Premium	20
+Shembull shumë i thjeshtë
+
+Një provider ka 70 ImmoCredits.
+
+Ai sheh një projekt:
+
+Bathroom renovation
+Medium project
+Requires 5 ImmoCredits
+
+Nëse dërgon ofertë:
+
+70 - 5 = 65 ImmoCredits left
+
+Kaq e thjeshtë.
+
+Teksti për Pricing Page
+
+Për secilin plan shkruaj:
+
+Free
+
+Includes 3 ImmoCredits per month. Good for testing the platform.
+
+Starter
+
+Includes 20 ImmoCredits per month. Best for individual professionals.
+
+Pro
+
+Includes 70 ImmoCredits per month. Best for serious professionals and small teams.
+
+Business
+
+Includes 180 ImmoCredits per month. Best for companies that want regular project leads.
+
+Premium
+
+Includes 450 ImmoCredits per month. Best for companies that want maximum visibility.
+
+Teksti për momentin kur s’ka credits
+English
+
+You don’t have enough ImmoCredits to send an offer. Upgrade your plan or buy more ImmoCredits.
+
+Shqip
+
+Nuk ke mjaftueshëm ImmoCredits për të dërguar ofertë. Përmirëso planin ose blej më shumë ImmoCredits.
+
+German
+
+Sie haben nicht genügend ImmoCredits, um ein Angebot zu senden. Aktualisieren Sie Ihren Plan oder kaufen Sie weitere ImmoCredits.
+
+Teksti kur projekti kërkon credits
+English
+
+This project requires 5 ImmoCredits to send an offer.
+
+Shqip
+
+Ky projekt kërkon 5 ImmoCredits për të dërguar ofertë.
+
+German
+
+Dieses Projekt benötigt 5 ImmoCredits, um ein Angebot zu senden.
+
+Teksti për dashboard
+English
+
+Your ImmoCredits
+Use ImmoCredits to send offers to projects.
+
+Shqip
+
+ImmoCredits tuaja
+Përdor ImmoCredits për të dërguar oferta në projekte.
+
+German
+
+Ihre ImmoCredits
+Nutzen Sie ImmoCredits, um Angebote für Projekte zu senden.
+
+Rekomandimi im
+
+Mbaje emrin ImmoCredits në krejt gjuhët.
+
+Mos e përkthe emrin.
+
+Vetëm shpjegimin përktheje.
+
+Pra:
+
+English: ImmoCredits
+Shqip: ImmoCredits
+German: ImmoCredits
+
+Sepse kjo e bën brand më të fortë.
+
+Përkufizimi final
+ImmoCredits are the credits service providers use to send offers to projects on ImmoVia.
+
+Në shqip:
+
+ImmoCredits janë kreditë që ofruesit e shërbimeve i përdorin për të dërguar oferta në projekte në ImmoVia.
+
+Në gjermanisht:
+
+ImmoCredits sind Guthaben, mit denen Dienstleister Angebote für Projekte auf ImmoVia senden können.
+Prompt i shkurtër për Codex
+Use the term “ImmoCredits” for the platform credit system.
+
+ImmoCredits are used by Service Providers to send offers to client projects.
+
+Clients do not use or pay ImmoCredits.
+Clients can post projects for free.
+
+Service Providers receive ImmoCredits every month depending on their subscription plan.
+Each project requires a certain number of ImmoCredits to send an offer.
+
+Keep the term “ImmoCredits” unchanged in English, German and Albanian.
+Only translate the explanation text.
+
+Examples:
+English: “This project requires 5 ImmoCredits to send an offer.”
+German: “Dieses Projekt benötigt 5 ImmoCredits, um ein Angebot zu senden.”
+Albanian: “Ky projekt kërkon 5 ImmoCredits për të dërguar ofertë.”
+
+Show ImmoCredits clearly in the Service Provider Dashboard:
+- current balance
+- monthly credits
+- purchased credits
+- credits used
+- buy more ImmoCredits
+- upgrade plan
+
+Po, ImmoCredits është zgjidhja më e mirë.
+Është branded, e thjeshtë dhe shumë lehtë kuptohet.
+
+aama ne i packages mundet me qene edhe njo me ble veq qimmo credits te lutem boje palanin perfekt , 
+Thought for a couple of seconds
+
+Po, patjetër. Plani më perfekt për ImmoVia është me pas 2 mënyra pagese:
+
+1. Subscription packages
+
+Provider paguan çdo muaj dhe merr ImmoCredits çdo muaj.
+
+2. Buy ImmoCredits only
+
+Provider nuk do abonim?
+Mundet me ble vetëm ImmoCredits dhe me i përdor për oferta.
+
+Kjo është shumë e mirë sepse nuk i detyron krejt me subscription menjëherë.
+
+Modeli final perfekt
+Client = falas
+
+Service Provider mundet me zgjedh:
+
+1. Monthly Plan
+ose
+2. Buy ImmoCredits only
+
+Pra ai që punon, ka dy rrugë:
+
+Opsioni A — Monthly Plan
+
+Për ata që duan punë çdo muaj.
+
+Opsioni B — Pay as you go
+
+Për ata që duan vetëm me provu ose me apliku në pak projekte.
+
+Pse është mirë me pas “Buy ImmoCredits only”?
+
+Sepse jo çdo mjeshtër do me pagu €49 ose €99 në muaj.
+
+Dikush thotë:
+
+Nuk dua abonim. Dua veç me ble 20 ImmoCredits dhe me provu.
+
+Kjo është perfekte për fillim.
+
+Pastaj kur e sheh që po merr punë, ti e shtyn me upgrade në monthly plan.
+
+Struktura e pagesës
+A. Monthly Plans
+Free Plan
+
+€0 / month
+
+Përmban:
+
+3 ImmoCredits / month
+basic profile
+listed in platform
+upload 3 photos
+no verified badge
+no ranking boost
+no analytics
+
+Ky është vetëm për testim.
+
+Starter Plan
+
+€19 / month
+
+Për individual / mjeshtër.
+
+Përmban:
+
+20 ImmoCredits / month
+basic visibility
+upload 10 photos
+reviews
+email notifications
+can buy extra ImmoCredits
+normal ranking
+Pro Plan
+
+€49 / month
+
+Most Popular
+
+Për mjeshtër serioz / small team.
+
+Përmban:
+
+70 ImmoCredits / month
+verified badge eligibility
+better ranking
+unlimited photos
+profile analytics
+priority notifications
+recommended provider badge
+cheaper extra ImmoCredits
+Business Plan
+
+€99 / month
+
+Për kompani.
+
+Përmban:
+
+180 ImmoCredits / month
+company profile
+multiple team members
+advanced analytics
+higher ranking
+priority leads
+invoice section
+payment history
+cheaper extra ImmoCredits
+Premium Partner
+
+€199 / month
+
+Për kompani të mëdha.
+
+Përmban:
+
+450 ImmoCredits / month
+top ranking
+featured on homepage
+Premium Partner badge
+direct phone leads
+dedicated support
+advanced reporting
+cheapest extra ImmoCredits
+B. Buy ImmoCredits Only
+
+Kjo është pa subscription.
+
+Provider krijon profil falas dhe blen ImmoCredits kur i duhen.
+
+Këto quhen:
+
+ImmoCredit Packs
+Mini Pack
+
+10 ImmoCredits — €12
+
+Për dikë që do me provu 1–3 projekte.
+
+Starter Pack
+
+25 ImmoCredits — €25
+
+Për mjeshtër që do me provu disa oferta.
+
+Growth Pack
+
+60 ImmoCredits — €55
+
+Për provider që do me apliku në disa projekte mesatare.
+
+Business Pack
+
+150 ImmoCredits — €129
+
+Për kompani që do shumë oferta pa abonim.
+
+Pro Pack
+
+300 ImmoCredits — €229
+
+Për kompani që do me ble shumë credits pa monthly plan.
+
+Tabela: Buy ImmoCredits only
+Pack	ImmoCredits	Çmimi	Për kë
+Mini Pack	10	€12	Testim i vogël
+Starter Pack	25	€25	Individual
+Growth Pack	60	€55	Mjeshtër aktiv
+Business Pack	150	€129	Kompani
+Pro Pack	300	€229	Kompani serioze
+A është më lirë me subscription apo me ble credits veç?
+
+Duhet me qenë më lirë me subscription.
+
+Pse?
+
+Sepse ti don me i shty providers me pagu çdo muaj.
+
+Shembull:
+
+Pa subscription
+
+25 ImmoCredits = €25
+Pra 1 credit ≈ €1
+
+Me subscription
+
+Starter: €19 për 20 credits
+Pra 1 credit ≈ €0.95
+
+Pro: €49 për 70 credits
+Pra 1 credit ≈ €0.70
+
+Business: €99 për 180 credits
+Pra 1 credit ≈ €0.55
+
+Premium: €199 për 450 credits
+Pra 1 credit ≈ €0.44
+
+Kjo është shumë mirë.
+
+Provider e kupton:
+
+Nëse punoj shpesh, më leverdis subscription.
+
+Logjika perfekte
+Nëse provider aplikon rrallë → blen ImmoCredits only.
+
+Nëse provider aplikon shpesh → merr monthly plan.
+
+Nëse provider është kompani serioze → Business / Premium.
+Sa kushton me dërgu ofertë?
+
+Kjo mbetet njëjtë:
+
+Project size	ImmoCredits
+Small Project	2
+Medium Project	5
+Large Project	10
+Premium Project	20
+Shembuj praktikë
+Shembull 1: Mjeshtër pa subscription
+
+Ai blen Mini Pack: 10 ImmoCredits për €12.
+
+Mundet me apliku në:
+
+5 projekte të vogla nga 2 credits
+ose
+2 projekte mesatare nga 5 credits
+ose
+1 projekt të madh nga 10 credits
+Shembull 2: Mjeshtër aktiv
+
+Ai zgjedh Pro Plan €49/month.
+
+Merr 70 ImmoCredits.
+
+Mundet me apliku në:
+
+35 projekte të vogla
+ose
+14 projekte mesatare
+ose
+7 projekte të mëdha
+
+Kjo i leverdis shumë më shumë se me ble credits veç.
+
+Shembull 3: Kompani
+
+Kompania zgjedh Business €99/month.
+
+Merr 180 ImmoCredits.
+
+Mundet me apliku në:
+
+90 projekte të vogla
+ose
+36 projekte mesatare
+ose
+18 projekte të mëdha
+A duhet me leju Free user me ble credits?
+
+Po, por me kufi.
+
+Rregulli më i mirë
+
+Free user mundet me ble ImmoCredits, por:
+
+nuk merr ranking boost
+nuk merr verified badge
+nuk merr analytics
+nuk del më lart
+vetëm mundet me dërgu oferta
+
+Pra:
+
+Credits only = access to offers
+Subscription = credits + visibility + trust + tools
+
+Kjo është shumë e rëndësishme.
+
+Ndryshimi mes Subscription dhe Credits Only
+Feature	Credits Only	Subscription
+Send offers	Po	Po
+Monthly credits	Jo	Po
+Ranking boost	Jo	Po
+Verified badge	Jo	Pro+
+Analytics	Jo	Pro+
+Priority notifications	Jo	Pro+
+Featured placement	Jo	Premium
+Better profile	Limited	Po
+Extra discount credits	Jo	Po
+Kjo e bën planin perfekt
+
+Sepse nuk i humb përdoruesit që s’duan subscription.
+
+Në vend që ai të largohet, ai blen:
+
+10 ImmoCredits për €12
+
+Pastaj kur sheh vlerë, bëhet:
+
+Pro Plan €49/month
+
+Si duhet me u duk Pricing Page
+
+Pricing Page duhet me pas 2 tabs:
+
+Tab 1: Monthly Plans
+
+Free
+Starter
+Pro
+Business
+Premium
+
+Tab 2: Buy ImmoCredits
+
+Mini Pack
+Starter Pack
+Growth Pack
+Business Pack
+Pro Pack
+
+Teksti në Pricing Page
+Monthly Plans
+
+Best for professionals who want regular project opportunities every month.
+
+Buy ImmoCredits
+
+No subscription. Buy ImmoCredits only when you need them.
+
+Checkout flow
+Për subscription
+Choose Plan
+↓
+Stripe Subscription Checkout
+↓
+Payment successful
+↓
+Monthly ImmoCredits added
+↓
+Dashboard
+Për ImmoCredits only
+Choose ImmoCredit Pack
+↓
+Stripe One-Time Checkout
+↓
+Payment successful
+↓
+ImmoCredits added to balance
+↓
+Dashboard
+Skadimi i credits
+
+Duhet me pas dy lloje credits:
+
+Monthly ImmoCredits
+
+Këto vijnë nga subscription.
+
+resetohen çdo muaj
+nuk grumbullohen pa fund
+skadojnë në fund të muajit
+Purchased ImmoCredits
+
+Këto blihen veç.
+
+nuk skadojnë shpejt
+vlejnë 12 muaj
+ruhen në balance
+Rregulli final
+Monthly ImmoCredits expire at the end of the billing cycle.
+
+Purchased ImmoCredits expire after 12 months.
+Cilat credits harxhohen së pari?
+
+Më mirë:
+
+Use monthly ImmoCredits first.
+Then use purchased ImmoCredits.
+
+Pse?
+
+Sepse monthly skadojnë më shpejt.
+
+Refund logic
+
+ImmoCredits kthehen vetëm nëse:
+
+projekti është fake
+projekti fshihet brenda 24h
+klienti nuk verifikohet
+admin e anulon projektin
+
+Nuk kthehen nëse:
+
+provider nuk fiton punën
+klienti nuk përgjigjet
+oferta nuk pranohet
+provider ndërron mendje
+Boost Offer me ImmoCredits
+
+Kur provider dërgon ofertë:
+
+Normal Offer
+
+kushton sa projekti.
+
+Highlighted Offer
+
+kushton:
+
+base + 3 ImmoCredits
+
+Top Offer
+
+kushton:
+
+base + 7 ImmoCredits
+
+Shembull për medium project:
+
+Normal: 5 credits
+Highlighted: 8 credits
+Top Offer: 12 credits
+Paketa finale që ta rekomandoj
+Monthly Plans
+Plan	Price	Monthly ImmoCredits	Best for
+Free	€0	3	Testing
+Starter	€19	20	Individual
+Pro	€49	70	Small team
+Business	€99	180	Company
+Premium	€199	450	Large company
+ImmoCredit Packs
+Pack	Price	ImmoCredits	Type
+Mini	€12	10	One-time
+Starter	€25	25	One-time
+Growth	€55	60	One-time
+Business	€129	150	One-time
+Pro	€229	300	One-time
+Strategjia më e mirë për revenue
+
+Më së pari përdor këtë:
+
+1. Subscription plans
+2. One-time ImmoCredit packs
+3. Boosted offers
+
+Mos fut komision në fillim.
+
+Më vonë mundesh me shtu:
+
+4. Featured categories
+5. Verification fee
+6. Premium client support
+7. Success fee për projekte të mëdha
+Prompt komplet për Codex / Replit
+Implement the final ImmoVia payment system with subscriptions and one-time ImmoCredit packs.
+
+ImmoVia has two main sides:
+1. Clients who post projects.
+2. Service Providers who send offers.
+
+Clients can post projects for free.
+Clients do not need ImmoCredits.
+Clients do not pay to post projects, receive offers, message providers or accept offers.
+
+Service Providers use ImmoCredits to send offers to projects.
+
+There are two payment options for Service Providers:
+
+1. Monthly Subscription Plans
+2. One-Time ImmoCredit Packs
+
+Use the branded term “ImmoCredits” everywhere.
+Do not translate the word ImmoCredits.
+Translate only the explanation text in German, English and Albanian.
+
+Monthly Subscription Plans:
+
+1. Free Plan
+Price: €0/month
+Monthly ImmoCredits: 3
+Features:
+- basic provider profile
+- listed in platform
+- upload up to 3 portfolio photos
+- no verified badge
+- no ranking boost
+- no analytics
+
+2. Starter Plan
+Price: €19/month
+Monthly ImmoCredits: 20
+Best for: individual professionals
+Features:
+- profile visibility
+- upload up to 10 portfolio photos
+- reviews
+- email notifications
+- can buy extra ImmoCredits
+- normal ranking
+
+3. Pro Plan
+Price: €49/month
+Monthly ImmoCredits: 70
+Best for: serious professionals and small teams
+Mark as: Most Popular
+Features:
+- verified badge eligibility
+- better ranking
+- unlimited portfolio photos
+- profile analytics
+- priority notifications
+- recommended provider badge
+- discounted extra ImmoCredits
+
+4. Business Plan
+Price: €99/month
+Monthly ImmoCredits: 180
+Best for: companies
+Features:
+- company profile
+- multiple team members
+- advanced analytics
+- higher ranking
+- priority leads
+- invoice section
+- payment history
+- discounted extra ImmoCredits
+
+5. Premium Partner Plan
+Price: €199/month
+Monthly ImmoCredits: 450
+Best for: large companies
+Features:
+- top ranking
+- featured on homepage
+- Premium Partner badge
+- direct phone leads
+- dedicated support
+- advanced reporting
+- featured category placement
+- priority customer matching
+- cheapest extra ImmoCredits
+
+One-Time ImmoCredit Packs:
+
+1. Mini Pack
+Price: €12
+ImmoCredits: 10
+Best for: testing a few projects
+
+2. Starter Pack
+Price: €25
+ImmoCredits: 25
+Best for: individual providers who do not want a subscription
+
+3. Growth Pack
+Price: €55
+ImmoCredits: 60
+Best for: active providers
+
+4. Business Pack
+Price: €129
+ImmoCredits: 150
+Best for: companies
+
+5. Pro Pack
+Price: €229
+ImmoCredits: 300
+Best for: high-volume providers
+
+Pricing Page:
+Create two tabs:
+1. Monthly Plans
+2. Buy ImmoCredits
+
+Monthly Plans tab text:
+“Best for professionals who want regular project opportunities every month.”
+
+Buy ImmoCredits tab text:
+“No subscription. Buy ImmoCredits only when you need them.”
+
+Project ImmoCredit cost:
+- Small Project: 2 ImmoCredits
+- Medium Project: 5 ImmoCredits
+- Large Project: 10 ImmoCredits
+- Premium Project: 20 ImmoCredits
+
+Offer types:
+1. Normal Offer:
+Cost = base project cost
+
+2. Highlighted Offer:
+Cost = base project cost + 3 ImmoCredits
+
+3. Top Offer:
+Cost = base project cost + 7 ImmoCredits
+
+Limit boosted offers:
+- maximum 3 Highlighted Offers per project
+- maximum 1 Top Offer per project
+
+Project offer limits:
+- Small Project: maximum 5 offers
+- Medium Project: maximum 8 offers
+- Large Project: maximum 12 offers
+- Premium Project: maximum 15 offers
+
+Credit expiration:
+- Monthly ImmoCredits expire at the end of the billing cycle.
+- Purchased ImmoCredits expire after 12 months.
+
+Credit usage priority:
+- Use monthly ImmoCredits first.
+- Then use purchased ImmoCredits.
+
+Free users can buy ImmoCredits, but buying ImmoCredits does not unlock subscription benefits.
+Credits Only users can send offers, but they do not get:
+- ranking boost
+- verified badge
+- analytics
+- priority notifications
+- premium placement
+
+Subscription users get:
+- monthly ImmoCredits
+- better visibility
+- better tools
+- better ranking
+- access to premium features depending on plan
+
+Use Stripe for:
+1. Subscription checkout
+2. One-time ImmoCredit pack checkout
+3. Customer portal
+4. Invoices
+5. Payment history
+6. Failed payment handling
+7. Subscription upgrades
+8. Subscription downgrades
+9. Subscription cancellation
+
+Dashboard:
+Service Provider Dashboard must show:
+- current plan
+- monthly ImmoCredits balance
+- purchased ImmoCredits balance
+- total available ImmoCredits
+- ImmoCredits used this month
+- buy ImmoCredits button
+- upgrade plan button
+- payment history
+- invoices
+- subscription status
+
+When a provider does not have enough ImmoCredits, show:
+“You don’t have enough ImmoCredits to send this offer. Buy more ImmoCredits or upgrade your plan.”
+
+When sending an offer, show:
+“This project requires X ImmoCredits.”
+“Your balance: Y ImmoCredits.”
+“After sending this offer, you will have Z ImmoCredits left.”
+
+Database tables:
+Create:
+- users
+- service_providers
+- projects
+- offers
+- subscription_plans
+- subscriptions
+- immocredit_packs
+- immocredit_balances
+- immocredit_transactions
+- payments
+- invoices
+- stripe_customers
+- stripe_events
+- reviews
+- messages
+
+Admin Dashboard:
+Admin must be able to:
+- view all subscriptions
+- view all ImmoCredit purchases
+- view all ImmoCredit transactions
+- manually add or remove ImmoCredits
+- refund ImmoCredits
+- edit project credit cost
+- edit subscription plan credits
+- edit ImmoCredit pack prices
+- see monthly recurring revenue
+- see one-time credit revenue
+- see total revenue
+- see failed payments
+- see active paid providers
+
+Important:
+Keep the system easy to understand.
+Clients never pay in the first version.
+Service Providers can either subscribe monthly or buy ImmoCredits only.
+Subscription should always feel more valuable than only buying credits.
+Vendimi final
+
+Ky është modeli më i mirë:
+
+Klienti = falas
+
+Provider ka 2 opsione:
+
+1. Merr subscription
+   → merr ImmoCredits çdo muaj + ranking + features
+
+2. Blen vetëm ImmoCredits
+   → pa subscription, veç mundet me dërgu oferta
+
+Kjo është shumë e mençur sepse:
+
+nuk i frikëson mjeshtrat me subscription
+ti fiton edhe prej pagesave të vogla
+ata që kanë sukses kalojnë në Pro/Business
+sistemi mbetet shumë i lehtë me u kuptu
+ImmoCredits bëhet pjesë e brand-it ImmoVia

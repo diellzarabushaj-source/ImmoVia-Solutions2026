@@ -1,0 +1,77 @@
+Add a full Email Notification System for ImmoVia.
+
+I need the app to be able to send notification emails to users.
+
+Use Resend for real email sending if API keys are available.
+If Resend is not configured yet, create a mock email system that logs all emails in the database so we can activate real sending later.
+
+The system must support these email notifications:
+
+1. Welcome email for new Client
+Trigger: when a Client creates an account
+
+2. Welcome email for new Service Provider
+Trigger: when a Service Provider creates an account
+
+3. Project submitted email
+Trigger: when a Client posts a new project
+
+4. New project available email
+Trigger: when a project matches a Service Provider’s services and location
+
+5. New offer received email
+Trigger: when a Service Provider sends an offer to a Client
+
+6. New message email
+Trigger: when one user sends a message to another user
+
+7. Low ImmoCredits email
+Trigger: when a Service Provider has less than 5 ImmoCredits
+
+8. ImmoCredits purchase confirmation email
+Trigger: when a Service Provider buys ImmoCredits through mocked checkout
+
+9. Subscription activated email
+Trigger: when a Service Provider activates a paid plan
+
+10. Profile approved email
+Trigger: when admin approves a Service Provider profile
+
+11. Profile rejected email
+Trigger: when admin rejects a Service Provider profile
+
+Requirements:
+- Emails must be sent in the user’s selected language.
+- Support German, English, Albanian and French.
+- If no language is selected, default to German.
+- Create reusable email templates.
+- Do not hardcode email text inside business logic.
+- Add email logs to the database.
+- If sending an email fails, do not break the app flow.
+- Save failed email errors in email logs.
+
+Create an email_logs table with:
+- id
+- user_id
+- recipient_email
+- email_type
+- subject
+- status: sent, failed, mocked
+- error_message
+- created_at
+
+Admin Dashboard:
+Add a hidden admin-only Email Logs section where I can see:
+- sent emails
+- failed emails
+- mocked emails
+- recipient
+- email type
+- timestamp
+- error message if failed
+
+Keep the email service modular so real Resend sending can be activated later by adding:
+RESEND_API_KEY
+FROM_EMAIL
+
+For now, if RESEND_API_KEY is missing, use mock mode and store the email in email_logs.

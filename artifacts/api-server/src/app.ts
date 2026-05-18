@@ -12,13 +12,17 @@ if (!sessionSecret) {
   throw new Error("SESSION_SECRET environment variable is required.");
 }
 
+app.set("trust proxy", 1);
+
 app.use(
   session({
+    name: "immovia.sid",
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
+      sameSite: "lax",
       secure: process.env["NODE_ENV"] === "production",
       maxAge: 8 * 60 * 60 * 1000,
     },
@@ -44,7 +48,7 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
