@@ -11,6 +11,7 @@ import RegisterCompany from "@/pages/register-company";
 import Companies from "@/pages/companies";
 import AdminDashboard from "@/pages/admin";
 import Chat from "@/pages/chat";
+import Contact from "@/pages/contact";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ function Router() {
         <Route path="/companies" component={Companies} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/chat" component={Chat} />
+        <Route path="/contact" component={Contact} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

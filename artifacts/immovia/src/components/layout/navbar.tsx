@@ -21,6 +21,7 @@ export function Navbar() {
     { href: "/register-company", label: t.nav.registerCompany },
     { href: "/companies", label: t.nav.companies },
     { href: "/chat", label: t.nav.chat },
+    { href: "/contact", label: t.nav.contact },
   ];
 
   const langOptions = [
