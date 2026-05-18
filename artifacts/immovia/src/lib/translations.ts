@@ -165,6 +165,16 @@ export const translations = {
       send: 'Dërgo',
       typing: 'Po shkruan...',
     },
+    team: {
+      title: 'Ekipi Ynë',
+      subtitle: 'Njerëzit që çojnë ImmoVia përpara çdo ditë.',
+      members: [
+        { name: 'Raze Dobraj', role: 'Drejtore Ekzekutive (CEO)', photo: '/team-raze.png' },
+        { name: 'Diellza Rabushaj', role: 'Menaxhere Projektesh', photo: '/team-diellza.png' },
+        { name: 'Arton Krasniqi', role: 'Arkitekt Kryesor', photo: '/team-arton.png' },
+        { name: 'Besnik Hoxha', role: 'Zhvillim Biznesi', photo: '/team-besnik.png' },
+      ],
+    },
     common: {
       loading: 'Po ngarkohet...',
       error: 'Ndodhi një gabim.',
@@ -335,6 +345,16 @@ export const translations = {
       send: 'Send',
       typing: 'Typing...',
     },
+    team: {
+      title: 'Our Team',
+      subtitle: 'The people driving ImmoVia forward every day.',
+      members: [
+        { name: 'Raze Dobraj', role: 'Chief Executive Officer (CEO)', photo: '/team-raze.png' },
+        { name: 'Diellza Rabushaj', role: 'Project Manager', photo: '/team-diellza.png' },
+        { name: 'Arton Krasniqi', role: 'Lead Architect', photo: '/team-arton.png' },
+        { name: 'Besnik Hoxha', role: 'Business Development', photo: '/team-besnik.png' },
+      ],
+    },
     common: {
       loading: 'Loading...',
       error: 'An error occurred.',
@@ -504,6 +524,16 @@ export const translations = {
       placeholder: 'Fragen Sie nach Renovierungen, Kosten...',
       send: 'Senden',
       typing: 'Tippt...',
+    },
+    team: {
+      title: 'Unser Team',
+      subtitle: 'Die Menschen, die ImmoVia jeden Tag voranbringen.',
+      members: [
+        { name: 'Raze Dobraj', role: 'Geschäftsführerin (CEO)', photo: '/team-raze.png' },
+        { name: 'Diellza Rabushaj', role: 'Projektmanagerin', photo: '/team-diellza.png' },
+        { name: 'Arton Krasniqi', role: 'Leitarchitekt', photo: '/team-arton.png' },
+        { name: 'Besnik Hoxha', role: 'Geschäftsentwicklung', photo: '/team-besnik.png' },
+      ],
     },
     common: {
       loading: 'Wird geladen...',

@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "oe38xxh8qIgdauByDPbdG"
+uri = "file://artifacts/immovia/public/team-raze.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "BRhkpe3IzTcvaEnm4w8bZ"
+uri = "file://artifacts/immovia/public/team-diellza.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "smBwz1vd9L58_BYrsyPlV"
+uri = "file://artifacts/immovia/public/team-arton.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "BC1GMuzHxGy02YzpIGwk3"
+uri = "file://artifacts/immovia/public/team-besnik.png"
+type = "image"
+title = "generated_image"
