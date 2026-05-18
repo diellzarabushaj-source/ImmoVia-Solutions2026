@@ -46,9 +46,15 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-white/98 backdrop-blur supports-[backdrop-filter]:bg-white/90 shadow-sm">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center" data-testid="link-home-logo">
-          <img src="/logo-color.png" alt="ImmoVia" className="h-14 w-auto object-contain" />
+      <div className="container mx-auto px-4 h-20 md:h-24 flex items-center justify-between">
+        <Link href="/" className="flex items-center shrink-0" data-testid="link-home-logo">
+          <img
+            src="/logo-color.png"
+            alt="ImmoVia"
+            className="h-16 md:h-20 w-auto object-contain"
+            decoding="async"
+            loading="eager"
+          />
         </Link>
 
         <div className="hidden md:flex items-center space-x-1">
