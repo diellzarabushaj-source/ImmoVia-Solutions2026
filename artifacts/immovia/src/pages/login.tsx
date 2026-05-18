@@ -34,6 +34,14 @@ export default function Login() {
   return (
     <div className="container mx-auto px-4 py-16 max-w-md">
       <div className="text-center mb-8">
+        <div className="flex justify-center mb-5">
+          <img
+            src="/logo-color.png"
+            alt="ImmoVia"
+            className="h-16 md:h-20 w-auto object-contain"
+            decoding="async"
+          />
+        </div>
         <h1 className="text-3xl font-serif font-bold mb-2">{t.auth.loginTitle}</h1>
         <p className="text-muted-foreground text-sm">{t.auth.loginSubtitle}</p>
       </div>

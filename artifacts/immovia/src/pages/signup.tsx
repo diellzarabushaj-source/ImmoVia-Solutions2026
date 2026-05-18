@@ -64,6 +64,14 @@ export default function Signup() {
     return (
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <div className="text-center mb-10">
+          <div className="flex justify-center mb-5">
+            <img
+              src="/logo-color.png"
+              alt="ImmoVia"
+              className="h-16 md:h-20 w-auto object-contain"
+              decoding="async"
+            />
+          </div>
           <h1 className="text-3xl md:text-4xl font-serif font-bold mb-3">{t.auth.signupTitle}</h1>
           <p className="text-muted-foreground">{t.auth.chooseRole}</p>
         </div>
@@ -106,6 +114,14 @@ export default function Signup() {
   return (
     <div className="container mx-auto px-4 py-16 max-w-xl">
       <div className="text-center mb-8">
+        <div className="flex justify-center mb-5">
+          <img
+            src="/logo-color.png"
+            alt="ImmoVia"
+            className="h-16 md:h-20 w-auto object-contain"
+            decoding="async"
+          />
+        </div>
         <h1 className="text-3xl font-serif font-bold mb-2">
           {role === "service_provider" ? t.auth.signupContractor : t.auth.signupHomeowner}
         </h1>
