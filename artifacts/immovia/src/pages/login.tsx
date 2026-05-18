@@ -17,6 +17,13 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const translateError = (msg: string): string => {
+    if (msg.includes("unavailable") || msg.includes("unexpected error") || msg.includes("ENOTFOUND")) return t.auth.serverUnavailable;
+    if (msg.includes("Invalid credentials") || msg.includes("invalid credentials")) return t.auth.invalidCredentials;
+    if (msg.includes("already registered") || msg.includes("already exists")) return t.auth.emailTaken;
+    return t.auth.authError;
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -25,7 +32,7 @@ export default function Login() {
       await login(email, password);
       setLocation("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(translateError(err instanceof Error ? err.message : ""));
     } finally {
       setLoading(false);
     }

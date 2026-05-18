@@ -31,6 +31,13 @@ export default function Signup() {
   const update = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
+  const translateError = (msg: string): string => {
+    if (msg.includes("unavailable") || msg.includes("unexpected error") || msg.includes("ENOTFOUND")) return t.auth.serverUnavailable;
+    if (msg.includes("already registered") || msg.includes("already exists")) return t.auth.emailTaken;
+    if (msg.includes("Invalid credentials") || msg.includes("invalid credentials")) return t.auth.invalidCredentials;
+    return t.auth.authError;
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!role) return;
@@ -54,7 +61,7 @@ export default function Signup() {
       });
       setLocation(role === "service_provider" ? "/provider" : "/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Signup failed");
+      setError(translateError(err instanceof Error ? err.message : ""));
     } finally {
       setLoading(false);
     }
