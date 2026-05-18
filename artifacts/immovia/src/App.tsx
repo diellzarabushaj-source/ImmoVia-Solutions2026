@@ -17,6 +17,8 @@ import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import Dashboard from "@/pages/dashboard";
 import Profile from "@/pages/profile";
+import Portfolio from "@/pages/portfolio";
+import PublicProfile from "@/pages/public-profile";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -36,6 +38,8 @@ function Router() {
         <Route path="/signup" component={Signup} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/dashboard/profile" component={Profile} />
+        <Route path="/dashboard/portfolio" component={Portfolio} />
+        <Route path="/company/:slug" component={PublicProfile} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

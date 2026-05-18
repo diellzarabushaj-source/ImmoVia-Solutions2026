@@ -39,7 +39,7 @@ export default function Dashboard() {
   const tiles = isContractor
     ? [
         { icon: User, label: t.dashboard.profile, href: "/dashboard/profile", desc: t.dashboard.profileDesc },
-        { icon: ImageIcon, label: t.dashboard.portfolio, href: "/dashboard/profile", desc: t.dashboard.portfolioDesc, soon: true },
+        { icon: ImageIcon, label: t.dashboard.portfolio, href: "/dashboard/portfolio", desc: t.dashboard.portfolioDesc },
         { icon: MessageSquare, label: t.dashboard.inbox, href: "/dashboard/inbox", desc: t.dashboard.inboxDesc, soon: true },
         { icon: Star, label: t.dashboard.reviews, href: "/dashboard/reviews", desc: t.dashboard.reviewsContractorDesc, soon: true },
       ]
@@ -69,12 +69,22 @@ export default function Dashboard() {
             {isContractor ? t.dashboard.contractorSubtitle : t.dashboard.homeownerSubtitle}
           </p>
         </div>
-        <Link href="/dashboard/profile">
-          <Button variant="outline" size="sm" data-testid="button-settings">
-            <Settings className="w-4 h-4 mr-2" />
-            {t.dashboard.editProfile}
-          </Button>
-        </Link>
+        <div className="flex gap-2 flex-wrap">
+          {isContractor && user.slug && (
+            <Link href={`/company/${user.slug}`}>
+              <Button variant="outline" size="sm" data-testid="button-view-public">
+                <User className="w-4 h-4 mr-2" />
+                {t.dashboard.viewPublicProfile}
+              </Button>
+            </Link>
+          )}
+          <Link href="/dashboard/profile">
+            <Button variant="outline" size="sm" data-testid="button-settings">
+              <Settings className="w-4 h-4 mr-2" />
+              {t.dashboard.editProfile}
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">

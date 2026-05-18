@@ -1,11 +1,27 @@
 import { Router, type IRouter } from "express";
 import { and, eq, asc } from "drizzle-orm";
 import { db, portfolioItemsTable } from "@workspace/db";
-import { requireAuth } from "../middlewares/requireAuth";
+import { requireContractor } from "../middlewares/requireContractor";
 
 const router: IRouter = Router();
 
-router.get("/portfolio/me", requireAuth, async (req, res): Promise<void> => {
+const ALLOWED_IMAGE_HOSTS = new Set([
+  "images.unsplash.com",
+  "unsplash.com",
+]);
+
+function isAllowedImageUrl(url: string): boolean {
+  if (url.startsWith("/api/storage/objects/")) return true;
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "https:") return false;
+    return ALLOWED_IMAGE_HOSTS.has(u.hostname);
+  } catch {
+    return false;
+  }
+}
+
+router.get("/portfolio/me", requireContractor, async (req, res): Promise<void> => {
   const userId = req.session.userId!;
   const items = await db
     .select()
@@ -15,7 +31,7 @@ router.get("/portfolio/me", requireAuth, async (req, res): Promise<void> => {
   res.json({ items });
 });
 
-router.post("/portfolio", requireAuth, async (req, res): Promise<void> => {
+router.post("/portfolio", requireContractor, async (req, res): Promise<void> => {
   const userId = req.session.userId!;
   const body = req.body as Record<string, unknown>;
   const imageUrl = typeof body.imageUrl === "string" ? body.imageUrl.trim() : "";
@@ -23,7 +39,7 @@ router.post("/portfolio", requireAuth, async (req, res): Promise<void> => {
   const description =
     typeof body.description === "string" ? body.description.trim().slice(0, 1000) : null;
 
-  if (!imageUrl || imageUrl.length > 500) {
+  if (!imageUrl || imageUrl.length > 500 || !isAllowedImageUrl(imageUrl)) {
     res.status(400).json({ error: "Invalid imageUrl" });
     return;
   }
@@ -35,7 +51,7 @@ router.post("/portfolio", requireAuth, async (req, res): Promise<void> => {
   res.status(201).json({ item });
 });
 
-router.delete("/portfolio/:id", requireAuth, async (req, res): Promise<void> => {
+router.delete("/portfolio/:id", requireContractor, async (req, res): Promise<void> => {
   const userId = req.session.userId!;
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
