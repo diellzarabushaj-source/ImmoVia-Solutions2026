@@ -26,6 +26,7 @@ export function Navbar() {
 
   const langOptions = [
     { code: 'en' as const, label: 'English', flag: 'EN' },
+    { code: 'fr' as const, label: 'Français', flag: 'FR' },
     { code: 'de' as const, label: 'Deutsch', flag: 'DE' },
     { code: 'sq' as const, label: 'Shqip', flag: 'SQ' },
   ];

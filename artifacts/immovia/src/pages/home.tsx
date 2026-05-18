@@ -108,7 +108,7 @@ export default function Home() {
     <div className="flex flex-col w-full">
 
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden bg-foreground text-white py-28 md:py-36">
+      <section className="relative overflow-hidden bg-foreground text-white py-16 md:py-28 lg:py-36">
         {/* Subtle grid pattern */}
         <div className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.15) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
@@ -133,7 +133,7 @@ export default function Home() {
             {/* Headline */}
             <motion.h1
               variants={fadeUp}
-              className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4 leading-[1.08]"
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4 leading-[1.08]"
             >
               {t.hero.title.split('\n').map((line, i) => (
                 <span key={i}>
@@ -222,7 +222,7 @@ export default function Home() {
       </section>
 
       {/* ── SERVICES / OFFERS ── */}
-      <section className="py-24 bg-muted/30">
+      <section className="py-14 md:py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-14"
@@ -275,7 +275,7 @@ export default function Home() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="py-24 bg-white">
+      <section className="py-14 md:py-24 bg-white">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-14"
@@ -329,7 +329,7 @@ export default function Home() {
       </section>
 
       {/* ── WHY IMMOVIA ── */}
-      <section className="py-24 bg-secondary/40">
+      <section className="py-14 md:py-24 bg-secondary/40">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-14"
@@ -370,7 +370,7 @@ export default function Home() {
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section className="py-24 bg-white">
+      <section className="py-14 md:py-24 bg-white">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-14"
@@ -413,7 +413,7 @@ export default function Home() {
       </section>
 
       {/* ── TEAM ── */}
-      <section className="py-24 bg-white">
+      <section className="py-14 md:py-24 bg-white">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-14"
@@ -431,7 +431,7 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 max-w-4xl mx-auto"
             variants={stagger}
             initial="initial"
             whileInView="animate"
@@ -443,7 +443,7 @@ export default function Home() {
                 className="flex flex-col items-center text-center group"
                 variants={fadeUp}
               >
-                <div className="w-36 h-36 rounded-2xl overflow-hidden bg-[#eef2f9] mb-4 shadow-md group-hover:shadow-lg transition-shadow">
+                <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-2xl overflow-hidden bg-[#eef2f9] mb-4 shadow-md group-hover:shadow-lg transition-shadow">
                   <img
                     src={member.photo}
                     alt={member.name}
@@ -459,7 +459,7 @@ export default function Home() {
       </section>
 
       {/* ── DUAL CTA ── */}
-      <section className="py-20 bg-foreground text-white">
+      <section className="py-14 md:py-20 bg-foreground text-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Homeowner CTA */}

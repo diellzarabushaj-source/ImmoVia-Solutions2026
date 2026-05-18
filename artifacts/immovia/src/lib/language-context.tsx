@@ -15,7 +15,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem('immovia-language') as Language;
-    if (saved && ['sq', 'en', 'de'].includes(saved)) {
+    if (saved && ['sq', 'en', 'de', 'fr'].includes(saved)) {
       setLanguageState(saved);
     }
     setIsMounted(true);
