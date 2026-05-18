@@ -22,7 +22,7 @@ export function Footer() {
             <img
               src="/logo-white.png"
               alt="ImmoVia"
-              className="h-10 w-auto object-contain object-left"
+              className="h-16 w-auto object-contain object-left"
             />
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
               {t.footer.tagline}
