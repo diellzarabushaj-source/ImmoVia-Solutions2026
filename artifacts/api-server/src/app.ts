@@ -57,15 +57,25 @@ app.use("/api", router);
 // Global error handler — catches any unhandled async errors from routes
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: unknown, req: Request, res: Response, _next: NextFunction): void => {
-  const message =
-    err instanceof Error ? err.message : "Internal server error";
-  const isDbDown =
-    typeof message === "string" &&
-    (message.includes("ENOTFOUND") || message.includes("ECONNREFUSED") || message.includes("getaddrinfo"));
   logger.error({ err }, "Unhandled route error");
-  res.status(503).json({
-    error: isDbDown ? "Service temporarily unavailable. Please try again later." : message,
-  });
+
+  // Detect DB-down by inspecting the full error chain (message + cause)
+  function isDbError(e: unknown): boolean {
+    if (!(e instanceof Error)) return false;
+    const text = `${e.message} ${e.cause instanceof Error ? e.cause.message : ""}`;
+    return (
+      text.includes("ENOTFOUND") ||
+      text.includes("ECONNREFUSED") ||
+      text.includes("getaddrinfo") ||
+      text.includes("ETIMEDOUT")
+    );
+  }
+
+  if (isDbError(err)) {
+    res.status(503).json({ error: "Service temporarily unavailable. Please try again later." });
+  } else {
+    res.status(500).json({ error: "An unexpected error occurred. Please try again." });
+  }
 });
 
 export default app;
