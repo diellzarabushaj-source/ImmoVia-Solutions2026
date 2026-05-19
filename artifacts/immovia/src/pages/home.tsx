@@ -443,7 +443,7 @@ export default function Home() {
                 className="flex flex-col items-center text-center group"
                 variants={fadeUp}
               >
-                <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-2xl overflow-hidden bg-[#eef2f9] mb-4 shadow-md group-hover:shadow-lg transition-shadow">
+                <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-2xl overflow-hidden bg-[#1a2f4e] mb-4 shadow-md group-hover:shadow-lg transition-shadow">
                   <img
                     src={member.photo}
                     alt={member.name}
