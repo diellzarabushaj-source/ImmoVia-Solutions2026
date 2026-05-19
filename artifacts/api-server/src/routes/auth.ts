@@ -12,8 +12,8 @@ const router: IRouter = Router();
 router.post("/admin/auth/login", (req, res): void => {
   const { username, password } = req.body as { username?: string; password?: string };
 
-  const adminUsername = process.env["ADMIN_USERNAME"] ?? "admin";
-  const adminPassword = process.env["ADMIN_PASSWORD"] ?? "immovia2025";
+  const adminUsername = process.env["ADMIN_USERNAME"] ?? "immovia2026";
+  const adminPassword = process.env["ADMIN_PASSWORD"] ?? "immovia2026";
 
   if (username === adminUsername && password === adminPassword) {
     req.session.adminAuthenticated = true;
