@@ -23,7 +23,7 @@ export function Footer() {
               <img
                 src="/logo-white.png"
                 alt="ImmoVia"
-                className="h-16 md:h-20 w-auto object-contain object-left"
+                className="h-28 md:h-36 w-auto object-contain object-left"
               />
             </Link>
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
