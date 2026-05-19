@@ -4,7 +4,8 @@ import { useListCompanies } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, MapPin, Briefcase, CalendarDays, ExternalLink, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, MapPin, Briefcase, CalendarDays, Globe, Mail, Phone } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Companies() {
@@ -108,25 +109,42 @@ export default function Companies() {
                 </div>
               </div>
               
-              <div className="mt-auto pt-4 flex items-center justify-between border-t border-border/50 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <CalendarDays className="h-4 w-4" />
-                  <span>
-                    {company.yearsExperience ? `${company.yearsExperience} ${t.companies.years} exp` : "New"}
-                  </span>
+              <div className="mt-auto pt-4 border-t border-border/50 space-y-3">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <CalendarDays className="h-4 w-4" />
+                    <span>
+                      {company.yearsExperience ? `${company.yearsExperience} ${t.companies.years} exp` : "New"}
+                    </span>
+                  </div>
+                  {company.website && (
+                    <a
+                      href={company.website.startsWith('http') ? company.website : `https://${company.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-primary hover:underline"
+                    >
+                      <Globe className="h-4 w-4" />
+                      <span>Website</span>
+                    </a>
+                  )}
                 </div>
-                
-                {company.website && (
-                  <a 
-                    href={company.website.startsWith('http') ? company.website : `https://${company.website}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-primary hover:underline"
-                  >
-                    <Globe className="h-4 w-4" />
-                    <span>Website</span>
-                  </a>
-                )}
+                <div className="flex gap-2">
+                  <Button asChild size="sm" className="flex-1">
+                    <a href={`mailto:${company.email}`}>
+                      <Mail className="h-3.5 w-3.5 mr-1.5" />
+                      {t.companies.contact ?? "Contact"}
+                    </a>
+                  </Button>
+                  {company.phone && (
+                    <Button asChild size="sm" variant="outline" className="flex-1">
+                      <a href={`tel:${company.phone}`}>
+                        <Phone className="h-3.5 w-3.5 mr-1.5" />
+                        {t.companies.call ?? "Call"}
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

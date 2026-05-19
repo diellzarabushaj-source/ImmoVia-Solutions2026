@@ -12,6 +12,7 @@ import {
   FileCheck,
   Loader2,
   ArrowLeft,
+  ArrowRight,
   MessageSquare,
   Building2,
   Mail,
@@ -265,13 +266,26 @@ export default function PublicProfilePage() {
             </div>
 
             <div className="mt-5 flex gap-3 flex-wrap">
-              <Button data-testid="button-message">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                {t.publicProfile.sendMessage}
+              <Button asChild data-testid="button-message">
+                <a href={`mailto:${u.email}`}>
+                  <Mail className="w-4 h-4 mr-2" />
+                  {t.publicProfile.sendMessage}
+                </a>
               </Button>
-              <span className="text-xs text-muted-foreground self-center">
-                {t.publicProfile.messagingSoon}
-              </span>
+              {u.phone && (
+                <Button asChild variant="outline">
+                  <a href={`tel:${u.phone}`}>
+                    <Phone className="w-4 h-4 mr-2" />
+                    {u.phone}
+                  </a>
+                </Button>
+              )}
+              <Button asChild variant="outline">
+                <a href="/submit-project">
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  {t.publicProfile.submitProject ?? "Submit a Project"}
+                </a>
+              </Button>
             </div>
           </div>
         </div>
