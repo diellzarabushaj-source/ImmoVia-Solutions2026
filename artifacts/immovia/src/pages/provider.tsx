@@ -56,6 +56,7 @@ export default function ProviderDashboard() {
   const [offers, setOffers] = useState<ProviderOffer[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
+  const [detailProject, setDetailProject] = useState<ProviderProject | null>(null);
   const [offerProject, setOfferProject] = useState<ProviderProject | null>(null);
   const [offerType, setOfferType] = useState<"normal" | "highlighted" | "top">("normal");
   const [offerMessage, setOfferMessage] = useState("");
@@ -262,9 +263,14 @@ export default function ProviderDashboard() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" onClick={() => openOfferModal(p)} data-testid={`button-send-offer-${p.id}`}>
-                        {t.provider.sendOffer}
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
+                          {t.provider.viewDetails}
+                        </Button>
+                        <Button size="sm" onClick={() => openOfferModal(p)} data-testid={`button-send-offer-${p.id}`}>
+                          {t.provider.sendOffer}
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -426,6 +432,49 @@ export default function ProviderDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Project Detail Modal */}
+      <Dialog open={!!detailProject} onOpenChange={(o) => !o && setDetailProject(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t.provider.detailTitle}</DialogTitle>
+            <DialogDescription>{detailProject?.fullName} · {detailProject?.city}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 text-sm">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-muted/40 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.colType}</p>
+                <p className="font-medium capitalize">{detailProject?.projectType}</p>
+              </div>
+              <div className="bg-muted/40 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.colSize}</p>
+                <p className="font-medium capitalize">{detailProject?.size}</p>
+              </div>
+              <div className="bg-muted/40 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.detailBudget}</p>
+                <p className="font-medium">{detailProject?.budget ?? t.provider.detailNotSpecified}</p>
+              </div>
+              <div className="bg-muted/40 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.detailTimeline}</p>
+                <p className="font-medium">{detailProject?.timeline ?? t.provider.detailNotSpecified}</p>
+              </div>
+            </div>
+            <div className="bg-muted/40 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.detailDescription}</p>
+              <p className="leading-relaxed whitespace-pre-line">{detailProject?.description}</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t.provider.detailPosted}: {detailProject?.createdAt ? format(new Date(detailProject.createdAt), "MMM d, yyyy") : "—"}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDetailProject(null)}>Cancel</Button>
+            <Button onClick={() => { openOfferModal(detailProject!); setDetailProject(null); }}>
+              {t.provider.sendOffer}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!offerProject} onOpenChange={(o) => !o && setOfferProject(null)}>
         <DialogContent>
