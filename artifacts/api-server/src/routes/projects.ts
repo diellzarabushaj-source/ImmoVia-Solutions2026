@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, sql } from "drizzle-orm";
-import { db, projectsTable } from "@workspace/db";
+import { db, projectsTable, usersTable } from "@workspace/db";
+import { getAuth } from "@clerk/express";
 import {
   CreateProjectBody,
   UpdateProjectBody,
@@ -36,7 +37,18 @@ router.post("/projects", async (req, res): Promise<void> => {
   const size = typeof rawBody.size === "string" && ["small", "medium", "large", "premium"].includes(rawBody.size)
     ? (rawBody.size as string)
     : "medium";
-  const ownerUserId = req.session?.userId ?? null;
+
+  // Optionally link project to the authenticated user (guests may submit without signing in)
+  let ownerUserId: number | null = null;
+  const clerkAuth = getAuth(req);
+  if (clerkAuth?.userId) {
+    const [dbUser] = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.clerkUserId, clerkAuth.userId))
+      .limit(1);
+    ownerUserId = dbUser?.id ?? null;
+  }
 
   const [project] = await db.insert(projectsTable).values({
     ownerUserId,
