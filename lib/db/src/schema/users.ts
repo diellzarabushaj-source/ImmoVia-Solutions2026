@@ -2,8 +2,9 @@ import { pgTable, text, serial, timestamp, integer, boolean } from "drizzle-orm/
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
+  clerkUserId: text("clerk_user_id").unique(),
   email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
+  passwordHash: text("password_hash").notNull().default(""),
   // role: client | service_provider | admin
   role: text("role").notNull(),
   // For service_provider only: individual | small_team | company
@@ -27,9 +28,9 @@ export const usersTable = pgTable("users", {
 export type User = typeof usersTable.$inferSelect;
 export type InsertUser = typeof usersTable.$inferInsert;
 
-export type PublicUser = Omit<User, "passwordHash">;
+export type PublicUser = Omit<User, "passwordHash" | "clerkUserId">;
 
 export function toPublicUser(user: User): PublicUser {
-  const { passwordHash: _passwordHash, ...publicUser } = user;
+  const { passwordHash: _passwordHash, clerkUserId: _clerkUserId, ...publicUser } = user;
   return publicUser;
 }

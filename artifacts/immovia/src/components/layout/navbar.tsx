@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/contexts/AuthContext";
+import { useClerk } from "@clerk/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +15,11 @@ import { Globe, Menu, X, User, LayoutDashboard, LogOut } from "lucide-react";
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const { signOut } = useClerk();
   const [location, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   const generalLinks = [
     { href: "/", label: t.nav.home },
@@ -41,7 +44,7 @@ export function Navbar() {
   ];
 
   const onLogout = async () => {
-    await logout();
+    await signOut({ redirectUrl: basePath || "/" });
     setLocation("/");
   };
 
@@ -63,7 +66,6 @@ export function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-0.5">
-          {/* General links */}
           {generalLinks.map((link) => (
             <Link
               key={link.href}
@@ -77,10 +79,8 @@ export function Navbar() {
             </Link>
           ))}
 
-          {/* Divider */}
           <div className="w-px h-5 bg-border mx-2 shrink-0" />
 
-          {/* Post a Project — primary CTA */}
           <Link href="/submit-project" data-testid="nav-submit-project">
             <Button
               size="sm"
@@ -90,7 +90,6 @@ export function Navbar() {
             </Button>
           </Link>
 
-          {/* Offer Services — secondary CTA */}
           <Link href="/register-company" data-testid="nav-register-company">
             <Button
               variant="outline"
@@ -151,7 +150,7 @@ export function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onLogout} className="cursor-pointer gap-2 text-destructive" data-testid="menu-logout">
+                <DropdownMenuItem onClick={() => void onLogout()} className="cursor-pointer gap-2 text-destructive" data-testid="menu-logout">
                   <LogOut className="w-4 h-4" />
                   {t.nav.logout}
                 </DropdownMenuItem>
@@ -159,7 +158,7 @@ export function Navbar() {
             </DropdownMenu>
           ) : (
             <>
-              <Link href="/login" className="hidden sm:block">
+              <Link href="/sign-in" className="hidden sm:block">
                 <Button variant="ghost" size="sm" data-testid="nav-login">{t.nav.login}</Button>
               </Link>
               <Link href="/signup" className="hidden md:block">
@@ -211,7 +210,7 @@ export function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} className="text-sm font-medium px-3 py-2.5 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                  <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="text-sm font-medium px-3 py-2.5 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
                     {t.nav.login}
                   </Link>
                   <Link href="/signup" onClick={() => setMobileOpen(false)} className="text-sm font-medium px-3 py-2.5 rounded-md text-primary bg-secondary/50">

@@ -1,1 +1,2 @@
 - [LanguageProvider must not return null](language-provider-null.md) — returning null before isMounted causes HMR crashes; always render children with default 'en'.
+- [Clerk auth integration pattern](clerk-auth-pattern.md) — JIT provisioning, role selection flow, Tailwind v4 layer ordering, and key pitfalls.

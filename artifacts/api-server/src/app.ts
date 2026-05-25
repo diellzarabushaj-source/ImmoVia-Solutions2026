@@ -4,8 +4,15 @@ import pinoHttp from "pino-http";
 import session from "express-session";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
+import { clerkMiddleware } from "@clerk/express";
+import { publishableKeyFromHost } from "@clerk/shared/keys";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import {
+  CLERK_PROXY_PATH,
+  clerkProxyMiddleware,
+  getClerkProxyHost,
+} from "./middlewares/clerkProxyMiddleware";
 
 const app: Express = express();
 
@@ -15,6 +22,9 @@ if (!sessionSecret) {
 }
 
 app.set("trust proxy", 1);
+
+// ── Clerk proxy (must be before body parsers — streams raw bytes) ──────────────
+app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 // ── Security headers ──────────────────────────────────────────────────────────
 app.use(
@@ -26,14 +36,20 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "blob:", "https:"],
-        connectSrc: ["'self'", "https://api.openai.com"],
+        connectSrc: [
+          "'self'",
+          "https://api.openai.com",
+          "https://*.clerk.accounts.dev",
+          "https://clerk.*.lcl.dev",
+          "wss://*.clerk.accounts.dev",
+        ],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: process.env["NODE_ENV"] === "production" ? [] : null,
       },
     },
     hsts: {
-      maxAge: 63072000,       // 2 years
+      maxAge: 63072000,
       includeSubDomains: true,
       preload: true,
     },
@@ -46,7 +62,7 @@ app.use(
 
 // ── Global rate limiter ───────────────────────────────────────────────────────
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 300,
   standardHeaders: "draft-8",
   legacyHeaders: false,
@@ -65,7 +81,7 @@ const strictLimiter = rateLimit({
 app.use("/api/auth", strictLimiter);
 app.use("/api/contact", strictLimiter);
 
-// ── Session ───────────────────────────────────────────────────────────────────
+// ── Session (admin dashboard only) ───────────────────────────────────────────
 app.use(
   session({
     name: "immovia.sid",
@@ -100,18 +116,28 @@ app.use(
     },
   }),
 );
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ── Clerk middleware ──────────────────────────────────────────────────────────
+app.use(
+  clerkMiddleware((req) => ({
+    publishableKey: publishableKeyFromHost(
+      getClerkProxyHost(req) ?? "",
+      process.env.CLERK_PUBLISHABLE_KEY,
+    ),
+  })),
+);
+
 app.use("/api", router);
 
-// Global error handler — catches any unhandled async errors from routes
+// Global error handler
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: unknown, req: Request, res: Response, _next: NextFunction): void => {
   logger.error({ err }, "Unhandled route error");
 
-  // Detect DB-down by inspecting the full error chain (message + cause)
   function isDbError(e: unknown): boolean {
     if (!(e instanceof Error)) return false;
     const text = `${e.message} ${e.cause instanceof Error ? e.cause.message : ""}`;

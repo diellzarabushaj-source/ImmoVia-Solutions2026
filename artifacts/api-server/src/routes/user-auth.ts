@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { getAuth, clerkClient as clerk } from "@clerk/express";
+import { eq, or } from "drizzle-orm";
 import {
   db,
   usersTable,
@@ -30,63 +30,124 @@ function normalizeRole(v: unknown): "client" | "service_provider" | null {
   return null;
 }
 
-function isEmail(v: unknown): v is string {
-  return typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-}
+// ── GET /auth/me ─────────────────────────────────────────────────────────────
+// Returns the DB user linked to the current Clerk session.
+router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
+  const auth = getAuth(req);
+  const clerkUserId = auth.userId!;
 
-router.post("/auth/signup", async (req, res): Promise<void> => {
+  // Look up by clerk user id
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.clerkUserId, clerkUserId))
+    .limit(1);
+
+  if (!user) {
+    res.status(404).json({ error: "User not found. Please complete sign-up." });
+    return;
+  }
+
+  res.json({ user: toPublicUser(user) });
+});
+
+// ── POST /auth/sync ──────────────────────────────────────────────────────────
+// Called after Clerk sign-up/sign-in to JIT-provision the DB user.
+// If a DB user already exists for this Clerk ID, returns it.
+// If a DB user exists with the same email, links it to the Clerk ID.
+// Otherwise creates a new DB user.
+router.post("/auth/sync", requireAuth, async (req, res): Promise<void> => {
+  const auth = getAuth(req);
+  const clerkUserId = auth.userId!;
+
+  // Fetch Clerk user info to get email + name
+  let clerkEmail = "";
+  let clerkFullName = "User";
+  let clerkAvatarUrl: string | null = null;
+  try {
+    const clerkUser = await clerk.users.getUser(clerkUserId);
+    clerkEmail = clerkUser.emailAddresses[0]?.emailAddress ?? "";
+    clerkFullName = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") || "User";
+    clerkAvatarUrl = clerkUser.imageUrl || null;
+  } catch (err) {
+    req.log.error({ err }, "Failed to fetch Clerk user");
+    res.status(500).json({ error: "Failed to fetch user data" });
+    return;
+  }
+
+  // 1. Check if DB user already linked to this Clerk ID
+  let [existingUser] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.clerkUserId, clerkUserId))
+    .limit(1);
+
+  if (existingUser) {
+    res.json({ user: toPublicUser(existingUser) });
+    return;
+  }
+
+  // 2. Check if DB user exists with same email (existing account migration)
+  if (clerkEmail) {
+    const [emailUser] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, clerkEmail))
+      .limit(1);
+    if (emailUser) {
+      // Link the existing DB user to this Clerk ID
+      const [linked] = await db
+        .update(usersTable)
+        .set({
+          clerkUserId,
+          avatarUrl: emailUser.avatarUrl ?? clerkAvatarUrl,
+        })
+        .where(eq(usersTable.id, emailUser.id))
+        .returning();
+      res.json({ user: toPublicUser(linked!) });
+      return;
+    }
+  }
+
+  // 3. Create a new DB user
   const body = req.body as Record<string, unknown>;
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-  const password = typeof body.password === "string" ? body.password : "";
-  const role = normalizeRole(body.role);
+  const role = normalizeRole(body.role) ?? "client";
   const providerType =
-    typeof body.providerType === "string" && (VALID_PROVIDER_TYPES as readonly string[]).includes(body.providerType)
+    role === "service_provider" &&
+    typeof body.providerType === "string" &&
+    (VALID_PROVIDER_TYPES as readonly string[]).includes(body.providerType)
       ? (body.providerType as (typeof VALID_PROVIDER_TYPES)[number])
       : null;
-  const fullName = typeof body.fullName === "string" ? body.fullName.trim() : "";
-  const phone = typeof body.phone === "string" ? body.phone.trim() : null;
-  const city = typeof body.city === "string" ? body.city.trim() : null;
+  const fullName =
+    typeof body.fullName === "string" && body.fullName.trim().length >= 2
+      ? body.fullName.trim()
+      : clerkFullName;
+  const phone = typeof body.phone === "string" ? body.phone.trim() || null : null;
+  const city = typeof body.city === "string" ? body.city.trim() || null : null;
   const language = typeof body.language === "string" ? body.language : "en";
-  const companyName = typeof body.companyName === "string" ? body.companyName.trim() : null;
-  const serviceTypes = Array.isArray(body.serviceTypes)
-    ? (body.serviceTypes.filter((s) => typeof s === "string") as string[])
-    : null;
+  const companyName =
+    role === "service_provider" && typeof body.companyName === "string"
+      ? body.companyName.trim() || null
+      : null;
+  const serviceTypes =
+    role === "service_provider" && Array.isArray(body.serviceTypes)
+      ? (body.serviceTypes.filter((s) => typeof s === "string") as string[])
+      : null;
 
-  if (!isEmail(email)) {
-    res.status(400).json({ error: "Invalid email" });
-    return;
-  }
-  if (password.length < 6) {
-    res.status(400).json({ error: "Password must be at least 6 characters" });
-    return;
-  }
-  if (!role || !(VALID_ROLES as readonly string[]).includes(role)) {
+  if (!VALID_ROLES.includes(role as (typeof VALID_ROLES)[number])) {
     res.status(400).json({ error: "Invalid role" });
     return;
   }
-  if (fullName.length < 2) {
-    res.status(400).json({ error: "Full name required" });
-    return;
-  }
-  if (role === "service_provider" && !providerType) {
-    res.status(400).json({ error: "Provider type required for service providers" });
-    return;
-  }
 
-  const existing = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
-  if (existing.length > 0) {
-    res.status(409).json({ error: "Email already registered" });
-    return;
-  }
-
-  const passwordHash = await bcrypt.hash(password, 10);
   const slugBase = role === "service_provider" && companyName ? companyName : fullName;
   const slug = await generateUniqueSlug(slugBase);
-  const [user] = await db
+
+  const [newUser] = await db
     .insert(usersTable)
     .values({
-      email,
-      passwordHash,
+      clerkUserId,
+      email: clerkEmail,
+      passwordHash: "",
       role,
       providerType: role === "service_provider" ? providerType : null,
       fullName,
@@ -94,12 +155,13 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
       phone,
       city,
       language,
+      avatarUrl: clerkAvatarUrl,
       companyName: role === "service_provider" ? companyName : null,
       serviceTypes: role === "service_provider" ? serviceTypes : null,
     })
     .returning();
 
-  if (!user) {
+  if (!newUser) {
     res.status(500).json({ error: "Failed to create user" });
     return;
   }
@@ -117,15 +179,15 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
         const end = new Date(now);
         end.setMonth(end.getMonth() + 1);
         await db.insert(subscriptionsTable).values({
-          userId: user.id,
+          userId: newUser.id,
           planId: freePlan.id,
           status: "active",
           currentPeriodStart: now,
           currentPeriodEnd: end,
-          providerRef: `mock_free_${user.id}_${now.getTime()}`,
+          providerRef: `clerk_free_${newUser.id}_${now.getTime()}`,
         });
         if (freePlan.monthlyCredits > 0) {
-          await grantMonthlyCredits(user.id, freePlan.monthlyCredits, end, "Free plan signup");
+          await grantMonthlyCredits(newUser.id, freePlan.monthlyCredits, end, "Free plan signup");
         }
       }
     } catch (err) {
@@ -133,87 +195,26 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     }
   }
 
-  req.session.regenerate((regenErr) => {
-    if (regenErr) {
-      req.log.error({ err: regenErr }, "Session regenerate error");
-      res.status(500).json({ error: "Session error" });
-      return;
-    }
-    req.session.userId = user.id;
-    req.session.save((err) => {
-      if (err) {
-        req.log.error({ err }, "Session save error");
-        res.status(500).json({ error: "Session error" });
-        return;
-      }
-      res.json({ user: toPublicUser(user) });
-    });
-  });
+  res.status(201).json({ user: toPublicUser(newUser) });
 });
 
-router.post("/auth/login", async (req, res): Promise<void> => {
-  const body = req.body as Record<string, unknown>;
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-  const password = typeof body.password === "string" ? body.password : "";
-
-  if (!email || !password) {
-    res.status(400).json({ error: "Email and password required" });
-    return;
-  }
-
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
-  if (!user) {
-    res.status(401).json({ error: "Invalid credentials" });
-    return;
-  }
-
-  const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) {
-    res.status(401).json({ error: "Invalid credentials" });
-    return;
-  }
-
-  req.session.regenerate((regenErr) => {
-    if (regenErr) {
-      req.log.error({ err: regenErr }, "Session regenerate error");
-      res.status(500).json({ error: "Session error" });
-      return;
-    }
-    req.session.userId = user.id;
-    req.session.save((err) => {
-      if (err) {
-        req.log.error({ err }, "Session save error");
-        res.status(500).json({ error: "Session error" });
-        return;
-      }
-      res.json({ user: toPublicUser(user) });
-    });
-  });
-});
-
-router.post("/auth/logout", (req, res): void => {
-  req.session.destroy(() => {
-    res.clearCookie("immovia.sid");
-    res.json({ ok: true });
-  });
-});
-
-router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-  if (!user) {
-    req.session.destroy(() => {
-      res.status(401).json({ error: "Unauthorized" });
-    });
-    return;
-  }
-  res.json({ user: toPublicUser(user) });
-});
-
+// ── PUT /auth/profile ─────────────────────────────────────────────────────────
 router.put("/auth/profile", requireAuth, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
-  const body = req.body as Record<string, unknown>;
+  const auth = getAuth(req);
+  const clerkUserId = auth.userId!;
 
+  const [dbUser] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.clerkUserId, clerkUserId))
+    .limit(1);
+
+  if (!dbUser) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const body = req.body as Record<string, unknown>;
   const updates: Partial<typeof usersTable.$inferInsert> = {};
 
   if (typeof body.fullName === "string" && body.fullName.trim().length >= 2) {
@@ -244,7 +245,7 @@ router.put("/auth/profile", requireAuth, async (req, res): Promise<void> => {
   const [user] = await db
     .update(usersTable)
     .set(updates)
-    .where(eq(usersTable.id, userId))
+    .where(eq(usersTable.id, dbUser.id))
     .returning();
 
   if (!user) {
