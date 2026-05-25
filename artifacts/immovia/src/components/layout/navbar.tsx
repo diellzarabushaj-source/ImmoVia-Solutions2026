@@ -18,15 +18,20 @@ export function Navbar() {
   const [location, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navLinks = [
+  const generalLinks = [
     { href: "/", label: t.nav.home },
-    { href: "/submit-project", label: t.nav.submitProject },
-    { href: "/register-company", label: t.nav.registerCompany },
     { href: "/companies", label: t.nav.companies },
     { href: "/pricing", label: t.nav.pricing },
     { href: "/chat", label: t.nav.chat },
     { href: "/contact", label: t.nav.contact },
   ];
+
+  const actionLinks = [
+    { href: "/submit-project", label: t.nav.submitProject },
+    { href: "/register-company", label: t.nav.registerCompany },
+  ];
+
+  const navLinks = [...generalLinks, ...actionLinks];
 
   const langOptions = [
     { code: 'en' as const, label: 'English', flag: 'EN' },
@@ -57,13 +62,31 @@ export function Navbar() {
           />
         </Link>
 
-        <div className="hidden md:flex items-center space-x-1">
-          {navLinks.map((link) => (
+        <div className="hidden md:flex items-center gap-0.5">
+          {/* General links */}
+          {generalLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={`text-sm font-medium px-3 py-2 rounded-md transition-colors hover:text-primary hover:bg-secondary/50 ${
                 location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70"
+              }`}
+              data-testid={`nav-${link.href.replace("/", "") || "home"}`}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-border mx-2 shrink-0" />
+
+          {/* Action links */}
+          {actionLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`text-sm font-semibold px-3 py-2 rounded-md transition-colors hover:text-primary hover:bg-primary/8 ${
+                location === link.href ? "text-primary bg-primary/10" : "text-foreground/85"
               }`}
               data-testid={`nav-${link.href.replace("/", "") || "home"}`}
             >
