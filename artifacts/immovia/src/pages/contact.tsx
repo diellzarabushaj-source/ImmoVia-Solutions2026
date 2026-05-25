@@ -83,7 +83,7 @@ export default function Contact() {
             {/* Raze photo */}
             <div className="relative flex-shrink-0">
               <img
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&crop=face&q=80"
+                src="/team-raze.png"
                 alt={t.contact.quoteAuthor}
                 className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
               />
