@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearch, Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { useListCompanies } from "@workspace/api-client-react";
@@ -15,6 +15,19 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const SERVICE_OPTIONS = [
   "renovation", "construction", "interior", "exterior", "plumbing", "electric",
+];
+
+const KNOWN_CITIES = [
+  // Albania
+  "Tiranë", "Durrës", "Vlorë", "Shkodër", "Elbasan", "Korçë", "Fier", "Berat", "Lushnjë", "Pogradec", "Gjirokastër", "Kavajë", "Kukës",
+  // Kosovo
+  "Prishtinë", "Prizren", "Pejë", "Mitrovicë", "Gjilan", "Ferizaj", "Gjakovë",
+  // Germany
+  "Berlin", "München", "Hamburg", "Köln", "Frankfurt", "Stuttgart", "Düsseldorf", "Dortmund", "Essen", "Leipzig", "Bremen", "Dresden", "Hannover", "Nürnberg", "Duisburg", "Bochum", "Wuppertal", "Bonn", "Bielefeld", "Mannheim", "Karlsruhe", "Augsburg", "Wiesbaden", "Mönchengladbach", "Gelsenkirchen", "Aachen", "Braunschweig", "Kiel", "Chemnitz", "Halle", "Magdeburg", "Freiburg", "Rostock", "Lübeck", "Oberhausen", "Erfurt", "Mainz",
+  // Switzerland
+  "Zürich", "Genf", "Basel", "Bern", "Lausanne", "Winterthur", "Luzern", "St. Gallen", "Lugano", "Biel", "Thun", "Köniz", "La Chaux-de-Fonds", "Schaffhausen", "Freiburg", "Chur", "Vernier", "Neuchâtel", "Uster", "Sion",
+  // France
+  "Paris", "Lyon", "Marseille", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille", "Rennes", "Reims", "Le Havre", "Saint-Étienne", "Toulon", "Grenoble", "Dijon", "Nîmes", "Aix-en-Provence", "Angers", "Villeurbanne", "Metz", "Clermont-Ferrand", "Tours", "Amiens", "Limoges", "Annecy", "Perpignan",
 ];
 
 const SORT_OPTIONS = [
@@ -62,10 +75,25 @@ export default function Companies() {
   const [showFilters, setShowFilters] = useState(false);
   const [locating, setLocating] = useState(false);
   const [geoError, setGeoError] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
+  const [cityHighlight, setCityHighlight] = useState(-1);
+  const cityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setActiveService(params.get("service") ?? "");
   }, [search]);
+
+  // Close city dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
+        setCityOpen(false);
+        setCityHighlight(-1);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   // Try silent auto-detect on mount (only fires if permission already granted)
   useEffect(() => {
@@ -113,6 +141,25 @@ export default function Companies() {
 
   const { data: companies, isLoading, isError } = useListCompanies();
   const approved = useMemo(() => companies?.filter(c => c.status === "approved") ?? [], [companies]);
+
+  // City suggestions: companies cities first (ranked), then known cities
+  const citySuggestions = useMemo(() => {
+    const q = cityFilter.toLowerCase().trim();
+    if (!q) return [];
+    const fromData = [...new Set(approved.map(c => c.city))];
+    const all = [...new Set([...fromData, ...KNOWN_CITIES])];
+    return all
+      .filter(c => c.toLowerCase().includes(q) && c.toLowerCase() !== q)
+      .sort((a, b) => {
+        const aStarts = a.toLowerCase().startsWith(q) ? 0 : 1;
+        const bStarts = b.toLowerCase().startsWith(q) ? 0 : 1;
+        if (aStarts !== bStarts) return aStarts - bStarts;
+        const aInData = fromData.includes(a) ? 0 : 1;
+        const bInData = fromData.includes(b) ? 0 : 1;
+        return aInData - bInData;
+      })
+      .slice(0, 8);
+  }, [cityFilter, approved]);
 
   const filtered = useMemo(() => {
     let list = approved.filter(c => {
@@ -243,16 +290,71 @@ export default function Companies() {
             ))}
           </div>
 
-          {/* City filter */}
-          <div className="relative flex items-center gap-1">
+          {/* City filter with autocomplete */}
+          <div className="relative flex items-center gap-1" ref={cityRef}>
             <div className="relative">
-              <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder={t.companies.cityPlaceholder ?? "City..."}
-                className={`pl-7 pr-2 h-8 text-sm w-32 md:w-40 ${geoError ? "border-destructive/50 focus-visible:ring-destructive/30" : ""}`}
+                className={`pl-7 pr-2 h-8 text-sm w-36 md:w-44 ${geoError ? "border-destructive/50 focus-visible:ring-destructive/30" : ""}`}
                 value={cityFilter}
-                onChange={e => { setCityFilter(e.target.value); setGeoError(false); }}
+                autoComplete="off"
+                onChange={e => {
+                  setCityFilter(e.target.value);
+                  setGeoError(false);
+                  setCityOpen(true);
+                  setCityHighlight(-1);
+                }}
+                onFocus={() => { if (cityFilter) setCityOpen(true); }}
+                onKeyDown={e => {
+                  if (!cityOpen || citySuggestions.length === 0) return;
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setCityHighlight(h => Math.min(h + 1, citySuggestions.length - 1));
+                  } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    setCityHighlight(h => Math.max(h - 1, 0));
+                  } else if (e.key === "Enter" && cityHighlight >= 0) {
+                    e.preventDefault();
+                    setCityFilter(citySuggestions[cityHighlight]);
+                    setCityOpen(false);
+                    setCityHighlight(-1);
+                  } else if (e.key === "Escape") {
+                    setCityOpen(false);
+                    setCityHighlight(-1);
+                  }
+                }}
               />
+              {/* Dropdown */}
+              {cityOpen && citySuggestions.length > 0 && (
+                <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-border rounded-xl shadow-lg z-50 overflow-hidden py-1">
+                  {citySuggestions.map((city, i) => {
+                    const q = cityFilter.toLowerCase();
+                    const idx = city.toLowerCase().indexOf(q);
+                    return (
+                      <button
+                        key={city}
+                        onMouseDown={e => { e.preventDefault(); setCityFilter(city); setCityOpen(false); setCityHighlight(-1); }}
+                        onMouseEnter={() => setCityHighlight(i)}
+                        className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors ${
+                          i === cityHighlight ? "bg-primary/8 text-primary" : "text-foreground hover:bg-muted/60"
+                        }`}
+                      >
+                        <MapPin className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+                        <span>
+                          {idx >= 0 ? (
+                            <>
+                              {city.slice(0, idx)}
+                              <span className="font-semibold text-primary">{city.slice(idx, idx + q.length)}</span>
+                              {city.slice(idx + q.length)}
+                            </>
+                          ) : city}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <button
               onClick={detectCity}
