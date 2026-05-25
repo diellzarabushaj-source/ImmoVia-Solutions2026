@@ -22,6 +22,8 @@ import PublicProfile from "@/pages/public-profile";
 import CompanyProfile from "@/pages/company-profile";
 import Pricing from "@/pages/pricing";
 import ProviderDashboard from "@/pages/provider";
+import Terms from "@/pages/terms";
+import Privacy from "@/pages/privacy";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -46,6 +48,8 @@ function Router() {
         <Route path="/company/:slug" component={PublicProfile} />
         <Route path="/provider" component={ProviderDashboard} />
         <Route path="/pricing" component={Pricing} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/privacy" component={Privacy} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

@@ -2,6 +2,8 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
+import helmet from "helmet";
+import { rateLimit } from "express-rate-limit";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -14,6 +16,56 @@ if (!sessionSecret) {
 
 app.set("trust proxy", 1);
 
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: ["'self'", "https://api.openai.com"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: process.env["NODE_ENV"] === "production" ? [] : null,
+      },
+    },
+    hsts: {
+      maxAge: 63072000,       // 2 years
+      includeSubDomains: true,
+      preload: true,
+    },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    noSniff: true,
+    xssFilter: true,
+    hidePoweredBy: true,
+  }),
+);
+
+// ── Global rate limiter ───────────────────────────────────────────────────────
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,  // 15 minutes
+  max: 300,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please try again later." },
+});
+app.use("/api", globalLimiter);
+
+// ── Strict limiter for auth & contact endpoints ───────────────────────────────
+const strictLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many attempts. Please try again later." },
+});
+app.use("/api/auth", strictLimiter);
+app.use("/api/contact", strictLimiter);
+
+// ── Session ───────────────────────────────────────────────────────────────────
 app.use(
   session({
     name: "immovia.sid",

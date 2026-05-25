@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
-import { MapPin, Mail, Phone } from "lucide-react";
+import { MapPin, Mail, Phone, Shield, Lock } from "lucide-react";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -13,12 +13,17 @@ export function Footer() {
     { href: "/chat", label: t.nav.chat },
   ];
 
+  const legalLinks = [
+    { href: "/terms", label: t.footer.terms, icon: Shield },
+    { href: "/privacy", label: t.footer.privacy, icon: Lock },
+  ];
+
   return (
     <footer className="bg-foreground text-white/80">
       <div className="container mx-auto px-4 pt-14 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
           {/* Brand */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 md:col-span-1">
             <Link href="/">
               <img
                 src="/logo-white.png"
@@ -50,6 +55,38 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Legal */}
+          <div>
+            <h4 className="text-white text-sm font-semibold uppercase tracking-wider mb-4">
+              {t.footer.legal}
+            </h4>
+            <ul className="flex flex-col gap-3">
+              {legalLinks.map(({ href, label, icon: Icon }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors group"
+                  >
+                    <Icon className="h-3.5 w-3.5 flex-shrink-0 text-primary group-hover:scale-110 transition-transform" />
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {/* Security badges */}
+            <div className="mt-6 flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-xs text-white/40">
+                <Shield className="h-3 w-3 text-primary/60" />
+                <span>HTTPS / TLS Encrypted</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-white/40">
+                <Lock className="h-3 w-3 text-primary/60" />
+                <span>GDPR Compliant</span>
+              </div>
+            </div>
+          </div>
+
           {/* Contact */}
           <div>
             <h4 className="text-white text-sm font-semibold uppercase tracking-wider mb-4">
@@ -76,6 +113,19 @@ export function Footer() {
           <p className="text-xs text-white/40">
             &copy; {new Date().getFullYear()} ImmoVia. {t.footer.rights}
           </p>
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="text-xs text-white/30 hover:text-white/60 transition-colors">
+              {t.footer.terms}
+            </Link>
+            <span className="text-white/20">·</span>
+            <Link href="/privacy" className="text-xs text-white/30 hover:text-white/60 transition-colors">
+              {t.footer.privacy}
+            </Link>
+            <span className="text-white/20">·</span>
+            <Link href="/admin" className="text-xs text-white/20 hover:text-white/40 transition-colors">
+              {t.footer.admin}
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
