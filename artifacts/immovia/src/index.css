@@ -183,4 +183,14 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 1rem;
+  }
+
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
 }

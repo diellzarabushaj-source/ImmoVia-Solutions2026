@@ -370,7 +370,7 @@ export default function CompanyProfile() {
           {/* Right column — sticky contact card */}
           <div className="lg:col-span-1">
             <motion.div
-              className="bg-white rounded-2xl border border-border shadow-sm p-5 sticky top-24"
+              className="bg-white rounded-2xl border border-border shadow-sm p-5 lg:sticky lg:top-24"
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}

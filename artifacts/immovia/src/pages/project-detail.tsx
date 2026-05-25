@@ -157,7 +157,7 @@ export default function ProjectDetail() {
       </div>
 
       {/* Main card — overlaps hero */}
-      <div className="container mx-auto px-4 max-w-5xl -mt-14 pb-16">
+      <div className="container mx-auto px-4 max-w-5xl -mt-14 pb-28 lg:pb-16">
         <motion.div
           className="bg-white rounded-2xl shadow-xl border border-border overflow-hidden mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -310,7 +310,7 @@ export default function ProjectDetail() {
           {/* Right — contact sidebar */}
           <div className="space-y-4">
             <motion.div
-              className="bg-white rounded-2xl border border-border shadow-sm p-6 sticky top-24"
+              className="bg-white rounded-2xl border border-border shadow-sm p-6 lg:sticky lg:top-24"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -382,6 +382,26 @@ export default function ProjectDetail() {
               </Button>
             </Link>
           </div>
+        </div>
+      </div>
+
+      {/* Sticky mobile CTA — hidden on lg+ where sidebar is visible */}
+      <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur border-t border-border shadow-lg">
+        <div className="container mx-auto px-4 py-3" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+          {user ? (
+            <Button asChild className="w-full" size="lg">
+              <a href={`mailto:${project.email}`}>
+                <Mail className="w-4 h-4 mr-2" />
+                {t.projectDetail.applyNow}
+              </a>
+            </Button>
+          ) : (
+            <Link href="/signup">
+              <Button className="w-full" size="lg">
+                {t.projectDetail.registerToContact}
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 

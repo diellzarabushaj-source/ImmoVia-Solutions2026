@@ -182,7 +182,7 @@ export default function SubmitProject() {
                 {i}
               </div>
               {i < 5 && (
-                <div className={`w-12 sm:w-20 h-1 mx-2 ${
+                <div className={`w-6 sm:w-12 md:w-20 h-1 mx-1 sm:mx-2 ${
                   step > i ? "bg-primary" : "bg-muted"
                 }`} />
               )}

@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClerk } from "@clerk/react";
@@ -179,49 +180,58 @@ export function Navbar() {
         </div>
       </div>
 
-      {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-white">
-          <div className="container mx-auto px-4 py-3 flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`text-sm font-medium px-3 py-2.5 rounded-md transition-colors ${
-                  location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70 hover:text-primary hover:bg-secondary/30"
-                }`}
-                data-testid={`mobile-nav-${link.href.replace("/", "") || "home"}`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="border-t border-border mt-2 pt-2 flex flex-col gap-1">
-              {user ? (
-                <>
-                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="text-sm font-medium px-3 py-2.5 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                    {t.nav.dashboard}
-                  </Link>
-                  <Link href="/dashboard/profile" onClick={() => setMobileOpen(false)} className="text-sm font-medium px-3 py-2.5 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                    {t.nav.profile}
-                  </Link>
-                  <button onClick={() => { setMobileOpen(false); void onLogout(); }} className="text-left text-sm font-medium px-3 py-2.5 rounded-md text-destructive hover:bg-destructive/10">
-                    {t.nav.logout}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="text-sm font-medium px-3 py-2.5 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                    {t.nav.login}
-                  </Link>
-                  <Link href="/signup" onClick={() => setMobileOpen(false)} className="text-sm font-medium px-3 py-2.5 rounded-md text-primary bg-secondary/50">
-                    {t.nav.signup}
-                  </Link>
-                </>
-              )}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="md:hidden border-t border-border bg-white overflow-hidden"
+          >
+            <div className="container mx-auto px-4 py-3 flex flex-col gap-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`text-base font-medium px-3 py-3 rounded-md transition-colors ${
+                    location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70 hover:text-primary hover:bg-secondary/30"
+                  }`}
+                  data-testid={`mobile-nav-${link.href.replace("/", "") || "home"}`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="border-t border-border mt-2 pt-2 flex flex-col gap-1">
+                {user ? (
+                  <>
+                    <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                      {t.nav.dashboard}
+                    </Link>
+                    <Link href="/dashboard/profile" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                      {t.nav.profile}
+                    </Link>
+                    <button onClick={() => { setMobileOpen(false); void onLogout(); }} className="text-left text-base font-medium px-3 py-3 rounded-md text-destructive hover:bg-destructive/10">
+                      {t.nav.logout}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                      {t.nav.login}
+                    </Link>
+                    <Link href="/signup" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-primary bg-secondary/50">
+                      {t.nav.signup}
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
