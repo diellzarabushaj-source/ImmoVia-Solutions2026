@@ -48,6 +48,7 @@ router.post("/projects", async (req, res): Promise<void> => {
     city: parsed.data.city,
     budget: parsed.data.budget ?? null,
     timeline: parsed.data.timeline ?? null,
+    photos: (parsed.data as Record<string, unknown>).photos as string[] ?? [],
     size,
     status: "pending",
   }).returning();

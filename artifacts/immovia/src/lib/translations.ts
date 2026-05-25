@@ -156,6 +156,7 @@ export const translations = {
       company: 'Kompani / Firmë',
       hourlyRate: 'Tarifa Orare (€/orë)',
       hourlyRateDesc: 'Tarifa juaj tipike orare në EUR',
+      profilePhotoLabel: 'Foto Profili / Kompanie',
     },
     companies: {
       title: 'Gjej Profesionistin e Duhur',
@@ -641,6 +642,7 @@ export const translations = {
       company: 'Company / Firm',
       hourlyRate: 'Hourly Rate (€/hr)',
       hourlyRateDesc: 'Your typical hourly rate in EUR',
+      profilePhotoLabel: 'Profile / Company Photo',
     },
     companies: {
       title: 'Find the Right Professional',
@@ -1126,6 +1128,7 @@ export const translations = {
       company: 'Unternehmen / Firma',
       hourlyRate: 'Stundensatz (€/Std)',
       hourlyRateDesc: 'Ihr typischer Stundensatz in EUR',
+      profilePhotoLabel: 'Profil- / Firmenfoto',
     },
     companies: {
       title: 'Den richtigen Profi finden',
@@ -1611,6 +1614,7 @@ export const translations = {
       company: 'Entreprise / Firme',
       hourlyRate: 'Taux Horaire (€/hr)',
       hourlyRateDesc: 'Votre taux horaire typique en EUR',
+      profilePhotoLabel: 'Photo de Profil / Société',
     },
     companies: {
       title: 'Trouver le Bon Professionnel',

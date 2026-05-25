@@ -30,6 +30,7 @@ export const ListProjectsResponseItem = zod.object({
   "city": zod.string(),
   "budget": zod.string().nullish(),
   "timeline": zod.string().nullish(),
+  "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos'),
   "status": zod.string().describe('pending | reviewing | matched | completed | cancelled'),
   "createdAt": zod.coerce.date()
 })
@@ -53,7 +54,8 @@ export const CreateProjectBody = zod.object({
   "description": zod.string().min(createProjectBodyDescriptionMin),
   "city": zod.string(),
   "budget": zod.string().optional(),
-  "timeline": zod.string().optional()
+  "timeline": zod.string().optional(),
+  "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos')
 })
 
 
@@ -74,6 +76,7 @@ export const GetProjectResponse = zod.object({
   "city": zod.string(),
   "budget": zod.string().nullish(),
   "timeline": zod.string().nullish(),
+  "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos'),
   "status": zod.string().describe('pending | reviewing | matched | completed | cancelled'),
   "createdAt": zod.coerce.date()
 })
@@ -101,6 +104,7 @@ export const UpdateProjectResponse = zod.object({
   "city": zod.string(),
   "budget": zod.string().nullish(),
   "timeline": zod.string().nullish(),
+  "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos'),
   "status": zod.string().describe('pending | reviewing | matched | completed | cancelled'),
   "createdAt": zod.coerce.date()
 })
@@ -131,6 +135,7 @@ export const ListCompaniesResponseItem = zod.object({
   "yearsExperience": zod.number().nullish(),
   "workerType": zod.string().describe('individual | company'),
   "hourlyRate": zod.number().nullish().describe('Hourly rate in EUR (for individual workers only)'),
+  "profilePhoto": zod.string().nullish().describe('Object path of the profile photo'),
   "status": zod.string().describe('pending | approved | rejected'),
   "createdAt": zod.coerce.date()
 })
@@ -159,7 +164,8 @@ export const CreateCompanyBody = zod.object({
   "licenseNumber": zod.string().optional(),
   "yearsExperience": zod.number().optional(),
   "workerType": zod.string().optional().describe('individual | company'),
-  "hourlyRate": zod.number().optional().describe('Hourly rate in EUR (for individual workers only)')
+  "hourlyRate": zod.number().optional().describe('Hourly rate in EUR (for individual workers only)'),
+  "profilePhoto": zod.string().optional().describe('Object path of the profile photo')
 })
 
 
@@ -184,6 +190,7 @@ export const GetCompanyResponse = zod.object({
   "yearsExperience": zod.number().nullish(),
   "workerType": zod.string().describe('individual | company'),
   "hourlyRate": zod.number().nullish().describe('Hourly rate in EUR (for individual workers only)'),
+  "profilePhoto": zod.string().nullish().describe('Object path of the profile photo'),
   "status": zod.string().describe('pending | approved | rejected'),
   "createdAt": zod.coerce.date()
 })
@@ -215,6 +222,7 @@ export const UpdateCompanyResponse = zod.object({
   "yearsExperience": zod.number().nullish(),
   "workerType": zod.string().describe('individual | company'),
   "hourlyRate": zod.number().nullish().describe('Hourly rate in EUR (for individual workers only)'),
+  "profilePhoto": zod.string().nullish().describe('Object path of the profile photo'),
   "status": zod.string().describe('pending | approved | rejected'),
   "createdAt": zod.coerce.date()
 })

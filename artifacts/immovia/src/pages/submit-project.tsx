@@ -27,6 +27,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Hammer, Building2, Sofa, TreePine, Wrench, CheckCircle2, Home as HomeIcon, Crown, Sparkles, Layers } from "lucide-react";
+import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function SubmitProject() {
   const { t } = useLanguage();
@@ -47,6 +48,8 @@ export default function SubmitProject() {
       setAuthError(null);
     }
   }, [authLoading, user, role, t.auth.mustBeClient]);
+
+  const [projectPhotos, setProjectPhotos] = useState<string[]>([]);
 
   const formSchema = z.object({
     fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -77,7 +80,7 @@ export default function SubmitProject() {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     // Send size through; useCreateProject is OpenAPI-typed but fetch is forgiving — fall back to direct fetch if needed.
-    const payload = { ...values } as z.infer<typeof formSchema> & { size: string };
+    const payload = { ...values, photos: projectPhotos } as z.infer<typeof formSchema> & { size: string; photos: string[] };
     createProject.mutate(
       { data: payload as never },
       {
@@ -370,6 +373,15 @@ export default function SubmitProject() {
                       </FormItem>
                     )}
                   />
+                  {/* Project photos */}
+                  <PhotoUploader
+                    label="Project Photos (optional)"
+                    hint="Add photos to help professionals understand your project — JPG/PNG, max 10MB each"
+                    multiple={true}
+                    value={projectPhotos}
+                    onChange={setProjectPhotos}
+                  />
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}

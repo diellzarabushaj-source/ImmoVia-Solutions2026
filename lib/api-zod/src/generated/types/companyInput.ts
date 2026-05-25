@@ -24,4 +24,6 @@ export interface CompanyInput {
   workerType?: string;
   /** Hourly rate in EUR (for individual workers only) */
   hourlyRate?: number;
+  /** Object path of the profile photo */
+  profilePhoto?: string;
 }

@@ -15,6 +15,7 @@ export const projectsTable = pgTable("projects", {
   timeline: text("timeline"),
   // small | medium | large | premium
   size: text("size").notNull().default("medium"),
+  photos: text("photos").array().notNull().default([]),
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

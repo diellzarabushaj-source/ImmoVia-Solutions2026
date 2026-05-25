@@ -17,4 +17,6 @@ export interface ProjectInput {
   city: string;
   budget?: string;
   timeline?: string;
+  /** Array of object paths for project photos */
+  photos?: string[];
 }

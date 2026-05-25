@@ -420,6 +420,11 @@ components:
           type: ["string", "null"]
         timeline:
           type: ["string", "null"]
+        photos:
+          type: array
+          items:
+            type: string
+          description: "Array of object paths for project photos"
         status:
           type: string
           description: "pending | reviewing | matched | completed | cancelled"
@@ -450,6 +455,11 @@ components:
           type: string
         timeline:
           type: string
+        photos:
+          type: array
+          items:
+            type: string
+          description: "Array of object paths for project photos"
 
     ProjectUpdate:
       type: object
@@ -493,6 +503,9 @@ components:
         hourlyRate:
           type: ["integer", "null"]
           description: "Hourly rate in EUR (for individual workers only)"
+        profilePhoto:
+          type: ["string", "null"]
+          description: "Object path of the profile photo"
         status:
           type: string
           description: "pending | approved | rejected"
@@ -536,6 +549,9 @@ components:
         hourlyRate:
           type: integer
           description: "Hourly rate in EUR (for individual workers only)"
+        profilePhoto:
+          type: string
+          description: "Object path of the profile photo"
 
     CompanyUpdate:
       type: object

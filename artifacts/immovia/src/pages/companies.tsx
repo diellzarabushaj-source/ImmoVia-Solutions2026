@@ -24,7 +24,7 @@ const SORT_OPTIONS = [
   { value: "experience", labelKey: "sortExperience" },
 ];
 
-function InitialAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
+function CompanyAvatar({ name, profilePhoto, size = "md" }: { name: string; profilePhoto?: string | null; size?: "sm" | "md" | "lg" }) {
   const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const colors = [
     "from-blue-600 to-blue-800",
@@ -35,6 +35,13 @@ function InitialAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md"
   ];
   const color = colors[name.charCodeAt(0) % colors.length];
   const sizeClass = size === "lg" ? "w-16 h-16 text-xl" : size === "sm" ? "w-8 h-8 text-xs" : "w-12 h-12 text-sm";
+  if (profilePhoto) {
+    return (
+      <div className={`${sizeClass} rounded-xl overflow-hidden flex-shrink-0 border border-border`}>
+        <img src={`/api/storage${profilePhoto}`} alt={name} className="w-full h-full object-cover" />
+      </div>
+    );
+  }
   return (
     <div className={`${sizeClass} rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white font-bold flex-shrink-0`}>
       {initials}
@@ -298,7 +305,7 @@ export default function Companies() {
                 >
                   {/* Card header */}
                   <div className="p-5 flex gap-3 items-start border-b border-border/50">
-                    <InitialAvatar name={company.companyName} />
+                    <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2 flex-wrap">
                         <h3 className="font-bold text-foreground text-base leading-tight flex-1 min-w-0 truncate">

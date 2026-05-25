@@ -43,6 +43,9 @@ router.post("/companies", async (req, res): Promise<void> => {
     website: parsed.data.website ?? null,
     licenseNumber: parsed.data.licenseNumber ?? null,
     yearsExperience: parsed.data.yearsExperience ?? null,
+    workerType: parsed.data.workerType ?? "company",
+    hourlyRate: parsed.data.hourlyRate ?? null,
+    profilePhoto: parsed.data.profilePhoto ?? null,
     status: "pending",
   }).returning();
 

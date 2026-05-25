@@ -26,6 +26,8 @@ export interface Project {
   budget?: string | null;
   /** @nullable */
   timeline?: string | null;
+  /** Array of object paths for project photos */
+  photos?: string[];
   /** pending | reviewing | matched | completed | cancelled */
   status: string;
   createdAt: string;
@@ -42,6 +44,8 @@ export interface ProjectInput {
   city: string;
   budget?: string;
   timeline?: string;
+  /** Array of object paths for project photos */
+  photos?: string[];
 }
 
 export interface ProjectUpdate {
@@ -72,6 +76,11 @@ export interface Company {
      * @nullable
      */
   hourlyRate?: number | null;
+  /**
+     * Object path of the profile photo
+     * @nullable
+     */
+  profilePhoto?: string | null;
   /** pending | approved | rejected */
   status: string;
   createdAt: string;
@@ -95,6 +104,8 @@ export interface CompanyInput {
   workerType?: string;
   /** Hourly rate in EUR (for individual workers only) */
   hourlyRate?: number;
+  /** Object path of the profile photo */
+  profilePhoto?: string;
 }
 
 export interface CompanyUpdate {

@@ -29,6 +29,11 @@ export interface Company {
      * @nullable
      */
   hourlyRate?: number | null;
+  /**
+     * Object path of the profile photo
+     * @nullable
+     */
+  profilePhoto?: string | null;
   /** pending | approved | rejected */
   status: string;
   createdAt: Date;

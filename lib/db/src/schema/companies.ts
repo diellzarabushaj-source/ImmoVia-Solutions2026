@@ -16,6 +16,7 @@ export const companiesTable = pgTable("companies", {
   yearsExperience: integer("years_experience"),
   workerType: text("worker_type").notNull().default("company"),
   hourlyRate: integer("hourly_rate"),
+  profilePhoto: text("profile_photo"),
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

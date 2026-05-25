@@ -18,7 +18,8 @@ import {
   FormMessage,
   FormDescription
 } from "@/components/ui/form";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, User, Building2 } from "lucide-react";
+import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function RegisterCompany() {
   const { t } = useLanguage();
@@ -40,6 +41,7 @@ export default function RegisterCompany() {
     yearsExperience: z.coerce.number().optional(),
     workerType: z.enum(["individual", "company"]).default("company"),
     hourlyRate: z.coerce.number().optional(),
+    profilePhoto: z.string().optional(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -57,6 +59,7 @@ export default function RegisterCompany() {
       yearsExperience: undefined,
       workerType: "company",
       hourlyRate: undefined,
+      profilePhoto: undefined,
     },
   });
 
@@ -115,8 +118,8 @@ export default function RegisterCompany() {
                   <FormLabel>{t.companyForm.workerType ?? "I am a"}</FormLabel>
                   <div className="grid grid-cols-2 gap-3 mt-1">
                     {[
-                      { value: "individual", label: t.companyForm.individual ?? "Individual Professional" },
-                      { value: "company", label: t.companyForm.company ?? "Company / Firm" },
+                      { value: "individual", icon: User, label: t.companyForm.individual ?? "Individual Professional" },
+                      { value: "company", icon: Building2, label: t.companyForm.company ?? "Company / Firm" },
                     ].map(opt => (
                       <button
                         key={opt.value}
@@ -128,7 +131,7 @@ export default function RegisterCompany() {
                             : "border-border text-muted-foreground hover:border-primary/40"
                         }`}
                       >
-                        {opt.value === "individual" ? "👤" : "🏢"} {opt.label}
+                        <opt.icon className="h-4 w-4" /> {opt.label}
                       </button>
                     ))}
                   </div>
@@ -345,6 +348,17 @@ export default function RegisterCompany() {
                 </FormItem>
               )}
             />
+
+            {/* Profile photo */}
+            <div className="space-y-2">
+              <PhotoUploader
+                label={t.companyForm.profilePhotoLabel ?? "Profile / Company Photo"}
+                hint="JPG or PNG, max 10MB"
+                multiple={false}
+                value={form.watch("profilePhoto") ? [form.watch("profilePhoto")!] : []}
+                onChange={(paths) => form.setValue("profilePhoto", paths[0])}
+              />
+            </div>
 
             <Button 
               type="submit" 
