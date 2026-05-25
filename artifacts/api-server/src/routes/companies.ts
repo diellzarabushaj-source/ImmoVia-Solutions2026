@@ -17,9 +17,24 @@ import { sendNewCompanyNotification } from "../lib/email";
 const router: IRouter = Router();
 
 router.get("/companies", async (req, res): Promise<void> => {
+  const { city, type, status, workerType } = req.query;
+  const conditions = [];
+  if (typeof city === "string" && city.trim()) {
+    conditions.push(ilike(companiesTable.city, `%${city.trim()}%`));
+  }
+  if (typeof type === "string" && type.trim()) {
+    conditions.push(sql`${type.trim()} = ANY(${companiesTable.serviceTypes})`);
+  }
+  if (typeof status === "string" && status.trim()) {
+    conditions.push(eq(companiesTable.status, status.trim()));
+  }
+  if (typeof workerType === "string" && workerType.trim()) {
+    conditions.push(eq(companiesTable.workerType, workerType.trim()));
+  }
   const companies = await db
     .select()
     .from(companiesTable)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(sql`${companiesTable.createdAt} desc`);
   res.json(ListCompaniesResponse.parse(companies));
 });

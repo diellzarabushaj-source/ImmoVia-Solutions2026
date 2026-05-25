@@ -18,9 +18,21 @@ import { sendNewProjectNotification } from "../lib/email";
 const router: IRouter = Router();
 
 router.get("/projects", async (req, res): Promise<void> => {
+  const { city, type, status } = req.query;
+  const conditions = [];
+  if (typeof city === "string" && city.trim()) {
+    conditions.push(ilike(projectsTable.city, `%${city.trim()}%`));
+  }
+  if (typeof type === "string" && type.trim()) {
+    conditions.push(eq(projectsTable.projectType, type.trim()));
+  }
+  if (typeof status === "string" && status.trim()) {
+    conditions.push(eq(projectsTable.status, status.trim()));
+  }
   const projects = await db
     .select()
     .from(projectsTable)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(sql`${projectsTable.createdAt} desc`);
   res.json(ListProjectsResponse.parse(projects));
 });

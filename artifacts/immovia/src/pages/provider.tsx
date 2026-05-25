@@ -67,6 +67,7 @@ export default function ProviderDashboard() {
   const [openThreads, setOpenThreads] = useState<Set<number>>(new Set());
   const [browseTypeFilter, setBrowseTypeFilter] = useState("");
   const [browseCityFilter, setBrowseCityFilter] = useState("");
+  const [browseSizeFilter, setBrowseSizeFilter] = useState("");
   const [browseView, setBrowseView] = useState<"grid" | "list">("grid");
   const [galleryProject, setGalleryProject] = useState<ProviderProject | null>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
@@ -269,6 +270,26 @@ export default function ProviderDashboard() {
                 </button>
               )}
             </div>
+            <select
+              value={browseSizeFilter}
+              onChange={e => setBrowseSizeFilter(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">{t.provider.filterAllSizes ?? "All sizes"}</option>
+              <option value="small">{t.listings.sizeSm}</option>
+              <option value="medium">{t.listings.sizeMd}</option>
+              <option value="large">{t.listings.sizeLg}</option>
+              <option value="premium">{t.listings.sizePremium}</option>
+            </select>
+            {(browseTypeFilter || browseCityFilter || browseSizeFilter) && (
+              <button
+                onClick={() => { setBrowseTypeFilter(""); setBrowseCityFilter(""); setBrowseSizeFilter(""); }}
+                className="flex items-center gap-1 text-xs text-primary hover:underline font-medium h-9"
+              >
+                <X className="h-3 w-3" />
+                {t.companies.clearFilters ?? "Clear filters"}
+              </button>
+            )}
             <div className="ml-auto flex items-center gap-1 border border-border rounded-lg overflow-hidden">
               <button
                 onClick={() => setBrowseView("grid")}
@@ -292,7 +313,8 @@ export default function ProviderDashboard() {
             const filtered = projects.filter(p => {
               const matchType = !browseTypeFilter || p.projectType === browseTypeFilter;
               const matchCity = !browseCityFilter || p.city.toLowerCase().includes(browseCityFilter.toLowerCase());
-              return matchType && matchCity;
+              const matchSize = !browseSizeFilter || p.size === browseSizeFilter;
+              return matchType && matchCity && matchSize;
             });
 
             if (filtered.length === 0) {

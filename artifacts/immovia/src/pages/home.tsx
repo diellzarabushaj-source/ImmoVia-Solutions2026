@@ -1,4 +1,4 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
@@ -32,6 +32,7 @@ import {
   Clock,
   User,
   FileText,
+  X,
 } from "lucide-react";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
@@ -187,14 +188,18 @@ export default function Home() {
   const { user } = useAuth();
   const { data: companies, isLoading: isLoadingCompanies } = useListCompanies();
   const { data: projects, isLoading: isLoadingProjects } = useListProjects();
+  const [listingTypeFilter, setListingTypeFilter] = useState("");
+  const [listingCityFilter, setListingCityFilter] = useState("");
   const previewCompanies = useMemo(
     () => companies?.filter(c => c.status === "approved").slice(0, 6) ?? [],
     [companies]
   );
-  const previewProjects = useMemo(
-    () => (projects ?? []).filter(p => p.status === "pending").slice(0, 6),
-    [projects]
-  );
+  const previewProjects = useMemo(() => {
+    let list = (projects ?? []).filter(p => p.status === "pending");
+    if (listingTypeFilter) list = list.filter(p => p.projectType === listingTypeFilter);
+    if (listingCityFilter) list = list.filter(p => p.city.toLowerCase().includes(listingCityFilter.toLowerCase()));
+    return list.slice(0, 9);
+  }, [projects, listingTypeFilter, listingCityFilter]);
 
   // ── Parallax & 3-D mouse tracking ──
   const heroRef = useRef<HTMLElement>(null);
@@ -604,7 +609,7 @@ export default function Home() {
       <section className="py-14 md:py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
-            className="text-center mb-14"
+            className="text-center mb-10"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -614,6 +619,48 @@ export default function Home() {
             <p className="text-muted-foreground max-w-xl mx-auto">{t.listings.subtitle}</p>
             <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
           </motion.div>
+
+          {/* Filter bar */}
+          <div className="flex flex-wrap items-center gap-3 mb-8 bg-white rounded-xl px-4 py-3 border border-border shadow-sm">
+            <select
+              value={listingTypeFilter}
+              onChange={e => setListingTypeFilter(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-muted/40 px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">{t.listings.filterAllTypes ?? "All types"}</option>
+              {["renovation","construction","interior","exterior","plumbing","electric"].map(tp => (
+                <option key={tp} value={tp}>{(t.offers as Record<string,string>)[tp] ?? tp}</option>
+              ))}
+            </select>
+            <div className="relative">
+              <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <input
+                value={listingCityFilter}
+                onChange={e => setListingCityFilter(e.target.value)}
+                placeholder={t.listings.filterCity ?? "Filter by city"}
+                className="h-9 rounded-lg border border-border bg-muted/40 pl-7 pr-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-36 md:w-44"
+              />
+              {listingCityFilter && (
+                <button onClick={() => setListingCityFilter("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+            {(listingTypeFilter || listingCityFilter) && (
+              <button
+                onClick={() => { setListingTypeFilter(""); setListingCityFilter(""); }}
+                className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+              >
+                <X className="h-3 w-3" />
+                {t.listings.clearFilters ?? "Clear filters"}
+              </button>
+            )}
+            {!isLoadingProjects && (
+              <span className="text-xs text-muted-foreground ml-auto">
+                {previewProjects.length} {previewProjects.length === 1 ? (t.listings.result ?? "result") : (t.listings.results ?? "results")}
+              </span>
+            )}
+          </div>
 
           {isLoadingProjects && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -631,6 +678,20 @@ export default function Home() {
                   <Skeleton className="h-3 w-4/5" />
                 </div>
               ))}
+            </div>
+          )}
+
+          {!isLoadingProjects && previewProjects.length === 0 && (
+            <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-border">
+              <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-30" />
+              <p className="text-foreground font-semibold mb-1">{t.listings.noResultsFilter ?? "No projects match your filters"}</p>
+              <p className="text-sm text-muted-foreground mb-4">{t.listings.noResultsFilterHint ?? "Try different filters or clear them."}</p>
+              <button
+                onClick={() => { setListingTypeFilter(""); setListingCityFilter(""); }}
+                className="text-sm text-primary hover:underline font-medium"
+              >
+                {t.listings.clearFilters ?? "Clear filters"}
+              </button>
             </div>
           )}
 

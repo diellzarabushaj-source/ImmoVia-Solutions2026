@@ -70,9 +70,12 @@ export default function Companies() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeService, setActiveService] = useState(params.get("service") ?? "");
-  const [workerTypeFilter, setWorkerTypeFilter] = useState<"" | "individual" | "company">("");
-  const [cityFilter, setCityFilter] = useState("");
-  const [sortBy, setSortBy] = useState("default");
+  const [workerTypeFilter, setWorkerTypeFilter] = useState<"" | "individual" | "company">(() => {
+    const wt = params.get("workerType") ?? "";
+    return (wt === "individual" || wt === "company") ? wt : "";
+  });
+  const [cityFilter, setCityFilter] = useState(() => params.get("city") ?? "");
+  const [sortBy, setSortBy] = useState(() => params.get("sort") ?? "default");
   const [showFilters, setShowFilters] = useState(false);
   const [locating, setLocating] = useState(false);
   const [geoError, setGeoError] = useState(false);
@@ -80,9 +83,29 @@ export default function Companies() {
   const [cityHighlight, setCityHighlight] = useState(-1);
   const cityRef = useRef<HTMLDivElement>(null);
 
+  // Inbound: sync URL → state (handles external navigation e.g. home page service cards)
   useEffect(() => {
-    setActiveService(params.get("service") ?? "");
+    const p = new URLSearchParams(search);
+    setActiveService(p.get("service") ?? "");
+    const wt = p.get("workerType") ?? "";
+    setWorkerTypeFilter((wt === "individual" || wt === "company") ? wt : "");
+    setCityFilter(p.get("city") ?? "");
+    setSortBy(p.get("sort") ?? "default");
   }, [search]);
+
+  // Outbound: sync state → URL (preserves shareable filter state)
+  const searchRef = { current: search };
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (activeService) p.set("service", activeService);
+    if (cityFilter) p.set("city", cityFilter);
+    if (workerTypeFilter) p.set("workerType", workerTypeFilter);
+    if (sortBy !== "default") p.set("sort", sortBy);
+    const next = p.toString();
+    if (next !== searchRef.current) {
+      navigate(`?${next}`, { replace: true });
+    }
+  }, [activeService, cityFilter, workerTypeFilter, sortBy, navigate]);
 
   // Close city dropdown on outside click
   useEffect(() => {
