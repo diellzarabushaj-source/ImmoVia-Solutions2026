@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { getAuth, clerkClient as clerk } from "@clerk/express";
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   db,
   usersTable,
@@ -11,12 +11,6 @@ import {
 import { requireAuth } from "../middlewares/requireAuth";
 import { generateUniqueSlug } from "../lib/slug";
 import { grantMonthlyCredits } from "../lib/credits";
-
-declare module "express-session" {
-  interface SessionData {
-    userId?: number;
-  }
-}
 
 const router: IRouter = Router();
 

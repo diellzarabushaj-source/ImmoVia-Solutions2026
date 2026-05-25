@@ -32,26 +32,24 @@ export async function requireProvider(req: Request, res: Response, next: NextFun
   next();
 }
 
-// requireUserAdmin: admin via DB role or legacy admin session flag.
+// requireUserAdmin: admin via Clerk JWT + DB role='admin' only.
 export async function requireUserAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-  // Legacy admin session flag (admin login form at /admin) still works
-  if (req.session?.adminAuthenticated) {
-    next();
+  const auth = getAuth(req);
+  if (!auth?.userId) {
+    res.status(401).json({ error: "Unauthorized" });
     return;
   }
 
-  const auth = getAuth(req);
-  if (auth?.userId) {
-    const [user] = await db
-      .select({ id: usersTable.id, role: usersTable.role })
-      .from(usersTable)
-      .where(eq(usersTable.clerkUserId, auth.userId))
-      .limit(1);
-    if (user?.role === "admin") {
-      req.userId = user.id;
-      next();
-      return;
-    }
+  const [user] = await db
+    .select({ id: usersTable.id, role: usersTable.role })
+    .from(usersTable)
+    .where(eq(usersTable.clerkUserId, auth.userId))
+    .limit(1);
+
+  if (user?.role === "admin") {
+    req.userId = user.id;
+    next();
+    return;
   }
-  res.status(401).json({ error: "Unauthorized" });
+  res.status(403).json({ error: "Forbidden" });
 }
