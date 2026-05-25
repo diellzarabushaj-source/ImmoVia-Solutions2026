@@ -26,7 +26,6 @@ export function Navbar() {
     { href: "/", label: t.nav.home },
     { href: "/companies", label: t.nav.companies },
     { href: "/pricing", label: t.nav.pricing },
-    { href: "/chat", label: t.nav.chat },
     { href: "/contact", label: t.nav.contact },
   ];
 
