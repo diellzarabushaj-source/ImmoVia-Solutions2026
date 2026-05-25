@@ -39,48 +39,42 @@ export default function Home() {
       title: t.offers.renovation,
       desc: t.offers.renovationDesc,
       price: t.offers.renovationPrice,
-      color: "bg-blue-50 text-blue-700",
-      border: "hover:border-blue-200",
+      photo: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&q=80&fit=crop",
     },
     {
       icon: Building2,
       title: t.offers.construction,
       desc: t.offers.constructionDesc,
       price: t.offers.constructionPrice,
-      color: "bg-navy-50 text-foreground",
-      border: "hover:border-foreground/20",
+      photo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80&fit=crop",
     },
     {
       icon: Sofa,
       title: t.offers.interior,
       desc: t.offers.interiorDesc,
       price: t.offers.interiorPrice,
-      color: "bg-indigo-50 text-indigo-700",
-      border: "hover:border-indigo-200",
+      photo: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&q=80&fit=crop",
     },
     {
       icon: TreePine,
       title: t.offers.exterior,
       desc: t.offers.exteriorDesc,
       price: t.offers.exteriorPrice,
-      color: "bg-emerald-50 text-emerald-700",
-      border: "hover:border-emerald-200",
+      photo: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop",
     },
     {
       icon: Wrench,
       title: t.offers.plumbing,
       desc: t.offers.plumbingDesc,
       price: t.offers.plumbingPrice,
-      color: "bg-sky-50 text-sky-700",
-      border: "hover:border-sky-200",
+      photo: "https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=600&q=80&fit=crop",
     },
     {
       icon: Plug,
       title: t.offers.electric,
       desc: t.offers.electricDesc,
       price: t.offers.electricPrice,
-      color: "bg-amber-50 text-amber-700",
-      border: "hover:border-amber-200",
+      photo: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80&fit=crop",
     },
   ];
 
@@ -247,24 +241,36 @@ export default function Home() {
               <motion.div key={i} variants={fadeUp}>
                 <Link href="/submit-project">
                   <div
-                    className={`group bg-white border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-200 cursor-pointer ${s.border} flex flex-col gap-4 h-full`}
+                    className="group relative rounded-2xl overflow-hidden cursor-pointer h-72 shadow-md hover:shadow-xl transition-all duration-300"
                     data-testid={`service-card-${i}`}
                   >
-                    <div className={`w-11 h-11 rounded-lg flex items-center justify-center ${s.color}`}>
-                      <s.icon className="w-5 h-5" />
+                    {/* Photo background */}
+                    <img
+                      src={s.photo}
+                      alt={s.title}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    {/* Dark gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+
+                    {/* Icon badge top-left */}
+                    <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                      <s.icon className="w-5 h-5 text-white" />
                     </div>
 
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground text-lg mb-2">{s.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-3 border-t border-border">
-                      <span className="text-sm font-semibold text-primary">{s.price}</span>
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors font-medium">
-                        {t.offers.cta}
-                        <ChevronRight className="w-3 h-3" />
-                      </span>
+                    {/* Content at bottom */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="font-bold text-white text-lg leading-tight mb-1">{s.title}</h3>
+                      <p className="text-white/75 text-xs leading-relaxed line-clamp-2 mb-3">{s.desc}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold bg-primary/90 text-white px-2.5 py-1 rounded-full">
+                          {s.price}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-white/80 group-hover:text-white transition-colors font-medium">
+                          {t.offers.cta}
+                          <ChevronRight className="w-3 h-3" />
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </Link>
