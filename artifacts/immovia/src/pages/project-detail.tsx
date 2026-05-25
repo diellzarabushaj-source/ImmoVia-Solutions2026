@@ -80,7 +80,7 @@ export default function ProjectDetail() {
 
   usePageMeta({
     title: project
-      ? `${t.offers[project.projectType as keyof typeof t.offers] ?? project.projectType} · ${project.city} — ImmoVia`
+      ? `${t.projectDetail.seoProject} ${t.offers[project.projectType as keyof typeof t.offers] ?? project.projectType} ${t.projectDetail.seoIn} ${project.city} — ImmoVia`
       : null,
     description: project?.description ? project.description.slice(0, 160) : null,
   });

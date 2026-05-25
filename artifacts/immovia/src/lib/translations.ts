@@ -105,6 +105,8 @@ export const translations = {
       noResultsFilterHint: 'Provoni filtra të ndryshme ose pastroni të gjithë.',
     },
     projectDetail: {
+      seoProject: 'Projekt',
+      seoIn: 'në',
       notFound: 'Projekti nuk u gjet',
       backToHome: 'Kthehu në Ballë',
       projectType: 'Lloji i Projektit',
@@ -662,6 +664,8 @@ export const translations = {
       noResultsFilterHint: 'Try different filters or clear them all.',
     },
     projectDetail: {
+      seoProject: 'Project',
+      seoIn: 'in',
       notFound: 'Project not found',
       backToHome: 'Back to Home',
       projectType: 'Project Type',
@@ -1219,6 +1223,8 @@ export const translations = {
       noResultsFilterHint: 'Versuchen Sie andere Filter oder setzen Sie sie zurück.',
     },
     projectDetail: {
+      seoProject: 'Projekt',
+      seoIn: 'in',
       notFound: 'Projekt nicht gefunden',
       backToHome: 'Zurück zur Startseite',
       projectType: 'Projektart',
@@ -1776,6 +1782,8 @@ export const translations = {
       noResultsFilterHint: 'Essayez différents filtres ou effacez-les tous.',
     },
     projectDetail: {
+      seoProject: 'Projet',
+      seoIn: 'à',
       notFound: 'Projet introuvable',
       backToHome: "Retour à l'accueil",
       projectType: 'Type de projet',

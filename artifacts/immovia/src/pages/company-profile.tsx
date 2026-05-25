@@ -100,7 +100,7 @@ export default function CompanyProfile() {
   const [status, setStatus] = useState<"loading" | "ready" | "notfound">("loading");
 
   usePageMeta({
-    title: company ? `${company.companyName} · ${company.city} — ImmoVia` : null,
+    title: company ? `${company.companyName} — ${company.city} | ImmoVia` : null,
     description: company?.description ? company.description.slice(0, 160) : null,
   });
   const [lightbox, setLightbox] = useState<string | null>(null);

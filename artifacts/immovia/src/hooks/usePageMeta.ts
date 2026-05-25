@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 
-const APP_URL = (import.meta.env.VITE_APP_URL ?? "").replace(/\/$/, "");
+const APP_URL = (
+  import.meta.env.VITE_APP_URL || window.location.origin
+).replace(/\/$/, "");
 const DEFAULT_TITLE = "ImmoVia";
 const DEFAULT_DESCRIPTION =
   "ImmoVia — the platform connecting homeowners with vetted renovation and construction professionals across Albania, Kosovo, Germany, and Switzerland.";
