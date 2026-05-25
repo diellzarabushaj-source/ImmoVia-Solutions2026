@@ -51,15 +51,47 @@
         if (!mq.matches) return;
 
         function constrainWindow(el) {
-          el.style.setProperty('height', '70vh', 'important');
-          el.style.setProperty('max-height', '70vh', 'important');
+          el.style.setProperty('height', '55vh', 'important');
+          el.style.setProperty('max-height', '55vh', 'important');
+          el.style.setProperty('width', 'calc(100vw - 24px)', 'important');
+          el.style.setProperty('max-width', 'calc(100vw - 24px)', 'important');
           el.style.setProperty('top', 'auto', 'important');
-          el.style.setProperty('bottom', '76px', 'important');
-          el.style.setProperty('border-radius', '20px 20px 0 0', 'important');
-          el.style.setProperty('box-shadow', '0 -8px 40px rgba(0,0,0,0.18)', 'important');
-          el.style.setProperty('width', '100%', 'important');
-          el.style.setProperty('right', '0', 'important');
-          el.style.setProperty('left', '0', 'important');
+          el.style.setProperty('bottom', '88px', 'important');
+          el.style.setProperty('left', '12px', 'important');
+          el.style.setProperty('right', '12px', 'important');
+          el.style.setProperty('border-radius', '20px', 'important');
+          el.style.setProperty('box-shadow', '0 12px 48px rgba(0,0,0,0.22)', 'important');
+        }
+
+        function unlockBodyScroll() {
+          // Chatbase may set body { overflow: hidden } on mobile to lock page scroll.
+          // Force it back so the user can scroll the website while chatting.
+          var bs = document.body && document.body.style;
+          if (bs && (bs.overflow === 'hidden' || bs.position === 'fixed')) {
+            bs.setProperty('overflow', 'auto', 'important');
+            bs.setProperty('position', 'static', 'important');
+          }
+          var hs = document.documentElement && document.documentElement.style;
+          if (hs && hs.overflow === 'hidden') {
+            hs.setProperty('overflow', 'auto', 'important');
+          }
+        }
+
+        function hideBackdrops() {
+          // Remove any full-screen backdrop overlay Chatbase injects so the page
+          // behind the floating chat card stays clickable/scrollable.
+          document.querySelectorAll('div').forEach(function (d) {
+            var id = (d.id || '').toLowerCase();
+            var cls = (d.className && d.className.toString ? d.className.toString() : '').toLowerCase();
+            if (!id.includes('chatbase') && !cls.includes('chatbase')) return;
+            var hasIframe = d.querySelector && d.querySelector('iframe[src*="chatbase"]');
+            if (hasIframe) return; // keep the iframe container
+            var style = d.getAttribute('style') || '';
+            if (style.includes('rgba') || style.includes('background') || cls.includes('backdrop')) {
+              d.style.setProperty('background', 'transparent', 'important');
+              d.style.setProperty('pointer-events', 'none', 'important');
+            }
+          });
         }
 
         function scan() {
@@ -75,6 +107,8 @@
               constrainWindow(f);
             }
           });
+          unlockBodyScroll();
+          hideBackdrops();
         }
 
         var observer = new MutationObserver(function () {

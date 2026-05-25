@@ -195,17 +195,43 @@
   }
 }
 
-/* Chatbase — partial-screen bottom sheet on mobile */
+/* Chatbase — small floating chat card on mobile, page stays fully scrollable */
 @media (max-width: 768px) {
   iframe[src*="chatbase"],
   div[id*="chatbase"] iframe,
   div[class*="chatbase"] iframe {
-    max-height: 72vh !important;
-    height: 72vh !important;
+    max-height: 55vh !important;
+    height: 55vh !important;
+    max-width: calc(100vw - 24px) !important;
+    width: calc(100vw - 24px) !important;
     top: auto !important;
-    bottom: 72px !important;
-    border-radius: 20px 20px 0 0 !important;
-    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18) !important;
+    bottom: 88px !important;
+    left: 12px !important;
+    right: 12px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.22) !important;
     overflow: hidden !important;
+    pointer-events: auto !important;
   }
+
+  /* Hide any backdrop overlay Chatbase tries to add so the site stays interactive */
+  div[id*="chatbase"][class*="backdrop"],
+  div[id*="chatbase-backdrop"],
+  div[class*="chatbase-backdrop"],
+  div[id*="chatbase"][style*="background"][style*="rgba"] {
+    display: none !important;
+    background: transparent !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Ensure body never gets locked by the chat widget */
+html, body {
+  overflow-x: hidden;
+}
+body.chatbase-open,
+body[style*="overflow: hidden"][data-chatbase],
+html.chatbase-open {
+  overflow: auto !important;
+  position: static !important;
 }
