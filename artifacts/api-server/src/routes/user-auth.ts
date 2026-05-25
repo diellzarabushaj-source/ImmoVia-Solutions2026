@@ -17,6 +17,8 @@ const router: IRouter = Router();
 const VALID_ROLES = ["client", "service_provider"] as const;
 const VALID_PROVIDER_TYPES = ["individual", "small_team", "company"] as const;
 
+const ADMIN_EMAILS = new Set(["immovia.rd@gmail.com"]);
+
 function normalizeRole(v: unknown): "client" | "service_provider" | null {
   if (typeof v !== "string") return null;
   if (v === "homeowner" || v === "client") return "client";
@@ -83,6 +85,15 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
     .limit(1);
 
   if (existingUser) {
+    // Ensure admin emails always have admin role even if record predates this check
+    if (ADMIN_EMAILS.has(existingUser.email) && existingUser.role !== "admin") {
+      const [upgraded] = await db
+        .update(usersTable)
+        .set({ role: "admin" })
+        .where(eq(usersTable.id, existingUser.id))
+        .returning();
+      existingUser = upgraded!;
+    }
     res.json({ user: toPublicUser(existingUser) });
     return;
   }
@@ -96,18 +107,20 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
       .limit(1);
     if (emailUser) {
       // Link the existing DB user to this Clerk ID
+      const shouldBeAdmin = ADMIN_EMAILS.has(emailUser.email);
       const [linked] = await db
         .update(usersTable)
         .set({
           clerkUserId,
           avatarUrl: emailUser.avatarUrl ?? clerkAvatarUrl,
+          ...(shouldBeAdmin && emailUser.role !== "admin" ? { role: "admin" as const } : {}),
         })
         .where(eq(usersTable.id, emailUser.id))
         .returning();
       // Persist role to Clerk publicMetadata for fast access
       try {
         await clerk.users.updateUserMetadata(clerkUserId, {
-          publicMetadata: { role: emailUser.role, dbUserId: emailUser.id },
+          publicMetadata: { role: linked!.role, dbUserId: emailUser.id },
         });
       } catch (err) {
         req.log.warn({ err }, "Failed to update Clerk publicMetadata");
@@ -119,7 +132,9 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
 
   // 3. Create a new DB user
   const body = req.body as Record<string, unknown>;
-  const role = normalizeRole(body.role) ?? "client";
+  const role = ADMIN_EMAILS.has(clerkEmail)
+    ? ("admin" as const)
+    : (normalizeRole(body.role) ?? "client");
   const providerType =
     role === "service_provider" &&
     typeof body.providerType === "string" &&
