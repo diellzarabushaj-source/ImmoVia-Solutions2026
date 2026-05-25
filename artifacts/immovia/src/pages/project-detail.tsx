@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRoute, Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -76,6 +77,13 @@ export default function ProjectDetail() {
   const id = params?.id;
 
   const [project, setProject] = useState<Project | null>(null);
+
+  usePageMeta({
+    title: project
+      ? `${t.offers[project.projectType as keyof typeof t.offers] ?? project.projectType} · ${project.city} — ImmoVia`
+      : null,
+    description: project?.description ? project.description.slice(0, 160) : null,
+  });
   const [fetchStatus, setFetchStatus] = useState<"loading" | "ready" | "notfound">("loading");
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRoute, Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -80,6 +81,13 @@ export default function PublicProfilePage() {
   const slug = params?.slug;
   const [data, setData] = useState<{ user: PublicProfile; portfolio: PortfolioItem[] } | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "notfound">("loading");
+
+  usePageMeta({
+    title: data?.user
+      ? `${data.user.fullName}${data.user.city ? ` · ${data.user.city}` : ""} — ImmoVia`
+      : null,
+    description: data?.user.bio ? data.user.bio.slice(0, 160) : null,
+  });
   const [lightbox, setLightbox] = useState<PortfolioItem | null>(null);
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
 

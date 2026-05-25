@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearch, Link, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { useListCompanies } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +65,7 @@ function CompanyAvatar({ name, profilePhoto, size = "md" }: { name: string; prof
 
 export default function Companies() {
   const { t } = useLanguage();
+  usePageMeta({ title: `${t.companies.title} — ImmoVia`, description: t.companies.subtitle ?? undefined });
   const search = useSearch();
   const params = new URLSearchParams(search);
   const [, navigate] = useLocation();

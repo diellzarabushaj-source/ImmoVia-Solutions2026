@@ -2,6 +2,7 @@ import { useRef, useMemo, useState, useEffect } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
 import { Link, useSearch, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAuth } from "@/contexts/AuthContext";
 import { useListCompanies, useListProjects } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -185,6 +186,7 @@ function ProjectPreviewCard({ project, t }: {
 
 export default function Home() {
   const { t } = useLanguage();
+  usePageMeta({ title: "ImmoVia", description: t.hero.subtitle });
   const { user } = useAuth();
   const search = useSearch();
   const [, navigate] = useLocation();

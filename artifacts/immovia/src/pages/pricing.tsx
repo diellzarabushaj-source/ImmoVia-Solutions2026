@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth, normalizeRole } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   billingApi,
   type SubscriptionPlan,
@@ -27,6 +28,7 @@ function formatEUR(cents: number): string {
 
 export default function Pricing() {
   const { t } = useLanguage();
+  usePageMeta({ title: `${t.pricing.title} — ImmoVia`, description: t.pricing.subtitle ?? undefined });
   const { user, refresh } = useAuth();
   const [, setLocation] = useLocation();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);

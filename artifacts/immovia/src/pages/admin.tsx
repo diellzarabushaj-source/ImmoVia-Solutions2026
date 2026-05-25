@@ -3,6 +3,7 @@ import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClerk } from "@clerk/react";
 import { useLocation } from "wouter";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { 
   useGetAdminStats, 
   useListProjects, 
@@ -52,6 +53,7 @@ import {
 
 function AdminDashboardContent() {
   const { t } = useLanguage();
+  usePageMeta({ title: `Admin — ImmoVia`, noindex: true });
   const queryClient = useQueryClient();
   
   const { data: stats } = useGetAdminStats();
