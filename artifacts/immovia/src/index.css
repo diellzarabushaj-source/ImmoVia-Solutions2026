@@ -195,13 +195,17 @@
   }
 }
 
-/* Chatbase chat window — prevent full-screen takeover on mobile */
+/* Chatbase — partial-screen bottom sheet on mobile */
 @media (max-width: 768px) {
-  iframe[src*="chatbase.co"] {
+  iframe[src*="chatbase"],
+  div[id*="chatbase"] iframe,
+  div[class*="chatbase"] iframe {
     max-height: 72vh !important;
     height: 72vh !important;
+    top: auto !important;
     bottom: 72px !important;
-    border-radius: 16px 16px 0 0 !important;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 20px 20px 0 0 !important;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18) !important;
+    overflow: hidden !important;
   }
 }

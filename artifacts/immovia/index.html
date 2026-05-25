@@ -44,5 +44,53 @@
     <script>
       (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="sCAJBcXM9vHhwBn_Wxh19";script.domain="immovia365.ch";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
     </script>
+    <!-- Chatbase mobile: constrain to bottom-sheet (partial screen) -->
+    <script>
+      (function () {
+        var mq = window.matchMedia('(max-width: 768px)');
+        if (!mq.matches) return;
+
+        function constrainWindow(el) {
+          el.style.setProperty('height', '70vh', 'important');
+          el.style.setProperty('max-height', '70vh', 'important');
+          el.style.setProperty('top', 'auto', 'important');
+          el.style.setProperty('bottom', '76px', 'important');
+          el.style.setProperty('border-radius', '20px 20px 0 0', 'important');
+          el.style.setProperty('box-shadow', '0 -8px 40px rgba(0,0,0,0.18)', 'important');
+          el.style.setProperty('width', '100%', 'important');
+          el.style.setProperty('right', '0', 'important');
+          el.style.setProperty('left', '0', 'important');
+        }
+
+        function scan() {
+          document.querySelectorAll('iframe').forEach(function (f) {
+            var src = f.src || '';
+            var id = f.id || '';
+            if (!src.includes('chatbase') && !id.includes('chatbase')) return;
+            // Skip the small bubble button iframe (height < 80px)
+            var h = parseInt(f.style.height || '0');
+            if (h > 0 && h < 80) return;
+            // Apply whenever the frame looks like the open chat window
+            if (f.style.position === 'fixed' || h > 80 || f.style.height === '100%') {
+              constrainWindow(f);
+            }
+          });
+        }
+
+        var observer = new MutationObserver(function () {
+          requestAnimationFrame(scan);
+        });
+
+        window.addEventListener('load', function () {
+          observer.observe(document.body, {
+            subtree: true,
+            childList: true,
+            attributes: true,
+            attributeFilter: ['style']
+          });
+          scan();
+        });
+      })();
+    </script>
   </body>
 </html>
