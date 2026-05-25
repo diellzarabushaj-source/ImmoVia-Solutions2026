@@ -1,211 +1,400 @@
-import { useState, useEffect } from "react";
-import { useSearch } from "wouter";
+import { useState, useEffect, useMemo } from "react";
+import { useSearch, Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { useListCompanies } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, Briefcase, CalendarDays, Globe, Mail, Phone, Clock, FileText, User, Building2 } from "lucide-react";
+import {
+  Search, MapPin, CalendarDays, Globe, Mail, Phone,
+  Clock, FileText, User, Building2, SlidersHorizontal,
+  ArrowUpDown, X, ChevronDown,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion, AnimatePresence } from "framer-motion";
+
+const SERVICE_OPTIONS = [
+  "renovation", "construction", "interior", "exterior", "plumbing", "electric",
+];
+
+const SORT_OPTIONS = [
+  { value: "default", labelKey: "sortDefault" },
+  { value: "price_asc", labelKey: "sortPriceAsc" },
+  { value: "price_desc", labelKey: "sortPriceDesc" },
+  { value: "experience", labelKey: "sortExperience" },
+];
+
+function InitialAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
+  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const colors = [
+    "from-blue-600 to-blue-800",
+    "from-indigo-600 to-indigo-800",
+    "from-primary to-blue-700",
+    "from-sky-600 to-sky-800",
+    "from-slate-600 to-slate-800",
+  ];
+  const color = colors[name.charCodeAt(0) % colors.length];
+  const sizeClass = size === "lg" ? "w-16 h-16 text-xl" : size === "sm" ? "w-8 h-8 text-xs" : "w-12 h-12 text-sm";
+  return (
+    <div className={`${sizeClass} rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white font-bold flex-shrink-0`}>
+      {initials}
+    </div>
+  );
+}
 
 export default function Companies() {
   const { t } = useLanguage();
   const search = useSearch();
   const params = new URLSearchParams(search);
-  const serviceFilter = params.get("service") ?? "";
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeService, setActiveService] = useState(serviceFilter);
+  const [activeService, setActiveService] = useState(params.get("service") ?? "");
+  const [workerTypeFilter, setWorkerTypeFilter] = useState<"" | "individual" | "company">("");
+  const [cityFilter, setCityFilter] = useState("");
+  const [sortBy, setSortBy] = useState("default");
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    setActiveService(serviceFilter);
-  }, [serviceFilter]);
+    setActiveService(params.get("service") ?? "");
+  }, [search]);
 
   const { data: companies, isLoading, isError } = useListCompanies();
+  const approved = useMemo(() => companies?.filter(c => c.status === "approved") ?? [], [companies]);
 
-  const approvedCompanies = companies?.filter(c => c.status === "approved") || [];
+  const filtered = useMemo(() => {
+    let list = approved.filter(c => {
+      const term = searchTerm.toLowerCase();
+      const matchSearch = !term ||
+        c.companyName.toLowerCase().includes(term) ||
+        c.city.toLowerCase().includes(term) ||
+        c.serviceTypes.some(s => s.toLowerCase().includes(term)) ||
+        (c.description ?? "").toLowerCase().includes(term);
+      const matchService = !activeService || c.serviceTypes.includes(activeService);
+      const matchType = !workerTypeFilter || c.workerType === workerTypeFilter;
+      const matchCity = !cityFilter || c.city.toLowerCase().includes(cityFilter.toLowerCase());
+      return matchSearch && matchService && matchType && matchCity;
+    });
 
-  const filteredCompanies = approvedCompanies.filter(c => {
-    const term = searchTerm.toLowerCase();
-    const matchesSearch =
-      c.companyName.toLowerCase().includes(term) ||
-      c.city.toLowerCase().includes(term) ||
-      c.serviceTypes.some(s => s.toLowerCase().includes(term));
-    const matchesService = activeService
-      ? c.serviceTypes.some(s => s === activeService)
-      : true;
-    return matchesSearch && matchesService;
-  });
+    if (sortBy === "price_asc") {
+      list = [...list].sort((a, b) => (a.hourlyRate ?? 9999) - (b.hourlyRate ?? 9999));
+    } else if (sortBy === "price_desc") {
+      list = [...list].sort((a, b) => (b.hourlyRate ?? 0) - (a.hourlyRate ?? 0));
+    } else if (sortBy === "experience") {
+      list = [...list].sort((a, b) => (b.yearsExperience ?? 0) - (a.yearsExperience ?? 0));
+    }
 
-  const serviceOptions = [
-    { key: "", label: t.companies.all ?? "All" },
-    { key: "renovation", label: t.offers.renovation },
-    { key: "construction", label: t.offers.construction },
-    { key: "interior", label: t.offers.interior },
-    { key: "exterior", label: t.offers.exterior },
-    { key: "plumbing", label: t.offers.plumbing },
-    { key: "electric", label: t.offers.electric },
-  ];
+    return list;
+  }, [approved, searchTerm, activeService, workerTypeFilter, cityFilter, sortBy]);
+
+  const activeFiltersCount = [activeService, workerTypeFilter, cityFilter].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setActiveService("");
+    setWorkerTypeFilter("");
+    setCityFilter("");
+    setSearchTerm("");
+    setSortBy("default");
+  };
+
+  const sortLabel = (key: string) => {
+    const map: Record<string, string> = {
+      default: t.companies.sortDefault ?? "Best Match",
+      price_asc: t.companies.sortPriceAsc ?? "Price: Low → High",
+      price_desc: t.companies.sortPriceDesc ?? "Price: High → Low",
+      experience: t.companies.sortExperience ?? "Most Experienced",
+    };
+    return map[key] ?? key;
+  };
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-serif font-bold mb-2">{t.companies.title}</h1>
-          <p className="text-muted-foreground">{t.companies.subtitle ?? "Find trusted professionals for your project"}</p>
-        </div>
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={t.companies.search}
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+    <div className="flex flex-col min-h-screen bg-muted/20">
+
+      {/* ── SEARCH HERO ── */}
+      <div className="bg-foreground text-white py-10 md:py-14">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">{t.companies.title}</h1>
+            <p className="text-white/60 text-base">{t.companies.subtitle ?? "Find trusted professionals for your project"}</p>
+          </div>
+
+          {/* Big search bar */}
+          <div className="max-w-2xl mx-auto relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
+            <Input
+              placeholder={t.companies.search}
+              className="pl-12 h-14 text-base bg-white text-foreground border-0 shadow-xl rounded-2xl"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Service pills — horizontal scroll */}
+          <div className="max-w-3xl mx-auto mt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <button
+              onClick={() => setActiveService("")}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                activeService === ""
+                  ? "bg-primary text-white border-primary shadow-md"
+                  : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
+              }`}
+            >
+              {t.companies.all ?? "All"}
+            </button>
+            {SERVICE_OPTIONS.map(svc => (
+              <button
+                key={svc}
+                onClick={() => setActiveService(activeService === svc ? "" : svc)}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                  activeService === svc
+                    ? "bg-primary text-white border-primary shadow-md"
+                    : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
+                }`}
+              >
+                {t.offers[svc as keyof typeof t.offers] ?? svc}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Service filter pills */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        {serviceOptions.map(opt => (
-          <button
-            key={opt.key}
-            onClick={() => setActiveService(opt.key)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
-              activeService === opt.key
-                ? "bg-primary text-white border-primary"
-                : "bg-white text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
+      {/* ── FILTER BAR ── */}
+      <div className="bg-white border-b border-border sticky top-0 z-20 shadow-sm">
+        <div className="container mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
+
+          {/* Worker type tabs */}
+          <div className="flex rounded-lg border border-border overflow-hidden text-sm">
+            {[
+              { val: "" as const, label: t.companies.all ?? "All" },
+              { val: "individual" as const, label: t.companies.individual ?? "Individual" },
+              { val: "company" as const, label: t.companies.company ?? "Company" },
+            ].map(opt => (
+              <button
+                key={opt.val}
+                onClick={() => setWorkerTypeFilter(opt.val)}
+                className={`px-3 py-1.5 font-medium transition-colors ${
+                  workerTypeFilter === opt.val
+                    ? "bg-primary text-white"
+                    : "bg-white text-muted-foreground hover:bg-muted/50"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* City filter */}
+          <div className="relative">
+            <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder={t.companies.cityPlaceholder ?? "City..."}
+              className="pl-7 h-8 text-sm w-32 md:w-40"
+              value={cityFilter}
+              onChange={e => setCityFilter(e.target.value)}
+            />
+          </div>
+
+          {/* Sort */}
+          <div className="relative ml-auto">
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+              className="appearance-none bg-white border border-border rounded-lg pl-8 pr-8 py-1.5 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              {SORT_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{sortLabel(opt.value)}</option>
+              ))}
+            </select>
+            <ArrowUpDown className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+          </div>
+
+          {/* Clear filters */}
+          {activeFiltersCount > 0 && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+            >
+              <X className="h-3 w-3" />
+              {t.companies.clearFilters ?? "Clear filters"} ({activeFiltersCount})
+            </button>
+          )}
+        </div>
       </div>
 
-      {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <Card key={i} className="overflow-hidden">
-              <CardHeader className="pb-2">
-                <Skeleton className="h-6 w-2/3 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 mt-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-10 w-full mt-4" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* ── RESULTS ── */}
+      <div className="container mx-auto px-4 py-8">
 
-      {isError && (
-        <div className="text-center py-12 bg-destructive/10 rounded-lg text-destructive">
-          <p>{t.common.error}</p>
-        </div>
-      )}
-
-      {!isLoading && !isError && filteredCompanies.length === 0 && (
-        <div className="text-center py-20 bg-muted/30 rounded-xl border border-border border-dashed">
-          <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-medium text-foreground mb-1">{t.companies.noResults}</h3>
-          <p className="text-muted-foreground text-sm">
-            {searchTerm || activeService ? "Try adjusting your filters" : "No approved companies found"}
+        {/* Count bar */}
+        {!isLoading && !isError && (
+          <p className="text-sm text-muted-foreground mb-6">
+            {filtered.length} {filtered.length === 1 ? (t.companies.result ?? "result") : (t.companies.results ?? "results")}
+            {activeService && <> · <span className="text-primary font-medium">{t.offers[activeService as keyof typeof t.offers] ?? activeService}</span></>}
+            {workerTypeFilter && <> · <span className="text-primary font-medium">{workerTypeFilter === "individual" ? (t.companies.individual ?? "Individual") : (t.companies.company ?? "Company")}</span></>}
           </p>
-        </div>
-      )}
+        )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCompanies.map(company => {
-          const isIndividual = company.workerType === "individual";
-          return (
-            <Card key={company.id} className="overflow-hidden flex flex-col hover:border-primary/30 transition-colors">
-              <CardHeader className="pb-3 border-b border-border/50 bg-muted/10">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="font-serif text-xl truncate">{company.companyName}</CardTitle>
-                    <CardDescription className="flex items-center gap-1 mt-1 text-sm">
-                      <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-                      {company.city}
-                    </CardDescription>
-                  </div>
-                  <Badge variant={isIndividual ? "outline" : "secondary"} className="flex-shrink-0 flex items-center gap-1">
-                    {isIndividual
-                      ? <><User className="h-3 w-3" />{t.companies.individual ?? "Individual"}</>
-                      : <><Building2 className="h-3 w-3" />{t.companies.company ?? "Company"}</>
-                    }
-                  </Badge>
-                </div>
-
-                {/* Pricing badge */}
-                <div className="mt-2">
-                  {isIndividual && company.hourlyRate ? (
-                    <div className="flex items-center gap-1.5 text-primary font-semibold text-sm">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>{company.hourlyRate} €/{t.companies.hour ?? "hr"}</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
-                      <FileText className="h-3.5 w-3.5" />
-                      <span>{t.companies.contractBased ?? "Contract-based"}</span>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-
-              <CardContent className="pt-5 flex-1 flex flex-col">
-                {company.description && (
-                  <p className="text-sm text-foreground/80 mb-4 line-clamp-3">
-                    {company.description}
-                  </p>
-                )}
-
-                <div className="mb-4">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    {t.companies.services}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {company.serviceTypes.map(service => (
-                      <Badge key={service} variant="secondary" className="font-normal capitalize">
-                        {t.offers[service as keyof typeof t.offers] || service}
-                      </Badge>
-                    ))}
+        {isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+                <div className="flex gap-3 mb-4">
+                  <Skeleton className="w-12 h-12 rounded-xl flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-2/3" />
+                    <Skeleton className="h-4 w-1/3" />
                   </div>
                 </div>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-4/5 mb-4" />
+                <Skeleton className="h-9 w-full" />
+              </div>
+            ))}
+          </div>
+        )}
 
-                <div className="mt-auto pt-4 border-t border-border/50 space-y-3">
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
-                      <CalendarDays className="h-4 w-4" />
-                      <span>
-                        {company.yearsExperience ? `${company.yearsExperience} ${t.companies.years} exp` : "New"}
-                      </span>
+        {isError && (
+          <div className="text-center py-16 bg-destructive/5 rounded-2xl text-destructive">
+            <p>{t.common.error}</p>
+          </div>
+        )}
+
+        {!isLoading && !isError && filtered.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-24 bg-white rounded-2xl border border-dashed border-border"
+          >
+            <Search className="h-14 w-14 text-muted-foreground mx-auto mb-4 opacity-30" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">{t.companies.noResults}</h3>
+            <p className="text-muted-foreground text-sm mb-6">
+              {t.companies.noResultsHint ?? "Try adjusting your filters or search terms"}
+            </p>
+            <Button variant="outline" onClick={clearFilters}>
+              {t.companies.clearFilters ?? "Clear all filters"}
+            </Button>
+          </motion.div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <AnimatePresence>
+            {filtered.map((company, idx) => {
+              const isIndividual = company.workerType === "individual";
+              return (
+                <motion.div
+                  key={company.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: idx * 0.04, duration: 0.3 }}
+                  className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 flex flex-col overflow-hidden"
+                >
+                  {/* Card header */}
+                  <div className="p-5 flex gap-3 items-start border-b border-border/50">
+                    <InitialAvatar name={company.companyName} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2 flex-wrap">
+                        <h3 className="font-bold text-foreground text-base leading-tight flex-1 min-w-0 truncate">
+                          {company.companyName}
+                        </h3>
+                        <Badge
+                          variant={isIndividual ? "outline" : "secondary"}
+                          className={`flex-shrink-0 text-xs flex items-center gap-1 ${isIndividual ? "border-primary/40 text-primary" : ""}`}
+                        >
+                          {isIndividual
+                            ? <><User className="h-3 w-3" />{t.companies.individual ?? "Individual"}</>
+                            : <><Building2 className="h-3 w-3" />{t.companies.company ?? "Company"}</>
+                          }
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>{company.city}</span>
+                        {company.yearsExperience && (
+                          <>
+                            <span className="mx-1">·</span>
+                            <CalendarDays className="h-3 w-3" />
+                            <span>{company.yearsExperience} {t.companies.years} exp</span>
+                          </>
+                        )}
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="p-5 flex-1 flex flex-col gap-4">
+                    {/* Price */}
+                    <div>
+                      {isIndividual && company.hourlyRate ? (
+                        <div className="flex items-center gap-1.5 text-primary font-bold text-lg">
+                          <Clock className="h-4 w-4" />
+                          <span>{company.hourlyRate} €</span>
+                          <span className="text-sm font-normal text-muted-foreground">/{t.companies.hour ?? "hr"}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                          <FileText className="h-4 w-4" />
+                          <span>{t.companies.contractBased ?? "Contract-based"}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    {company.description && (
+                      <p className="text-sm text-foreground/75 leading-relaxed line-clamp-2">
+                        {company.description}
+                      </p>
+                    )}
+
+                    {/* Service badges */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {company.serviceTypes.slice(0, 3).map(svc => (
+                        <button
+                          key={svc}
+                          onClick={() => setActiveService(svc)}
+                          className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium hover:bg-primary/15 transition-colors capitalize"
+                        >
+                          {t.offers[svc as keyof typeof t.offers] ?? svc}
+                        </button>
+                      ))}
+                      {company.serviceTypes.length > 3 && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">
+                          +{company.serviceTypes.length - 3}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Website */}
                     {company.website && (
                       <a
-                        href={company.website.startsWith('http') ? company.website : `https://${company.website}`}
+                        href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-primary hover:underline"
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
                       >
-                        <Globe className="h-4 w-4" />
-                        <span>Website</span>
+                        <Globe className="h-3.5 w-3.5" />
+                        {company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                       </a>
                     )}
                   </div>
-                  <div className="flex gap-2">
-                    <Button asChild size="sm" className="flex-1">
+
+                  {/* CTA footer */}
+                  <div className="px-5 pb-5 flex gap-2">
+                    <Button asChild className="flex-1" size="sm">
                       <a href={`mailto:${company.email}`}>
                         <Mail className="h-3.5 w-3.5 mr-1.5" />
                         {t.companies.contact ?? "Contact"}
                       </a>
                     </Button>
                     {company.phone && (
-                      <Button asChild size="sm" variant="outline" className="flex-1">
+                      <Button asChild variant="outline" size="sm" className="flex-1">
                         <a href={`tel:${company.phone}`}>
                           <Phone className="h-3.5 w-3.5 mr-1.5" />
                           {t.companies.call ?? "Call"}
@@ -213,11 +402,11 @@ export default function Companies() {
                       </Button>
                     )}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

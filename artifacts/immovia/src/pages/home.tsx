@@ -19,6 +19,7 @@ import {
   Globe,
   TrendingUp,
   ChevronRight,
+  Search,
 } from "lucide-react";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
@@ -108,86 +109,64 @@ export default function Home() {
     <div className="flex flex-col w-full">
 
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden bg-foreground text-white py-16 md:py-28 lg:py-36">
-        {/* Subtle grid pattern */}
+      <section className="relative overflow-hidden bg-foreground text-white py-16 md:py-24 lg:py-32">
         <div className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.15) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-
-        {/* Glow blobs */}
         <div className="absolute top-[-20%] right-[-10%] w-[45%] h-[80%] rounded-full bg-primary opacity-10 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[70%] rounded-full bg-blue-400 opacity-8 blur-[100px] pointer-events-none" />
 
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            className="max-w-3xl mx-auto text-center"
-            initial="initial"
-            animate="animate"
-            variants={stagger}
-          >
-            {/* Badge */}
+          <motion.div className="max-w-4xl mx-auto text-center" initial="initial" animate="animate" variants={stagger}>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-8">
               <Star className="w-3 h-3 text-primary fill-primary" />
               {t.hero.badge}
             </motion.div>
 
-            {/* Headline */}
-            <motion.h1
-              variants={fadeUp}
-              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4 leading-[1.08]"
-            >
+            <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-4 leading-[1.05]">
               {t.hero.title.split('\n').map((line, i) => (
-                <span key={i}>
-                  {line}
-                  {i < t.hero.title.split('\n').length - 1 && <br />}
+                <span key={i} className={i === 1 ? "text-primary" : i === 2 ? "text-blue-300" : ""}>
+                  {line}{i < t.hero.title.split('\n').length - 1 && <br />}
                 </span>
               ))}
             </motion.h1>
-            <motion.p
-              variants={fadeUp}
-              className="text-xl md:text-2xl font-light text-primary mb-6"
-            >
-              {t.hero.titleHighlight}
-            </motion.p>
-
-            <motion.p
-              variants={fadeUp}
-              className="text-base md:text-lg text-white/65 mb-10 max-w-2xl mx-auto leading-relaxed"
-            >
+            <motion.p variants={fadeUp} className="text-lg md:text-xl font-light text-white/70 mb-10 max-w-2xl mx-auto leading-relaxed">
               {t.hero.subtitle}
             </motion.p>
 
+            {/* 4-flow visual */}
+            <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto mb-10">
+              {[
+                { from: t.hero.flow1From, to: t.hero.flow1To, desc: t.hero.flow1Desc, color: "from-primary/20 to-blue-500/10 border-primary/30" },
+                { from: t.hero.flow2From, to: t.hero.flow2To, desc: t.hero.flow2Desc, color: "from-blue-400/20 to-indigo-500/10 border-blue-400/30" },
+              ].map((flow, i) => (
+                <div key={i} className={`bg-gradient-to-br ${flow.color} border rounded-xl p-4 text-left`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-white/90 text-sm font-semibold">{flow.from}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <span className="text-primary text-sm font-semibold">{flow.to}</span>
+                  </div>
+                  <p className="text-white/60 text-xs leading-relaxed">{flow.desc}</p>
+                </div>
+              ))}
+            </motion.div>
+
             {/* CTAs */}
-            <motion.div
-              variants={fadeUp}
-              className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10"
-            >
-              <Link href="/submit-project">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white text-base h-13 px-8 shadow-lg shadow-primary/25"
-                  data-testid="hero-cta-project"
-                >
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
+              <Link href="/companies">
+                <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white text-base px-8 shadow-lg shadow-primary/25" data-testid="hero-cta-project">
+                  <Search className="mr-2 h-4 w-4" />
                   {t.hero.ctaProject}
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/register-company">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto bg-transparent border-white/25 hover:bg-white/10 text-white text-base h-13 px-8"
-                  data-testid="hero-cta-company"
-                >
+                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-white/25 hover:bg-white/10 text-white text-base px-8" data-testid="hero-cta-company">
                   {t.hero.ctaCompany}
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </motion.div>
 
-            {/* Trust badges */}
-            <motion.div
-              variants={fadeUp}
-              className="flex flex-wrap items-center justify-center gap-6 text-white/50 text-xs font-medium"
-            >
+            <motion.div variants={fadeUp} className="flex flex-wrap items-center justify-center gap-6 text-white/50 text-xs font-medium">
               {[t.hero.trustBadge1, t.hero.trustBadge2, t.hero.trustBadge3].map((badge, i) => (
                 <span key={i} className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
