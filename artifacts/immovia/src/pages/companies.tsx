@@ -69,7 +69,9 @@ export default function Companies() {
   const [, navigate] = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeService, setActiveService] = useState(params.get("service") ?? "");
+  const [activeServices, setActiveServices] = useState<string[]>(
+    () => params.get("service")?.split(",").filter(Boolean) ?? []
+  );
   const [workerTypeFilter, setWorkerTypeFilter] = useState<"" | "individual" | "company">(() => {
     const wt = params.get("workerType") ?? "";
     return (wt === "individual" || wt === "company") ? wt : "";
@@ -86,7 +88,7 @@ export default function Companies() {
   // Inbound: sync URL → state (handles external navigation e.g. home page service cards)
   useEffect(() => {
     const p = new URLSearchParams(search);
-    setActiveService(p.get("service") ?? "");
+    setActiveServices(p.get("service")?.split(",").filter(Boolean) ?? []);
     const wt = p.get("workerType") ?? "";
     setWorkerTypeFilter((wt === "individual" || wt === "company") ? wt : "");
     setCityFilter(p.get("city") ?? "");
@@ -94,10 +96,11 @@ export default function Companies() {
   }, [search]);
 
   // Outbound: sync state → URL (preserves shareable filter state)
-  const searchRef = { current: search };
+  const searchRef = useRef(search);
+  searchRef.current = search;
   useEffect(() => {
     const p = new URLSearchParams();
-    if (activeService) p.set("service", activeService);
+    if (activeServices.length) p.set("service", activeServices.join(","));
     if (cityFilter) p.set("city", cityFilter);
     if (workerTypeFilter) p.set("workerType", workerTypeFilter);
     if (sortBy !== "default") p.set("sort", sortBy);
@@ -105,7 +108,7 @@ export default function Companies() {
     if (next !== searchRef.current) {
       navigate(`?${next}`, { replace: true });
     }
-  }, [activeService, cityFilter, workerTypeFilter, sortBy, navigate]);
+  }, [activeServices, cityFilter, workerTypeFilter, sortBy, navigate]);
 
   // Close city dropdown on outside click
   useEffect(() => {
@@ -193,7 +196,7 @@ export default function Companies() {
         c.city.toLowerCase().includes(term) ||
         c.serviceTypes.some(s => s.toLowerCase().includes(term)) ||
         (c.description ?? "").toLowerCase().includes(term);
-      const matchService = !activeService || c.serviceTypes.includes(activeService);
+      const matchService = !activeServices.length || activeServices.some(s => c.serviceTypes.includes(s));
       const matchType = !workerTypeFilter || c.workerType === workerTypeFilter;
       const matchCity = !cityFilter || c.city.toLowerCase().includes(cityFilter.toLowerCase());
       return matchSearch && matchService && matchType && matchCity;
@@ -208,12 +211,12 @@ export default function Companies() {
     }
 
     return list;
-  }, [approved, searchTerm, activeService, workerTypeFilter, cityFilter, sortBy]);
+  }, [approved, searchTerm, activeServices, workerTypeFilter, cityFilter, sortBy]);
 
-  const activeFiltersCount = [activeService, workerTypeFilter, cityFilter].filter(Boolean).length;
+  const activeFiltersCount = [activeServices.length > 0, !!workerTypeFilter, !!cityFilter].filter(Boolean).length;
 
   const clearFilters = () => {
-    setActiveService("");
+    setActiveServices([]);
     setWorkerTypeFilter("");
     setCityFilter("");
     setSearchTerm("");
@@ -263,9 +266,9 @@ export default function Companies() {
           {/* Service pills — horizontal scroll */}
           <div className="max-w-3xl mx-auto mt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             <button
-              onClick={() => setActiveService("")}
+              onClick={() => setActiveServices([])}
               className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                activeService === ""
+                activeServices.length === 0
                   ? "bg-primary text-white border-primary shadow-md"
                   : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
               }`}
@@ -275,9 +278,11 @@ export default function Companies() {
             {SERVICE_OPTIONS.map(svc => (
               <button
                 key={svc}
-                onClick={() => setActiveService(activeService === svc ? "" : svc)}
+                onClick={() => setActiveServices(prev =>
+                  prev.includes(svc) ? prev.filter(s => s !== svc) : [...prev, svc]
+                )}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                  activeService === svc
+                  activeServices.includes(svc)
                     ? "bg-primary text-white border-primary shadow-md"
                     : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
                 }`}
@@ -434,7 +439,7 @@ export default function Companies() {
         {!isLoading && !isError && (
           <p className="text-sm text-muted-foreground mb-6">
             {filtered.length} {filtered.length === 1 ? (t.companies.result ?? "result") : (t.companies.results ?? "results")}
-            {activeService && <> · <span className="text-primary font-medium">{t.offers[activeService as keyof typeof t.offers] ?? activeService}</span></>}
+            {activeServices.length > 0 && <> · <span className="text-primary font-medium">{activeServices.map(s => t.offers[s as keyof typeof t.offers] ?? s).join(", ")}</span></>}
             {workerTypeFilter && <> · <span className="text-primary font-medium">{workerTypeFilter === "individual" ? (t.companies.individual ?? "Individual") : (t.companies.company ?? "Company")}</span></>}
           </p>
         )}
@@ -557,7 +562,7 @@ export default function Companies() {
                       {company.serviceTypes.slice(0, 3).map(svc => (
                         <button
                           key={svc}
-                          onClick={e => { e.stopPropagation(); setActiveService(svc); }}
+                          onClick={e => { e.stopPropagation(); setActiveServices(prev => prev.includes(svc) ? prev.filter(s => s !== svc) : [...prev, svc]); }}
                           className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium hover:bg-primary/15 transition-colors capitalize"
                         >
                           {t.offers[svc as keyof typeof t.offers] ?? svc}

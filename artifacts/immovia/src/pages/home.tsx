@@ -1,6 +1,6 @@
-import { useRef, useMemo, useState } from "react";
+import { useRef, useMemo, useState, useEffect } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useSearch, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/contexts/AuthContext";
 import { useListCompanies, useListProjects } from "@workspace/api-client-react";
@@ -186,20 +186,47 @@ function ProjectPreviewCard({ project, t }: {
 export default function Home() {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const search = useSearch();
+  const [, navigate] = useLocation();
   const { data: companies, isLoading: isLoadingCompanies } = useListCompanies();
   const { data: projects, isLoading: isLoadingProjects } = useListProjects();
-  const [listingTypeFilter, setListingTypeFilter] = useState("");
-  const [listingCityFilter, setListingCityFilter] = useState("");
+  const [listingTypeFilter, setListingTypeFilter] = useState(() => new URLSearchParams(search).get("type") ?? "");
+  const [listingCityFilter, setListingCityFilter] = useState(() => new URLSearchParams(search).get("city") ?? "");
+  const [listingSizeFilter, setListingSizeFilter] = useState(() => new URLSearchParams(search).get("size") ?? "");
+  const [listingBudgetFilter, setListingBudgetFilter] = useState(() => new URLSearchParams(search).get("budget") ?? "");
+  const listingSearchRef = useRef(search);
+  listingSearchRef.current = search;
+  // Inbound URL → state
+  useEffect(() => {
+    const p = new URLSearchParams(search);
+    setListingTypeFilter(p.get("type") ?? "");
+    setListingCityFilter(p.get("city") ?? "");
+    setListingSizeFilter(p.get("size") ?? "");
+    setListingBudgetFilter(p.get("budget") ?? "");
+  }, [search]);
+  // Outbound state → URL
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (listingTypeFilter) p.set("type", listingTypeFilter);
+    if (listingCityFilter) p.set("city", listingCityFilter);
+    if (listingSizeFilter) p.set("size", listingSizeFilter);
+    if (listingBudgetFilter) p.set("budget", listingBudgetFilter);
+    const next = p.toString();
+    if (next !== listingSearchRef.current) navigate(`?${next}`, { replace: true });
+  }, [listingTypeFilter, listingCityFilter, listingSizeFilter, listingBudgetFilter, navigate]);
   const previewCompanies = useMemo(
     () => companies?.filter(c => c.status === "approved").slice(0, 6) ?? [],
     [companies]
   );
+  const hasListingFilter = !!(listingTypeFilter || listingCityFilter || listingSizeFilter || listingBudgetFilter);
   const previewProjects = useMemo(() => {
     let list = (projects ?? []).filter(p => p.status === "pending");
     if (listingTypeFilter) list = list.filter(p => p.projectType === listingTypeFilter);
     if (listingCityFilter) list = list.filter(p => p.city.toLowerCase().includes(listingCityFilter.toLowerCase()));
+    if (listingSizeFilter) list = list.filter(p => p.size === listingSizeFilter);
+    if (listingBudgetFilter) list = list.filter(p => p.budget === listingBudgetFilter);
     return list.slice(0, 9);
-  }, [projects, listingTypeFilter, listingCityFilter]);
+  }, [projects, listingTypeFilter, listingCityFilter, listingSizeFilter, listingBudgetFilter]);
 
   // ── Parallax & 3-D mouse tracking ──
   const heroRef = useRef<HTMLElement>(null);
@@ -646,9 +673,32 @@ export default function Home() {
                 </button>
               )}
             </div>
-            {(listingTypeFilter || listingCityFilter) && (
+            <select
+              value={listingSizeFilter}
+              onChange={e => setListingSizeFilter(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-muted/40 px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">{t.listings.filterAllSizes ?? "All sizes"}</option>
+              <option value="small">{t.listings.sizeSm}</option>
+              <option value="medium">{t.listings.sizeMd}</option>
+              <option value="large">{t.listings.sizeLg}</option>
+              <option value="premium">{t.listings.sizePremium}</option>
+            </select>
+            <select
+              value={listingBudgetFilter}
+              onChange={e => setListingBudgetFilter(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-muted/40 px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">{t.listings.filterAllBudgets ?? "All budgets"}</option>
+              <option value="under-10k">{"< 10k"}</option>
+              <option value="10k-50k">{"10k – 50k"}</option>
+              <option value="50k-100k">{"50k – 100k"}</option>
+              <option value="100k-500k">{"100k – 500k"}</option>
+              <option value="over-500k">{"> 500k"}</option>
+            </select>
+            {hasListingFilter && (
               <button
-                onClick={() => { setListingTypeFilter(""); setListingCityFilter(""); }}
+                onClick={() => { setListingTypeFilter(""); setListingCityFilter(""); setListingSizeFilter(""); setListingBudgetFilter(""); }}
                 className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
               >
                 <X className="h-3 w-3" />
@@ -681,13 +731,13 @@ export default function Home() {
             </div>
           )}
 
-          {!isLoadingProjects && previewProjects.length === 0 && (
+          {!isLoadingProjects && previewProjects.length === 0 && hasListingFilter && (
             <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-border">
               <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-30" />
               <p className="text-foreground font-semibold mb-1">{t.listings.noResultsFilter ?? "No projects match your filters"}</p>
               <p className="text-sm text-muted-foreground mb-4">{t.listings.noResultsFilterHint ?? "Try different filters or clear them."}</p>
               <button
-                onClick={() => { setListingTypeFilter(""); setListingCityFilter(""); }}
+                onClick={() => { setListingTypeFilter(""); setListingCityFilter(""); setListingSizeFilter(""); setListingBudgetFilter(""); }}
                 className="text-sm text-primary hover:underline font-medium"
               >
                 {t.listings.clearFilters ?? "Clear filters"}

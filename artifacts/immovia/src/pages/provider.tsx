@@ -68,6 +68,7 @@ export default function ProviderDashboard() {
   const [browseTypeFilter, setBrowseTypeFilter] = useState("");
   const [browseCityFilter, setBrowseCityFilter] = useState("");
   const [browseSizeFilter, setBrowseSizeFilter] = useState("");
+  const [browseBudgetFilter, setBrowseBudgetFilter] = useState("");
   const [browseView, setBrowseView] = useState<"grid" | "list">("grid");
   const [galleryProject, setGalleryProject] = useState<ProviderProject | null>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
@@ -281,9 +282,21 @@ export default function ProviderDashboard() {
               <option value="large">{t.listings.sizeLg}</option>
               <option value="premium">{t.listings.sizePremium}</option>
             </select>
-            {(browseTypeFilter || browseCityFilter || browseSizeFilter) && (
+            <select
+              value={browseBudgetFilter}
+              onChange={e => setBrowseBudgetFilter(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">{t.provider.filterAllBudgets ?? "All budgets"}</option>
+              <option value="under-10k">{"< 10k"}</option>
+              <option value="10k-50k">{"10k – 50k"}</option>
+              <option value="50k-100k">{"50k – 100k"}</option>
+              <option value="100k-500k">{"100k – 500k"}</option>
+              <option value="over-500k">{"> 500k"}</option>
+            </select>
+            {(browseTypeFilter || browseCityFilter || browseSizeFilter || browseBudgetFilter) && (
               <button
-                onClick={() => { setBrowseTypeFilter(""); setBrowseCityFilter(""); setBrowseSizeFilter(""); }}
+                onClick={() => { setBrowseTypeFilter(""); setBrowseCityFilter(""); setBrowseSizeFilter(""); setBrowseBudgetFilter(""); }}
                 className="flex items-center gap-1 text-xs text-primary hover:underline font-medium h-9"
               >
                 <X className="h-3 w-3" />
@@ -314,7 +327,8 @@ export default function ProviderDashboard() {
               const matchType = !browseTypeFilter || p.projectType === browseTypeFilter;
               const matchCity = !browseCityFilter || p.city.toLowerCase().includes(browseCityFilter.toLowerCase());
               const matchSize = !browseSizeFilter || p.size === browseSizeFilter;
-              return matchType && matchCity && matchSize;
+              const matchBudget = !browseBudgetFilter || p.budget === browseBudgetFilter;
+              return matchType && matchCity && matchSize && matchBudget;
             });
 
             if (filtered.length === 0) {
