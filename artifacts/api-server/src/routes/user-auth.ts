@@ -33,7 +33,7 @@ router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
   const clerkUserId = auth.userId!;
 
   // Look up by clerk user id
-  const [user] = await db
+  let [user] = await db
     .select()
     .from(usersTable)
     .where(eq(usersTable.clerkUserId, clerkUserId))
@@ -42,6 +42,16 @@ router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
   if (!user) {
     res.status(404).json({ error: "User not found. Please complete sign-up." });
     return;
+  }
+
+  // Auto-upgrade role for known admin emails
+  if (ADMIN_EMAILS.has(user.email) && user.role !== "admin") {
+    const [upgraded] = await db
+      .update(usersTable)
+      .set({ role: "admin" })
+      .where(eq(usersTable.id, user.id))
+      .returning();
+    if (upgraded) user = upgraded;
   }
 
   res.json({ user: toPublicUser(user) });
