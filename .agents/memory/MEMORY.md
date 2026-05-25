@@ -1,0 +1,1 @@
+- [LanguageProvider must not return null](language-provider-null.md) — returning null before isMounted causes HMR crashes; always render children with default 'en'.
