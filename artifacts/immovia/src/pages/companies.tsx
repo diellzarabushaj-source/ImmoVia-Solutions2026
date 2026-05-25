@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Search, MapPin, CalendarDays, Globe, Mail, Phone,
   Clock, FileText, User, Building2, SlidersHorizontal,
-  ArrowUpDown, X, ChevronDown,
+  ArrowUpDown, X, ChevronDown, LocateFixed, Loader2,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
@@ -60,10 +60,56 @@ export default function Companies() {
   const [cityFilter, setCityFilter] = useState("");
   const [sortBy, setSortBy] = useState("default");
   const [showFilters, setShowFilters] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [geoError, setGeoError] = useState(false);
 
   useEffect(() => {
     setActiveService(params.get("service") ?? "");
   }, [search]);
+
+  // Try silent auto-detect on mount (only fires if permission already granted)
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.permissions?.query({ name: "geolocation" }).then(result => {
+      if (result.state === "granted") {
+        detectCity();
+      }
+    }).catch(() => {/* permissions API not available — skip */});
+  }, []);
+
+  const detectCity = () => {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    setGeoError(false);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          const data = await res.json();
+          const city =
+            data.address?.city ||
+            data.address?.town ||
+            data.address?.village ||
+            data.address?.county ||
+            "";
+          if (city) setCityFilter(city);
+        } catch {
+          setGeoError(true);
+        } finally {
+          setLocating(false);
+        }
+      },
+      () => {
+        setGeoError(true);
+        setLocating(false);
+      },
+      { timeout: 8000 }
+    );
+  };
 
   const { data: companies, isLoading, isError } = useListCompanies();
   const approved = useMemo(() => companies?.filter(c => c.status === "approved") ?? [], [companies]);
@@ -198,14 +244,33 @@ export default function Companies() {
           </div>
 
           {/* City filter */}
-          <div className="relative">
-            <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder={t.companies.cityPlaceholder ?? "City..."}
-              className="pl-7 h-8 text-sm w-32 md:w-40"
-              value={cityFilter}
-              onChange={e => setCityFilter(e.target.value)}
-            />
+          <div className="relative flex items-center gap-1">
+            <div className="relative">
+              <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder={t.companies.cityPlaceholder ?? "City..."}
+                className={`pl-7 pr-2 h-8 text-sm w-32 md:w-40 ${geoError ? "border-destructive/50 focus-visible:ring-destructive/30" : ""}`}
+                value={cityFilter}
+                onChange={e => { setCityFilter(e.target.value); setGeoError(false); }}
+              />
+            </div>
+            <button
+              onClick={detectCity}
+              disabled={locating}
+              title={locating ? "Detecting location…" : (t.companies.detectLocation ?? "Use my location")}
+              className={`h-8 w-8 flex items-center justify-center rounded-lg border transition-colors flex-shrink-0
+                ${locating
+                  ? "border-primary/30 bg-primary/5 text-primary cursor-wait"
+                  : geoError
+                    ? "border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10"
+                    : "border-border bg-white text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5"
+                }`}
+            >
+              {locating
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                : <LocateFixed className="h-3.5 w-3.5" />
+              }
+            </button>
           </div>
 
           {/* Sort */}
