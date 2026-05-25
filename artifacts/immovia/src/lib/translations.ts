@@ -4,8 +4,8 @@ export const translations = {
   sq: {
     nav: {
       home: 'Kryefaqja',
-      submitProject: 'Dërgo Projekt',
-      registerCompany: 'Regjistro Kompani',
+      submitProject: 'Posto Projekt',
+      registerCompany: 'Ofro Shërbime',
       companies: 'Kompanitë',
       pricing: 'Çmimet',
       chat: 'Asistenti',
@@ -502,8 +502,8 @@ export const translations = {
   en: {
     nav: {
       home: 'Home',
-      submitProject: 'Submit Project',
-      registerCompany: 'Register Company',
+      submitProject: 'Post a Project',
+      registerCompany: 'Offer Services',
       companies: 'Companies',
       pricing: 'Pricing',
       chat: 'Assistant',
@@ -1000,8 +1000,8 @@ export const translations = {
   de: {
     nav: {
       home: 'Startseite',
-      submitProject: 'Projekt Einreichen',
-      registerCompany: 'Firma Registrieren',
+      submitProject: 'Projekt aufgeben',
+      registerCompany: 'Dienste anbieten',
       companies: 'Firmen',
       pricing: 'Preise',
       chat: 'Assistent',
@@ -1498,8 +1498,8 @@ export const translations = {
   fr: {
     nav: {
       home: 'Accueil',
-      submitProject: 'Soumettre Projet',
-      registerCompany: 'Enregistrer Société',
+      submitProject: 'Poster un projet',
+      registerCompany: 'Proposer vos services',
       companies: 'Sociétés',
       pricing: 'Tarifs',
       chat: 'Assistant',

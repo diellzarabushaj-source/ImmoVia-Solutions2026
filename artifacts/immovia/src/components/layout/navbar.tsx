@@ -80,19 +80,28 @@ export function Navbar() {
           {/* Divider */}
           <div className="w-px h-5 bg-border mx-2 shrink-0" />
 
-          {/* Action links */}
-          {actionLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-sm font-semibold px-3 py-2 rounded-md transition-colors hover:text-primary hover:bg-primary/8 ${
-                location === link.href ? "text-primary bg-primary/10" : "text-foreground/85"
-              }`}
-              data-testid={`nav-${link.href.replace("/", "") || "home"}`}
+          {/* Post a Project — primary CTA */}
+          <Link href="/submit-project" data-testid="nav-submit-project">
+            <Button
+              size="sm"
+              className={`text-sm ${location === "/submit-project" ? "opacity-90" : ""}`}
             >
-              {link.label}
-            </Link>
-          ))}
+              {t.nav.submitProject}
+            </Button>
+          </Link>
+
+          {/* Offer Services — secondary CTA */}
+          <Link href="/register-company" data-testid="nav-register-company">
+            <Button
+              variant="outline"
+              size="sm"
+              className={`text-sm border-primary/40 text-primary hover:bg-primary/8 hover:border-primary ${
+                location === "/register-company" ? "bg-primary/8 border-primary" : ""
+              }`}
+            >
+              {t.nav.registerCompany}
+            </Button>
+          </Link>
         </div>
 
         <div className="flex items-center gap-2">
