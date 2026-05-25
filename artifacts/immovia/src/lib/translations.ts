@@ -227,6 +227,9 @@ export const translations = {
       infoPhone: '+355 4 222 0000',
       infoAddress: 'Tiranë, Shqipëri',
       infoHours: 'E Hënë – E Premte, 09:00 – 18:00',
+      quoteText: 'Nëse doni të rindërtoni shtëpinë, filloni me kontaktin e duhur — jo me çekiçin.',
+      quoteAuthor: 'Raze Dobraj',
+      quoteRole: 'Drejtore Ekzekutive, ImmoVia',
     },
     team: {
       title: 'Ekipi Ynë',
@@ -720,6 +723,9 @@ export const translations = {
       infoPhone: '+355 4 222 0000',
       infoAddress: 'Tirana, Albania',
       infoHours: 'Monday – Friday, 09:00 – 18:00',
+      quoteText: 'If you want to renovate your home, start with the right contact — not the hammer.',
+      quoteAuthor: 'Raze Dobraj',
+      quoteRole: 'Chief Executive Officer, ImmoVia',
     },
     team: {
       title: 'Our Team',
@@ -1213,6 +1219,9 @@ export const translations = {
       infoPhone: '+355 4 222 0000',
       infoAddress: 'Tirana, Albanien',
       infoHours: 'Montag – Freitag, 09:00 – 18:00 Uhr',
+      quoteText: 'Wer sein Zuhause renovieren will, fängt mit dem richtigen Kontakt an — nicht mit dem Hammer.',
+      quoteAuthor: 'Raze Dobraj',
+      quoteRole: 'Geschäftsführerin, ImmoVia',
     },
     team: {
       title: 'Unser Team',
@@ -1706,6 +1715,9 @@ export const translations = {
       infoPhone: '+355 4 222 0000',
       infoAddress: 'Tirana, Albanie',
       infoHours: 'Lundi – Vendredi, 09:00 – 18:00',
+      quoteText: 'Pour rénover votre maison, commencez par le bon contact — pas par le marteau.',
+      quoteAuthor: 'Raze Dobraj',
+      quoteRole: 'Directrice Générale, ImmoVia',
     },
     team: {
       title: 'Notre Équipe',

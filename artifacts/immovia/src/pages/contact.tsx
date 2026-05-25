@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Phone, MapPin, Clock, CheckCircle2, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, CheckCircle2, Send, Quote } from "lucide-react";
 
 export default function Contact() {
   const { t } = useLanguage();
@@ -65,6 +65,45 @@ export default function Contact() {
           >
             {t.contact.subtitle}
           </motion.p>
+        </div>
+      </section>
+
+      {/* ── CEO QUOTE STRIP ── */}
+      <section className="bg-white border-b border-border">
+        <div className="container mx-auto px-4 py-10 max-w-4xl">
+          <motion.div
+            className="flex flex-col sm:flex-row items-center gap-6 bg-gradient-to-br from-[#eef2f9] to-blue-50 border border-[#d0daf0] rounded-2xl px-7 py-6 relative overflow-hidden"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.15 }}
+          >
+            {/* Decorative oversized quote mark */}
+            <Quote className="absolute top-3 left-4 w-16 h-16 text-primary/8 rotate-180 pointer-events-none select-none" />
+
+            {/* Raze photo */}
+            <div className="relative flex-shrink-0">
+              <img
+                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&crop=face&q=80"
+                alt={t.contact.quoteAuthor}
+                className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+              />
+              <span className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full border-2 border-white flex items-center justify-center">
+                <Quote className="w-3 h-3 text-white" />
+              </span>
+            </div>
+
+            {/* Quote text */}
+            <div className="relative z-10 text-center sm:text-left">
+              <p className="text-[#1a3a6e] text-base md:text-lg font-medium italic leading-relaxed mb-3">
+                "{t.contact.quoteText}"
+              </p>
+              <div className="flex items-center justify-center sm:justify-start gap-2">
+                <span className="w-8 h-px bg-primary/40" />
+                <span className="text-sm font-bold text-[#0f2044]">{t.contact.quoteAuthor}</span>
+                <span className="text-xs text-muted-foreground">— {t.contact.quoteRole}</span>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
