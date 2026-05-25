@@ -201,16 +201,17 @@ export default function Home() {
             {/* 4-flow visual */}
             <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto mb-10">
               {[
-                { from: t.hero.flow1From, to: t.hero.flow1To, desc: t.hero.flow1Desc, color: "from-primary/25 to-blue-500/15 border-primary/40" },
-                { from: t.hero.flow2From, to: t.hero.flow2To, desc: t.hero.flow2Desc, color: "from-blue-400/25 to-indigo-500/15 border-blue-400/40" },
+                { from: t.hero.flow1From, to: t.hero.flow1To, desc: t.hero.flow1Desc, accent: "text-blue-300" },
+                { from: t.hero.flow2From, to: t.hero.flow2To, desc: t.hero.flow2Desc, accent: "text-blue-300" },
               ].map((flow, i) => (
-                <div key={i} className={`bg-gradient-to-br ${flow.color} border rounded-xl p-4 text-left backdrop-blur-sm`}>
+                <div key={i} className="rounded-xl p-4 text-left border border-white/20"
+                  style={{ background: "rgba(10,20,50,0.55)", backdropFilter: "blur(12px)" }}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-white text-sm font-semibold" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{flow.from}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                    <span className="text-primary text-sm font-semibold">{flow.to}</span>
+                    <span className="text-white text-sm font-semibold">{flow.from}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-blue-300 flex-shrink-0" />
+                    <span className={`${flow.accent} text-sm font-semibold`}>{flow.to}</span>
                   </div>
-                  <p className="text-white/80 text-xs leading-relaxed">{flow.desc}</p>
+                  <p className="text-white/75 text-xs leading-relaxed">{flow.desc}</p>
                 </div>
               ))}
             </motion.div>
