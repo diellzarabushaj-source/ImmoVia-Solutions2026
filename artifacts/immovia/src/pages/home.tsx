@@ -21,6 +21,8 @@ import {
   TrendingUp,
   ChevronRight,
   Search,
+  Home as HomeIcon,
+  Briefcase,
 } from "lucide-react";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
@@ -198,22 +200,43 @@ export default function Home() {
               {t.hero.subtitle}
             </motion.p>
 
-            {/* 4-flow visual */}
+            {/* Persona cards */}
             <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto mb-10">
-              {[
-                { from: t.hero.flow1From, to: t.hero.flow1To, desc: t.hero.flow1Desc, accent: "text-blue-300" },
-                { from: t.hero.flow2From, to: t.hero.flow2To, desc: t.hero.flow2Desc, accent: "text-blue-300" },
-              ].map((flow, i) => (
-                <div key={i} className="rounded-xl p-4 text-left border border-white/20"
-                  style={{ background: "rgba(10,20,50,0.55)", backdropFilter: "blur(12px)" }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-white text-sm font-semibold">{flow.from}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-blue-300 flex-shrink-0" />
-                    <span className={`${flow.accent} text-sm font-semibold`}>{flow.to}</span>
+              {/* Client persona */}
+              <Link href="/companies">
+                <div className="group rounded-xl p-5 text-left border border-white/20 cursor-pointer transition-all duration-200 hover:border-blue-400/50"
+                  style={{ background: "rgba(10,20,50,0.60)", backdropFilter: "blur(14px)" }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/30 border border-primary/40 flex items-center justify-center flex-shrink-0">
+                      <HomeIcon className="w-4 h-4 text-blue-300" />
+                    </div>
+                    <span className="text-blue-300 text-[10px] font-bold uppercase tracking-widest">{t.hero.persona1Label}</span>
                   </div>
-                  <p className="text-white/75 text-xs leading-relaxed">{flow.desc}</p>
+                  <h3 className="text-white text-base font-bold mb-1 leading-snug">{t.hero.persona1Title}</h3>
+                  <p className="text-white/65 text-xs leading-relaxed mb-3">{t.hero.persona1Desc}</p>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-300 group-hover:gap-2 transition-all">
+                    {t.hero.persona1Cta} <ArrowRight className="w-3 h-3" />
+                  </span>
                 </div>
-              ))}
+              </Link>
+
+              {/* Professional persona */}
+              <Link href="/register-company">
+                <div className="group rounded-xl p-5 text-left border border-white/20 cursor-pointer transition-all duration-200 hover:border-blue-400/50"
+                  style={{ background: "rgba(10,20,50,0.60)", backdropFilter: "blur(14px)" }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/30 border border-primary/40 flex items-center justify-center flex-shrink-0">
+                      <Briefcase className="w-4 h-4 text-blue-300" />
+                    </div>
+                    <span className="text-blue-300 text-[10px] font-bold uppercase tracking-widest">{t.hero.persona2Label}</span>
+                  </div>
+                  <h3 className="text-white text-base font-bold mb-1 leading-snug">{t.hero.persona2Title}</h3>
+                  <p className="text-white/65 text-xs leading-relaxed mb-3">{t.hero.persona2Desc}</p>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-300 group-hover:gap-2 transition-all">
+                    {t.hero.persona2Cta} <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </Link>
             </motion.div>
 
             {/* CTAs */}
