@@ -56,9 +56,15 @@ router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
 // If a DB user already exists for this Clerk ID, returns it.
 // If a DB user exists with the same email, links it to the Clerk ID.
 // Otherwise creates a new DB user.
-router.post("/auth/sync", requireAuth, async (req, res): Promise<void> => {
+// NOTE: intentionally does NOT use requireAuth (which demands a DB row),
+// because this is the route that creates/links the DB row for the first time.
+router.post("/auth/sync", async (req, res): Promise<void> => {
   const auth = getAuth(req);
-  const clerkUserId = auth.userId!;
+  if (!auth?.userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const clerkUserId = auth.userId;
 
   // Fetch Clerk user info to get email + name
   let clerkEmail = "";
