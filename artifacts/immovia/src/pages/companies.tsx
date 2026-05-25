@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useSearch, Link } from "wouter";
+import { useSearch, Link, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { useListCompanies } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Search, MapPin, CalendarDays, Globe, Mail, Phone,
   Clock, FileText, User, Building2, SlidersHorizontal,
-  ArrowUpDown, X, ChevronDown, LocateFixed, Loader2,
+  ArrowUpDown, X, ChevronDown, LocateFixed, Loader2, ArrowRight,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
@@ -66,6 +66,7 @@ export default function Companies() {
   const { t } = useLanguage();
   const search = useSearch();
   const params = new URLSearchParams(search);
+  const [, navigate] = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeService, setActiveService] = useState(params.get("service") ?? "");
@@ -468,14 +469,15 @@ export default function Companies() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: idx * 0.04, duration: 0.3 }}
-                  className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 flex flex-col overflow-hidden"
+                  className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group"
+                  onClick={() => navigate(`/companies/${company.id}`)}
                 >
                   {/* Card header */}
                   <div className="p-5 flex gap-3 items-start border-b border-border/50">
                     <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2 flex-wrap">
-                        <h3 className="font-bold text-foreground text-base leading-tight flex-1 min-w-0 truncate">
+                        <h3 className="font-bold text-foreground text-base leading-tight flex-1 min-w-0 truncate group-hover:text-primary transition-colors">
                           {company.companyName}
                         </h3>
                         <Badge
@@ -532,7 +534,7 @@ export default function Companies() {
                       {company.serviceTypes.slice(0, 3).map(svc => (
                         <button
                           key={svc}
-                          onClick={() => setActiveService(svc)}
+                          onClick={e => { e.stopPropagation(); setActiveService(svc); }}
                           className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium hover:bg-primary/15 transition-colors capitalize"
                         >
                           {t.offers[svc as keyof typeof t.offers] ?? svc}
@@ -544,37 +546,29 @@ export default function Companies() {
                         </span>
                       )}
                     </div>
-
-                    {/* Website */}
-                    {company.website && (
-                      <a
-                        href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        <Globe className="h-3.5 w-3.5" />
-                        {company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                      </a>
-                    )}
                   </div>
 
                   {/* CTA footer */}
-                  <div className="px-5 pb-5 flex gap-2">
-                    <Button asChild className="flex-1" size="sm">
-                      <a href={`mailto:${company.email}`}>
-                        <Mail className="h-3.5 w-3.5 mr-1.5" />
-                        {t.companies.contact ?? "Contact"}
-                      </a>
-                    </Button>
+                  <div className="px-5 pb-5 flex gap-2 items-center">
+                    <button
+                      onClick={e => { e.stopPropagation(); window.location.href = `mailto:${company.email}`; }}
+                      className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      {t.companies.contact ?? "Contact"}
+                    </button>
                     {company.phone && (
-                      <Button asChild variant="outline" size="sm" className="flex-1">
-                        <a href={`tel:${company.phone}`}>
-                          <Phone className="h-3.5 w-3.5 mr-1.5" />
-                          {t.companies.call ?? "Call"}
-                        </a>
-                      </Button>
+                      <button
+                        onClick={e => { e.stopPropagation(); window.location.href = `tel:${company.phone}`; }}
+                        className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                        {t.companies.call ?? "Call"}
+                      </button>
                     )}
+                    <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                      Shiko Profilin <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
                   </div>
                 </motion.div>
               );

@@ -24,3 +24,27 @@ id = "BC1GMuzHxGy02YzpIGwk3"
 uri = "file://artifacts/immovia/public/team-besnik.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "XvsEgSjgKb5KFkrztpVWK"
+uri = "file://attached_assets/generated_images/professional_headshot_of_a_3122.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Y8seg82--BYBwt-STcz0C"
+uri = "file://attached_assets/generated_images/professional_headshot_of_a_9f96.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ZqTo7qzHNreWYWB2sYpa-"
+uri = "file://attached_assets/generated_images/professional_photo_of_a_461c.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "yLqoog1uRINJLV99znKxs"
+uri = "file://attached_assets/generated_images/professional_headshot_of_a_06b4.png"
+type = "image"
+title = "generated_image"

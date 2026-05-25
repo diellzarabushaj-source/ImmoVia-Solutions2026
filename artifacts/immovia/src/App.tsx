@@ -19,6 +19,7 @@ import Dashboard from "@/pages/dashboard";
 import Profile from "@/pages/profile";
 import Portfolio from "@/pages/portfolio";
 import PublicProfile from "@/pages/public-profile";
+import CompanyProfile from "@/pages/company-profile";
 import Pricing from "@/pages/pricing";
 import ProviderDashboard from "@/pages/provider";
 import NotFound from "@/pages/not-found";
@@ -33,6 +34,7 @@ function Router() {
         <Route path="/submit-project" component={SubmitProject} />
         <Route path="/register-company" component={RegisterCompany} />
         <Route path="/companies" component={Companies} />
+        <Route path="/companies/:id" component={CompanyProfile} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/chat" component={Chat} />
         <Route path="/contact" component={Contact} />
