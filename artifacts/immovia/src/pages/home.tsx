@@ -3,7 +3,7 @@ import { motion, useMotionValue, useSpring, useTransform, useScroll } from "fram
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/contexts/AuthContext";
-import { useListCompanies } from "@workspace/api-client-react";
+import { useListCompanies, useListProjects } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -105,13 +105,93 @@ function CompanyPreviewCard({ company, t }: { company: { id: number; companyName
   );
 }
 
+const SERVICE_ICONS: Record<string, React.ElementType> = {
+  renovation: Hammer,
+  construction: Building2,
+  interior: Sofa,
+  exterior: TreePine,
+  plumbing: Wrench,
+  electric: Plug,
+  other: Briefcase,
+};
+
+const SIZE_COLORS: Record<string, string> = {
+  small: "bg-slate-100 text-slate-600",
+  medium: "bg-blue-50 text-blue-700",
+  large: "bg-indigo-50 text-indigo-700",
+  premium: "bg-primary/10 text-primary",
+};
+
+function getPostedLabel(createdAt: string, listings: { today: string; yesterday: string; daysAgo: string }): string {
+  const diffMs = Date.now() - new Date(createdAt).getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffDays === 0) return listings.today;
+  if (diffDays === 1) return listings.yesterday;
+  return `${diffDays} ${listings.daysAgo}`;
+}
+
+function ProjectPreviewCard({ project, t }: {
+  project: { id: number; projectType: string; description: string; city: string; budget?: string | null; size?: string | null; createdAt: string };
+  t: ReturnType<typeof useLanguage>["t"];
+}) {
+  const Icon = SERVICE_ICONS[project.projectType] ?? Briefcase;
+  const sz = project.size ?? "medium";
+  const sizeKey = ({ small: "sizeSm", medium: "sizeMd", large: "sizeLg", premium: "sizePremium" } as Record<string, keyof typeof t.listings>)[sz] ?? "sizeMd";
+  const sizeLabel = t.listings[sizeKey] as string;
+  const sizeColor = SIZE_COLORS[sz] ?? SIZE_COLORS.medium;
+  const typeLabel = (t.offers as Record<string, string>)[project.projectType] ?? project.projectType;
+  const postedLabel = getPostedLabel(project.createdAt, t.listings);
+
+  return (
+    <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden h-full">
+      {/* Header strip */}
+      <div className="px-5 pt-5 pb-4 border-b border-border/50 flex gap-3 items-start">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <Icon className="w-5 h-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-foreground text-sm capitalize leading-tight">{typeLabel}</h3>
+          <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span>{project.city}</span>
+          </div>
+        </div>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${sizeColor}`}>{sizeLabel}</span>
+      </div>
+      {/* Body */}
+      <div className="px-5 py-4 flex-1 flex flex-col gap-3">
+        <p className="text-sm text-foreground/75 leading-relaxed line-clamp-2">{project.description}</p>
+        <div className="flex items-center justify-between mt-auto">
+          {project.budget ? (
+            <div className="flex items-center gap-1.5 text-primary font-bold text-sm">
+              <FileText className="h-3.5 w-3.5" />
+              <span>{project.budget}</span>
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">{t.companies?.contractBased ?? "Contract-based"}</span>
+          )}
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {postedLabel}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { data: companies, isLoading: isLoadingCompanies } = useListCompanies();
+  const { data: projects, isLoading: isLoadingProjects } = useListProjects();
   const previewCompanies = useMemo(
     () => companies?.filter(c => c.status === "approved").slice(0, 6) ?? [],
     [companies]
+  );
+  const previewProjects = useMemo(
+    () => (projects ?? []).filter(p => p.status === "pending").slice(0, 6),
+    [projects]
   );
 
   // ── Parallax & 3-D mouse tracking ──
@@ -518,8 +598,99 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
+      {/* ── PROJECT LISTINGS PREVIEW ── */}
       <section className="py-14 md:py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <motion.div
+            className="text-center mb-14"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.listings.title}</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">{t.listings.subtitle}</p>
+            <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
+          </motion.div>
+
+          {isLoadingProjects && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-border p-5 flex flex-col gap-3">
+                  <div className="flex gap-3 items-start">
+                    <Skeleton className="w-10 h-10 rounded-xl flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="h-3 w-1/3" />
+                    </div>
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <Skeleton className="h-3 w-full mt-1" />
+                  <Skeleton className="h-3 w-4/5" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isLoadingProjects && previewProjects.length > 0 && (
+            <div className="relative">
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+                variants={stagger}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true, margin: "-40px" }}
+              >
+                {previewProjects.map((project, idx) => (
+                  <motion.div key={project.id} variants={fadeUp}>
+                    <ProjectPreviewCard project={project} t={t} />
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {!user && (
+                <div className="relative mt-5">
+                  <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-muted/30 z-10 pointer-events-none" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
+                    {previewProjects.slice(0, 3).map((project, idx) => (
+                      <div key={`ghost-${idx}`}>
+                        <ProjectPreviewCard project={project} t={t} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                    <div className="bg-white/95 backdrop-blur-sm border border-border rounded-2xl px-8 py-8 text-center shadow-lg max-w-sm mx-auto">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                        <Lock className="w-6 h-6 text-primary" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground mb-5">{t.listings.gateLabel}</p>
+                      <Link href="/signup">
+                        <Button size="lg" className="w-full" data-testid="listings-gate-cta">
+                          {t.listings.gateCta}
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {user && (
+                <div className="text-center mt-10">
+                  <Link href="/submit-project">
+                    <Button variant="outline" size="lg" data-testid="listings-see-all">
+                      {t.listings.seeAll}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section className="py-14 md:py-24 bg-white">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-14"

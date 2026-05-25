@@ -420,6 +420,9 @@ components:
           type: ["string", "null"]
         timeline:
           type: ["string", "null"]
+        size:
+          type: string
+          description: "small | medium | large | premium"
         photos:
           type: array
           items:

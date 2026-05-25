@@ -30,6 +30,7 @@ export const ListProjectsResponseItem = zod.object({
   "city": zod.string(),
   "budget": zod.string().nullish(),
   "timeline": zod.string().nullish(),
+  "size": zod.string().optional().describe('small | medium | large | premium'),
   "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos'),
   "status": zod.string().describe('pending | reviewing | matched | completed | cancelled'),
   "createdAt": zod.coerce.date()
@@ -76,6 +77,7 @@ export const GetProjectResponse = zod.object({
   "city": zod.string(),
   "budget": zod.string().nullish(),
   "timeline": zod.string().nullish(),
+  "size": zod.string().optional().describe('small | medium | large | premium'),
   "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos'),
   "status": zod.string().describe('pending | reviewing | matched | completed | cancelled'),
   "createdAt": zod.coerce.date()
@@ -104,6 +106,7 @@ export const UpdateProjectResponse = zod.object({
   "city": zod.string(),
   "budget": zod.string().nullish(),
   "timeline": zod.string().nullish(),
+  "size": zod.string().optional().describe('small | medium | large | premium'),
   "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos'),
   "status": zod.string().describe('pending | reviewing | matched | completed | cancelled'),
   "createdAt": zod.coerce.date()

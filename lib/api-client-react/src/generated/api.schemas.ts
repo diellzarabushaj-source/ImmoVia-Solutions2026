@@ -26,6 +26,8 @@ export interface Project {
   budget?: string | null;
   /** @nullable */
   timeline?: string | null;
+  /** small | medium | large | premium */
+  size?: string;
   /** Array of object paths for project photos */
   photos?: string[];
   /** pending | reviewing | matched | completed | cancelled */
