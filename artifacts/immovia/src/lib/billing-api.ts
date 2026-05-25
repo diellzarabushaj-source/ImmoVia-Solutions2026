@@ -66,6 +66,7 @@ export interface ProviderProject {
   status: string;
   createdAt: string;
   ownerUserId: number | null;
+  photos: string[];
 }
 
 export interface OfferWithProvider {

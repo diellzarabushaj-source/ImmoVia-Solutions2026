@@ -36,7 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Coins, Loader2, ArrowUpRight, Sparkles, Flame, Star, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import { Coins, Loader2, ArrowUpRight, Sparkles, Flame, Star, MessageSquare, ChevronDown, ChevronUp, MapPin, CalendarDays, Wallet, Clock, Images, ChevronLeft, ChevronRight, LayoutGrid, List, X } from "lucide-react";
 import MessageThread from "@/components/MessageThread";
 import { format } from "date-fns";
 
@@ -65,6 +65,11 @@ export default function ProviderDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [openThreads, setOpenThreads] = useState<Set<number>>(new Set());
+  const [browseTypeFilter, setBrowseTypeFilter] = useState("");
+  const [browseCityFilter, setBrowseCityFilter] = useState("");
+  const [browseView, setBrowseView] = useState<"grid" | "list">("grid");
+  const [galleryProject, setGalleryProject] = useState<ProviderProject | null>(null);
+  const [galleryIdx, setGalleryIdx] = useState(0);
 
   const toggleThread = (offerId: number) => {
     setOpenThreads((prev) => {
@@ -238,52 +243,189 @@ export default function ProviderDashboard() {
         </TabsList>
 
         <TabsContent value="browse">
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t.provider.colClient}</TableHead>
-                  <TableHead>{t.provider.colType}</TableHead>
-                  <TableHead>{t.provider.colCity}</TableHead>
-                  <TableHead>{t.provider.colSize}</TableHead>
-                  <TableHead>{t.provider.colCost}</TableHead>
-                  <TableHead className="text-right">{t.provider.colAction}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {projects.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.fullName}</TableCell>
-                    <TableCell className="capitalize">{p.projectType}</TableCell>
-                    <TableCell>{p.city}</TableCell>
-                    <TableCell className="capitalize">{p.size}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="gap-1">
-                        <Coins className="w-3 h-3" /> {offerCostFor(p.size, "normal")}+
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
-                          {t.provider.viewDetails}
-                        </Button>
-                        <Button size="sm" onClick={() => openOfferModal(p)} data-testid={`button-send-offer-${p.id}`}>
-                          {t.provider.sendOffer}
-                        </Button>
+          {/* Filter bar */}
+          <div className="flex flex-wrap items-center gap-2 mb-5">
+            <select
+              value={browseTypeFilter}
+              onChange={e => setBrowseTypeFilter(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">{t.provider.filterAllTypes ?? "All types"}</option>
+              {["renovation","construction","interior","exterior","plumbing","electric"].map(tp => (
+                <option key={tp} value={tp} className="capitalize">{t.offers[tp as keyof typeof t.offers] ?? tp}</option>
+              ))}
+            </select>
+            <div className="relative">
+              <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                value={browseCityFilter}
+                onChange={e => setBrowseCityFilter(e.target.value)}
+                placeholder={t.provider.filterCity ?? "Filter by city"}
+                className="h-9 rounded-lg border border-border bg-white pl-7 pr-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-36"
+              />
+              {browseCityFilter && (
+                <button onClick={() => setBrowseCityFilter("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+            <div className="ml-auto flex items-center gap-1 border border-border rounded-lg overflow-hidden">
+              <button
+                onClick={() => setBrowseView("grid")}
+                className={`px-2.5 py-1.5 transition-colors ${browseView === "grid" ? "bg-primary text-white" : "bg-white text-muted-foreground hover:text-primary"}`}
+                title={t.provider.browseGrid ?? "Grid"}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setBrowseView("list")}
+                className={`px-2.5 py-1.5 transition-colors ${browseView === "list" ? "bg-primary text-white" : "bg-white text-muted-foreground hover:text-primary"}`}
+                title={t.provider.browseList ?? "List"}
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Cards / List */}
+          {(() => {
+            const filtered = projects.filter(p => {
+              const matchType = !browseTypeFilter || p.projectType === browseTypeFilter;
+              const matchCity = !browseCityFilter || p.city.toLowerCase().includes(browseCityFilter.toLowerCase());
+              return matchType && matchCity;
+            });
+
+            if (filtered.length === 0) {
+              return (
+                <div className="text-center py-16 text-muted-foreground text-sm border border-dashed rounded-xl">
+                  {t.provider.noProjects}
+                </div>
+              );
+            }
+
+            if (browseView === "list") {
+              return (
+                <Card>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t.provider.colClient}</TableHead>
+                        <TableHead>{t.provider.colType}</TableHead>
+                        <TableHead>{t.provider.colCity}</TableHead>
+                        <TableHead>{t.provider.colSize}</TableHead>
+                        <TableHead>{t.provider.colCost}</TableHead>
+                        <TableHead className="text-right">{t.provider.colAction}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.map(p => (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-medium">{p.fullName}</TableCell>
+                          <TableCell className="capitalize">{t.offers[p.projectType as keyof typeof t.offers] ?? p.projectType}</TableCell>
+                          <TableCell>{p.city}</TableCell>
+                          <TableCell className="capitalize">{p.size}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="gap-1">
+                              <Coins className="w-3 h-3" /> {offerCostFor(p.size, "normal")}+
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button size="sm" variant="outline" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
+                                {t.provider.viewDetails}
+                              </Button>
+                              <Button size="sm" onClick={() => openOfferModal(p)} data-testid={`button-send-offer-${p.id}`}>
+                                {t.provider.sendOffer}
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Card>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filtered.map(p => {
+                  const hasPhotos = p.photos && p.photos.length > 0;
+                  const coverUrl = hasPhotos ? `/api/storage${p.photos[0]}` : null;
+                  return (
+                    <div key={p.id} className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 flex flex-col overflow-hidden">
+                      {/* Cover photo or gradient placeholder */}
+                      <div
+                        className={`relative h-44 flex-shrink-0 ${!coverUrl ? "bg-gradient-to-br from-primary/10 via-sky-50 to-blue-100 flex items-center justify-center" : ""}`}
+                      >
+                        {coverUrl ? (
+                          <img src={coverUrl} alt={p.projectType} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="text-primary/30">
+                            <Images className="w-12 h-12" />
+                          </div>
+                        )}
+                        {/* Type badge */}
+                        <div className="absolute top-2.5 left-2.5">
+                          <Badge className="capitalize bg-white/90 text-primary border-primary/20 backdrop-blur-sm text-xs shadow-sm">
+                            {t.offers[p.projectType as keyof typeof t.offers] ?? p.projectType}
+                          </Badge>
+                        </div>
+                        {/* Photo count */}
+                        {hasPhotos && p.photos.length > 1 && (
+                          <button
+                            onClick={() => { setGalleryProject(p); setGalleryIdx(0); }}
+                            className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-1 rounded-full hover:bg-black/80 transition-colors"
+                          >
+                            <Images className="w-3 h-3" />
+                            {p.photos.length} {t.provider.photoCount ?? "photos"}
+                          </button>
+                        )}
+                        {/* Size badge */}
+                        <div className="absolute top-2.5 right-2.5">
+                          <Badge variant="secondary" className="text-xs capitalize">
+                            {p.size}
+                          </Badge>
+                        </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {projects.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-sm text-muted-foreground h-24">
-                      {t.provider.noProjects}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+
+                      {/* Body */}
+                      <div className="p-4 flex flex-col flex-1 gap-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-semibold text-foreground text-base leading-tight truncate">{p.fullName}</h3>
+                          <Badge variant="outline" className="gap-1 flex-shrink-0 text-xs">
+                            <Coins className="w-3 h-3" /> {offerCostFor(p.size, "normal")}+
+                          </Badge>
+                        </div>
+
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{p.city}</span>
+                          {p.budget && <span className="flex items-center gap-1"><Wallet className="w-3 h-3" />{p.budget}</span>}
+                          {p.timeline && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{p.timeline}</span>}
+                          <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" />{format(new Date(p.createdAt), "MMM d")}</span>
+                        </div>
+
+                        {p.description && (
+                          <p className="text-sm text-foreground/70 line-clamp-2 leading-relaxed">
+                            {p.description}
+                          </p>
+                        )}
+
+                        <div className="flex gap-2 mt-auto pt-1">
+                          <Button size="sm" variant="outline" className="flex-1" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
+                            {t.provider.viewDetails}
+                          </Button>
+                          <Button size="sm" className="flex-1" onClick={() => openOfferModal(p)} data-testid={`button-send-offer-${p.id}`}>
+                            {t.provider.sendOffer}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </TabsContent>
 
         <TabsContent value="offers">
@@ -435,16 +577,41 @@ export default function ProviderDashboard() {
 
       {/* Project Detail Modal */}
       <Dialog open={!!detailProject} onOpenChange={(o) => !o && setDetailProject(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t.provider.detailTitle}</DialogTitle>
             <DialogDescription>{detailProject?.fullName} · {detailProject?.city}</DialogDescription>
           </DialogHeader>
+
+          {/* Photo gallery */}
+          {detailProject?.photos && detailProject.photos.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                {t.provider.detailPhotos ?? "Project Photos"}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {detailProject.photos.map((path, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setGalleryProject(detailProject); setGalleryIdx(i); }}
+                    className="relative aspect-video rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-colors group"
+                  >
+                    <img
+                      src={`/api/storage${path}`}
+                      alt={`Photo ${i + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-4 text-sm">
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-muted/40 rounded-lg p-3">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.colType}</p>
-                <p className="font-medium capitalize">{detailProject?.projectType}</p>
+                <p className="font-medium capitalize">{t.offers[detailProject?.projectType as keyof typeof t.offers] ?? detailProject?.projectType}</p>
               </div>
               <div className="bg-muted/40 rounded-lg p-3">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.colSize}</p>
@@ -473,6 +640,51 @@ export default function ProviderDashboard() {
               {t.provider.sendOffer}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Photo lightbox */}
+      <Dialog open={!!galleryProject} onOpenChange={(o) => !o && setGalleryProject(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black/95 border-0">
+          <div className="relative flex items-center justify-center min-h-[60vh]">
+            {galleryProject?.photos && galleryProject.photos.length > 0 && (
+              <img
+                src={`/api/storage${galleryProject.photos[galleryIdx]}`}
+                alt={`Photo ${galleryIdx + 1}`}
+                className="max-w-full max-h-[80vh] object-contain"
+              />
+            )}
+            {/* Close */}
+            <button
+              onClick={() => setGalleryProject(null)}
+              className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            {/* Prev */}
+            {galleryProject && galleryProject.photos.length > 1 && (
+              <>
+                <button
+                  onClick={() => setGalleryIdx(i => (i - 1 + galleryProject.photos.length) % galleryProject.photos.length)}
+                  className="absolute left-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setGalleryIdx(i => (i + 1) % galleryProject.photos.length)}
+                  className="absolute right-12 p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
+            {/* Counter */}
+            {galleryProject && galleryProject.photos.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
+                {galleryIdx + 1} / {galleryProject.photos.length}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
