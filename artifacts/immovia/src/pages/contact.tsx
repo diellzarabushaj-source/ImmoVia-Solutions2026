@@ -82,11 +82,14 @@ export default function Contact() {
 
             {/* Raze photo */}
             <div className="relative flex-shrink-0">
-              <img
-                src="/team-raze.png"
-                alt={t.contact.quoteAuthor}
-                className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
-              />
+              <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md">
+                <img
+                  src="/team-raze.png"
+                  alt={t.contact.quoteAuthor}
+                  className="w-full h-full object-cover"
+                  style={{ transform: "scale(2.2) translateY(12%)", transformOrigin: "50% 20%" }}
+                />
+              </div>
               <span className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full border-2 border-white flex items-center justify-center">
                 <Quote className="w-3 h-3 text-white" />
               </span>
