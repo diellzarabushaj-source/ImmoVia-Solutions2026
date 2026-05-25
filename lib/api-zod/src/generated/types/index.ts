@@ -17,6 +17,8 @@ export * from './countByLabel';
 export * from './errorEnvelope';
 export * from './errorResponse';
 export * from './healthStatus';
+export * from './listCompaniesParams';
+export * from './listProjectsParams';
 export * from './project';
 export * from './projectInput';
 export * from './projectUpdate';

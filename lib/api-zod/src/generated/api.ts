@@ -20,6 +20,12 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary List all project requests
  */
+export const ListProjectsQueryParams = zod.object({
+  "city": zod.coerce.string().optional().describe('Filter by city (case-insensitive partial match)'),
+  "type": zod.coerce.string().optional().describe('Filter by project type'),
+  "status": zod.coerce.string().optional().describe('Filter by project status')
+})
+
 export const ListProjectsResponseItem = zod.object({
   "id": zod.number(),
   "fullName": zod.string(),
@@ -124,6 +130,13 @@ export const DeleteProjectParams = zod.object({
 /**
  * @summary List registered companies
  */
+export const ListCompaniesQueryParams = zod.object({
+  "city": zod.coerce.string().optional().describe('Filter by city (case-insensitive partial match)'),
+  "type": zod.coerce.string().optional().describe('Filter by service type'),
+  "status": zod.coerce.string().optional().describe('Filter by status (pending | approved | rejected)'),
+  "workerType": zod.coerce.string().optional().describe('Filter by worker type (individual | company)')
+})
+
 export const ListCompaniesResponseItem = zod.object({
   "id": zod.number(),
   "companyName": zod.string(),

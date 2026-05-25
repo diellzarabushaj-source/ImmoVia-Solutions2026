@@ -41,6 +41,25 @@ paths:
       operationId: listProjects
       tags: [projects]
       summary: List all project requests
+      parameters:
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by city (case-insensitive partial match)
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by project type
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by project status
       responses:
         "200":
           description: List of projects
@@ -152,6 +171,31 @@ paths:
       operationId: listCompanies
       tags: [companies]
       summary: List registered companies
+      parameters:
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by city (case-insensitive partial match)
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by service type
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by status (pending | approved | rejected)
+        - name: workerType
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by worker type (individual | company)
       responses:
         "200":
           description: List of companies

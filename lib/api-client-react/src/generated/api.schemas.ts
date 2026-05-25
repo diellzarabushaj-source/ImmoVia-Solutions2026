@@ -169,3 +169,37 @@ export interface ErrorEnvelope {
   error: string;
 }
 
+export type ListProjectsParams = {
+/**
+ * Filter by city (case-insensitive partial match)
+ */
+city?: string;
+/**
+ * Filter by project type
+ */
+type?: string;
+/**
+ * Filter by project status
+ */
+status?: string;
+};
+
+export type ListCompaniesParams = {
+/**
+ * Filter by city (case-insensitive partial match)
+ */
+city?: string;
+/**
+ * Filter by service type
+ */
+type?: string;
+/**
+ * Filter by status (pending | approved | rejected)
+ */
+status?: string;
+/**
+ * Filter by worker type (individual | company)
+ */
+workerType?: string;
+};
+
