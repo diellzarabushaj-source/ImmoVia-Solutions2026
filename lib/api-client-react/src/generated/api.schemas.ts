@@ -65,6 +65,13 @@ export interface Company {
   licenseNumber?: string | null;
   /** @nullable */
   yearsExperience?: number | null;
+  /** individual | company */
+  workerType: string;
+  /**
+     * Hourly rate in EUR (for individual workers only)
+     * @nullable
+     */
+  hourlyRate?: number | null;
   /** pending | approved | rejected */
   status: string;
   createdAt: string;
@@ -84,6 +91,10 @@ export interface CompanyInput {
   website?: string;
   licenseNumber?: string;
   yearsExperience?: number;
+  /** individual | company */
+  workerType?: string;
+  /** Hourly rate in EUR (for individual workers only) */
+  hourlyRate?: number;
 }
 
 export interface CompanyUpdate {

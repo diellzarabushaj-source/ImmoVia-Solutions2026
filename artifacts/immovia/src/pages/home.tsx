@@ -40,6 +40,7 @@ export default function Home() {
       desc: t.offers.renovationDesc,
       price: t.offers.renovationPrice,
       photo: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&q=80&fit=crop",
+      serviceKey: "renovation",
     },
     {
       icon: Building2,
@@ -47,6 +48,7 @@ export default function Home() {
       desc: t.offers.constructionDesc,
       price: t.offers.constructionPrice,
       photo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80&fit=crop",
+      serviceKey: "construction",
     },
     {
       icon: Sofa,
@@ -54,6 +56,7 @@ export default function Home() {
       desc: t.offers.interiorDesc,
       price: t.offers.interiorPrice,
       photo: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&q=80&fit=crop",
+      serviceKey: "interior",
     },
     {
       icon: TreePine,
@@ -61,6 +64,7 @@ export default function Home() {
       desc: t.offers.exteriorDesc,
       price: t.offers.exteriorPrice,
       photo: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop",
+      serviceKey: "exterior",
     },
     {
       icon: Wrench,
@@ -68,6 +72,7 @@ export default function Home() {
       desc: t.offers.plumbingDesc,
       price: t.offers.plumbingPrice,
       photo: "https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=600&q=80&fit=crop",
+      serviceKey: "plumbing",
     },
     {
       icon: Plug,
@@ -75,6 +80,7 @@ export default function Home() {
       desc: t.offers.electricDesc,
       price: t.offers.electricPrice,
       photo: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80&fit=crop",
+      serviceKey: "electric",
     },
   ];
 
@@ -239,7 +245,7 @@ export default function Home() {
           >
             {services.map((s, i) => (
               <motion.div key={i} variants={fadeUp}>
-                <Link href="/submit-project">
+                <Link href={`/companies?service=${s.serviceKey}`}>
                   <div
                     className="group relative rounded-2xl overflow-hidden cursor-pointer h-72 shadow-md hover:shadow-xl transition-all duration-300"
                     data-testid={`service-card-${i}`}

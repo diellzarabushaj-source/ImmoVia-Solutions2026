@@ -129,6 +129,8 @@ export const ListCompaniesResponseItem = zod.object({
   "website": zod.string().nullish(),
   "licenseNumber": zod.string().nullish(),
   "yearsExperience": zod.number().nullish(),
+  "workerType": zod.string().describe('individual | company'),
+  "hourlyRate": zod.number().nullish().describe('Hourly rate in EUR (for individual workers only)'),
   "status": zod.string().describe('pending | approved | rejected'),
   "createdAt": zod.coerce.date()
 })
@@ -155,7 +157,9 @@ export const CreateCompanyBody = zod.object({
   "description": zod.string().optional(),
   "website": zod.string().optional(),
   "licenseNumber": zod.string().optional(),
-  "yearsExperience": zod.number().optional()
+  "yearsExperience": zod.number().optional(),
+  "workerType": zod.string().optional().describe('individual | company'),
+  "hourlyRate": zod.number().optional().describe('Hourly rate in EUR (for individual workers only)')
 })
 
 
@@ -178,6 +182,8 @@ export const GetCompanyResponse = zod.object({
   "website": zod.string().nullish(),
   "licenseNumber": zod.string().nullish(),
   "yearsExperience": zod.number().nullish(),
+  "workerType": zod.string().describe('individual | company'),
+  "hourlyRate": zod.number().nullish().describe('Hourly rate in EUR (for individual workers only)'),
   "status": zod.string().describe('pending | approved | rejected'),
   "createdAt": zod.coerce.date()
 })
@@ -207,6 +213,8 @@ export const UpdateCompanyResponse = zod.object({
   "website": zod.string().nullish(),
   "licenseNumber": zod.string().nullish(),
   "yearsExperience": zod.number().nullish(),
+  "workerType": zod.string().describe('individual | company'),
+  "hourlyRate": zod.number().nullish().describe('Hourly rate in EUR (for individual workers only)'),
   "status": zod.string().describe('pending | approved | rejected'),
   "createdAt": zod.coerce.date()
 })

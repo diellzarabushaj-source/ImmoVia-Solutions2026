@@ -461,7 +461,7 @@ components:
 
     Company:
       type: object
-      required: [id, companyName, contactName, email, phone, serviceTypes, city, status, createdAt]
+      required: [id, companyName, contactName, email, phone, serviceTypes, city, status, workerType, createdAt]
       properties:
         id:
           type: integer
@@ -487,6 +487,12 @@ components:
           type: ["string", "null"]
         yearsExperience:
           type: ["integer", "null"]
+        workerType:
+          type: string
+          description: "individual | company"
+        hourlyRate:
+          type: ["integer", "null"]
+          description: "Hourly rate in EUR (for individual workers only)"
         status:
           type: string
           description: "pending | approved | rejected"
@@ -524,6 +530,12 @@ components:
           type: string
         yearsExperience:
           type: integer
+        workerType:
+          type: string
+          description: "individual | company"
+        hourlyRate:
+          type: integer
+          description: "Hourly rate in EUR (for individual workers only)"
 
     CompanyUpdate:
       type: object

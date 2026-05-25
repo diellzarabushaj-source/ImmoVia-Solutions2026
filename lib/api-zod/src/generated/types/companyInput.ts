@@ -20,4 +20,8 @@ export interface CompanyInput {
   website?: string;
   licenseNumber?: string;
   yearsExperience?: number;
+  /** individual | company */
+  workerType?: string;
+  /** Hourly rate in EUR (for individual workers only) */
+  hourlyRate?: number;
 }

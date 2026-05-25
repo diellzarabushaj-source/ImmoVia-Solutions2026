@@ -38,6 +38,8 @@ export default function RegisterCompany() {
     website: z.string().optional(),
     licenseNumber: z.string().optional(),
     yearsExperience: z.coerce.number().optional(),
+    workerType: z.enum(["individual", "company"]).default("company"),
+    hourlyRate: z.coerce.number().optional(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -53,8 +55,12 @@ export default function RegisterCompany() {
       website: "",
       licenseNumber: "",
       yearsExperience: undefined,
+      workerType: "company",
+      hourlyRate: undefined,
     },
   });
+
+  const workerType = form.watch("workerType");
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     createCompany.mutate({
@@ -99,7 +105,38 @@ export default function RegisterCompany() {
       <div className="bg-card border border-border rounded-xl p-6 md:p-8 shadow-sm">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            
+
+            {/* Worker type toggle */}
+            <FormField
+              control={form.control}
+              name="workerType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t.companyForm.workerType ?? "I am a"}</FormLabel>
+                  <div className="grid grid-cols-2 gap-3 mt-1">
+                    {[
+                      { value: "individual", label: t.companyForm.individual ?? "Individual Professional" },
+                      { value: "company", label: t.companyForm.company ?? "Company / Firm" },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => field.onChange(opt.value)}
+                        className={`flex items-center justify-center gap-2 rounded-lg border-2 p-3 text-sm font-medium transition-all ${
+                          field.value === opt.value
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-border text-muted-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        {opt.value === "individual" ? "👤" : "🏢"} {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -248,6 +285,34 @@ export default function RegisterCompany() {
                 )}
               />
             </div>
+
+            {/* Hourly rate — shown only for individual workers */}
+            {workerType === "individual" && (
+              <FormField
+                control={form.control}
+                name="hourlyRate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t.companyForm.hourlyRate ?? "Hourly Rate (€/hr)"}</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">€</span>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder="35"
+                          className="pl-7"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormDescription>{t.companyForm.hourlyRateDesc ?? "Your typical hourly rate in EUR"}</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
