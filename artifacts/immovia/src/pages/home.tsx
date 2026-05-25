@@ -143,7 +143,8 @@ function ProjectPreviewCard({ project, t }: {
   const postedLabel = getPostedLabel(project.createdAt, t.listings);
 
   return (
-    <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden h-full">
+    <Link href={`/projects/${project.id}`}>
+    <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden h-full cursor-pointer group">
       {/* Header strip */}
       <div className="px-5 pt-5 pb-4 border-b border-border/50 flex gap-3 items-start">
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -177,6 +178,7 @@ function ProjectPreviewCard({ project, t }: {
         </div>
       </div>
     </div>
+    </Link>
   );
 }
 
