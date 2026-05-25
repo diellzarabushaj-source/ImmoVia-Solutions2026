@@ -1,8 +1,12 @@
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
+import { useAuth } from "@/contexts/AuthContext";
+import { useListCompanies } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowRight,
   CheckCircle2,
@@ -23,6 +27,11 @@ import {
   Search,
   Home as HomeIcon,
   Briefcase,
+  Lock,
+  MapPin,
+  Clock,
+  User,
+  FileText,
 } from "lucide-react";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
@@ -34,8 +43,76 @@ const stagger = {
   animate: { transition: { staggerChildren: 0.1 } },
 };
 
+function CompanyPreviewCard({ company, t }: { company: { id: number; companyName: string; profilePhoto?: string | null; workerType?: string | null; city: string; yearsExperience?: number | null; hourlyRate?: number | null; serviceTypes: string[]; description?: string | null }; t: ReturnType<typeof useLanguage>["t"] }) {
+  const isIndividual = company.workerType === "individual";
+  const colors = ["from-blue-600 to-blue-800", "from-indigo-600 to-indigo-800", "from-primary to-blue-700", "from-sky-600 to-sky-800", "from-slate-600 to-slate-800"];
+  const color = colors[company.companyName.charCodeAt(0) % colors.length];
+  const initials = company.companyName.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <Link href={`/companies/${company.id}`}>
+      <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group h-full">
+        <div className="p-4 flex gap-3 items-start border-b border-border/50">
+          {company.profilePhoto ? (
+            <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 border border-border">
+              <img src={`/api/storage${company.profilePhoto}`} alt={company.companyName} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
+              {initials}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start gap-2 flex-wrap">
+              <h3 className="font-bold text-foreground text-sm leading-tight flex-1 min-w-0 truncate group-hover:text-primary transition-colors">
+                {company.companyName}
+              </h3>
+              <Badge variant={isIndividual ? "outline" : "secondary"} className={`flex-shrink-0 text-xs flex items-center gap-1 ${isIndividual ? "border-primary/40 text-primary" : ""}`}>
+                {isIndividual ? <><User className="h-3 w-3" />{t.companies?.individual ?? "Individual"}</> : <><Building2 className="h-3 w-3" />{t.companies?.company ?? "Company"}</>}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
+              <MapPin className="h-3 w-3" />
+              <span>{company.city}</span>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 flex-1 flex flex-col gap-3">
+          {isIndividual && company.hourlyRate ? (
+            <div className="flex items-center gap-1.5 text-primary font-bold">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="text-sm">{company.hourlyRate} €</span>
+              <span className="text-xs font-normal text-muted-foreground">/{t.companies?.hour ?? "hr"}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+              <FileText className="h-3.5 w-3.5" />
+              <span>{t.companies?.contractBased ?? "Contract-based"}</span>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-1">
+            {company.serviceTypes.slice(0, 3).map((svc: string) => (
+              <span key={svc} className="px-2 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium capitalize">
+                {(t.offers as Record<string, string>)[svc] ?? svc}
+              </span>
+            ))}
+            {company.serviceTypes.length > 3 && (
+              <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">+{company.serviceTypes.length - 3}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default function Home() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { data: companies, isLoading: isLoadingCompanies } = useListCompanies();
+  const previewCompanies = useMemo(
+    () => companies?.filter(c => c.status === "approved").slice(0, 6) ?? [],
+    [companies]
+  );
 
   // ── Parallax & 3-D mouse tracking ──
   const heroRef = useRef<HTMLElement>(null);
@@ -354,8 +431,95 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
+      {/* ── PROFESSIONALS PREVIEW ── */}
       <section className="py-14 md:py-24 bg-white">
+        <div className="container mx-auto px-4">
+          <motion.div
+            className="text-center mb-14"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.professionals.title}</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">{t.professionals.subtitle}</p>
+            <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
+          </motion.div>
+
+          {isLoadingCompanies && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-border p-4 flex gap-3 items-start">
+                  <Skeleton className="w-11 h-11 rounded-xl flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isLoadingCompanies && previewCompanies.length > 0 && (
+            <div className="relative">
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+                variants={stagger}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true, margin: "-40px" }}
+              >
+                {previewCompanies.map((company, idx) => (
+                  <motion.div key={company.id} variants={fadeUp}>
+                    <CompanyPreviewCard company={company} t={t} />
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {!user && (
+                <div className="relative mt-5">
+                  <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-white z-10 pointer-events-none" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
+                    {previewCompanies.slice(0, 3).map((company, idx) => (
+                      <div key={`ghost-${idx}`}>
+                        <CompanyPreviewCard company={company} t={t} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                    <div className="bg-white/90 backdrop-blur-sm border border-border rounded-2xl px-8 py-8 text-center shadow-lg max-w-sm mx-auto">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                        <Lock className="w-6 h-6 text-primary" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground mb-5">{t.professionals.gateLabel}</p>
+                      <Link href="/signup">
+                        <Button size="lg" className="w-full" data-testid="professionals-gate-cta">
+                          {t.professionals.gateCta}
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {user && (
+                <div className="text-center mt-10">
+                  <Link href="/companies">
+                    <Button variant="outline" size="lg" data-testid="professionals-see-all">
+                      {t.professionals.seeAll}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section className="py-14 md:py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-14"

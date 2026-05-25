@@ -72,6 +72,13 @@ export const translations = {
       other: 'Tjetër',
       cta: 'Kërkoni Ofertë',
     },
+    professionals: {
+      title: 'Profesionistët Tanë',
+      subtitle: 'Shfleto profesionistët dhe kompanitë e verifikuara nga ImmoVia.',
+      gateLabel: 'Regjistrohu për të parë të gjithë profesionistët',
+      gateCta: 'Regjistrohu Falas',
+      seeAll: 'Shiko të Gjithë',
+    },
     why: {
       title: 'Pse ImmoVia?',
       subtitle: 'Nuk jemi thjesht një platformë — jemi partneri juaj i besuar nga fillimi deri në fund të projektit.',
@@ -569,6 +576,13 @@ export const translations = {
       electricPrice: 'From 800 EUR',
       other: 'Other',
       cta: 'Request a Quote',
+    },
+    professionals: {
+      title: 'Our Professionals',
+      subtitle: 'Browse verified professionals and companies on ImmoVia.',
+      gateLabel: 'Register to see all professionals',
+      gateCta: 'Register for Free',
+      seeAll: 'See All',
     },
     why: {
       title: 'Why ImmoVia?',
@@ -1068,6 +1082,13 @@ export const translations = {
       other: 'Sonstiges',
       cta: 'Angebot Anfragen',
     },
+    professionals: {
+      title: 'Unsere Fachleute',
+      subtitle: 'Durchsuchen Sie verifizierte Fachleute und Unternehmen auf ImmoVia.',
+      gateLabel: 'Registrieren Sie sich, um alle Fachleute zu sehen',
+      gateCta: 'Kostenlos Registrieren',
+      seeAll: 'Alle Anzeigen',
+    },
     why: {
       title: 'Warum ImmoVia?',
       subtitle: 'Wir sind nicht nur eine Plattform — wir sind Ihr vertrauensvoller Partner vom Projektstart bis zum Abschluss.',
@@ -1565,6 +1586,13 @@ export const translations = {
       electricPrice: 'À partir de 800 EUR',
       other: 'Autre',
       cta: 'Demander un Devis',
+    },
+    professionals: {
+      title: 'Nos Professionnels',
+      subtitle: 'Parcourez les professionnels et entreprises vérifiés sur ImmoVia.',
+      gateLabel: 'Inscrivez-vous pour voir tous les professionnels',
+      gateCta: "S'inscrire Gratuitement",
+      seeAll: 'Voir Tout',
     },
     why: {
       title: 'Pourquoi ImmoVia ?',
