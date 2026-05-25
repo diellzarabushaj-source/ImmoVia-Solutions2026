@@ -403,52 +403,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── TEAM ── */}
-      <section className="py-14 md:py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="text-center mb-14"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground mb-3">
-              {t.team.title}
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              {t.team.subtitle}
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 max-w-4xl mx-auto"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            {t.team.members.map((member, i) => (
-              <motion.div
-                key={i}
-                className="flex flex-col items-center text-center group"
-                variants={fadeUp}
-              >
-                <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-2xl overflow-hidden bg-[#1a2f4e] mb-4 shadow-md group-hover:shadow-lg transition-shadow">
-                  <img
-                    src={member.photo}
-                    alt={member.name}
-                    className="w-full h-full object-cover object-top"
-                  />
-                </div>
-                <h3 className="font-bold text-foreground text-base leading-tight">{member.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{member.role}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
       {/* ── DUAL CTA ── */}
       <section className="py-14 md:py-20 bg-foreground text-white">
         <div className="container mx-auto px-4">
