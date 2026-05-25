@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,35 @@ const stagger = {
 
 export default function Home() {
   const { t } = useLanguage();
+
+  // ── Parallax & 3-D mouse tracking ──
+  const heroRef = useRef<HTMLElement>(null);
+
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springX = useSpring(mouseX, { stiffness: 50, damping: 18 });
+  const springY = useSpring(mouseY, { stiffness: 50, damping: 18 });
+
+  // Video shifts opposite to cursor (parallax depth illusion)
+  const vidX = useTransform(springX, [-0.5, 0.5], ["5%", "-5%"]);
+  const vidY = useTransform(springY, [-0.5, 0.5], ["5%", "-5%"]);
+
+  // Content tilts subtly in the same direction
+  const tiltX = useTransform(springY, [-0.5, 0.5], [4, -4]);
+  const tiltY = useTransform(springX, [-0.5, 0.5], [-5, 5]);
+
+  // Scroll: video rises as you scroll down (parallax)
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const scrollVidY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = heroRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+  const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
 
   const services = [
     {
@@ -109,13 +139,45 @@ export default function Home() {
     <div className="flex flex-col w-full">
 
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden bg-foreground text-white py-16 md:py-24 lg:py-32">
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.15) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-        <div className="absolute top-[-20%] right-[-10%] w-[45%] h-[80%] rounded-full bg-primary opacity-10 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[70%] rounded-full bg-blue-400 opacity-8 blur-[100px] pointer-events-none" />
+      <motion.section
+        ref={heroRef}
+        className="relative overflow-hidden bg-foreground text-white py-16 md:py-24 lg:py-32"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        {/* ── VIDEO BACKGROUND (scroll + mouse parallax) ── */}
+        <motion.div className="absolute inset-[-12%]" style={{ y: scrollVidY }}>
+          <motion.div className="absolute inset-0" style={{ x: vidX, y: vidY }}>
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+              poster="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80&fit=crop"
+            >
+              <source src="https://assets.mixkit.co/videos/preview/mixkit-workers-on-a-construction-site-with-cranes-in-the-background-42737-large.mp4" type="video/mp4" />
+              <source src="https://assets.mixkit.co/videos/preview/mixkit-construction-site-structure-of-a-house-being-built-40742-large.mp4" type="video/mp4" />
+            </video>
+            {/* Deep cinematic overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-foreground/80 via-foreground/65 to-foreground/88" />
+            <div className="absolute inset-0 bg-primary/10 mix-blend-multiply" />
+          </motion.div>
+        </motion.div>
 
-        <div className="container mx-auto px-4 relative z-10">
+        {/* Subtle grid overlay */}
+        <div className="absolute inset-0 opacity-[0.035] pointer-events-none z-[1]"
+          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.2) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+
+        {/* Glow orbs */}
+        <div className="absolute top-[-20%] right-[-10%] w-[45%] h-[80%] rounded-full bg-primary opacity-[0.12] blur-[130px] pointer-events-none z-[1]" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[70%] rounded-full bg-blue-400 opacity-[0.08] blur-[110px] pointer-events-none z-[1]" />
+
+        {/* Content — subtle 3-D tilt follows cursor */}
+        <motion.div
+          className="container mx-auto px-4 relative z-10"
+          style={{ rotateX: tiltX, rotateY: tiltY, transformPerspective: 1400, transformStyle: "preserve-3d" }}
+        >
           <motion.div className="max-w-4xl mx-auto text-center" initial="initial" animate="animate" variants={stagger}>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-8">
               <Star className="w-3 h-3 text-primary fill-primary" />
@@ -175,8 +237,8 @@ export default function Home() {
               ))}
             </motion.div>
           </motion.div>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
       {/* ── STATS BAR ── */}
       <section className="bg-white border-b border-border">
