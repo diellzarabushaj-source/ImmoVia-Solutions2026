@@ -158,7 +158,7 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
   void (async () => {
     try {
       const [clientUser] = await db
-        .select({ email: usersTable.email, fullName: usersTable.fullName })
+        .select({ email: usersTable.email, fullName: usersTable.fullName, language: usersTable.language })
         .from(usersTable)
         .where(eq(usersTable.id, project.ownerUserId!))
         .limit(1);
@@ -178,6 +178,7 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
           message,
           priceEstimate,
           projectId,
+          language: clientUser.language,
         });
       }
     } catch (err) {
@@ -218,7 +219,7 @@ router.post("/offers/:id/accept", requireAuth, async (req, res): Promise<void> =
   void (async () => {
     try {
       const [providerUser] = await db
-        .select({ email: usersTable.email, fullName: usersTable.fullName })
+        .select({ email: usersTable.email, fullName: usersTable.fullName, language: usersTable.language })
         .from(usersTable)
         .where(eq(usersTable.id, offer.providerUserId))
         .limit(1);
@@ -235,6 +236,7 @@ router.post("/offers/:id/accept", requireAuth, async (req, res): Promise<void> =
           projectType: project.projectType,
           city: project.city,
           offerId,
+          language: providerUser.language,
         });
       }
     } catch (err) {

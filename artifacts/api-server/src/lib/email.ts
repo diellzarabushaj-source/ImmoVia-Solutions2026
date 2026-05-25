@@ -26,6 +26,134 @@ const BTN_STYLE = `background:#1a3a6e;color:#fff;padding:12px 24px;border-radius
 const FOOTER_STYLE = `color:#94a3b8;font-size:12px;text-align:center;margin-top:16px`;
 const WRAP_STYLE = `font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a`;
 
+type Lang = "sq" | "en" | "de" | "fr";
+
+function normLang(lang: string | null | undefined): Lang {
+  if (lang === "sq" || lang === "de" || lang === "fr") return lang;
+  return "en";
+}
+
+// ── Rate limiting for message notifications ───────────────────────────────────
+// key: `recipientUserId:offerId`  value: timestamp of last email sent
+const messageEmailCooldown = new Map<string, number>();
+const MESSAGE_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+
+function canSendMessageEmail(recipientUserId: number, offerId: number): boolean {
+  const key = `${recipientUserId}:${offerId}`;
+  const lastSent = messageEmailCooldown.get(key);
+  if (lastSent && Date.now() - lastSent < MESSAGE_COOLDOWN_MS) return false;
+  messageEmailCooldown.set(key, Date.now());
+  return true;
+}
+
+// ── i18n strings ──────────────────────────────────────────────────────────────
+
+const i18n = {
+  newOffer: {
+    subject: {
+      sq: (sender: string) => `Ofertë e re — ${sender}`,
+      en: (sender: string) => `New offer on your project — ${sender}`,
+      de: (sender: string) => `Neues Angebot für Ihr Projekt — ${sender}`,
+      fr: (sender: string) => `Nouvelle offre sur votre projet — ${sender}`,
+    },
+    heading: {
+      sq: "ImmoVia — Ofertë e Re",
+      en: "ImmoVia — New Offer Received",
+      de: "ImmoVia — Neues Angebot",
+      fr: "ImmoVia — Nouvelle Offre",
+    },
+    hi: {
+      sq: (name: string) => `Përshëndetje ${name},`,
+      en: (name: string) => `Hi ${name},`,
+      de: (name: string) => `Hallo ${name},`,
+      fr: (name: string) => `Bonjour ${name},`,
+    },
+    intro: {
+      sq: (type: string, city: string) => `Një ofertë e re ka mbërritur për projektin tuaj <strong>${type}</strong> në <strong>${city}</strong>.`,
+      en: (type: string, city: string) => `A new offer has been submitted for your <strong>${type}</strong> project in <strong>${city}</strong>.`,
+      de: (type: string, city: string) => `Ein neues Angebot wurde für Ihr <strong>${type}</strong>-Projekt in <strong>${city}</strong> eingereicht.`,
+      fr: (type: string, city: string) => `Une nouvelle offre a été soumise pour votre projet <strong>${type}</strong> à <strong>${city}</strong>.`,
+    },
+    labelFrom: { sq: "Nga", en: "From", de: "Von", fr: "De" },
+    labelEstimate: { sq: "Vlerësimi", en: "Estimate", de: "Schätzung", fr: "Estimation" },
+    labelMessage: { sq: "Mesazhi", en: "Message", de: "Nachricht", fr: "Message" },
+    cta: { sq: "Shiko Ofertën", en: "View Offer", de: "Angebot ansehen", fr: "Voir l'offre" },
+  },
+  offerAccepted: {
+    subject: {
+      sq: (type: string, city: string) => `Oferta juaj u pranua — ${type} në ${city}`,
+      en: (type: string, city: string) => `Your offer was accepted — ${type} in ${city}`,
+      de: (type: string, city: string) => `Ihr Angebot wurde angenommen — ${type} in ${city}`,
+      fr: (type: string, city: string) => `Votre offre a été acceptée — ${type} à ${city}`,
+    },
+    heading: {
+      sq: "ImmoVia — Ofertë e Pranuar",
+      en: "ImmoVia — Offer Accepted",
+      de: "ImmoVia — Angebot angenommen",
+      fr: "ImmoVia — Offre acceptée",
+    },
+    hi: {
+      sq: (name: string) => `Përshëndetje ${name},`,
+      en: (name: string) => `Hi ${name},`,
+      de: (name: string) => `Hallo ${name},`,
+      fr: (name: string) => `Bonjour ${name},`,
+    },
+    body: {
+      sq: (client: string, type: string, city: string) => `Lajm i mirë! <strong>${client}</strong> ka pranuar ofertën tuaj për projektin <strong>${type}</strong> në <strong>${city}</strong>.`,
+      en: (client: string, type: string, city: string) => `Great news! <strong>${client}</strong> has accepted your offer for the <strong>${type}</strong> project in <strong>${city}</strong>.`,
+      de: (client: string, type: string, city: string) => `Gute Neuigkeiten! <strong>${client}</strong> hat Ihr Angebot für das Projekt <strong>${type}</strong> in <strong>${city}</strong> angenommen.`,
+      fr: (client: string, type: string, city: string) => `Bonne nouvelle ! <strong>${client}</strong> a accepté votre offre pour le projet <strong>${type}</strong> à <strong>${city}</strong>.`,
+    },
+    next: {
+      sq: "Tani mund të dërgoni mesazhe drejtpërdrejt te klienti nëpërmjet platformës.",
+      en: "You can now message the client directly through the platform to coordinate next steps.",
+      de: "Sie können den Kunden jetzt direkt über die Plattform kontaktieren, um die nächsten Schritte zu koordinieren.",
+      fr: "Vous pouvez maintenant contacter le client directement via la plateforme pour coordonner les prochaines étapes.",
+    },
+    cta: { sq: "Hap Panelin", en: "Open Dashboard", de: "Dashboard öffnen", fr: "Ouvrir le tableau de bord" },
+  },
+  newMessage: {
+    subject: {
+      sq: (sender: string) => `Mesazh i ri nga ${sender}`,
+      en: (sender: string) => `New message from ${sender}`,
+      de: (sender: string) => `Neue Nachricht von ${sender}`,
+      fr: (sender: string) => `Nouveau message de ${sender}`,
+    },
+    heading: {
+      sq: "ImmoVia — Mesazh i Ri",
+      en: "ImmoVia — New Message",
+      de: "ImmoVia — Neue Nachricht",
+      fr: "ImmoVia — Nouveau Message",
+    },
+    hi: {
+      sq: (name: string) => `Përshëndetje ${name},`,
+      en: (name: string) => `Hi ${name},`,
+      de: (name: string) => `Hallo ${name},`,
+      fr: (name: string) => `Bonjour ${name},`,
+    },
+    sent: {
+      sq: (sender: string) => `<strong>${sender}</strong> ju ka dërguar një mesazh:`,
+      en: (sender: string) => `<strong>${sender}</strong> sent you a message:`,
+      de: (sender: string) => `<strong>${sender}</strong> hat Ihnen eine Nachricht gesendet:`,
+      fr: (sender: string) => `<strong>${sender}</strong> vous a envoyé un message :`,
+    },
+    cta: { sq: "Përgjigju", en: "Reply", de: "Antworten", fr: "Répondre" },
+    dashPath: { sq: "/dashboard", en: "/dashboard", de: "/dashboard", fr: "/dashboard" },
+    providerPath: { sq: "/provider", en: "/provider", de: "/provider", fr: "/provider" },
+  },
+};
+
+function footer(lang: Lang): string {
+  const text = {
+    sq: "Platforma ImmoVia &mdash; Njoftim Automatik",
+    en: "ImmoVia Platform &mdash; Automated Notification",
+    de: "ImmoVia Plattform &mdash; Automatische Benachrichtigung",
+    fr: "Plateforme ImmoVia &mdash; Notification automatique",
+  };
+  return `<p style="${FOOTER_STYLE}">${text[lang]}</p>`;
+}
+
+// ── sendNewProjectNotification ────────────────────────────────────────────────
 export async function sendNewProjectNotification(project: {
   fullName: string;
   email: string;
@@ -48,11 +176,11 @@ export async function sendNewProjectNotification(project: {
     to,
     subject: `New Project Request — ${project.projectType} in ${project.city}`,
     html: `
-      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
-        <div style="background:#0f2044;padding:24px 32px;border-radius:8px 8px 0 0">
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}">
           <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — New Project Request</h1>
         </div>
-        <div style="background:#f8fafc;padding:32px;border:1px solid #e2e8f0;border-radius:0 0 8px 8px">
+        <div style="${BODY_STYLE}">
           <table style="width:100%;border-collapse:collapse">
             <tr><td style="padding:8px 0;color:#64748b;width:140px">Client</td><td style="padding:8px 0;font-weight:600">${project.fullName}</td></tr>
             <tr><td style="padding:8px 0;color:#64748b">Email</td><td style="padding:8px 0">${project.email}</td></tr>
@@ -64,12 +192,10 @@ export async function sendNewProjectNotification(project: {
             <tr><td style="padding:8px 0;color:#64748b;vertical-align:top">Description</td><td style="padding:8px 0">${project.description}</td></tr>
           </table>
           <div style="margin-top:24px">
-            <a href="https://immo-via-solutions--immoviard.replit.app/admin" style="background:#1a3a6e;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block">
-              Review in Admin Panel
-            </a>
+            <a href="${appUrl()}/admin" style="${BTN_STYLE}">Review in Admin Panel</a>
           </div>
         </div>
-        <p style="color:#94a3b8;font-size:12px;text-align:center;margin-top:16px">ImmoVia Platform &mdash; Automated Notification</p>
+        ${footer("en")}
       </div>
     `,
   });
@@ -81,6 +207,7 @@ export async function sendNewProjectNotification(project: {
   }
 }
 
+// ── sendNewCompanyNotification ────────────────────────────────────────────────
 export async function sendNewCompanyNotification(company: {
   companyName: string;
   contactName: string;
@@ -105,11 +232,11 @@ export async function sendNewCompanyNotification(company: {
     to,
     subject: `New Company Registration — ${company.companyName}`,
     html: `
-      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
-        <div style="background:#0f2044;padding:24px 32px;border-radius:8px 8px 0 0">
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}">
           <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — New Company Registration</h1>
         </div>
-        <div style="background:#f8fafc;padding:32px;border:1px solid #e2e8f0;border-radius:0 0 8px 8px">
+        <div style="${BODY_STYLE}">
           <table style="width:100%;border-collapse:collapse">
             <tr><td style="padding:8px 0;color:#64748b;width:160px">Company</td><td style="padding:8px 0;font-weight:600">${company.companyName}</td></tr>
             <tr><td style="padding:8px 0;color:#64748b">Contact</td><td style="padding:8px 0">${company.contactName}</td></tr>
@@ -123,12 +250,10 @@ export async function sendNewCompanyNotification(company: {
             ${company.description ? `<tr><td style="padding:8px 0;color:#64748b;vertical-align:top">Description</td><td style="padding:8px 0">${company.description}</td></tr>` : ""}
           </table>
           <div style="margin-top:24px">
-            <a href="https://immo-via-solutions--immoviard.replit.app/admin" style="background:#1a3a6e;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block">
-              Review in Admin Panel
-            </a>
+            <a href="${appUrl()}/admin" style="${BTN_STYLE}">Review in Admin Panel</a>
           </div>
         </div>
-        <p style="color:#94a3b8;font-size:12px;text-align:center;margin-top:16px">ImmoVia Platform &mdash; Automated Notification</p>
+        ${footer("en")}
       </div>
     `,
   });
@@ -140,6 +265,7 @@ export async function sendNewCompanyNotification(company: {
   }
 }
 
+// ── sendNewOfferNotification ──────────────────────────────────────────────────
 export async function sendNewOfferNotification(data: {
   clientEmail: string;
   clientName: string;
@@ -150,42 +276,47 @@ export async function sendNewOfferNotification(data: {
   message: string;
   priceEstimate: string | null;
   projectId: number;
+  language?: string | null;
 }): Promise<void> {
   const client = getResend();
   if (!client || !data.clientEmail) {
     logger.warn("Email not configured — skipping new offer notification");
     return;
   }
+  const lang = normLang(data.language);
+  const t = i18n.newOffer;
   const senderLabel = data.providerCompany ?? data.providerName;
+
   const { error } = await client.emails.send({
     from: "ImmoVia <onboarding@resend.dev>",
     to: data.clientEmail,
-    subject: `New offer on your project — ${senderLabel}`,
+    subject: t.subject[lang](senderLabel),
     html: `
       <div style="${WRAP_STYLE}">
         <div style="${NAV_STYLE}">
-          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — New Offer Received</h1>
+          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${t.heading[lang]}</h1>
         </div>
         <div style="${BODY_STYLE}">
-          <p style="margin:0 0 16px">Hi ${data.clientName},</p>
-          <p style="margin:0 0 20px">A new offer has been submitted for your <strong>${data.projectType}</strong> project in <strong>${data.city}</strong>.</p>
+          <p style="margin:0 0 16px">${t.hi[lang](data.clientName)}</p>
+          <p style="margin:0 0 20px">${t.intro[lang](data.projectType, data.city)}</p>
           <table style="width:100%;border-collapse:collapse">
-            <tr><td style="padding:8px 0;color:#64748b;width:140px">From</td><td style="padding:8px 0;font-weight:600">${senderLabel}</td></tr>
-            ${data.priceEstimate ? `<tr><td style="padding:8px 0;color:#64748b">Estimate</td><td style="padding:8px 0">${data.priceEstimate}</td></tr>` : ""}
-            <tr><td style="padding:8px 0;color:#64748b;vertical-align:top">Message</td><td style="padding:8px 0">${data.message}</td></tr>
+            <tr><td style="padding:8px 0;color:#64748b;width:140px">${t.labelFrom[lang]}</td><td style="padding:8px 0;font-weight:600">${senderLabel}</td></tr>
+            ${data.priceEstimate ? `<tr><td style="padding:8px 0;color:#64748b">${t.labelEstimate[lang]}</td><td style="padding:8px 0">${data.priceEstimate}</td></tr>` : ""}
+            <tr><td style="padding:8px 0;color:#64748b;vertical-align:top">${t.labelMessage[lang]}</td><td style="padding:8px 0">${data.message}</td></tr>
           </table>
           <div style="margin-top:24px">
-            <a href="${appUrl()}/dashboard" style="${BTN_STYLE}">View Offer</a>
+            <a href="${appUrl()}/dashboard" style="${BTN_STYLE}">${t.cta[lang]}</a>
           </div>
         </div>
-        <p style="${FOOTER_STYLE}">ImmoVia Platform &mdash; Automated Notification</p>
+        ${footer(lang)}
       </div>
     `,
   });
   if (error) logger.error({ error }, "Failed to send new offer notification");
-  else logger.info({ to: data.clientEmail, type: "new_offer" }, "New offer notification sent");
+  else logger.info({ to: data.clientEmail, type: "new_offer", lang }, "New offer notification sent");
 }
 
+// ── sendOfferAcceptedNotification ─────────────────────────────────────────────
 export async function sendOfferAcceptedNotification(data: {
   providerEmail: string;
   providerName: string;
@@ -193,71 +324,92 @@ export async function sendOfferAcceptedNotification(data: {
   projectType: string;
   city: string;
   offerId: number;
+  language?: string | null;
 }): Promise<void> {
   const client = getResend();
   if (!client || !data.providerEmail) {
     logger.warn("Email not configured — skipping offer accepted notification");
     return;
   }
+  const lang = normLang(data.language);
+  const t = i18n.offerAccepted;
+
   const { error } = await client.emails.send({
     from: "ImmoVia <onboarding@resend.dev>",
     to: data.providerEmail,
-    subject: `Your offer was accepted — ${data.projectType} in ${data.city}`,
+    subject: t.subject[lang](data.projectType, data.city),
     html: `
       <div style="${WRAP_STYLE}">
         <div style="${NAV_STYLE}">
-          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Offer Accepted</h1>
+          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${t.heading[lang]}</h1>
         </div>
         <div style="${BODY_STYLE}">
-          <p style="margin:0 0 16px">Hi ${data.providerName},</p>
-          <p style="margin:0 0 20px">Great news! <strong>${data.clientName}</strong> has accepted your offer for the <strong>${data.projectType}</strong> project in <strong>${data.city}</strong>.</p>
-          <p style="margin:0 0 20px">You can now message the client directly through the platform to coordinate next steps.</p>
+          <p style="margin:0 0 16px">${t.hi[lang](data.providerName)}</p>
+          <p style="margin:0 0 20px">${t.body[lang](data.clientName, data.projectType, data.city)}</p>
+          <p style="margin:0 0 20px">${t.next[lang]}</p>
           <div style="margin-top:24px">
-            <a href="${appUrl()}/provider" style="${BTN_STYLE}">Open Dashboard</a>
+            <a href="${appUrl()}/provider" style="${BTN_STYLE}">${t.cta[lang]}</a>
           </div>
         </div>
-        <p style="${FOOTER_STYLE}">ImmoVia Platform &mdash; Automated Notification</p>
+        ${footer(lang)}
       </div>
     `,
   });
   if (error) logger.error({ error }, "Failed to send offer accepted notification");
-  else logger.info({ to: data.providerEmail, type: "offer_accepted" }, "Offer accepted notification sent");
+  else logger.info({ to: data.providerEmail, type: "offer_accepted", lang }, "Offer accepted notification sent");
 }
 
+// ── sendNewMessageNotification ────────────────────────────────────────────────
 export async function sendNewMessageNotification(data: {
   recipientEmail: string;
   recipientName: string;
+  recipientUserId: number;
   senderName: string;
   preview: string;
   offerId: number;
+  isProvider?: boolean;
+  language?: string | null;
 }): Promise<void> {
   const client = getResend();
   if (!client || !data.recipientEmail) {
     logger.warn("Email not configured — skipping message notification");
     return;
   }
+
+  if (!canSendMessageEmail(data.recipientUserId, data.offerId)) {
+    logger.info(
+      { recipientUserId: data.recipientUserId, offerId: data.offerId },
+      "Message notification throttled (1 email/hour per thread per recipient)"
+    );
+    return;
+  }
+
+  const lang = normLang(data.language);
+  const t = i18n.newMessage;
   const safePreview = data.preview.length > 120 ? data.preview.slice(0, 120) + "…" : data.preview;
+  const dashUrl = data.isProvider ? `${appUrl()}/provider` : `${appUrl()}/dashboard`;
+
   const { error } = await client.emails.send({
     from: "ImmoVia <onboarding@resend.dev>",
     to: data.recipientEmail,
-    subject: `New message from ${data.senderName}`,
+    subject: t.subject[lang](data.senderName),
     html: `
       <div style="${WRAP_STYLE}">
         <div style="${NAV_STYLE}">
-          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — New Message</h1>
+          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${t.heading[lang]}</h1>
         </div>
         <div style="${BODY_STYLE}">
-          <p style="margin:0 0 16px">Hi ${data.recipientName},</p>
-          <p style="margin:0 0 8px"><strong>${data.senderName}</strong> sent you a message:</p>
+          <p style="margin:0 0 16px">${t.hi[lang](data.recipientName)}</p>
+          <p style="margin:0 0 8px">${t.sent[lang](data.senderName)}</p>
           <blockquote style="margin:0 0 20px;padding:12px 16px;background:#e8f0fd;border-left:4px solid #1a3a6e;border-radius:4px;font-style:italic;color:#334155">${safePreview}</blockquote>
           <div style="margin-top:24px">
-            <a href="${appUrl()}/dashboard" style="${BTN_STYLE}">Reply</a>
+            <a href="${dashUrl}" style="${BTN_STYLE}">${t.cta[lang]}</a>
           </div>
         </div>
-        <p style="${FOOTER_STYLE}">ImmoVia Platform &mdash; Automated Notification</p>
+        ${footer(lang)}
       </div>
     `,
   });
   if (error) logger.error({ error }, "Failed to send message notification");
-  else logger.info({ to: data.recipientEmail, type: "new_message" }, "Message notification sent");
+  else logger.info({ to: data.recipientEmail, type: "new_message", lang }, "Message notification sent");
 }

@@ -122,7 +122,7 @@ router.post("/messages/:offerId", requireAuth, async (req, res): Promise<void> =
         .where(eq(usersTable.id, userId))
         .limit(1);
       const [recipient] = await db
-        .select({ email: usersTable.email, fullName: usersTable.fullName })
+        .select({ email: usersTable.email, fullName: usersTable.fullName, language: usersTable.language, role: usersTable.role })
         .from(usersTable)
         .where(eq(usersTable.id, recipientId))
         .limit(1);
@@ -131,9 +131,12 @@ router.post("/messages/:offerId", requireAuth, async (req, res): Promise<void> =
         await sendNewMessageNotification({
           recipientEmail: recipient.email,
           recipientName: recipient.fullName,
+          recipientUserId: recipientId,
           senderName: sender.fullName,
           preview: content,
           offerId,
+          isProvider: recipient.role === "service_provider",
+          language: recipient.language,
         });
       }
     } catch (err) {
