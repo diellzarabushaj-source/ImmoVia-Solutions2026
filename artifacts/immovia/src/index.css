@@ -194,3 +194,14 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* Chatbase chat window — prevent full-screen takeover on mobile */
+@media (max-width: 768px) {
+  iframe[src*="chatbase.co"] {
+    max-height: 72vh !important;
+    height: 72vh !important;
+    bottom: 72px !important;
+    border-radius: 16px 16px 0 0 !important;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15) !important;
+  }
+}
