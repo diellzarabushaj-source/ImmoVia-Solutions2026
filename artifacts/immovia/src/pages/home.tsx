@@ -179,35 +179,38 @@ export default function Home() {
           style={{ rotateX: tiltX, rotateY: tiltY, transformPerspective: 1400, transformStyle: "preserve-3d" }}
         >
           <motion.div className="max-w-4xl mx-auto text-center" initial="initial" animate="animate" variants={stagger}>
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-8">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-white/15 border border-white/30 text-white text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-8"
+              style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
               <Star className="w-3 h-3 text-primary fill-primary" />
               {t.hero.badge}
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-4 leading-[1.05]">
+            <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-4 leading-[1.05]"
+              style={{ textShadow: "0 2px 20px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.4)" }}>
               {t.hero.title.split('\n').map((line, i) => (
-                <span key={i} className={i === 1 ? "text-primary" : i === 2 ? "text-blue-300" : ""}>
+                <span key={i} className={i === 1 ? "text-primary drop-shadow-lg" : i === 2 ? "text-blue-300 drop-shadow-lg" : "text-white"}>
                   {line}{i < t.hero.title.split('\n').length - 1 && <br />}
                 </span>
               ))}
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-lg md:text-xl font-light text-white/70 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <motion.p variants={fadeUp} className="text-lg md:text-xl font-light text-white mb-10 max-w-2xl mx-auto leading-relaxed"
+              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>
               {t.hero.subtitle}
             </motion.p>
 
             {/* 4-flow visual */}
             <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto mb-10">
               {[
-                { from: t.hero.flow1From, to: t.hero.flow1To, desc: t.hero.flow1Desc, color: "from-primary/20 to-blue-500/10 border-primary/30" },
-                { from: t.hero.flow2From, to: t.hero.flow2To, desc: t.hero.flow2Desc, color: "from-blue-400/20 to-indigo-500/10 border-blue-400/30" },
+                { from: t.hero.flow1From, to: t.hero.flow1To, desc: t.hero.flow1Desc, color: "from-primary/25 to-blue-500/15 border-primary/40" },
+                { from: t.hero.flow2From, to: t.hero.flow2To, desc: t.hero.flow2Desc, color: "from-blue-400/25 to-indigo-500/15 border-blue-400/40" },
               ].map((flow, i) => (
-                <div key={i} className={`bg-gradient-to-br ${flow.color} border rounded-xl p-4 text-left`}>
+                <div key={i} className={`bg-gradient-to-br ${flow.color} border rounded-xl p-4 text-left backdrop-blur-sm`}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-white/90 text-sm font-semibold">{flow.from}</span>
+                    <span className="text-white text-sm font-semibold" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{flow.from}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                     <span className="text-primary text-sm font-semibold">{flow.to}</span>
                   </div>
-                  <p className="text-white/60 text-xs leading-relaxed">{flow.desc}</p>
+                  <p className="text-white/80 text-xs leading-relaxed">{flow.desc}</p>
                 </div>
               ))}
             </motion.div>
@@ -215,23 +218,23 @@ export default function Home() {
             {/* CTAs */}
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
               <Link href="/companies">
-                <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white text-base px-8 shadow-lg shadow-primary/25" data-testid="hero-cta-project">
+                <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white text-base px-8 shadow-lg shadow-primary/30" data-testid="hero-cta-project">
                   <Search className="mr-2 h-4 w-4" />
                   {t.hero.ctaProject}
                 </Button>
               </Link>
               <Link href="/register-company">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-white/25 hover:bg-white/10 text-white text-base px-8" data-testid="hero-cta-company">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white/10 border-white/40 hover:bg-white/20 text-white text-base px-8 backdrop-blur-sm" data-testid="hero-cta-company">
                   {t.hero.ctaCompany}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="flex flex-wrap items-center justify-center gap-6 text-white/50 text-xs font-medium">
+            <motion.div variants={fadeUp} className="flex flex-wrap items-center justify-center gap-6 text-white/80 text-xs font-medium">
               {[t.hero.trustBadge1, t.hero.trustBadge2, t.hero.trustBadge3].map((badge, i) => (
-                <span key={i} className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                <span key={i} className="flex items-center gap-1.5" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-primary drop-shadow" />
                   {badge}
                 </span>
               ))}
