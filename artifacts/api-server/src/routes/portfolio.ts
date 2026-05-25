@@ -22,7 +22,7 @@ function isAllowedImageUrl(url: string): boolean {
 }
 
 router.get("/portfolio/me", requireContractor, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const items = await db
     .select()
     .from(portfolioItemsTable)
@@ -32,7 +32,7 @@ router.get("/portfolio/me", requireContractor, async (req, res): Promise<void> =
 });
 
 router.post("/portfolio", requireContractor, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const body = req.body as Record<string, unknown>;
   const imageUrl = typeof body.imageUrl === "string" ? body.imageUrl.trim() : "";
   const title = typeof body.title === "string" ? body.title.trim().slice(0, 120) : null;
@@ -52,7 +52,7 @@ router.post("/portfolio", requireContractor, async (req, res): Promise<void> => 
 });
 
 router.delete("/portfolio/:id", requireContractor, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
     res.status(400).json({ error: "Invalid id" });

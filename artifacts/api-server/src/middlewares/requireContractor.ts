@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { getAuth } from "@clerk/express";
 import { eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 
@@ -7,19 +8,23 @@ export async function requireContractor(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const userId = req.session?.userId;
-  if (!userId) {
+  const auth = getAuth(req);
+  if (!auth?.userId) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
+
   const [user] = await db
-    .select({ role: usersTable.role })
+    .select({ id: usersTable.id, role: usersTable.role })
     .from(usersTable)
-    .where(eq(usersTable.id, userId))
+    .where(eq(usersTable.clerkUserId, auth.userId))
     .limit(1);
-  if (!user || user.role !== "contractor") {
+
+  if (!user || (user.role !== "service_provider" && user.role !== "contractor")) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
+
+  req.userId = user.id;
   next();
 }

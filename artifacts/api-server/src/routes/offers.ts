@@ -20,7 +20,7 @@ router.get("/projects/:id/offers", requireAuth, async (req, res): Promise<void> 
     res.status(400).json({ error: "Invalid id" });
     return;
   }
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, projectId));
   if (!project) {
@@ -62,7 +62,7 @@ router.get("/projects/:id/offers", requireAuth, async (req, res): Promise<void> 
 });
 
 router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const projectId = Number(req.params.id);
   if (!Number.isFinite(projectId)) {
     res.status(400).json({ error: "Invalid id" });
@@ -194,7 +194,7 @@ router.post("/offers/:id/accept", requireAuth, async (req, res): Promise<void> =
     res.status(400).json({ error: "Invalid id" });
     return;
   }
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const [offer] = await db.select().from(offersTable).where(eq(offersTable.id, offerId));
   if (!offer) {
     res.status(404).json({ error: "Offer not found" });
@@ -247,7 +247,7 @@ router.post("/offers/:id/accept", requireAuth, async (req, res): Promise<void> =
 
 // Client: list own projects with offer counts
 router.get("/me/projects", requireAuth, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const rows = await db
     .select()
     .from(projectsTable)
@@ -269,7 +269,7 @@ router.get("/provider/projects", requireProvider, async (_req, res): Promise<voi
 
 // Provider: my offers
 router.get("/provider/offers", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const rows = await db
     .select({
       id: offersTable.id,

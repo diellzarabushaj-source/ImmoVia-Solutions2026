@@ -44,7 +44,7 @@ router.get("/messages/:offerId", requireAuth, async (req, res): Promise<void> =>
     res.status(400).json({ error: "Invalid offerId" });
     return;
   }
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   if (!(await canAccessOffer(offerId, userId))) {
     res.status(403).json({ error: "Forbidden" });
     return;
@@ -74,7 +74,7 @@ router.post("/messages/:offerId", requireAuth, async (req, res): Promise<void> =
     res.status(400).json({ error: "Invalid offerId" });
     return;
   }
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   if (!(await canAccessOffer(offerId, userId))) {
     res.status(403).json({ error: "Forbidden" });
     return;

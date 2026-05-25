@@ -104,6 +104,14 @@ router.post("/auth/sync", requireAuth, async (req, res): Promise<void> => {
         })
         .where(eq(usersTable.id, emailUser.id))
         .returning();
+      // Persist role to Clerk publicMetadata for fast access
+      try {
+        await clerk.users.updateUserMetadata(clerkUserId, {
+          publicMetadata: { role: emailUser.role, dbUserId: emailUser.id },
+        });
+      } catch (err) {
+        req.log.warn({ err }, "Failed to update Clerk publicMetadata");
+      }
       res.json({ user: toPublicUser(linked!) });
       return;
     }
@@ -164,6 +172,15 @@ router.post("/auth/sync", requireAuth, async (req, res): Promise<void> => {
   if (!newUser) {
     res.status(500).json({ error: "Failed to create user" });
     return;
+  }
+
+  // Persist role to Clerk publicMetadata
+  try {
+    await clerk.users.updateUserMetadata(clerkUserId, {
+      publicMetadata: { role: newUser.role, dbUserId: newUser.id },
+    });
+  } catch (err) {
+    req.log.warn({ err }, "Failed to update Clerk publicMetadata");
   }
 
   // Service providers get a Free plan subscription with 3 monthly credits.

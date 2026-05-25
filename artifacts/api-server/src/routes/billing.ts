@@ -39,7 +39,7 @@ router.get("/packs", async (_req, res): Promise<void> => {
 
 // Provider state
 router.get("/provider/me", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   await rollSubscriptionCycle(userId);
   const [sub] = await db
     .select()
@@ -59,14 +59,14 @@ router.get("/provider/me", requireProvider, async (req, res): Promise<void> => {
 });
 
 router.get("/provider/balance", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   await rollSubscriptionCycle(userId);
   const balance = await getBalance(userId);
   res.json(balance);
 });
 
 router.get("/provider/transactions", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const rows = await db
     .select()
     .from(immocreditTransactionsTable)
@@ -77,7 +77,7 @@ router.get("/provider/transactions", requireProvider, async (req, res): Promise<
 });
 
 router.get("/billing/payments", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const rows = await db
     .select()
     .from(paymentsTable)
@@ -88,7 +88,7 @@ router.get("/billing/payments", requireProvider, async (req, res): Promise<void>
 });
 
 router.get("/billing/invoices", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const payments = await db
     .select()
     .from(paymentsTable)
@@ -99,7 +99,7 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
 });
 
 router.post("/billing/subscribe", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const body = req.body as Record<string, unknown>;
   const planId = typeof body.planId === "number" ? body.planId : null;
   if (!planId) {
@@ -176,7 +176,7 @@ router.post("/billing/subscribe", requireProvider, async (req, res): Promise<voi
 });
 
 router.post("/billing/buy-pack", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const body = req.body as Record<string, unknown>;
   const packId = typeof body.packId === "number" ? body.packId : null;
   if (!packId) {
@@ -223,7 +223,7 @@ router.post("/billing/buy-pack", requireProvider, async (req, res): Promise<void
 });
 
 router.post("/billing/cancel", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const [sub] = await db
     .select()
     .from(subscriptionsTable)

@@ -18,7 +18,7 @@ router.post("/projects/:id/review", requireAuth, async (req, res): Promise<void>
     res.status(400).json({ error: "Invalid project id" });
     return;
   }
-  const userId = req.session.userId!;
+  const userId = req.userId!;
 
   const [user] = await db
     .select()
@@ -136,7 +136,7 @@ router.get("/reviews/by-provider/:userId", async (req, res): Promise<void> => {
 
 // GET /reviews/my-reviewed-offers — authenticated client: which offer IDs have been reviewed
 router.get("/reviews/my-reviewed-offers", requireAuth, async (req, res): Promise<void> => {
-  const userId = req.session.userId!;
+  const userId = req.userId!;
   const rows = await db
     .select({ offerId: reviewsTable.offerId })
     .from(reviewsTable)
