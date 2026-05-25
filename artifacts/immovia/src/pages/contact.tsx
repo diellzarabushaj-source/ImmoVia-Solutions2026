@@ -72,38 +72,32 @@ export default function Contact() {
       <section className="bg-white border-b border-border">
         <div className="container mx-auto px-4 py-10 max-w-4xl">
           <motion.div
-            className="flex flex-col sm:flex-row items-center gap-6 bg-gradient-to-br from-[#eef2f9] to-blue-50 border border-[#d0daf0] rounded-2xl px-7 py-6 relative overflow-hidden"
+            className="flex flex-col sm:flex-row items-stretch gap-0 rounded-2xl overflow-hidden shadow-sm border border-[#d0daf0]"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.15 }}
           >
-            {/* Decorative oversized quote mark */}
-            <Quote className="absolute top-3 left-4 w-16 h-16 text-primary/8 rotate-180 pointer-events-none select-none" />
-
-            {/* Raze photo */}
-            <div className="relative flex-shrink-0">
-              <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md">
-                <img
-                  src="/team-raze.png"
-                  alt={t.contact.quoteAuthor}
-                  className="w-full h-full object-cover"
-                  style={{ transform: "scale(2.2) translateY(12%)", transformOrigin: "50% 20%" }}
-                />
-              </div>
-              <span className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full border-2 border-white flex items-center justify-center">
-                <Quote className="w-3 h-3 text-white" />
-              </span>
+            {/* Photo panel */}
+            <div className="sm:w-44 w-full h-48 sm:h-auto flex-shrink-0 overflow-hidden">
+              <img
+                src="/team-raze.png"
+                alt={t.contact.quoteAuthor}
+                className="w-full h-full object-cover object-top"
+              />
             </div>
 
-            {/* Quote text */}
-            <div className="relative z-10 text-center sm:text-left">
-              <p className="text-[#1a3a6e] text-base md:text-lg font-medium italic leading-relaxed mb-3">
+            {/* Quote panel */}
+            <div className="flex-1 bg-gradient-to-br from-[#eef2f9] to-blue-50 px-7 py-7 flex flex-col justify-center relative">
+              <Quote className="absolute top-4 right-5 w-10 h-10 text-primary/10 pointer-events-none select-none" />
+              <p className="text-[#1a3a6e] text-base md:text-lg font-medium italic leading-relaxed mb-4 relative z-10">
                 "{t.contact.quoteText}"
               </p>
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="w-8 h-px bg-primary/40" />
-                <span className="text-sm font-bold text-[#0f2044]">{t.contact.quoteAuthor}</span>
-                <span className="text-xs text-muted-foreground">— {t.contact.quoteRole}</span>
+              <div className="flex items-center gap-3">
+                <span className="w-8 h-px bg-primary/50" />
+                <div>
+                  <p className="text-sm font-bold text-[#0f2044]">{t.contact.quoteAuthor}</p>
+                  <p className="text-xs text-muted-foreground">{t.contact.quoteRole}</p>
+                </div>
               </div>
             </div>
           </motion.div>
