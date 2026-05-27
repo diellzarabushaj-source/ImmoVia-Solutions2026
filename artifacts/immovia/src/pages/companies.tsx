@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearch, Link, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useAuth } from "@/contexts/AuthContext";
 import { useListCompanies } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   Search, MapPin, CalendarDays, Globe, Mail, Phone,
   Clock, FileText, User, Building2, SlidersHorizontal,
-  ArrowUpDown, X, ChevronDown, LocateFixed, Loader2, ArrowRight,
+  ArrowUpDown, X, ChevronDown, LocateFixed, Loader2, ArrowRight, Lock,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
@@ -65,6 +66,7 @@ function CompanyAvatar({ name, profilePhoto, size = "md" }: { name: string; prof
 
 export default function Companies() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   usePageMeta({ title: `${t.companies.title} — ImmoVia`, description: t.companies.subtitle ?? undefined });
   const search = useSearch();
   const params = new URLSearchParams(search);
@@ -488,9 +490,10 @@ export default function Companies() {
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           <AnimatePresence>
-            {filtered.map((company, idx) => {
+            {(user ? filtered : filtered.slice(0, 6)).map((company, idx) => {
               const isIndividual = company.workerType === "individual";
               return (
                 <motion.div
@@ -604,6 +607,60 @@ export default function Companies() {
               );
             })}
           </AnimatePresence>
+          </div>
+
+          {/* Gate overlay for non-logged-in users */}
+          {!user && filtered.length > 6 && (
+            <div className="relative mt-5">
+              <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-background z-10 pointer-events-none" />
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
+                {filtered.slice(6, 9).map((company) => {
+                  const isIndividual = company.workerType === "individual";
+                  return (
+                    <div key={`ghost-${company.id}`} className="bg-white rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
+                      <div className="p-5 flex gap-3 items-start border-b border-border/50">
+                        <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-foreground text-base truncate">{company.companyName}</h3>
+                          <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
+                            <MapPin className="h-3 w-3" /><span>{company.city}</span>
+                          </div>
+                        </div>
+                        <Badge variant={isIndividual ? "outline" : "secondary"} className="text-xs flex-shrink-0">
+                          {isIndividual ? <User className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
+                        </Badge>
+                      </div>
+                      <div className="p-5 flex-1 flex flex-col gap-3">
+                        {company.description && (
+                          <p className="text-sm text-foreground/75 leading-relaxed line-clamp-2">{company.description}</p>
+                        )}
+                        <div className="flex flex-wrap gap-1.5">
+                          {company.serviceTypes.slice(0, 3).map(svc => (
+                            <span key={svc} className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium capitalize">
+                              {t.offers[svc as keyof typeof t.offers] ?? svc}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                <div className="bg-white/95 backdrop-blur-sm border border-border rounded-2xl px-8 py-8 text-center shadow-lg max-w-sm mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <Lock className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground mb-5">{t.professionals.gateLabel}</p>
+                  <Link href="/signup">
+                    <Button size="lg" className="w-full" data-testid="companies-gate-cta">
+                      {t.professionals.gateCta}
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
