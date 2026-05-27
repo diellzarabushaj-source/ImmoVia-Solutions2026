@@ -109,6 +109,9 @@ export const translations = {
       noResultsFilter: 'Asnjë projekt nuk përputhet me filtrat tuaj.',
       noResultsFilterHint: 'Provoni filtra të ndryshme ose pastroni të gjithë.',
       noResultsHint: 'Kthehu së shpejti — projekte të reja postohen çdo ditë',
+      noProjectsInCity: 'Ende nuk ka projekte në {city}',
+      showingAllInstead: 'Po shfaqim të gjitha projektet e hapura.',
+      sortedNearYou: 'Po shfaqim së pari projektet pranë {city}',
     },
     projectDetail: {
       seoProject: 'Projekt',
@@ -779,6 +782,9 @@ export const translations = {
       noResultsFilter: 'No projects match your filters.',
       noResultsFilterHint: 'Try different filters or clear them all.',
       noResultsHint: 'Check back soon — new projects are posted every day',
+      noProjectsInCity: 'No projects in {city} yet',
+      showingAllInstead: 'Showing all open projects instead.',
+      sortedNearYou: 'Showing projects near {city} first',
     },
     projectDetail: {
       seoProject: 'Project',
@@ -1449,6 +1455,9 @@ export const translations = {
       noResultsFilter: 'Keine Projekte entsprechen Ihren Filtern.',
       noResultsFilterHint: 'Versuchen Sie andere Filter oder setzen Sie sie zurück.',
       noResultsHint: 'Schauen Sie bald wieder vorbei — täglich neue Projekte',
+      noProjectsInCity: 'Noch keine Projekte in {city}',
+      showingAllInstead: 'Wir zeigen stattdessen alle offenen Projekte.',
+      sortedNearYou: 'Projekte in der Nähe von {city} werden zuerst angezeigt',
     },
     projectDetail: {
       seoProject: 'Projekt',
@@ -2119,6 +2128,9 @@ export const translations = {
       noResultsFilter: 'Aucun projet ne correspond à vos filtres.',
       noResultsFilterHint: 'Essayez différents filtres ou effacez-les tous.',
       noResultsHint: 'Revenez bientôt — de nouveaux projets sont publiés chaque jour',
+      noProjectsInCity: 'Aucun projet à {city} pour le moment',
+      showingAllInstead: 'Affichage de tous les projets ouverts à la place.',
+      sortedNearYou: 'Affichage des projets près de {city} en premier',
     },
     projectDetail: {
       seoProject: 'Projet',

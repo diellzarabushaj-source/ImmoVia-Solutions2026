@@ -122,6 +122,32 @@ export default function Projects() {
   const [sizeFilter, setSizeFilter] = useState(() => new URLSearchParams(search).get("size") ?? "");
   const [budgetFilter, setBudgetFilter] = useState(() => new URLSearchParams(search).get("budget") ?? "");
   const [sortBy, setSortBy] = useState(() => new URLSearchParams(search).get("sort") ?? "newest");
+  const [userCity, setUserCity] = useState<string>(() => {
+    try { return localStorage.getItem("immovia_user_city") ?? ""; } catch { return ""; }
+  });
+
+  useEffect(() => {
+    if (userCity) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=en`,
+            { headers: { "User-Agent": "ImmoVia/1.0" } }
+          );
+          const data = await res.json() as { address?: { city?: string; town?: string; village?: string; county?: string } };
+          const city = data.address?.city ?? data.address?.town ?? data.address?.village ?? data.address?.county ?? "";
+          if (city) {
+            setUserCity(city);
+            try { localStorage.setItem("immovia_user_city", city); } catch {}
+          }
+        } catch { /* silent */ }
+      },
+      () => { /* silent — user denied */ },
+      { timeout: 8000, maximumAge: 3600000 }
+    );
+  }, [userCity]);
 
   const searchRef = useRef(search);
   searchRef.current = search;
@@ -152,25 +178,49 @@ export default function Projects() {
 
   const open = useMemo(() => (projects ?? []).filter(p => p.status === "open"), [projects]);
 
-  const filtered = useMemo(() => {
-    let list = open.filter(p => {
-      const q = searchTerm.toLowerCase();
-      const matchSearch = !q ||
-        p.projectType.toLowerCase().includes(q) ||
-        p.city.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q);
-      const matchType = !typeFilter || p.projectType === typeFilter;
-      const matchCity = !cityFilter || p.city.toLowerCase().includes(cityFilter.toLowerCase());
-      const matchSize = !sizeFilter || p.size === sizeFilter;
-      const matchBudget = !budgetFilter || p.budget === budgetFilter;
-      return matchSearch && matchType && matchCity && matchSize && matchBudget;
+  const matchesNonCity = (p: typeof open[number]) => {
+    const q = searchTerm.toLowerCase();
+    const matchSearch = !q ||
+      p.projectType.toLowerCase().includes(q) ||
+      p.city.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q);
+    const matchType = !typeFilter || p.projectType === typeFilter;
+    const matchSize = !sizeFilter || p.size === sizeFilter;
+    const matchBudget = !budgetFilter || p.budget === budgetFilter;
+    return matchSearch && matchType && matchSize && matchBudget;
+  };
+
+  const sortList = (list: typeof open) => {
+    const byDate = (a: typeof open[number], b: typeof open[number]) =>
+      sortBy === "oldest"
+        ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    if (!userCity || cityFilter || sortBy === "oldest") return [...list].sort(byDate);
+    const uc = userCity.toLowerCase();
+    return [...list].sort((a, b) => {
+      const aNear = a.city.toLowerCase() === uc ? 0 : 1;
+      const bNear = b.city.toLowerCase() === uc ? 0 : 1;
+      if (aNear !== bNear) return aNear - bNear;
+      return byDate(a, b);
     });
+  };
 
-    if (sortBy === "oldest") list = [...list].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    else list = [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const filtered = useMemo(() => {
+    const list = open.filter(p => {
+      const matchCity = !cityFilter || p.city.toLowerCase().includes(cityFilter.toLowerCase());
+      return matchesNonCity(p) && matchCity;
+    });
+    return sortList(list);
+  }, [open, searchTerm, typeFilter, cityFilter, sizeFilter, budgetFilter, sortBy, userCity]);
 
-    return list;
-  }, [open, searchTerm, typeFilter, cityFilter, sizeFilter, budgetFilter, sortBy]);
+  // Fallback list (ignores cityFilter) — shown when explicit city filter yields zero matches.
+  const fallbackWithoutCity = useMemo(() => {
+    if (!cityFilter || filtered.length > 0) return [];
+    return sortList(open.filter(matchesNonCity));
+  }, [open, cityFilter, filtered.length, searchTerm, typeFilter, sizeFilter, budgetFilter, sortBy, userCity]);
+
+  const isCityFallback = cityFilter && filtered.length === 0 && fallbackWithoutCity.length > 0;
+  const displayList = isCityFallback ? fallbackWithoutCity : filtered;
 
   const hasFilters = !!(searchTerm || typeFilter || cityFilter || sizeFilter || budgetFilter);
   const activeFiltersCount = [!!searchTerm, !!typeFilter, !!cityFilter, !!sizeFilter, !!budgetFilter].filter(Boolean).length;
@@ -184,8 +234,8 @@ export default function Projects() {
     setSortBy("newest");
   };
 
-  const visibleProjects = user ? filtered : filtered.slice(0, 6);
-  const gatedProjects = !user && filtered.length > 6 ? filtered.slice(6, 9) : [];
+  const visibleProjects = user ? displayList : displayList.slice(0, 6);
+  const gatedProjects = !user && displayList.length > 6 ? displayList.slice(6, 9) : [];
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/20">
@@ -367,8 +417,39 @@ export default function Projects() {
           </div>
         )}
 
+        {/* City fallback banner */}
+        {!isLoading && !isError && isCityFallback && (
+          <div className="mb-5 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 flex items-start gap-3">
+            <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm">
+              <p className="font-medium text-foreground">
+                {(t.listings.noProjectsInCity ?? "No projects in {city} yet").replace("{city}", cityFilter)}
+              </p>
+              <p className="text-muted-foreground mt-0.5">
+                {t.listings.showingAllInstead ?? "Showing all open projects instead."}
+              </p>
+            </div>
+            <button
+              onClick={() => setCityFilter("")}
+              className="text-xs text-primary hover:underline font-medium flex-shrink-0 self-center"
+            >
+              {t.listings.clearFilters ?? "Clear filters"}
+            </button>
+          </div>
+        )}
+
+        {/* Near you indicator */}
+        {!isLoading && !isError && !isCityFallback && !cityFilter && userCity && displayList.some(p => p.city.toLowerCase() === userCity.toLowerCase()) && (
+          <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
+            <MapPin className="h-3.5 w-3.5 text-primary" />
+            <span>
+              {(t.listings.sortedNearYou ?? "Showing projects near {city} first").replace("{city}", userCity)}
+            </span>
+          </div>
+        )}
+
         {/* No results */}
-        {!isLoading && !isError && filtered.length === 0 && (
+        {!isLoading && !isError && displayList.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -392,7 +473,7 @@ export default function Projects() {
         )}
 
         {/* Project grid */}
-        {!isLoading && !isError && filtered.length > 0 && (
+        {!isLoading && !isError && displayList.length > 0 && (
           <div className="relative">
             <motion.div
               className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
@@ -416,7 +497,7 @@ export default function Projects() {
             </motion.div>
 
             {/* Gate for non-logged-in users */}
-            {!user && filtered.length > 6 && (
+            {!user && displayList.length > 6 && (
               <div className="relative mt-5">
                 <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-muted/20 z-10 pointer-events-none" />
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
