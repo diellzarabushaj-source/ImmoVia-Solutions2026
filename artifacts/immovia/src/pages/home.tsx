@@ -222,7 +222,7 @@ export default function Home() {
   );
   const hasListingFilter = !!(listingTypeFilter || listingCityFilter || listingSizeFilter || listingBudgetFilter);
   const previewProjects = useMemo(() => {
-    let list = (projects ?? []).filter(p => p.status === "pending");
+    let list = (projects ?? []).filter(p => p.status === "matched");
     if (listingTypeFilter) list = list.filter(p => p.projectType === listingTypeFilter);
     if (listingCityFilter) list = list.filter(p => p.city.toLowerCase().includes(listingCityFilter.toLowerCase()));
     if (listingSizeFilter) list = list.filter(p => p.size === listingSizeFilter);

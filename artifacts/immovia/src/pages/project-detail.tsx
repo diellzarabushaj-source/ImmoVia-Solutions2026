@@ -94,6 +94,10 @@ export default function ProjectDetail() {
       .then(async r => {
         if (!r.ok) { setFetchStatus("notfound"); return; }
         const data = await r.json() as Project;
+        if (data.status === "cancelled" || data.status === "rejected") {
+          setFetchStatus("notfound");
+          return;
+        }
         setProject(data);
         setFetchStatus("ready");
       })
