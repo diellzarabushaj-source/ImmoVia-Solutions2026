@@ -16,8 +16,6 @@ export const translations = {
       profile: 'Profili',
       logout: 'Dil',
       browseServiceProviders: 'Shfleto Ofruesit',
-      submitProject: 'Posto Projekt',
-      registerCompany: 'Ofro Shërbime',
     },
     footer: {
       admin: 'Admin',
@@ -1208,7 +1206,7 @@ export const translations = {
   de: {
     nav: {
       home: 'Startseite',
-      submitProject: 'Projekt aufgeben',
+      submitProject: 'Projekt ausschreiben',
       registerCompany: 'Dienste anbieten',
       companies: 'Firmen',
       pricing: 'Preise',
@@ -1220,8 +1218,6 @@ export const translations = {
       profile: 'Profil',
       logout: 'Abmelden',
       browseServiceProviders: 'Dienstleister durchsuchen',
-      submitProject: 'Projekt ausschreiben',
-      registerCompany: 'Dienste anbieten',
     },
     footer: {
       admin: 'Admin',
@@ -1811,8 +1807,8 @@ export const translations = {
   fr: {
     nav: {
       home: 'Accueil',
-      submitProject: 'Poster un projet',
-      registerCompany: 'Proposer vos services',
+      submitProject: 'Poster un Projet',
+      registerCompany: 'Proposer des Services',
       companies: 'Sociétés',
       pricing: 'Tarifs',
       chat: 'Assistant',
@@ -1823,8 +1819,6 @@ export const translations = {
       profile: 'Profil',
       logout: 'Déconnexion',
       browseServiceProviders: 'Parcourir les Prestataires',
-      submitProject: 'Poster un Projet',
-      registerCompany: 'Proposer des Services',
     },
     footer: {
       admin: 'Admin',

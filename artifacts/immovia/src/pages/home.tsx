@@ -222,7 +222,7 @@ export default function Home() {
   );
   const hasListingFilter = !!(listingTypeFilter || listingCityFilter || listingSizeFilter || listingBudgetFilter);
   const previewProjects = useMemo(() => {
-    let list = (projects ?? []).filter(p => p.status === "matched");
+    let list = (projects ?? []).filter(p => p.status === "open");
     if (listingTypeFilter) list = list.filter(p => p.projectType === listingTypeFilter);
     if (listingCityFilter) list = list.filter(p => p.city.toLowerCase().includes(listingCityFilter.toLowerCase()));
     if (listingSizeFilter) list = list.filter(p => p.size === listingSizeFilter);
@@ -395,8 +395,8 @@ export default function Home() {
 
             {/* Persona cards */}
             <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto mb-10">
-              {/* Client persona */}
-              <Link href="/companies">
+              {/* Project Poster persona */}
+              <Link href="/signup?account_type=project_poster">
                 <div className="group rounded-xl p-5 text-left border border-white/20 cursor-pointer transition-all duration-200 hover:border-blue-400/50"
                   style={{ background: "rgba(10,20,50,0.60)", backdropFilter: "blur(14px)" }}>
                   <div className="flex items-center gap-2 mb-3">
@@ -406,15 +406,16 @@ export default function Home() {
                     <span className="text-blue-300 text-[10px] font-bold uppercase tracking-widest">{t.hero.persona1Label}</span>
                   </div>
                   <h3 className="text-white text-base font-bold mb-1 leading-snug">{t.hero.persona1Title}</h3>
-                  <p className="text-white/65 text-xs leading-relaxed mb-3">{t.hero.persona1Desc}</p>
+                  <p className="text-white/65 text-xs leading-relaxed mb-2">{t.hero.persona1Desc}</p>
+                  <p className="text-white/40 text-[10px] leading-relaxed mb-3">{t.hero.persona1Small}</p>
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-300 group-hover:gap-2 transition-all">
                     {t.hero.persona1Cta} <ArrowRight className="w-3 h-3" />
                   </span>
                 </div>
               </Link>
 
-              {/* Professional persona */}
-              <Link href="/register-company">
+              {/* Service Provider persona */}
+              <Link href="/signup?account_type=service_provider">
                 <div className="group rounded-xl p-5 text-left border border-white/20 cursor-pointer transition-all duration-200 hover:border-blue-400/50"
                   style={{ background: "rgba(10,20,50,0.60)", backdropFilter: "blur(14px)" }}>
                   <div className="flex items-center gap-2 mb-3">
@@ -424,7 +425,8 @@ export default function Home() {
                     <span className="text-blue-300 text-[10px] font-bold uppercase tracking-widest">{t.hero.persona2Label}</span>
                   </div>
                   <h3 className="text-white text-base font-bold mb-1 leading-snug">{t.hero.persona2Title}</h3>
-                  <p className="text-white/65 text-xs leading-relaxed mb-3">{t.hero.persona2Desc}</p>
+                  <p className="text-white/65 text-xs leading-relaxed mb-2">{t.hero.persona2Desc}</p>
+                  <p className="text-white/40 text-[10px] leading-relaxed mb-3">{t.hero.persona2Small}</p>
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-300 group-hover:gap-2 transition-all">
                     {t.hero.persona2Cta} <ArrowRight className="w-3 h-3" />
                   </span>
@@ -434,13 +436,13 @@ export default function Home() {
 
             {/* CTAs */}
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
-              <Link href="/companies">
+              <Link href="/signup?account_type=project_poster">
                 <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white text-base px-8 shadow-lg shadow-primary/30" data-testid="hero-cta-project">
-                  <Search className="mr-2 h-4 w-4" />
+                  <FileText className="mr-2 h-4 w-4" />
                   {t.hero.ctaProject}
                 </Button>
               </Link>
-              <Link href="/register-company">
+              <Link href="/signup?account_type=service_provider">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white/10 border-white/40 hover:bg-white/20 text-white text-base px-8 backdrop-blur-sm" data-testid="hero-cta-company">
                   {t.hero.ctaCompany}
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -478,6 +480,64 @@ export default function Home() {
                 <span className="text-xs text-muted-foreground mt-1">{stat.label}</span>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── BROWSE MARKETPLACE ── */}
+      <section className="py-14 md:py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.browse.title}</h2>
+            <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <motion.div
+              className="bg-primary/5 border border-primary/20 rounded-2xl p-8 flex flex-col gap-4"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-foreground mb-2">{t.browse.projectsTitle}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.projectsDesc}</p>
+              </div>
+              <Link href="/">
+                <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/8">
+                  {t.browse.projectsCta} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+            <motion.div
+              className="bg-primary/5 border border-primary/20 rounded-2xl p-8 flex flex-col gap-4"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Users className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-foreground mb-2">{t.browse.providersTitle}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.providersDesc}</p>
+              </div>
+              <Link href="/companies">
+                <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/8">
+                  {t.browse.providersCta} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -805,7 +865,7 @@ export default function Home() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="py-14 md:py-24 bg-white">
+      <section id="how-it-works" className="py-14 md:py-24 bg-white">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-14"
@@ -814,46 +874,64 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.steps.title}</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">{t.steps.subtitle}</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.howItWorks.title}</h2>
             <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
           </motion.div>
 
-          <div className="max-w-4xl mx-auto">
-            {[
-              { num: "01", title: t.steps.step1Title, desc: t.steps.step1Desc },
-              { num: "02", title: t.steps.step2Title, desc: t.steps.step2Desc },
-              { num: "03", title: t.steps.step3Title, desc: t.steps.step3Desc },
-            ].map((step, i) => (
-              <motion.div
-                key={i}
-                className="flex gap-6 md:gap-10 mb-10 last:mb-0"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.12, duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-foreground text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
-                    {step.num}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* For Project Posters */}
+            <motion.div
+              className="bg-muted/40 rounded-2xl border border-border p-8 flex flex-col gap-5"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div>
+                <div className="text-xs font-bold text-primary uppercase tracking-widest mb-1">{t.howItWorks.posterTitle}</div>
+                <p className="text-sm text-muted-foreground">{t.howItWorks.posterSubtitle}</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                {[t.howItWorks.posterStep1, t.howItWorks.posterStep2, t.howItWorks.posterStep3, t.howItWorks.posterStep4, t.howItWorks.posterStep5].map((step, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{i + 1}</div>
+                    <p className="text-sm text-foreground leading-relaxed pt-1">{step}</p>
                   </div>
-                  {i < 2 && <div className="w-px flex-1 bg-border mt-3 min-h-[2.5rem]" />}
-                </div>
-                <div className="pb-10 last:pb-0">
-                  <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{step.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                ))}
+              </div>
+              <Link href="/signup?account_type=project_poster">
+                <Button className="w-full sm:w-auto" data-testid="hiw-poster-cta">
+                  {t.howItWorks.posterCta} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
 
-          <div className="text-center mt-10">
-            <Link href="/submit-project">
-              <Button size="lg" className="px-10" data-testid="steps-cta">
-                {t.cta.button}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            {/* For Service Providers */}
+            <motion.div
+              className="bg-muted/40 rounded-2xl border border-border p-8 flex flex-col gap-5"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div>
+                <div className="text-xs font-bold text-primary uppercase tracking-widest mb-1">{t.howItWorks.providerTitle}</div>
+                <p className="text-sm text-muted-foreground">{t.howItWorks.providerSubtitle}</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                {[t.howItWorks.providerStep1, t.howItWorks.providerStep2, t.howItWorks.providerStep3, t.howItWorks.providerStep4, t.howItWorks.providerStep5].map((step, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{i + 1}</div>
+                    <p className="text-sm text-foreground leading-relaxed pt-1">{step}</p>
+                  </div>
+                ))}
+              </div>
+              <Link href="/signup?account_type=service_provider">
+                <Button variant="outline" className="w-full sm:w-auto border-primary/40 text-primary hover:bg-primary/8" data-testid="hiw-provider-cta">
+                  {t.howItWorks.providerCta} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -939,6 +1017,64 @@ export default function Home() {
               </motion.div>
             ))}
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── ACCOUNT TYPES ── */}
+      <section className="py-14 md:py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.accountTypes.title}</h2>
+            <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <motion.div
+              className="bg-white border border-border rounded-2xl p-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-xs font-bold text-primary uppercase tracking-widest mb-3">{t.accountTypes.posterLabel}</div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5">{t.accountTypes.posterDesc}</p>
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2 text-sm text-foreground font-medium">
+                  <User className="w-4 h-4 text-primary flex-shrink-0" />
+                  {t.accountTypes.posterSub1}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground font-medium">
+                  <Building2 className="w-4 h-4 text-primary flex-shrink-0" />
+                  {t.accountTypes.posterSub2}
+                </div>
+              </div>
+            </motion.div>
+            <motion.div
+              className="bg-white border border-border rounded-2xl p-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-xs font-bold text-primary uppercase tracking-widest mb-3">{t.accountTypes.providerLabel}</div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5">{t.accountTypes.providerDesc}</p>
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2 text-sm text-foreground font-medium">
+                  <User className="w-4 h-4 text-primary flex-shrink-0" />
+                  {t.accountTypes.providerSub1}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground font-medium">
+                  <Building2 className="w-4 h-4 text-primary flex-shrink-0" />
+                  {t.accountTypes.providerSub2}
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 

@@ -1,0 +1,439 @@
+Improve the registration/onboarding flow so it is smart, simple, safe, and fully synchronized with the marketplace backend logic.
+
+IMPORTANT:
+Do not change the database variable names.
+Do not create new roles.
+Do not create duplicate account fields.
+Do not rename account_type or account_subtype.
+Do not redesign the whole app.
+Do not break existing authentication.
+Do not remove existing users.
+Only improve the signup/onboarding logic, UI, validation, routing, and account setup.
+
+The marketplace must continue using exactly:
+
+role = admin/user
+account_type = project_poster/service_provider
+account_subtype = individual/company
+status = approval/visibility state
+
+REGISTRATION CORE LOGIC:
+
+Every normal registered marketplace user must have:
+
+role = user
+account_type = project_poster or service_provider
+account_subtype = individual or company
+status = pending_review or draft depending on profile completion
+
+Admin users must have:
+
+role = admin
+
+Admin is not a marketplace account type.
+Admin should not be forced to choose account_type or account_subtype.
+
+ACCOUNT TYPE LOGIC:
+
+Project Poster:
+account_type = project_poster
+
+Meaning:
+The user wants to post projects and receive applications.
+
+Service Provider:
+account_type = service_provider
+
+Meaning:
+The user wants to offer services and apply to open projects.
+
+ACCOUNT SUBTYPE LOGIC:
+
+Individual:
+account_subtype = individual
+
+Meaning:
+The user registers as a person.
+
+Company:
+account_subtype = company
+
+Meaning:
+The user registers as a company/business.
+
+REGISTRATION FLOW:
+
+Create a clean step-by-step onboarding flow after signup.
+
+STEP 0:
+If the user comes from a button with preselected account_type, keep that preselection.
+
+Examples:
+- If user clicks “Post a Project”, preselect account_type = project_poster
+- If user clicks “Offer Services”, preselect account_type = service_provider
+- If user clicks “Register as Project Poster”, preselect account_type = project_poster
+- If user clicks “Register as Service Provider”, preselect account_type = service_provider
+
+But still show the user what was selected and allow them to change it before final confirmation.
+
+STEP 1:
+Question:
+What do you want to do on ImmoVia?
+
+Option 1:
+Title:
+Post projects
+
+Official label:
+Project Poster
+
+Description:
+Choose this if you need services, support, workers, or companies for a project.
+
+Set:
+account_type = project_poster
+
+Option 2:
+Title:
+Offer services
+
+Official label:
+Service Provider
+
+Description:
+Choose this if you want to offer services, browse projects, and apply for work.
+
+Set:
+account_type = service_provider
+
+STEP 2:
+Question:
+Are you registering as an individual or a company?
+
+Option 1:
+Title:
+Individual
+
+Description:
+Choose this if you are registering as a person.
+
+Set:
+account_subtype = individual
+
+Option 2:
+Title:
+Company
+
+Description:
+Choose this if you are registering as a company or business.
+
+Set:
+account_subtype = company
+
+STEP 3:
+Show a confirmation screen before saving final onboarding.
+
+Show:
+Your selected account type:
+
+If:
+account_type = project_poster
+account_subtype = individual
+
+Display:
+Individual Project Poster
+
+Meaning:
+You are registering as an individual who wants to post projects and receive applications.
+
+If:
+account_type = project_poster
+account_subtype = company
+
+Display:
+Company Project Poster
+
+Meaning:
+You are registering as a company that wants to post projects and receive applications.
+
+If:
+account_type = service_provider
+account_subtype = individual
+
+Display:
+Individual Service Provider
+
+Meaning:
+You are registering as an individual who wants to offer services and apply to projects.
+
+If:
+account_type = service_provider
+account_subtype = company
+
+Display:
+Company Service Provider
+
+Meaning:
+You are registering as a company that wants to offer services and apply to projects.
+
+Buttons:
+- Back
+- Confirm and continue
+
+Only after the user clicks Confirm and continue, save the selected values.
+
+DO NOT save partial wrong values before confirmation unless required by the current auth flow.
+
+STEP 4:
+Redirect user to the correct dashboard/profile setup.
+
+If account_type = project_poster:
+Redirect to Project Poster dashboard or project poster profile setup.
+
+If account_type = service_provider:
+Redirect to Service Provider dashboard or service provider profile setup.
+
+If account_subtype = individual:
+Show individual profile fields.
+
+If account_subtype = company:
+Show company profile fields.
+
+PROFILE SETUP AFTER REGISTRATION:
+
+After onboarding, ask the user to complete their profile.
+
+Individual profile fields:
+- full name
+- profession/category
+- skills if relevant
+- experience if relevant
+- location
+- phone
+- email
+- description
+- profile image
+
+Company profile fields:
+- company name
+- company logo
+- services
+- category
+- location
+- phone
+- email
+- website
+- description
+- portfolio/images
+
+Profile status logic:
+After profile submission:
+status = pending_review
+
+The profile must not become public until admin approves it.
+
+VALIDATION RULES:
+
+Do not allow onboarding to finish unless:
+- account_type is selected
+- account_subtype is selected
+
+Do not allow normal marketplace user without account_type and account_subtype.
+
+Allowed account_type values only:
+- project_poster
+- service_provider
+
+Allowed account_subtype values only:
+- individual
+- company
+
+Allowed role values only:
+- admin
+- user
+
+If invalid old values exist, normalize them carefully:
+- client/homeowner -> account_type = project_poster
+- contractor/service_provider/provider -> account_type = service_provider
+- business/company_user -> account_subtype = company if appropriate
+- otherwise default missing subtype to individual only if no better data exists
+
+Do not create new values.
+
+PERMISSION RULES AFTER REGISTRATION:
+
+If role = user and account_type = project_poster:
+- user can create projects
+- user can manage own projects
+- user can receive applications
+- user cannot apply to projects
+
+If role = user and account_type = service_provider:
+- user can create/edit service profile
+- user can browse open projects
+- user can apply to projects
+- user cannot create projects
+
+If role = admin:
+- user can access admin dashboard
+- admin should not be forced through marketplace onboarding unless admin also creates a normal user profile
+
+ROUTING RULES:
+
+Buttons/routes must preselect account_type correctly:
+
+Post a Project:
+preselect account_type = project_poster
+
+Register as Project Poster:
+preselect account_type = project_poster
+
+Offer Services:
+preselect account_type = service_provider
+
+Register as Service Provider:
+preselect account_type = service_provider
+
+Browse Projects:
+does not start registration
+goes to browse projects page only
+
+Browse Service Providers:
+does not start registration
+goes to browse service providers page only
+
+SMART UX REQUIREMENTS:
+
+The registration must be easy to understand.
+
+Use large selectable cards.
+Show official labels clearly.
+Show a progress indicator:
+Step 1 of 3
+Step 2 of 3
+Step 3 of 3
+
+Allow Back button.
+Allow changing the selection before confirmation.
+Show selected state clearly.
+Make it mobile responsive.
+
+Do not show all 4 final account types immediately at the start.
+Use 2-step logic:
+1. What do you want to do?
+2. Individual or company?
+
+This reduces confusion.
+
+DISPLAY LABEL GENERATION:
+
+Do not store combined labels in database.
+
+Generate display labels from account_type + account_subtype:
+
+project_poster + individual:
+Individual Project Poster
+
+project_poster + company:
+Company Project Poster
+
+service_provider + individual:
+Individual Service Provider
+
+service_provider + company:
+Company Service Provider
+
+TRANSLATIONS:
+
+Apply this onboarding logic in all languages already supported by the app.
+
+Use consistent translated display labels, but keep backend values unchanged.
+
+Backend values must always stay English snake_case:
+project_poster
+service_provider
+individual
+company
+admin
+user
+
+PUBLIC VISIBILITY AFTER REGISTRATION:
+
+New users/profiles should not appear publicly immediately.
+
+Profiles appear publicly only when:
+status = approved
+
+Projects appear publicly only when:
+status = open
+
+Admin approval is required.
+
+ERROR HANDLING:
+
+If signup succeeds but onboarding data is missing:
+redirect user back to onboarding.
+
+If onboarding is incomplete:
+do not allow dashboard actions until completed.
+
+If account_type is missing:
+ask user to complete Step 1.
+
+If account_subtype is missing:
+ask user to complete Step 2.
+
+If old invalid role/account data is detected:
+normalize it to the standard structure without creating new values.
+
+ADMIN SYNC:
+
+Admin dashboard must show the final generated labels:
+- Individual Project Poster
+- Company Project Poster
+- Individual Service Provider
+- Company Service Provider
+
+Admin filters must use:
+account_type = project_poster/service_provider
+account_subtype = individual/company
+status = draft/pending_review/approved/rejected/suspended
+
+FINAL TESTING CHECKLIST:
+
+After implementation, test:
+
+1. User clicks Post a Project
+2. Signup opens with account_type = project_poster preselected
+3. User can still change selection before confirmation
+4. User selects Individual
+5. Confirmation shows Individual Project Poster
+6. User confirms
+7. User is saved with role=user, account_type=project_poster, account_subtype=individual
+
+8. User clicks Offer Services
+9. Signup opens with account_type = service_provider preselected
+10. User selects Company
+11. Confirmation shows Company Service Provider
+12. User confirms
+13. User is saved with role=user, account_type=service_provider, account_subtype=company
+
+14. Project Poster can create projects
+15. Service Provider cannot create projects
+16. Service Provider can apply to projects
+17. Project Poster cannot apply to projects
+18. Admin can access /admin
+19. Normal user cannot access /admin
+20. Users with incomplete onboarding are redirected back to onboarding
+21. No old terms appear in signup/onboarding
+
+Final goal:
+Registration must safely create every marketplace user using this exact structure:
+
+role = user
+account_type = project_poster/service_provider
+account_subtype = individual/company
+
+Admin remains only:
+
+role = admin
