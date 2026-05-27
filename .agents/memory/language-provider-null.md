@@ -1,37 +1,56 @@
 ---
-name: LanguageProvider isMounted null guard
-description: Why LanguageProvider must never return null — causes HMR and runtime crashes in immovia.
+name: LanguageProvider HMR crash patterns
+description: Two patterns that crash immovia on Vite HMR — null guard and undefined context default.
 ---
 
 ## Rule
-`LanguageProvider` in `artifacts/immovia/src/lib/language-context.tsx` must **never** gate `children` rendering behind an `isMounted` flag.
+`artifacts/immovia/src/lib/language-context.tsx` must:
+1. Never gate `children` behind an `isMounted` flag
+2. Never use `createContext<T | undefined>(undefined)` — give the context a real default value
 
 ## Why
-The old pattern was:
+Both patterns cause the same crash during Vite HMR (`// @refresh reset` resets the module):
+
+**Pattern 1 — isMounted null guard:**
 ```tsx
-const [isMounted, setIsMounted] = useState(false);
-useEffect(() => { ...; setIsMounted(true); }, []);
-if (!isMounted) return null;   // ← the bug
+if (!isMounted) return null;  // ← LanguageProvider returns null → no Provider wraps tree
 ```
-During Vite HMR, `// @refresh reset` resets the module and `isMounted` reverts to `false`. The Provider returns `null`, so no `LanguageContext.Provider` wraps the tree. Any component that calls `useLanguage()` immediately throws `"useLanguage must be used within a LanguageProvider"`, crashing the entire app.
+
+**Pattern 2 — undefined context default + throwing hook:**
+```tsx
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+export function useLanguage() {
+  const context = useContext(LanguageContext);
+  if (context === undefined) throw new Error('...');  // ← throws during HMR re-render
+}
+```
+Both cause `"useLanguage must be used within a LanguageProvider"` to crash the whole app during HMR, because Vite invalidates the module and briefly re-renders consumers before the Provider remounts.
 
 ## How to apply
-Always render children immediately. Use `useState<Language>('en')` as the safe default; the `useEffect` will sync from localStorage on mount without blocking the first render:
+Use a real default context value so `useLanguage()` never throws:
 
 ```tsx
+const defaultContext: LanguageContextType = {
+  language: 'en',
+  setLanguage: () => {},
+  t: translations.en,
+};
+
+const LanguageContext = createContext<LanguageContextType>(defaultContext);
+
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
-
   useEffect(() => {
     const saved = localStorage.getItem('immovia-language') as Language;
-    if (saved && ['sq', 'en', 'de', 'fr'].includes(saved)) {
-      setLanguageState(saved);
-    }
+    if (saved && ['sq', 'en', 'de', 'fr'].includes(saved)) setLanguageState(saved);
   }, []);
+  const setLanguage = (lang: Language) => { setLanguageState(lang); localStorage.setItem('immovia-language', lang); };
+  return <LanguageContext.Provider value={{ language, setLanguage, t: translations[language] }}>{children}</LanguageContext.Provider>;
+}
 
-  // ...
-  return <LanguageContext.Provider value={...}>{children}</LanguageContext.Provider>;
+export function useLanguage() {
+  return useContext(LanguageContext);  // never throws — always has defaultContext as fallback
 }
 ```
 
-The `// @refresh reset` comment must remain at line 1 of the file, but it alone is not sufficient — the null guard must also be absent.
+**Why:** `createContext` with a real default means consumers get `'en'` during the HMR flash instead of throwing. The `// @refresh reset` comment must remain at line 1.
