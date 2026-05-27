@@ -787,8 +787,7 @@ export default function Home() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
             variants={stagger}
             initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: "-60px" }}
+            animate="animate"
           >
             {services.map((s, i) => (
               <motion.div key={i} variants={fadeUp}>
@@ -952,8 +951,7 @@ export default function Home() {
                 className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
                 variants={stagger}
                 initial="initial"
-                whileInView="animate"
-                viewport={{ once: true, margin: "-40px" }}
+                animate="animate"
               >
                 {previewProjects.map((project, idx) => (
                   <motion.div key={project.id} variants={fadeUp}>
@@ -1112,8 +1110,7 @@ export default function Home() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
             variants={stagger}
             initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: "-60px" }}
+            animate="animate"
           >
             {whyUs.map((item, i) => (
               <motion.div
@@ -1152,8 +1149,7 @@ export default function Home() {
             className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
             variants={stagger}
             initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
+            animate="animate"
           >
             {testimonials.map((t_, i) => (
               <motion.div
