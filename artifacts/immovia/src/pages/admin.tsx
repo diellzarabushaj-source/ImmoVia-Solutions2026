@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/lib/language-context";
-import { useAuth } from "@/contexts/AuthContext";
-import { useClerk } from "@clerk/react";
-import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
-import { 
-  useGetAdminStats, 
-  useListProjects, 
+import {
+  useGetAdminStats,
+  useListProjects,
   useListCompanies,
   useUpdateProject,
   useUpdateCompany,
@@ -21,26 +18,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
-import { 
-  Building2, 
-  Hammer, 
-  Clock, 
-  CheckCircle2, 
-  XCircle,
-  MoreHorizontal,
-  Trash2,
-  LogOut,
-  ShieldOff
-} from "lucide-react";
-import { format } from "date-fns";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,17 +36,146 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Building2,
+  Hammer,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  MoreHorizontal,
+  Trash2,
+  LogOut,
+  Shield,
+  Eye,
+  EyeOff,
+  Loader2
+} from "lucide-react";
+import { format } from "date-fns";
 
+// ─── Admin Login Form ────────────────────────────────────────────────────────
 
-function AdminDashboardContent() {
+function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/admin-auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (res.ok) {
+        onSuccess();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "Invalid credentials.");
+      }
+    } catch {
+      setError("Connection error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f2044] to-[#1a3a6e] px-4">
+      <Card className="w-full max-w-sm shadow-2xl border-0">
+        <CardHeader className="text-center pb-4 pt-8">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1a3a6e]">
+            <Shield className="h-7 w-7 text-white" />
+          </div>
+          <CardTitle className="text-xl font-bold tracking-tight">ImmoVia Admin</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">Restricted access</p>
+        </CardHeader>
+        <CardContent className="pb-8">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter username"
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  required
+                  disabled={loading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                {error}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full bg-[#1a3a6e] hover:bg-[#0f2044]"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in…
+                </>
+              ) : (
+                "Sign in"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Admin Dashboard ─────────────────────────────────────────────────────────
+
+function AdminDashboardContent({ onLogout }: { onLogout: () => void }) {
   const { t } = useLanguage();
   usePageMeta({ title: `Admin — ImmoVia`, noindex: true });
   const queryClient = useQueryClient();
-  
+
   const { data: stats } = useGetAdminStats();
   const { data: projects, isLoading: projectsLoading } = useListProjects();
   const { data: companies, isLoading: companiesLoading } = useListCompanies();
-  
+
   const updateProject = useUpdateProject();
   const updateCompany = useUpdateCompany();
   const deleteProject = useDeleteProject();
@@ -117,20 +233,22 @@ function AdminDashboardContent() {
     }
   };
 
-  const { signOut } = useClerk();
-  const handleLogout = () => signOut();
+  const handleLogout = async () => {
+    await fetch("/api/admin-auth/logout", { method: "POST", credentials: "include" });
+    onLogout();
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
-      case 'reviewing':
+      case "pending":
+      case "reviewing":
         return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Pending</Badge>;
-      case 'approved':
-      case 'matched':
-      case 'completed':
+      case "approved":
+      case "matched":
+      case "completed":
         return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Approved</Badge>;
-      case 'rejected':
-      case 'cancelled':
+      case "rejected":
+      case "cancelled":
         return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Rejected</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
@@ -201,7 +319,7 @@ function AdminDashboardContent() {
           <TabsTrigger value="companies">{t.admin.companiesTab}</TabsTrigger>
           <TabsTrigger value="billing" data-testid="tab-admin-billing">{t.adminBilling.title}</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="projects" className="mt-0">
           <Card>
             <div className="rounded-md border border-border">
@@ -226,7 +344,7 @@ function AdminDashboardContent() {
                       <TableCell className="capitalize">{project.projectType}</TableCell>
                       <TableCell>{project.city}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(project.createdAt), 'MMM d, yyyy')}
+                        {format(new Date(project.createdAt), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell>{getStatusBadge(project.status)}</TableCell>
                       <TableCell className="text-right">
@@ -239,14 +357,14 @@ function AdminDashboardContent() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleUpdateProjectStatus(project.id, 'matched')}>
+                            <DropdownMenuItem onClick={() => handleUpdateProjectStatus(project.id, "matched")}>
                               <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Approve
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleUpdateProjectStatus(project.id, 'cancelled')}>
+                            <DropdownMenuItem onClick={() => handleUpdateProjectStatus(project.id, "cancelled")}>
                               <XCircle className="mr-2 h-4 w-4 text-red-500" /> Reject
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-red-600"
                               onClick={() => handleDeleteProject(project.id)}
                             >
@@ -294,7 +412,7 @@ function AdminDashboardContent() {
                       </TableCell>
                       <TableCell>{company.city}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(company.createdAt), 'MMM d, yyyy')}
+                        {format(new Date(company.createdAt), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell>{getStatusBadge(company.status)}</TableCell>
                       <TableCell className="text-right">
@@ -307,14 +425,14 @@ function AdminDashboardContent() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleUpdateCompanyStatus(company.id, 'approved')}>
+                            <DropdownMenuItem onClick={() => handleUpdateCompanyStatus(company.id, "approved")}>
                               <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Approve
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleUpdateCompanyStatus(company.id, 'rejected')}>
+                            <DropdownMenuItem onClick={() => handleUpdateCompanyStatus(company.id, "rejected")}>
                               <XCircle className="mr-2 h-4 w-4 text-red-500" /> Reject
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-red-600"
                               onClick={() => handleDeleteCompany(company.id)}
                             >
@@ -345,6 +463,8 @@ function AdminDashboardContent() {
     </div>
   );
 }
+
+// ─── Billing Panel ───────────────────────────────────────────────────────────
 
 function AdminBillingPanel() {
   const { t } = useLanguage();
@@ -399,7 +519,7 @@ function AdminBillingPanel() {
               <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-6">—</TableCell></TableRow>
             ) : txns.map((tx) => (
               <TableRow key={tx.id}>
-                <TableCell className="text-xs">{format(new Date(tx.createdAt), 'MMM d')}</TableCell>
+                <TableCell className="text-xs">{format(new Date(tx.createdAt), "MMM d")}</TableCell>
                 <TableCell className="font-mono text-xs">{tx.userId.slice(0, 8)}</TableCell>
                 <TableCell className={tx.delta < 0 ? "text-red-600" : "text-green-600"}>{tx.delta > 0 ? `+${tx.delta}` : tx.delta}</TableCell>
                 <TableCell>{tx.bucket}</TableCell>
@@ -413,47 +533,32 @@ function AdminBillingPanel() {
   );
 }
 
+// ─── Main Export ─────────────────────────────────────────────────────────────
+
+type AuthState = "loading" | "authenticated" | "unauthenticated";
+
 export default function AdminDashboard() {
-  const { user, loading } = useAuth();
-  const [, setLocation] = useLocation();
+  const [authState, setAuthState] = useState<AuthState>("loading");
 
-  if (loading) {
+  useEffect(() => {
+    fetch("/api/admin-auth/verify", { credentials: "include" })
+      .then((r) => {
+        setAuthState(r.ok ? "authenticated" : "unauthenticated");
+      })
+      .catch(() => setAuthState("unauthenticated"));
+  }, []);
+
+  if (authState === "loading") {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center">
-        <div className="text-muted-foreground text-sm">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#1a3a6e]" />
       </div>
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center px-4">
-        <div className="text-center">
-          <ShieldOff className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-          <p className="font-semibold text-lg mb-2">Admin access required</p>
-          <p className="text-sm text-muted-foreground mb-6">Please sign in with an admin account.</p>
-          <Button
-            className="bg-[#1a3a6e] hover:bg-[#0f2044]"
-            onClick={() => setLocation("/sign-in")}
-          >
-            Sign in
-          </Button>
-        </div>
-      </div>
-    );
+  if (authState === "unauthenticated") {
+    return <AdminLoginForm onSuccess={() => setAuthState("authenticated")} />;
   }
 
-  if (user.role !== "admin") {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center px-4">
-        <div className="text-center">
-          <ShieldOff className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-          <p className="font-semibold text-lg mb-2">Access denied</p>
-          <p className="text-sm text-muted-foreground">Your account does not have admin privileges.</p>
-        </div>
-      </div>
-    );
-  }
-
-  return <AdminDashboardContent />;
+  return <AdminDashboardContent onLogout={() => setAuthState("unauthenticated")} />;
 }
