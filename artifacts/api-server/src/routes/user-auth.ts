@@ -213,12 +213,17 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
         .where(eq(subscriptionPlansTable.slug, "free"))
         .limit(1);
       if (freePlan) {
+        const now = new Date();
+        const periodEnd = new Date(now);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
         await db.insert(subscriptionsTable).values({
           userId: newUser.id,
           planId: freePlan.id,
           status: "active",
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
         });
-        await grantMonthlyCredits(newUser.id, freePlan.id);
+        await grantMonthlyCredits(newUser.id, freePlan.monthlyCredits, periodEnd, `New signup: ${freePlan.slug}`);
       }
     } catch (err) {
       req.log.warn({ err }, "Failed to create free subscription for new service provider");

@@ -13,7 +13,7 @@ router.get("/users/by-slug/:slug", async (req, res): Promise<void> => {
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(and(eq(usersTable.slug, slug), eq(usersTable.role, "service_provider")))
+    .where(and(eq(usersTable.slug, slug), eq(usersTable.accountType, "service_provider")))
     .limit(1);
   if (!user) {
     res.status(404).json({ error: "Not found" });
@@ -33,7 +33,7 @@ router.get("/contractors", async (_req, res): Promise<void> => {
   const rows = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.role, "service_provider"))
+    .where(eq(usersTable.accountType, "service_provider"))
     .orderBy(asc(usersTable.id));
   res.json({ contractors: rows.map(toPublicUser) });
 });

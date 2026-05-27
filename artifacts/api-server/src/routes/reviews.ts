@@ -25,8 +25,8 @@ router.post("/projects/:id/review", requireAuth, async (req, res): Promise<void>
     .from(usersTable)
     .where(eq(usersTable.id, userId))
     .limit(1);
-  if (!user || user.role !== "client") {
-    res.status(403).json({ error: "Only clients can leave reviews" });
+  if (!user || user.accountType !== "project_poster") {
+    res.status(403).json({ error: "Only project posters can leave reviews" });
     return;
   }
 

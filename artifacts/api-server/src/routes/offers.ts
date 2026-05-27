@@ -29,9 +29,9 @@ router.get("/projects/:id/offers", requireAuth, async (req, res): Promise<void> 
   }
   // Client owners or providers can list offers. Provider sees their own. Client sees all on their project.
   let where;
-  if (user?.role === "service_provider") {
+  if (user?.accountType === "service_provider") {
     where = and(eq(offersTable.projectId, projectId), eq(offersTable.providerUserId, userId));
-  } else if (user?.role === "client" && project.ownerUserId === userId) {
+  } else if (user?.accountType === "project_poster" && project.ownerUserId === userId) {
     where = eq(offersTable.projectId, projectId);
   } else if (user?.role === "admin") {
     where = eq(offersTable.projectId, projectId);

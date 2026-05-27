@@ -15,12 +15,12 @@ export async function requireContractor(
   }
 
   const [user] = await db
-    .select({ id: usersTable.id, role: usersTable.role })
+    .select({ id: usersTable.id, role: usersTable.role, accountType: usersTable.accountType })
     .from(usersTable)
     .where(eq(usersTable.clerkUserId, auth.userId))
     .limit(1);
 
-  if (!user || (user.role !== "service_provider" && user.role !== "contractor")) {
+  if (!user || user.accountType !== "service_provider") {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
