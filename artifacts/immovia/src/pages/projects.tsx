@@ -401,7 +401,7 @@ export default function Projects() {
         {/* Count bar */}
         {!isLoading && !isError && (
           <p className="text-sm text-muted-foreground mb-6">
-            {filtered.length} {filtered.length === 1 ? (t.listings.result ?? "result") : (t.listings.results ?? "results")}
+            {displayList.length} {displayList.length === 1 ? (t.listings.result ?? "result") : (t.listings.results ?? "results")}
             {typeFilter && <> · <span className="text-primary font-medium">{(t.offers as Record<string, string>)[typeFilter] ?? typeFilter}</span></>}
           </p>
         )}

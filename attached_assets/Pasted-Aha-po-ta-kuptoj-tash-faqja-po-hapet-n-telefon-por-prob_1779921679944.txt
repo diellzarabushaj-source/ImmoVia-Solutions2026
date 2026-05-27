@@ -1,0 +1,88 @@
+Aha, po ta kuptoj tash: **faqja po hapet në telefon**, por problemi është që **nuk po dalin projektet — po shfaq “0 Ergebnisse”**.
+
+Pra nuk është problemi “mobile nuk hapet”, por:
+
+**Mobile view loads, but project listings are empty. Desktop shows projects, mobile shows 0 results.**
+
+Kjo zakonisht ndodh nga këto:
+
+**1. Mobile po aplikon filter bosh gabimisht**
+P.sh. `city = ""`, `category = ""`, `budget = ""`, por kodi e dërgon si filter dhe databaza kthen 0.
+
+Shembull gabim:
+
+```js
+query.eq("city", city)
+```
+
+kur `city` është bosh.
+
+Duhet:
+
+```js
+if (city && city.trim() !== "") {
+  query.eq("city", city)
+}
+```
+
+**2. Mobile ka default filter tjetër nga desktop**
+P.sh. desktop shfaq “all projects”, ndërsa mobile ndoshta ka default `category`, `city`, `size`, ose `status` që nuk përputhet.
+
+**3. API/data fetch ndryshe në mobile**
+Mobile komponenti mund të përdorë tjetër function/API sesa desktopi.
+
+P.sh. desktop përdor:
+
+```js
+fetchProjects()
+```
+
+mobile përdor:
+
+```js
+fetchFilteredProjects()
+```
+
+dhe kjo e dyta po kthen bosh.
+
+**4. Supabase/RLS/Auth problem**
+Në desktop ndoshta je logged in, në telefon jo. Nëse projektet janë të lejuara vetëm për logged-in user, telefoni si visitor i sheh 0.
+
+**5. Projekti nuk është “public/active” për mobile**
+Nëse mobile po kërkon vetëm:
+
+```js
+status = "published"
+```
+
+por në databazë statusi është:
+
+```js
+status = "active"
+```
+
+atëherë del 0.
+
+Jepja Replit-it këtë prompt saktë:
+
+```text
+The website opens on mobile, but the project listing page shows “0 Ergebnisse” on mobile even though projects appear on desktop.
+
+Please debug the mobile project listing data logic.
+
+Important:
+- Desktop shows projects correctly.
+- Mobile loads the page, but returns 0 results.
+- This is not only a responsive layout issue.
+- Check whether the mobile component uses different fetch logic than desktop.
+- Check if empty filters like city, category, budget, size, or sort are being applied incorrectly on mobile.
+- Do not apply filters when values are empty, null, undefined, or default “All”.
+- Make sure mobile and desktop use the same project data source/API.
+- Public visitors should be able to see the latest 5-6 active projects.
+- Registered service providers should see all projects.
+- Check Supabase RLS/auth permissions if mobile is treated as logged-out.
+- Check that project status mapping is correct: active/published/approved.
+- Keep the desktop version unchanged and fix mobile results only.
+```
+
+Në screenshot shihet edhe pak **horizontal overflow** te kategoritë, por problemi kryesor është **data/filter logic**, jo vetëm dizajn.
