@@ -34,6 +34,8 @@ import {
   User,
   FileText,
   X,
+  LocateFixed,
+  Loader2,
 } from "lucide-react";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
@@ -200,6 +202,7 @@ export default function Home() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
   const [searchCity, setSearchCity] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
   const listingSearchRef = useRef(search);
   listingSearchRef.current = search;
   // Inbound URL → state
@@ -262,6 +265,30 @@ export default function Home() {
     mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
   };
   const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) return;
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=en`,
+            { headers: { "User-Agent": "ImmoVia/1.0" } }
+          );
+          const data = await res.json() as { address?: { city?: string; town?: string; village?: string; county?: string } };
+          const city = data.address?.city ?? data.address?.town ?? data.address?.village ?? data.address?.county ?? "";
+          if (city) setSearchCity(city);
+        } catch {
+          // silent fail — user can type manually
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      () => setIsLocating(false),
+      { timeout: 8000 }
+    );
+  };
 
   const SEARCH_CATEGORIES = ["renovation", "construction", "interior", "exterior", "plumbing", "electric"] as const;
   const handleSearch = () => {
@@ -462,15 +489,27 @@ export default function Home() {
                       <option key={cat} value={cat}>{(t.offers as Record<string,string>)[cat] ?? cat}</option>
                     ))}
                   </select>
-                  <div className="relative sm:w-40">
+                  <div className="relative sm:w-44">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <input
                       value={searchCity}
                       onChange={e => setSearchCity(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && handleSearch()}
                       placeholder={t.search.locationPlaceholder}
-                      className="w-full h-11 rounded-xl border border-border bg-muted/30 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full h-11 rounded-xl border border-border bg-muted/30 pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
+                    <button
+                      type="button"
+                      onClick={detectLocation}
+                      disabled={isLocating}
+                      title="Detect my location"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors disabled:opacity-40"
+                    >
+                      {isLocating
+                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                        : <LocateFixed className="h-4 w-4" />
+                      }
+                    </button>
                   </div>
                   <Button
                     onClick={handleSearch}
