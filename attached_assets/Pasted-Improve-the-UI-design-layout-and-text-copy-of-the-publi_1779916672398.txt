@@ -1,0 +1,333 @@
+Improve the UI design, layout, and text/copy of the public website while keeping the backend logic unchanged.
+
+IMPORTANT:
+Do not change the database.
+Do not rename variables.
+Do not create new roles.
+Do not change authentication.
+Do not change admin logic.
+Do not change account_type, account_subtype, role, or status.
+Do not break existing routes or permissions.
+
+The backend logic must stay exactly:
+
+role = admin/user
+account_type = project_poster/service_provider
+account_subtype = individual/company
+status = approval/visibility state
+
+This task is ONLY for:
+- UI design improvements
+- better text/copy
+- clearer user experience
+- cleaner layout
+- better buttons
+- better spacing
+- better cards
+- better mobile responsiveness
+- better navigation clarity
+
+The website must clearly explain that ImmoVia has 2 marketplace sides:
+
+1. Project Poster
+Backend:
+account_type = project_poster
+
+Meaning:
+A person or company that posts projects and needs services.
+
+2. Service Provider
+Backend:
+account_type = service_provider
+
+Meaning:
+A person or company that offers services and applies to projects.
+
+Use friendly UI text, but keep official labels visible.
+
+Do not use confusing terms:
+client, customer, homeowner, contractor, freelancer, worker, employer, job seeker, talent, professional, pro.
+
+Use only:
+Project Poster
+Service Provider
+Individual
+Company
+Projects
+Services
+Applications
+
+MAIN NAVBAR:
+
+Make the navbar clean and simple:
+
+Home
+Browse Projects
+Browse Service Providers
+How It Works
+Pricing
+Contact
+
+Primary button:
+Post a Project
+
+Secondary button:
+Offer Services
+
+Button logic:
+Post a Project -> signup/onboarding with account_type = project_poster
+Offer Services -> signup/onboarding with account_type = service_provider
+
+HOME HERO DESIGN:
+
+Make the hero section more modern, clean, and trustworthy.
+
+Use this structure:
+
+Headline:
+Post Projects. Find Services. Grow Faster.
+
+Subtitle:
+ImmoVia connects Project Posters with trusted Service Providers. Post a project, receive applications, or create your service profile and apply to open projects.
+
+Primary button:
+Post a Project
+
+Secondary button:
+Offer Services
+
+Add small trust text under buttons:
+Approved profiles. Open projects. Simple applications.
+
+Make the hero visually strong:
+- big clear headline
+- short subtitle
+- two clear CTA buttons
+- clean blue/white design
+- soft gradient or light background
+- professional marketplace feeling
+- mobile responsive
+
+FOUR MAIN ACTION CARDS:
+
+Create exactly 4 main action cards on the Home page.
+
+Card 1:
+Title:
+Browse Projects
+
+Description:
+Explore open projects posted by approved Project Posters.
+
+Button:
+View Projects
+
+Route:
+Browse Projects page
+
+Logic:
+Show only projects where status = open
+
+Card 2:
+Title:
+Post a Project
+
+Official label:
+Project Poster
+
+Description:
+Register as a Project Poster and publish a project to receive applications from Service Providers.
+
+Button:
+Register as Project Poster
+
+Route:
+Signup/onboarding with account_type = project_poster
+
+Card 3:
+Title:
+Browse Service Providers
+
+Description:
+Find approved individuals and companies offering services.
+
+Button:
+View Service Providers
+
+Route:
+Browse Service Providers page
+
+Logic:
+Show only profiles where account_type = service_provider and status = approved
+
+Card 4:
+Title:
+Offer Services
+
+Official label:
+Service Provider
+
+Description:
+Register as a Service Provider, create your profile, browse open projects, and apply for work.
+
+Button:
+Register as Service Provider
+
+Route:
+Signup/onboarding with account_type = service_provider
+
+Design:
+- 2x2 grid on desktop
+- single column on mobile
+- clear icons if available
+- equal card height
+- clean hover effect
+- clear buttons
+- not too much text
+
+HOW IT WORKS SECTION:
+
+Create a clean “How It Works” section with two columns.
+
+Column 1:
+Title:
+For Project Posters
+
+Subtitle:
+For individuals and companies who need services or project support.
+
+Steps:
+1. Create your profile
+2. Post your project
+3. Wait for admin approval
+4. Receive applications
+5. Choose the right Service Provider
+
+Button:
+Post a Project
+
+Column 2:
+Title:
+For Service Providers
+
+Subtitle:
+For individuals and companies who offer services.
+
+Steps:
+1. Create your profile
+2. Wait for admin approval
+3. Browse open projects
+4. Apply to projects
+5. Get contacted and start working
+
+Button:
+Offer Services
+
+Design:
+- use numbered steps
+- simple icons if available
+- avoid long paragraphs
+- make it easy to scan
+
+TEXT QUALITY RULES:
+
+Make all text:
+- short
+- clear
+- professional
+- user-friendly
+- not too technical
+- not too long
+- easy to understand
+
+Avoid complicated explanations.
+Avoid repeating too much.
+Avoid mixing different terminology.
+
+Every section should help the user understand one thing:
+- browse projects
+- post a project
+- browse service providers
+- offer services
+
+REGISTRATION CTA SECTION:
+
+Add a final CTA section near the bottom.
+
+Title:
+Ready to start?
+
+Subtitle:
+Choose how you want to use ImmoVia and continue with a simple registration flow.
+
+Buttons:
+Post a Project
+Offer Services
+
+Button logic:
+Post a Project -> account_type = project_poster
+Offer Services -> account_type = service_provider
+
+DESIGN STYLE:
+
+Keep the current visual identity but improve it.
+
+Style:
+- modern
+- clean
+- premium
+- trustworthy
+- blue/white
+- soft shadows
+- rounded cards
+- good spacing
+- readable typography
+- strong buttons
+- mobile responsive
+- professional marketplace look
+
+Do not make it childish.
+Do not make it overloaded.
+Do not add too many colors.
+Do not add too much text.
+
+MOBILE REQUIREMENTS:
+
+On mobile:
+- navbar should be clean
+- hero should be readable
+- buttons should be full-width if needed
+- cards should stack vertically
+- spacing should be comfortable
+- no text should overflow
+- buttons must be easy to tap
+
+LANGUAGES:
+
+Apply the same improved UI/copy structure to all supported languages.
+
+Keep backend values always English snake_case:
+project_poster
+service_provider
+individual
+company
+admin
+user
+
+Only translate the user-facing text.
+
+FINAL TEST:
+
+After changes, check:
+
+1. Home page looks clean
+2. Navbar is simple
+3. Hero text is clear
+4. 4 cards are visible and understandable
+5. Browse Projects goes only to projects page
+6. Browse Service Providers goes only to service providers page
+7. Post a Project starts signup with account_type = project_poster
+8. Offer Services starts signup with account_type = service_provider
+9. No old confusing terms appear
+10. Mobile layout looks good
+11. Backend logic is unchanged

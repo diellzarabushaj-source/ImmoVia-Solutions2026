@@ -202,6 +202,14 @@ export const translations = {
       providerStep5: 'Kontaktoheni dhe filloni punën',
       providerCta: 'Ofro Shërbime',
     },
+    splitCta: {
+      posterQ: 'Keni nevojë për punë?',
+      posterBrowse: 'Shfleto Projektet',
+      posterRegister: 'Regjistrohu si Postues Projektesh',
+      providerQ: 'Doni të ofroni shërbime?',
+      providerBrowse: 'Shfleto Ofruesit e Shërbimit',
+      providerRegister: 'Regjistrohu si Ofrues Shërbimi',
+    },
     browse: {
       title: 'Shfletoni Marketplacin',
       projectsTitle: 'Shfleto Projektet',
@@ -844,6 +852,14 @@ export const translations = {
       providerStep4: 'Apply to projects',
       providerStep5: 'Get contacted and start working',
       providerCta: 'Offer Services',
+    },
+    splitCta: {
+      posterQ: 'Need work done?',
+      posterBrowse: 'Browse Projects',
+      posterRegister: 'Register as Project Poster',
+      providerQ: 'Want to offer services?',
+      providerBrowse: 'Browse Service Providers',
+      providerRegister: 'Register as Service Provider',
     },
     browse: {
       title: 'Browse the Marketplace',
@@ -1488,6 +1504,14 @@ export const translations = {
       providerStep5: 'Kontaktiert werden und loslegen',
       providerCta: 'Dienste anbieten',
     },
+    splitCta: {
+      posterQ: 'Arbeit zu vergeben?',
+      posterBrowse: 'Projekte durchsuchen',
+      posterRegister: 'Als Auftraggeber registrieren',
+      providerQ: 'Dienste anbieten?',
+      providerBrowse: 'Anbieter durchsuchen',
+      providerRegister: 'Als Dienstleister registrieren',
+    },
     browse: {
       title: 'Marktplatz durchsuchen',
       projectsTitle: 'Projekte durchsuchen',
@@ -2130,6 +2154,14 @@ export const translations = {
       providerStep4: 'Candidatez à des projets',
       providerStep5: 'Soyez contacté et commencez à travailler',
       providerCta: 'Proposer des Services',
+    },
+    splitCta: {
+      posterQ: 'Du travail à faire faire ?',
+      posterBrowse: 'Parcourir les projets',
+      posterRegister: "S'inscrire comme donneur d'ordre",
+      providerQ: 'Vous voulez proposer des services ?',
+      providerBrowse: 'Parcourir les prestataires',
+      providerRegister: 'S\'inscrire comme prestataire',
     },
     browse: {
       title: 'Parcourir le Marketplace',
