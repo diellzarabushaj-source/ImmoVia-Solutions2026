@@ -1,0 +1,276 @@
+Now update only the Home page and main navigation based on the standardized marketplace logic.
+
+Do not change the database.
+Do not change authentication.
+Do not change admin logic.
+Do not create new roles.
+Do not rename variables.
+Do not redesign the whole app from scratch.
+
+Use the existing standardized structure:
+
+role = admin/user
+account_type = project_poster/service_provider
+account_subtype = individual/company
+status = approval/visibility state
+
+The Home page must explain the marketplace using only these official names:
+
+- Project Poster
+- Service Provider
+- Individual Project Poster
+- Company Project Poster
+- Individual Service Provider
+- Company Service Provider
+
+Do not use:
+client, customer, homeowner, contractor, freelancer, worker, employer, job seeker, talent, professional.
+
+NAVIGATION:
+
+Update the main navbar to be clear and user-friendly.
+
+Use these navbar items:
+
+- Home
+- Browse Projects
+- Browse Service Providers
+- How It Works
+- Pricing
+- Contact
+
+Use these main navbar buttons:
+
+Button 1:
+Post a Project
+
+This button should send the user to signup/onboarding with:
+account_type = project_poster
+
+Button 2:
+Offer Services
+
+This button should send the user to signup/onboarding with:
+account_type = service_provider
+
+Do not use “Companies” as a main navbar item, because a company can be either:
+- Company Project Poster
+or
+- Company Service Provider
+
+HOME HERO SECTION:
+
+Replace the current hero content with this structure.
+
+Headline:
+Post Projects. Find Services. Grow Faster.
+
+Subtitle:
+ImmoVia connects Project Posters with trusted Service Providers. Post a project, receive applications, or create your service profile and apply to open projects.
+
+Primary button:
+Post a Project
+
+Button action:
+Go to onboarding/signup and preselect:
+account_type = project_poster
+
+Secondary button:
+Offer Services
+
+Button action:
+Go to onboarding/signup and preselect:
+account_type = service_provider
+
+HERO CARDS:
+
+Create two clear cards side by side on desktop and stacked on mobile.
+
+Card 1:
+
+Official label:
+Project Poster
+
+Title:
+Need work done?
+
+Description:
+Post your project and receive applications from individuals or companies ready to help.
+
+Small text:
+For individuals and companies who need services, workers, or project support.
+
+Button:
+Post a Project
+
+Button logic:
+account_type = project_poster
+
+Card 2:
+
+Official label:
+Service Provider
+
+Title:
+Want to offer services?
+
+Description:
+Create your profile, browse open projects, and apply for work that matches your skills or company services.
+
+Small text:
+For individuals and companies who offer services and want to get hired.
+
+Button:
+Offer Services
+
+Button logic:
+account_type = service_provider
+
+HOW IT WORKS SECTION:
+
+Create a section titled:
+How ImmoVia Works
+
+Use two columns.
+
+Column 1:
+Title:
+For Project Posters
+
+Subtitle:
+Individuals or companies who need work done.
+
+Steps:
+1. Create your profile
+2. Post your project
+3. Wait for admin approval
+4. Receive applications from Service Providers
+5. Choose the right person or company
+
+Button:
+Post a Project
+
+Column 2:
+Title:
+For Service Providers
+
+Subtitle:
+Individuals or companies who offer services.
+
+Steps:
+1. Create your profile
+2. Wait for admin approval
+3. Browse open projects
+4. Apply to projects
+5. Get contacted and start working
+
+Button:
+Offer Services
+
+BROWSE SECTION:
+
+Create a section titled:
+Browse the marketplace
+
+Card 1:
+Title:
+Browse Projects
+
+Description:
+View open projects posted by approved Project Posters.
+
+Button:
+View Projects
+
+Visibility rule:
+Only show projects where status = open.
+
+Card 2:
+Title:
+Browse Service Providers
+
+Description:
+Find approved individuals and companies offering services.
+
+Button:
+View Service Providers
+
+Visibility rule:
+Only show profiles where status = approved and account_type = service_provider.
+
+ACCOUNT TYPE EXPLANATION SECTION:
+
+Add a simple explanation section:
+
+Title:
+Two ways to use ImmoVia
+
+Block 1:
+Project Poster
+Meaning:
+A Project Poster is an individual or company that posts projects and needs services or workers.
+
+Subtypes:
+- Individual Project Poster
+- Company Project Poster
+
+Block 2:
+Service Provider
+Meaning:
+A Service Provider is an individual or company that offers services and applies to projects.
+
+Subtypes:
+- Individual Service Provider
+- Company Service Provider
+
+IMPORTANT UI RULE:
+
+The public text can be friendly, but the official label must always be visible.
+
+Example:
+Need work done?
+Project Poster
+
+Example:
+Want to offer services?
+Service Provider
+
+Do not replace official labels with other names.
+
+PUBLIC VISIBILITY RULES:
+
+Home page browse previews must show only:
+- open projects
+- approved service provider profiles
+
+Hide:
+- draft
+- pending_review
+- rejected
+- suspended
+- cancelled
+
+DESIGN STYLE:
+
+Keep the current design style.
+Make it more clear and user-friendly.
+Use clean cards, simple icons if already available, clear buttons, and mobile responsive layout.
+Do not rebuild the whole website.
+Only improve Home page structure, wording, navigation, and button routing.
+
+FINAL RESULT:
+
+The Home page should make it immediately clear that ImmoVia has two sides:
+
+1. Project Posters
+People or companies who post projects.
+
+2. Service Providers
+People or companies who offer services and apply to projects.
+
+Everything must stay synchronized with:
+
+role = admin/user
+account_type = project_poster/service_provider
+account_subtype = individual/company
+status = approval/visibility state
