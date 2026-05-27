@@ -29,14 +29,15 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useLocation } from "wouter";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 function StatusBadge({ status }: { status: string }) {
   switch (status) {
     case "pending":
     case "reviewing":
-      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Pending</Badge>;
+      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Pending Review</Badge>;
     case "matched":
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Approved</Badge>;
+      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Open / Public</Badge>;
     case "completed":
       return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Completed</Badge>;
     case "cancelled":
@@ -130,6 +131,7 @@ export function AdminProjects() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
   const { data: projects, isLoading } = useListProjects();
   const updateProject = useUpdateProject();
@@ -138,6 +140,12 @@ export function AdminProjects() {
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: getListProjectsQueryKey() });
     qc.invalidateQueries({ queryKey: getGetAdminStatsQueryKey() });
+  };
+
+  const handleDelete = () => {
+    if (deleteTarget === null) return;
+    deleteProject.mutate({ id: deleteTarget }, { onSuccess: invalidate });
+    setDeleteTarget(null);
   };
 
   const filtered = (projects ?? []).filter((p) => {
@@ -167,11 +175,11 @@ export function AdminProjects() {
           <Input className="pl-9" placeholder="Search projects…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="matched">Approved</SelectItem>
+            <SelectItem value="pending">Pending Review</SelectItem>
+            <SelectItem value="matched">Open / Public</SelectItem>
             <SelectItem value="cancelled">Rejected</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
           </SelectContent>
@@ -184,8 +192,10 @@ export function AdminProjects() {
             <TableRow className="bg-gray-50">
               <TableHead className="text-xs font-semibold text-gray-600">Client</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Type</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Description</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Location</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Budget</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Size</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Date</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
               <TableHead className="text-right text-xs font-semibold text-gray-600">Actions</TableHead>
@@ -193,7 +203,7 @@ export function AdminProjects() {
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
             {!isLoading && filtered.map((project) => (
               <TableRow key={project.id} className="hover:bg-gray-50">
@@ -202,8 +212,16 @@ export function AdminProjects() {
                   <div className="text-xs text-gray-500">{project.email}</div>
                 </TableCell>
                 <TableCell className="capitalize text-sm">{project.projectType}</TableCell>
+                <TableCell className="max-w-[160px]">
+                  {project.description ? (
+                    <span className="text-xs text-gray-500 truncate block">{project.description}</span>
+                  ) : (
+                    <span className="text-xs text-gray-300">—</span>
+                  )}
+                </TableCell>
                 <TableCell className="text-sm">{project.city}</TableCell>
                 <TableCell className="text-sm text-gray-600">{project.budget ?? "—"}</TableCell>
+                <TableCell className="text-sm text-gray-600">{(project as { size?: string }).size ?? "—"}</TableCell>
                 <TableCell className="text-xs text-gray-500">{format(new Date(project.createdAt), "MMM d, yyyy")}</TableCell>
                 <TableCell><StatusBadge status={project.status} /></TableCell>
                 <TableCell className="text-right">
@@ -218,16 +236,16 @@ export function AdminProjects() {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "matched" } }, { onSuccess: invalidate })}>
-                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Approve
+                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Approve (Make Public)
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "pending" } }, { onSuccess: invalidate })}>
-                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> Set Pending
+                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> Set Pending Review
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "cancelled" } }, { onSuccess: invalidate })}>
                         <XCircle className="mr-2 h-4 w-4 text-red-500" /> Reject
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600" onClick={() => { if (confirm("Delete this project?")) deleteProject.mutate({ id: project.id }, { onSuccess: invalidate }); }}>
+                      <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(project.id)}>
                         <Trash2 className="mr-2 h-4 w-4" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -236,13 +254,25 @@ export function AdminProjects() {
               </TableRow>
             ))}
             {!isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="h-24 text-center text-gray-400">No projects found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="h-24 text-center text-gray-400">No projects found.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
       </Card>
 
       <AddProjectDialog open={addOpen} onClose={() => setAddOpen(false)} onCreated={invalidate} />
+
+      {deleteTarget !== null && (
+        <ConfirmDialog
+          open={true}
+          title="Delete Project"
+          description="Permanently delete this project request? This cannot be undone."
+          confirmLabel="Delete"
+          variant="destructive"
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }

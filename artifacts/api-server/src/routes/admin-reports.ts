@@ -10,7 +10,7 @@ router.get("/admin/reports", requireAdmin, async (_req, res): Promise<void> => {
   res.json(rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })));
 });
 
-router.post("/admin/reports", async (req, res): Promise<void> => {
+router.post("/admin/reports", requireAdmin, async (req, res): Promise<void> => {
   const { targetType, targetId, reason, reporterId } = req.body as {
     targetType?: string;
     targetId?: number;

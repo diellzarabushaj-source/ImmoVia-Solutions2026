@@ -157,13 +157,20 @@ function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
 // ─── Pending Badges ───────────────────────────────────────────────────────────
 
 function usePendingCounts() {
-  const [pendingProjects, setPendingProjects] = useState(0);
+  const [pendingTotal, setPendingTotal] = useState(0);
   const [openReports, setOpenReports] = useState(0);
 
   useEffect(() => {
-    fetch("/api/projects?status=pending", { credentials: "include" })
-      .then((r) => r.ok ? r.json() : [])
-      .then((d: unknown[]) => setPendingProjects(d.length))
+    Promise.all([
+      fetch("/api/projects?status=pending", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
+      fetch("/api/companies?status=pending", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
+    ])
+      .then(([projects, companies]) => {
+        setPendingTotal(
+          (Array.isArray(projects) ? projects.length : 0) +
+          (Array.isArray(companies) ? companies.length : 0)
+        );
+      })
       .catch(() => {});
 
     fetch("/api/admin/reports", { credentials: "include" })
@@ -172,17 +179,17 @@ function usePendingCounts() {
       .catch(() => {});
   }, []);
 
-  return { pendingProjects, openReports };
+  return { pendingTotal, openReports };
 }
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 function AdminSidebar({ onLogout }: { onLogout: () => void }) {
   const [location] = useLocation();
-  const { pendingProjects, openReports } = usePendingCounts();
+  const { pendingTotal, openReports } = usePendingCounts();
 
   const getBadgeCount = (path: string) => {
-    if (path === "/admin/pending") return pendingProjects;
+    if (path === "/admin/pending") return pendingTotal;
     if (path === "/admin/reports") return openReports;
     return 0;
   };

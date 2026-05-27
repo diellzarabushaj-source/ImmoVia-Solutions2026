@@ -21,12 +21,17 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 import {
+  Sheet, SheetContent, SheetHeader, SheetTitle
+} from "@/components/ui/sheet";
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import {
-  MoreHorizontal, CheckCircle2, XCircle, Clock, Trash2, Loader2, Plus, Building2, Search
+  MoreHorizontal, CheckCircle2, XCircle, Clock, Trash2, Loader2,
+  Plus, Building2, Search, PauseCircle, ExternalLink
 } from "lucide-react";
 import { format } from "date-fns";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 function StatusBadge({ status }: { status: string }) {
   switch (status) {
@@ -35,6 +40,8 @@ function StatusBadge({ status }: { status: string }) {
       return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Pending</Badge>;
     case "approved":
       return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Approved</Badge>;
+    case "suspended":
+      return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-xs">Suspended</Badge>;
     case "rejected":
       return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">Rejected</Badge>;
     default:
@@ -138,11 +145,102 @@ function AddCompanyDialog({ open, onClose, onCreated }: { open: boolean; onClose
   );
 }
 
+type Company = {
+  id: number;
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  city: string;
+  serviceTypes?: string[] | null;
+  workerType: string;
+  description?: string | null;
+  website?: string | null;
+  status: string;
+  createdAt: string;
+};
+
+function CompanyDrawer({ company, onClose, onAction }: { company: Company; onClose: () => void; onAction: (id: number, status: string) => void }) {
+  return (
+    <Sheet open onOpenChange={onClose}>
+      <SheetContent side="right" className="w-[480px] max-w-full overflow-y-auto">
+        <SheetHeader className="pb-4 border-b">
+          <SheetTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-[#1a3a6e]" />
+            {company.companyName}
+          </SheetTitle>
+          <div className="mt-1"><StatusBadge status={company.status} /></div>
+        </SheetHeader>
+
+        <div className="py-5 space-y-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div><span className="text-gray-500 block text-xs uppercase tracking-wide mb-0.5">Contact</span><span className="font-medium">{company.contactName}</span></div>
+            <div><span className="text-gray-500 block text-xs uppercase tracking-wide mb-0.5">Type</span><span className="capitalize">{company.workerType}</span></div>
+            <div><span className="text-gray-500 block text-xs uppercase tracking-wide mb-0.5">Email</span><span className="text-blue-700">{company.email}</span></div>
+            <div><span className="text-gray-500 block text-xs uppercase tracking-wide mb-0.5">Phone</span><span>{company.phone}</span></div>
+            <div><span className="text-gray-500 block text-xs uppercase tracking-wide mb-0.5">City</span><span>{company.city}</span></div>
+            <div><span className="text-gray-500 block text-xs uppercase tracking-wide mb-0.5">Registered</span><span>{format(new Date(company.createdAt), "MMM d, yyyy")}</span></div>
+          </div>
+
+          {company.website && (
+            <div>
+              <span className="text-gray-500 block text-xs uppercase tracking-wide mb-1">Website</span>
+              <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline flex items-center gap-1">
+                {company.website} <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
+
+          {company.description && (
+            <div>
+              <span className="text-gray-500 block text-xs uppercase tracking-wide mb-1">Description</span>
+              <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded p-3 border border-gray-100">{company.description}</p>
+            </div>
+          )}
+
+          <div>
+            <span className="text-gray-500 block text-xs uppercase tracking-wide mb-1.5">Services</span>
+            <div className="flex flex-wrap gap-1.5">
+              {(company.serviceTypes ?? []).map((s) => (
+                <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-2 py-1 capitalize">{s.replace("-", " ")}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-4 border-t space-y-2">
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">Actions</p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50"
+                onClick={() => { onAction(company.id, "approved"); onClose(); }}>
+                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Approve
+              </Button>
+              <Button size="sm" variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50"
+                onClick={() => { onAction(company.id, "suspended"); onClose(); }}>
+                <PauseCircle className="mr-1.5 h-3.5 w-3.5" /> Suspend
+              </Button>
+              <Button size="sm" variant="outline" className="border-yellow-200 text-yellow-700 hover:bg-yellow-50"
+                onClick={() => { onAction(company.id, "reviewing"); onClose(); }}>
+                <Clock className="mr-1.5 h-3.5 w-3.5" /> Set Pending
+              </Button>
+              <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50"
+                onClick={() => { onAction(company.id, "rejected"); onClose(); }}>
+                <XCircle className="mr-1.5 h-3.5 w-3.5" /> Reject
+              </Button>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 export function AdminCompanies() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [drawerCompany, setDrawerCompany] = useState<Company | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
   const { data: companies, isLoading } = useListCompanies();
   const updateCompany = useUpdateCompany();
@@ -151,6 +249,16 @@ export function AdminCompanies() {
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: getListCompaniesQueryKey() });
     qc.invalidateQueries({ queryKey: getGetAdminStatsQueryKey() });
+  };
+
+  const handleAction = (id: number, status: string) => {
+    updateCompany.mutate({ id, data: { status } }, { onSuccess: invalidate });
+  };
+
+  const handleDelete = () => {
+    if (deleteTarget === null) return;
+    deleteCompany.mutate({ id: deleteTarget }, { onSuccess: invalidate });
+    setDeleteTarget(null);
   };
 
   const filtered = (companies ?? []).filter((c) => {
@@ -185,6 +293,7 @@ export function AdminCompanies() {
             <SelectItem value="all">All statuses</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="suspended">Suspended</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
@@ -196,9 +305,9 @@ export function AdminCompanies() {
             <TableRow className="bg-gray-50">
               <TableHead className="text-xs font-semibold text-gray-600">Company</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Contact</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Description</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Services</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Location</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Type</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Date</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
               <TableHead className="text-right text-xs font-semibold text-gray-600">Actions</TableHead>
@@ -209,14 +318,21 @@ export function AdminCompanies() {
               <TableRow><TableCell colSpan={8} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
             {!isLoading && filtered.map((company) => (
-              <TableRow key={company.id} className="hover:bg-gray-50">
+              <TableRow key={company.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setDrawerCompany(company as Company)}>
                 <TableCell className="font-medium text-sm">{company.companyName}</TableCell>
                 <TableCell>
                   <div className="text-sm">{company.contactName}</div>
                   <div className="text-xs text-gray-500">{company.email}</div>
                 </TableCell>
+                <TableCell className="max-w-[160px]">
+                  {company.description ? (
+                    <span className="text-xs text-gray-500 truncate block">{company.description}</span>
+                  ) : (
+                    <span className="text-xs text-gray-300">—</span>
+                  )}
+                </TableCell>
                 <TableCell>
-                  <div className="flex flex-wrap gap-1 max-w-[140px]">
+                  <div className="flex flex-wrap gap-1 max-w-[120px]">
                     {(company.serviceTypes ?? []).slice(0, 2).map((s: string) => (
                       <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 capitalize">{s}</span>
                     ))}
@@ -226,27 +342,29 @@ export function AdminCompanies() {
                   </div>
                 </TableCell>
                 <TableCell className="text-sm">{company.city}</TableCell>
-                <TableCell className="text-xs capitalize text-gray-600">{company.workerType}</TableCell>
                 <TableCell className="text-xs text-gray-500">{format(new Date(company.createdAt), "MMM d, yyyy")}</TableCell>
                 <TableCell><StatusBadge status={company.status} /></TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => updateCompany.mutate({ id: company.id, data: { status: "approved" } }, { onSuccess: invalidate })}>
+                      <DropdownMenuItem onClick={() => handleAction(company.id, "approved")}>
                         <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Approve
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateCompany.mutate({ id: company.id, data: { status: "reviewing" } }, { onSuccess: invalidate })}>
+                      <DropdownMenuItem onClick={() => handleAction(company.id, "suspended")}>
+                        <PauseCircle className="mr-2 h-4 w-4 text-orange-500" /> Suspend
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleAction(company.id, "reviewing")}>
                         <Clock className="mr-2 h-4 w-4 text-yellow-500" /> Set Pending
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateCompany.mutate({ id: company.id, data: { status: "rejected" } }, { onSuccess: invalidate })}>
+                      <DropdownMenuItem onClick={() => handleAction(company.id, "rejected")}>
                         <XCircle className="mr-2 h-4 w-4 text-red-500" /> Reject
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600" onClick={() => { if (confirm("Delete this company?")) deleteCompany.mutate({ id: company.id }, { onSuccess: invalidate }); }}>
+                      <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(company.id)}>
                         <Trash2 className="mr-2 h-4 w-4" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -262,6 +380,26 @@ export function AdminCompanies() {
       </Card>
 
       <AddCompanyDialog open={addOpen} onClose={() => setAddOpen(false)} onCreated={invalidate} />
+
+      {drawerCompany && (
+        <CompanyDrawer
+          company={drawerCompany}
+          onClose={() => setDrawerCompany(null)}
+          onAction={(id, status) => { handleAction(id, status); setDrawerCompany(null); }}
+        />
+      )}
+
+      {deleteTarget !== null && (
+        <ConfirmDialog
+          open={true}
+          title="Delete Company"
+          description="Permanently delete this company registration? This cannot be undone."
+          confirmLabel="Delete"
+          variant="destructive"
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }
