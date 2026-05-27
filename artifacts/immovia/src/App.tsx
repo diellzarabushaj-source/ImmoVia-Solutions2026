@@ -24,6 +24,7 @@ import Profile from "@/pages/profile";
 import Portfolio from "@/pages/portfolio";
 import PublicProfile from "@/pages/public-profile";
 import CompanyProfile from "@/pages/company-profile";
+import Projects from "@/pages/projects";
 import ProjectDetail from "@/pages/project-detail";
 import Pricing from "@/pages/pricing";
 import ProviderDashboard from "@/pages/provider";
@@ -161,6 +162,7 @@ function Router() {
         <Route path="/register-company" component={RegisterCompany} />
         <Route path="/companies" component={Companies} />
         <Route path="/companies/:id" component={CompanyProfile} />
+        <Route path="/projects" component={Projects} />
         <Route path="/projects/:id" component={ProjectDetail} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/chat" component={Chat} />

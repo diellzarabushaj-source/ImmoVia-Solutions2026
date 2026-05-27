@@ -537,7 +537,7 @@ export default function Home() {
                   <p className="text-white/60 text-sm leading-relaxed">{t.browse.projectsDesc}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Link href="/#project-listings">
+                  <Link href="/projects">
                     <Button variant="outline" className="w-full sm:w-auto border-white/30 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm">
                       <Search className="mr-2 h-4 w-4" />
                       {t.splitCta.posterBrowse}
@@ -631,7 +631,7 @@ export default function Home() {
                   <h3 className="text-xl font-bold text-foreground mb-2">{t.browse.projectsTitle}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.projectsDesc}</p>
                 </div>
-                <Link href="/#project-listings">
+                <Link href="/projects">
                   <Button variant="outline" className="w-full border-primary/40 text-primary hover:bg-primary/8" data-testid="browse-card-view-projects">
                     {t.browse.projectsCta} <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
