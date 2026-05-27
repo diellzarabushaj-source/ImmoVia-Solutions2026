@@ -1,0 +1,506 @@
+Build a complete ADMIN DASHBOARD for my marketplace app.
+
+IMPORTANT:
+Do not change the public website design unless necessary.
+Do not remove existing pages or existing functionality.
+Do not break the current login/register flow.
+Do not create duplicate user systems.
+Do not create four separate main roles.
+Use the exact account structure below.
+
+MARKETPLACE ACCOUNT STRUCTURE:
+
+The marketplace has 2 main account types and 4 subtypes.
+
+Main account type 1:
+project_poster
+
+This is a user who posts projects, requests services, or looks for workers/providers.
+
+Subtypes:
+- individual
+- company
+
+Main account type 2:
+service_provider
+
+This is a user who looks for work/projects, applies to projects, or offers services.
+
+Subtypes:
+- individual
+- company
+
+Correct examples:
+1. account_type = project_poster, account_subtype = individual
+2. account_type = project_poster, account_subtype = company
+3. account_type = service_provider, account_subtype = individual
+4. account_type = service_provider, account_subtype = company
+
+Admin is separate.
+
+Use this structure:
+role = admin or user
+account_type = project_poster or service_provider
+account_subtype = individual or company
+status = draft, pending_review, approved, rejected, suspended
+
+Do not mix role with account_type.
+Do not make admin an account_type.
+Do not create account types like individual_project_poster or company_service_provider.
+Use account_type + account_subtype instead.
+
+ADMIN ACCESS:
+
+Create /admin route.
+
+Only users with role = admin can access /admin.
+
+If a normal user tries to access /admin:
+- show Access Denied
+or
+- redirect them to their normal dashboard
+
+Admin dashboard must have a clean sidebar with:
+- Overview
+- Pending Reviews
+- Users
+- Profiles
+- Projects
+- Applications
+- Categories
+- Reports
+- Settings
+
+ADMIN OVERVIEW PAGE:
+
+Create overview cards with:
+- Total users
+- Total project posters
+- Total service providers
+- Individual users
+- Company users
+- Pending profiles
+- Approved profiles
+- Rejected profiles
+- Suspended profiles
+- Total projects
+- Pending projects
+- Open projects
+- Completed projects
+- Total applications
+
+Also show quick sections:
+- Latest pending profiles
+- Latest pending projects
+- Latest users
+- Latest applications
+
+USER MANAGEMENT:
+
+Create admin page: /admin/users
+
+Admin must see all users in a table.
+
+For each user show:
+- Name
+- Email
+- Role
+- Account type
+- Account subtype
+- Status
+- Created date
+- Actions
+
+Filters:
+- Search by name or email
+- Filter by role
+- Filter by account_type
+- Filter by account_subtype
+- Filter by status
+- Filter by date
+
+Admin actions:
+- View details
+- Approve
+- Reject
+- Request changes
+- Suspend
+- Reactivate
+- Delete only with confirmation
+
+PROFILE MANAGEMENT:
+
+Create admin page: /admin/profiles
+
+Profiles can be individual profiles or company profiles.
+
+Every profile must have status:
+- draft
+- pending_review
+- approved
+- rejected
+- suspended
+
+Only approved profiles should be publicly visible.
+
+If profile status is pending_review, show it in the Pending Reviews page.
+
+Admin must be able to:
+- View full profile
+- Approve profile
+- Reject profile
+- Request changes
+- Suspend profile
+- Reactivate profile
+- Edit profile if necessary
+- Delete profile only with confirmation
+
+For individual profiles show:
+- Full name
+- Profession/category
+- Skills
+- Location
+- Experience
+- Phone
+- Email
+- Description
+- Profile image
+- Status
+- Created date
+- Updated date
+
+For company profiles show:
+- Company name
+- Logo
+- Description
+- Services
+- Category
+- Location
+- Phone
+- Email
+- Website
+- Portfolio/images
+- Status
+- Created date
+- Updated date
+
+PROJECT MANAGEMENT:
+
+Create admin page: /admin/projects
+
+Every project must have status:
+- draft
+- pending_review
+- open
+- in_progress
+- completed
+- cancelled
+- rejected
+
+When a project_poster creates a project, the project must first become pending_review.
+
+The project should NOT be publicly visible until admin approves it.
+
+When admin approves a project:
+status becomes open
+
+When admin rejects a project:
+status becomes rejected
+
+Only projects with status = open should be public.
+
+Admin must be able to:
+- View all projects
+- View project details
+- View project owner
+- Approve project
+- Reject project
+- Request changes
+- Edit project if necessary
+- Delete project only with confirmation
+
+Project table should show:
+- Project title
+- Owner name
+- Owner account_subtype
+- Category
+- Location
+- Budget
+- Status
+- Created date
+- Actions
+
+Project filters:
+- Search by title, owner or category
+- Filter by status
+- Filter by category
+- Filter by location
+- Filter by owner account_subtype
+- Filter by date
+
+APPLICATION MANAGEMENT:
+
+Create admin page: /admin/applications
+
+Service providers can apply to projects.
+
+Admin should see all applications.
+
+Application table should show:
+- Applicant name
+- Applicant account_subtype
+- Project title
+- Project owner
+- Message preview
+- Proposed price if available
+- Status
+- Created date
+- Actions
+
+Admin should be able to:
+- View application details
+- View applicant profile
+- View project details
+- Delete only if necessary with confirmation
+
+PENDING REVIEWS PAGE:
+
+Create admin page: /admin/pending
+
+This page should show everything waiting for admin review:
+- Pending profiles
+- Pending projects
+- Pending edited profiles if applicable
+- Pending reported content if applicable
+
+Admin must be able to approve/reject directly from this page.
+
+This page is very important.
+
+APPROVAL LOGIC:
+
+Use status clearly.
+
+For profiles:
+draft = user is still editing
+pending_review = waiting for admin approval
+approved = visible publicly
+rejected = hidden
+suspended = hidden and blocked from public activity
+
+For projects:
+draft = user is still editing
+pending_review = waiting for admin approval
+open = approved and public
+in_progress = provider selected/work started
+completed = finished
+cancelled = cancelled
+rejected = hidden
+
+PUBLIC VISIBILITY RULES:
+
+Public profile pages:
+Only show profiles where status = approved.
+
+Public project pages:
+Only show projects where status = open.
+
+Browse/search pages:
+Only include approved profiles and open projects.
+
+Do not show draft, pending_review, rejected or suspended items publicly.
+
+DATABASE RULES:
+
+Before changing anything:
+- Inspect the current database/schema
+- Reuse existing tables and fields if possible
+- Do not duplicate users table
+- Do not create conflicting role systems
+- Do not create four separate account_type values
+- Keep one clean system:
+  role
+  account_type
+  account_subtype
+  status
+
+If missing, add these fields carefully:
+
+Users:
+- id
+- name
+- email
+- role
+- account_type
+- account_subtype
+- status
+- created_at
+- updated_at
+
+Profiles:
+- id
+- user_id
+- profile_type
+- name
+- company_name
+- description
+- category
+- skills
+- services
+- location
+- phone
+- email
+- website
+- image_url
+- logo_url
+- portfolio_urls
+- status
+- created_at
+- updated_at
+
+Projects:
+- id
+- owner_id
+- title
+- description
+- category
+- location
+- budget
+- start_date
+- deadline
+- status
+- created_at
+- updated_at
+
+Applications:
+- id
+- project_id
+- applicant_id
+- message
+- proposed_price
+- availability
+- status
+- created_at
+- updated_at
+
+CATEGORIES MANAGEMENT:
+
+Create admin page: /admin/categories
+
+Admin can:
+- Add category
+- Edit category
+- Delete category if unused
+- Activate/deactivate category
+
+Category fields:
+- name
+- slug
+- type if needed
+- status
+- created_at
+
+REPORTS PAGE:
+
+Create admin page: /admin/reports
+
+If reports do not exist yet, create a simple structure prepared for later.
+
+Reports should allow users to report:
+- profiles
+- projects
+- applications
+- messages if messages exist
+
+Admin should see:
+- Reported item
+- Report reason
+- Reporter
+- Status
+- Created date
+
+SETTINGS PAGE:
+
+Create admin page: /admin/settings
+
+Settings can include:
+- platform name
+- default approval requirement on/off
+- contact email
+- maintenance mode if easy to implement
+
+ADMIN UI DESIGN:
+
+Make it simple, clean and professional.
+
+Use:
+- sidebar navigation
+- tables
+- cards
+- status badges
+- search bar
+- filters
+- action buttons
+- confirmation modal before delete
+- approve button
+- reject button
+- request changes button
+- suspend button
+
+Status badge colors should be clear:
+- pending_review = yellow/orange
+- approved/open = green
+- rejected = red
+- suspended = dark/red
+- draft = gray
+- completed = blue
+
+TECHNICAL SAFETY:
+
+Do not rewrite the whole app.
+Do not redesign the whole website.
+Do not remove existing components unless broken.
+Do not hardcode admin email unless no better option exists.
+Use role = admin for admin access.
+If there is no admin user yet, create a safe temporary way to assign one admin user.
+
+IMPORTANT:
+Keep the admin dashboard functional before making it visually advanced.
+First make the data and approval actions work correctly.
+Then improve the UI.
+
+TESTING CHECKLIST:
+
+After implementation, test these flows:
+
+1. Normal user cannot access /admin
+2. Admin can access /admin
+3. Admin sidebar works
+4. Admin overview statistics load
+5. Admin can view all users
+6. Admin can filter users by account_type
+7. Admin can filter users by account_subtype
+8. New profile goes to pending_review
+9. Pending profile appears in /admin/pending
+10. Admin can approve profile
+11. Approved profile becomes public
+12. Admin can reject profile
+13. Rejected profile stays hidden
+14. Admin can suspend profile
+15. Suspended profile stays hidden
+16. New project goes to pending_review
+17. Pending project appears in /admin/pending
+18. Admin can approve project
+19. Approved project becomes open and public
+20. Admin can reject project
+21. Rejected project stays hidden
+22. Only approved profiles show publicly
+23. Only open projects show publicly
+24. Applications page shows all applications
+25. Delete actions require confirmation
+26. Existing public website still works
+27. Existing login/register still works
+28. Mobile view is usable
+
+Build this step by step.
+Prioritize correctness over design.
