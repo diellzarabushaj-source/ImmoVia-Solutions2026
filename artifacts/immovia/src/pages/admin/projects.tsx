@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import {
   MoreHorizontal, CheckCircle2, XCircle, Clock, Trash2, Loader2,
-  Plus, Hammer, Eye, Search
+  Plus, Hammer, Eye, Search, Globe
 } from "lucide-react";
 import { format } from "date-fns";
 import { useLocation } from "wouter";
@@ -211,6 +211,19 @@ export function AdminProjects() {
                 <TableCell className="text-xs text-gray-500">{format(new Date(project.createdAt), "MMM d, yyyy")}</TableCell>
                 <TableCell><StatusBadge status={project.status} /></TableCell>
                 <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    {project.status !== "open" && project.status !== "cancelled" && (
+                      <Button
+                        size="sm"
+                        className="h-7 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                        disabled={updateProject.isPending}
+                        onClick={() => updateProject.mutate({ id: project.id, data: { status: "open" } }, { onSuccess: invalidate })}
+                        title="Publish to website"
+                      >
+                        <Globe className="h-3.5 w-3.5" />
+                        Publish
+                      </Button>
+                    )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
@@ -245,6 +258,7 @@ export function AdminProjects() {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

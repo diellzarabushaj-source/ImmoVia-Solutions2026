@@ -151,7 +151,7 @@ export default function Projects() {
   const { data: projects, isLoading, isError } = useListProjects();
 
   const open = useMemo(
-    () => (projects ?? []).filter(p => p.status === "open" || p.status === "pending" || p.status === "reviewing"),
+    () => (projects ?? []).filter(p => p.status === "open"),
     [projects]
   );
 
