@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useSearch, useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useListProjects } from "@workspace/api-client-react";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search, MapPin, Clock, FileText, X, ArrowUpDown,
-  ChevronDown, Hammer, Building2, Sofa, TreePine,
+  ChevronDown, Lock, Hammer, Building2, Sofa, TreePine,
   Wrench, Plug, Briefcase,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -110,6 +111,7 @@ function ProjectCard({ project, t }: {
 
 export default function Projects() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   usePageMeta({ title: `${t.listings.title ?? "Browse Projects"} — ImmoVia`, description: t.listings.subtitle ?? undefined });
   const search = useSearch();
   const [, navigate] = useLocation();
@@ -186,6 +188,9 @@ export default function Projects() {
     setBudgetFilter("");
     setSortBy("newest");
   };
+
+  const visibleProjects = user ? displayList : displayList.slice(0, 6);
+  const gatedProjects = !user && displayList.length > 6 ? displayList.slice(6, 9) : [];
 
 
   return (
@@ -408,7 +413,7 @@ export default function Projects() {
               variants={{ animate: { transition: { staggerChildren: 0.05 } } }}
             >
               <AnimatePresence>
-                {displayList.map((project) => (
+                {visibleProjects.map((project) => (
                   <motion.div
                     key={project.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -421,6 +426,33 @@ export default function Projects() {
                 ))}
               </AnimatePresence>
             </motion.div>
+
+            {/* Gate for non-logged-in users */}
+            {!user && displayList.length > 6 && (
+              <div className="relative mt-5">
+                <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-muted/20 z-10 pointer-events-none" />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
+                  {gatedProjects.map((project) => (
+                    <div key={`ghost-${project.id}`}>
+                      <ProjectCard project={project} t={t} />
+                    </div>
+                  ))}
+                </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                  <div className="bg-white/95 backdrop-blur-sm border border-border rounded-2xl px-8 py-8 text-center shadow-lg max-w-sm mx-auto">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                      <Lock className="w-6 h-6 text-primary" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground mb-5">{t.listings.gateLabel}</p>
+                    <Link href="/signup?account_type=service_provider">
+                      <Button size="lg" className="w-full" data-testid="projects-gate-cta">
+                        {t.listings.gateCta}
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
