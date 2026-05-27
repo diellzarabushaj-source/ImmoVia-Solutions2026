@@ -1,0 +1,159 @@
+import { useEffect, useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from "@/components/ui/table";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { Loader2, MoreHorizontal, CheckCircle2, XCircle, Flag, Trash2 } from "lucide-react";
+import { format } from "date-fns";
+
+interface Report {
+  id: number;
+  targetType: string;
+  targetId: number;
+  reason: string;
+  reporterEmail: string | null;
+  status: string;
+  createdAt: string;
+}
+
+function StatusBadge({ status }: { status: string }) {
+  switch (status) {
+    case "open":
+      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">Open</Badge>;
+    case "resolved":
+      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Resolved</Badge>;
+    case "dismissed":
+      return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200 text-xs">Dismissed</Badge>;
+    default:
+      return <Badge variant="outline" className="text-xs">{status}</Badge>;
+  }
+}
+
+export function AdminReports() {
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const load = () => {
+    setLoading(true);
+    fetch("/api/admin/reports", { credentials: "include" })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { setReports(data as Report[]); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const updateStatus = async (id: number, status: string) => {
+    await fetch(`/api/admin/reports/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      credentials: "include", body: JSON.stringify({ status }),
+    });
+    load();
+  };
+
+  const deleteReport = async (id: number) => {
+    if (!confirm("Delete this report?")) return;
+    await fetch(`/api/admin/reports/${id}`, { method: "DELETE", credentials: "include" });
+    load();
+  };
+
+  const filtered = reports.filter((r) => statusFilter === "all" || r.status === statusFilter);
+
+  const openCount = reports.filter((r) => r.status === "open").length;
+
+  return (
+    <div className="p-8">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {reports.length} total — {openCount} open
+            {openCount > 0 && <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold">{openCount}</span>}
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={load}>
+          <Flag className="h-4 w-4 mr-1.5" /> Refresh
+        </Button>
+      </div>
+
+      <div className="mb-4">
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All reports</SelectItem>
+            <SelectItem value="open">Open</SelectItem>
+            <SelectItem value="resolved">Resolved</SelectItem>
+            <SelectItem value="dismissed">Dismissed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Card className="border border-gray-200 shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="text-xs font-semibold text-gray-600">ID</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Target</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Reason</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Reporter</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Date</TableHead>
+              <TableHead className="text-right text-xs font-semibold text-gray-600">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading && (
+              <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+            )}
+            {!loading && filtered.map((r) => (
+              <TableRow key={r.id} className="hover:bg-gray-50">
+                <TableCell className="text-xs text-gray-500">#{r.id}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="text-xs capitalize">{r.targetType}</Badge>
+                  <span className="text-xs text-gray-500 ml-1">#{r.targetId}</span>
+                </TableCell>
+                <TableCell className="text-sm text-gray-700 max-w-[200px] truncate">{r.reason}</TableCell>
+                <TableCell className="text-xs text-gray-500">{r.reporterEmail ?? "—"}</TableCell>
+                <TableCell><StatusBadge status={r.status} /></TableCell>
+                <TableCell className="text-xs text-gray-500">{format(new Date(r.createdAt), "MMM d, yyyy")}</TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => updateStatus(r.id, "resolved")}><CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Resolve</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => updateStatus(r.id, "dismissed")}><XCircle className="mr-2 h-4 w-4 text-gray-400" /> Dismiss</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => updateStatus(r.id, "open")}><Flag className="mr-2 h-4 w-4 text-red-500" /> Reopen</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-red-600" onClick={() => deleteReport(r.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+            {!loading && filtered.length === 0 && (
+              <TableRow><TableCell colSpan={7} className="h-24 text-center text-gray-400">
+                <div className="flex flex-col items-center gap-2">
+                  <CheckCircle2 className="h-8 w-8 text-green-400" />
+                  <span>No {statusFilter !== "all" ? statusFilter + " " : ""}reports</span>
+                </div>
+              </TableCell></TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
+  );
+}

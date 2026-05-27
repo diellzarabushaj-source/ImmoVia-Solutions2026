@@ -16,6 +16,11 @@ import offersRouter from "./offers";
 import adminBillingRouter from "./admin-billing";
 import reviewsRouter from "./reviews";
 import messagesRouter from "./messages";
+import adminUsersRouter from "./admin-users";
+import adminApplicationsRouter from "./admin-applications";
+import adminCategoriesRouter from "./admin-categories";
+import adminReportsRouter from "./admin-reports";
+import adminSettingsRouter from "./admin-settings";
 
 const router: IRouter = Router();
 
@@ -36,5 +41,10 @@ router.use(offersRouter);
 router.use(adminBillingRouter);
 router.use(reviewsRouter);
 router.use(messagesRouter);
+router.use(adminUsersRouter);
+router.use(adminApplicationsRouter);
+router.use(adminCategoriesRouter);
+router.use(adminReportsRouter);
+router.use(adminSettingsRouter);
 
 export default router;

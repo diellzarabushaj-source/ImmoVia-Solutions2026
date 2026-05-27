@@ -5,3 +5,7 @@ export * from "./portfolio";
 export * from "./billing";
 export * from "./reviews";
 export * from "./messages";
+export * from "./applications";
+export * from "./categories";
+export * from "./reports";
+export * from "./platform-settings";

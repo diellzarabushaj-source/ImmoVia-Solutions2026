@@ -203,6 +203,9 @@ function ClerkProviderWithRoutes() {
                 {/* REQUIRED — /*? matches both the bare URL and Clerk's OAuth sub-paths */}
                 <Route path="/sign-in/*?" component={SignInPage} />
                 <Route path="/sign-up/*?" component={SignUpPage} />
+                {/* Admin routes bypass the public Layout intentionally */}
+                <Route path="/admin" component={AdminDashboard} />
+                <Route path="/admin/:rest*" component={AdminDashboard} />
                 <Route component={Router} />
               </Switch>
               <Toaster />

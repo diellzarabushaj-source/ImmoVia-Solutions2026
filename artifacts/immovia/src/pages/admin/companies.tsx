@@ -1,0 +1,267 @@
+import { useState } from "react";
+import {
+  useListCompanies, useUpdateCompany, useDeleteCompany,
+  getListCompaniesQueryKey, getGetAdminStatsQueryKey
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from "@/components/ui/table";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+} from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
+import {
+  MoreHorizontal, CheckCircle2, XCircle, Clock, Trash2, Loader2, Plus, Building2, Search
+} from "lucide-react";
+import { format } from "date-fns";
+
+function StatusBadge({ status }: { status: string }) {
+  switch (status) {
+    case "pending":
+    case "reviewing":
+      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Pending</Badge>;
+    case "approved":
+      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Approved</Badge>;
+    case "rejected":
+      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">Rejected</Badge>;
+    default:
+      return <Badge variant="outline" className="text-xs">{status}</Badge>;
+  }
+}
+
+const SERVICE_TYPE_OPTIONS = [
+  "renovation", "construction", "plumbing", "electrical",
+  "painting", "flooring", "roofing", "landscaping",
+  "interior-design", "cleaning", "hvac", "other",
+];
+
+function AddCompanyDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    companyName: "", contactName: "", email: "", phone: "",
+    city: "", description: "", website: "", workerType: "company",
+  });
+  const [serviceTypes, setServiceTypes] = useState<string[]>([]);
+
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const toggle = (s: string) =>
+    setServiceTypes((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!serviceTypes.length) { setError("Select at least one service type."); return; }
+    setError(""); setLoading(true);
+    try {
+      const body: Record<string, unknown> = {
+        companyName: form.companyName, contactName: form.contactName, email: form.email,
+        phone: form.phone, city: form.city, serviceTypes, workerType: form.workerType,
+      };
+      if (form.description.trim()) body.description = form.description;
+      if (form.website.trim()) body.website = form.website;
+      const res = await fetch("/api/companies", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        credentials: "include", body: JSON.stringify(body),
+      });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? "Failed."); return; }
+      onCreated(); onClose();
+      setForm({ companyName: "", contactName: "", email: "", phone: "", city: "", description: "", website: "", workerType: "company" });
+      setServiceTypes([]);
+    } catch { setError("Connection error."); } finally { setLoading(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><Building2 className="h-4 w-4" /> Add Company</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-3 py-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label>Company Name *</Label><Input value={form.companyName} onChange={set("companyName")} required disabled={loading} /></div>
+            <div className="space-y-1.5"><Label>Contact Person *</Label><Input value={form.contactName} onChange={set("contactName")} required disabled={loading} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label>Email *</Label><Input type="email" value={form.email} onChange={set("email")} required disabled={loading} /></div>
+            <div className="space-y-1.5"><Label>Phone *</Label><Input value={form.phone} onChange={set("phone")} required disabled={loading} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label>City *</Label><Input value={form.city} onChange={set("city")} required disabled={loading} /></div>
+            <div className="space-y-1.5">
+              <Label>Type</Label>
+              <Select value={form.workerType} onValueChange={(v) => setForm((f) => ({ ...f, workerType: v }))}>
+                <SelectTrigger disabled={loading}><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="company">Company</SelectItem>
+                  <SelectItem value="individual">Individual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Services *</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {SERVICE_TYPE_OPTIONS.map((s) => (
+                <button key={s} type="button" disabled={loading} onClick={() => toggle(s)}
+                  className={`text-xs rounded px-2 py-1.5 border transition-colors text-left capitalize ${serviceTypes.includes(s) ? "bg-[#1a3a6e] text-white border-[#1a3a6e]" : "bg-white text-gray-500 border-gray-200 hover:border-[#1a3a6e]"}`}>
+                  {s.replace("-", " ")}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1.5"><Label>Description</Label><Textarea value={form.description} onChange={set("description")} disabled={loading} rows={2} /></div>
+          <div className="space-y-1.5"><Label>Website</Label><Input value={form.website} onChange={set("website")} disabled={loading} placeholder="https://…" /></div>
+          {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
+            <Button type="submit" className="bg-[#1a3a6e] hover:bg-[#0f2044]" disabled={loading}>
+              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : "Add Company"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function AdminCompanies() {
+  const qc = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [addOpen, setAddOpen] = useState(false);
+
+  const { data: companies, isLoading } = useListCompanies();
+  const updateCompany = useUpdateCompany();
+  const deleteCompany = useDeleteCompany();
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: getListCompaniesQueryKey() });
+    qc.invalidateQueries({ queryKey: getGetAdminStatsQueryKey() });
+  };
+
+  const filtered = (companies ?? []).filter((c) => {
+    const matchSearch = !search ||
+      c.companyName.toLowerCase().includes(search.toLowerCase()) ||
+      c.city.toLowerCase().includes(search.toLowerCase()) ||
+      c.contactName.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === "all" || c.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  return (
+    <div className="p-8">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
+          <p className="text-sm text-gray-500 mt-1">{companies?.length ?? 0} total registrations</p>
+        </div>
+        <Button size="sm" className="bg-[#1a3a6e] hover:bg-[#0f2044]" onClick={() => setAddOpen(true)}>
+          <Plus className="h-4 w-4 mr-1.5" /> Add Company
+        </Button>
+      </div>
+
+      <div className="flex gap-3 mb-4">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input className="pl-9" placeholder="Search companies…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Card className="border border-gray-200 shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="text-xs font-semibold text-gray-600">Company</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Contact</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Services</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Location</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Type</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Date</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
+              <TableHead className="text-right text-xs font-semibold text-gray-600">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading && (
+              <TableRow><TableCell colSpan={8} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+            )}
+            {!isLoading && filtered.map((company) => (
+              <TableRow key={company.id} className="hover:bg-gray-50">
+                <TableCell className="font-medium text-sm">{company.companyName}</TableCell>
+                <TableCell>
+                  <div className="text-sm">{company.contactName}</div>
+                  <div className="text-xs text-gray-500">{company.email}</div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1 max-w-[140px]">
+                    {(company.serviceTypes ?? []).slice(0, 2).map((s: string) => (
+                      <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 capitalize">{s}</span>
+                    ))}
+                    {(company.serviceTypes ?? []).length > 2 && (
+                      <span className="text-xs bg-gray-100 text-gray-500 rounded px-1.5 py-0.5">+{(company.serviceTypes ?? []).length - 2}</span>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="text-sm">{company.city}</TableCell>
+                <TableCell className="text-xs capitalize text-gray-600">{company.workerType}</TableCell>
+                <TableCell className="text-xs text-gray-500">{format(new Date(company.createdAt), "MMM d, yyyy")}</TableCell>
+                <TableCell><StatusBadge status={company.status} /></TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => updateCompany.mutate({ id: company.id, data: { status: "approved" } }, { onSuccess: invalidate })}>
+                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Approve
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => updateCompany.mutate({ id: company.id, data: { status: "reviewing" } }, { onSuccess: invalidate })}>
+                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> Set Pending
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => updateCompany.mutate({ id: company.id, data: { status: "rejected" } }, { onSuccess: invalidate })}>
+                        <XCircle className="mr-2 h-4 w-4 text-red-500" /> Reject
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-red-600" onClick={() => { if (confirm("Delete this company?")) deleteCompany.mutate({ id: company.id }, { onSuccess: invalidate }); }}>
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+            {!isLoading && filtered.length === 0 && (
+              <TableRow><TableCell colSpan={8} className="h-24 text-center text-gray-400">No companies found.</TableCell></TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+
+      <AddCompanyDialog open={addOpen} onClose={() => setAddOpen(false)} onCreated={invalidate} />
+    </div>
+  );
+}
