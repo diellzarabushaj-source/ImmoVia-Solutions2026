@@ -40,17 +40,51 @@ type AuthState = "loading" | "authenticated" | "unauthenticated";
 
 // ─── Nav Config ──────────────────────────────────────────────────────────────
 
-const NAV_ITEMS = [
-  { path: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
-  { path: "/admin/projects", label: "Projects", icon: Hammer },
-  { path: "/admin/companies", label: "Companies", icon: Building2 },
-  { path: "/admin/pending", label: "Pending Review", icon: Clock, badge: true },
-  { path: "/admin/users", label: "Users", icon: Users },
-  { path: "/admin/applications", label: "Applications", icon: FileText },
-  { path: "/admin/categories", label: "Categories", icon: Tag },
-  { path: "/admin/reports", label: "Reports", icon: Flag, badge: true },
-  { path: "/admin/settings", label: "Settings", icon: Settings },
-] as const;
+type NavItem = {
+  path: string;
+  label: string;
+  sublabel: string;
+  icon: React.ElementType;
+  exact?: boolean;
+  badge?: boolean;
+};
+
+type NavGroup = {
+  group: string;
+  items: NavItem[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    group: "",
+    items: [
+      { path: "/admin", label: "Overview", sublabel: "Stats & quick actions", icon: LayoutDashboard, exact: true },
+      { path: "/admin/pending", label: "Pending Review", sublabel: "Approve or reject", icon: Clock, badge: true },
+    ],
+  },
+  {
+    group: "Marketplace",
+    items: [
+      { path: "/admin/projects", label: "Projects", sublabel: "Renovation requests", icon: Hammer },
+      { path: "/admin/companies", label: "Companies", sublabel: "Service provider profiles", icon: Building2 },
+    ],
+  },
+  {
+    group: "Accounts",
+    items: [
+      { path: "/admin/users", label: "Users", sublabel: "Registered accounts", icon: Users },
+      { path: "/admin/applications", label: "Applications", sublabel: "Sign-up submissions", icon: FileText },
+    ],
+  },
+  {
+    group: "System",
+    items: [
+      { path: "/admin/categories", label: "Categories", sublabel: "Service types", icon: Tag },
+      { path: "/admin/reports", label: "Reports", sublabel: "User flags", icon: Flag, badge: true },
+      { path: "/admin/settings", label: "Settings", sublabel: "Admin configuration", icon: Settings },
+    ],
+  },
+];
 
 // ─── Login Form ───────────────────────────────────────────────────────────────
 
@@ -195,6 +229,11 @@ function AdminSidebar({ onLogout }: { onLogout: () => void }) {
     return 0;
   };
 
+  const isActive = (item: NavItem) =>
+    item.exact
+      ? location === item.path
+      : location === item.path || location.startsWith(item.path + "/");
+
   return (
     <aside className="w-64 min-w-[256px] bg-[#0f2044] min-h-screen flex flex-col">
       {/* Logo */}
@@ -208,38 +247,51 @@ function AdminSidebar({ onLogout }: { onLogout: () => void }) {
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
-        {NAV_ITEMS.map((item) => {
-          const isActive = "exact" in item && item.exact
-            ? location === item.path
-            : location === item.path || location.startsWith(item.path + "/");
-          const badge = "badge" in item ? getBadgeCount(item.path) : 0;
-
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-                isActive
-                  ? "bg-white/15 text-white shadow-sm"
-                  : "text-white/60 hover:text-white hover:bg-white/8"
-              }`}
-            >
-              <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive ? "text-white" : "text-white/50"}`} />
-              <span className="flex-1">{item.label}</span>
-              {badge > 0 && (
-                <span className={`inline-flex items-center justify-center min-w-[20px] h-5 rounded-full text-xs font-bold px-1 ${isActive ? "bg-white text-[#0f2044]" : "bg-[#e85d26] text-white"}`}>
-                  {badge}
-                </span>
-              )}
-              {isActive && <ChevronRight className="h-3.5 w-3.5 text-white/40 flex-shrink-0" />}
-            </Link>
-          );
-        })}
+      {/* Nav grouped */}
+      <nav className="flex-1 py-3 px-2 space-y-4 overflow-y-auto">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.group}>
+            {group.group && (
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-white/30">
+                {group.group}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const active = isActive(item);
+                const badge = item.badge ? getBadgeCount(item.path) : 0;
+                return (
+                  <Link
+                    key={item.path}
+                    href={item.path}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all cursor-pointer group ${
+                      active
+                        ? "bg-white/15 text-white shadow-sm"
+                        : "text-white/60 hover:text-white hover:bg-white/8"
+                    }`}
+                  >
+                    <item.icon className={`h-4 w-4 flex-shrink-0 ${active ? "text-white" : "text-white/40 group-hover:text-white/70"}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium leading-tight">{item.label}</div>
+                      <div className={`text-[10px] leading-tight mt-0.5 ${active ? "text-white/60" : "text-white/25 group-hover:text-white/40"}`}>
+                        {item.sublabel}
+                      </div>
+                    </div>
+                    {badge > 0 && (
+                      <span className={`inline-flex items-center justify-center min-w-[20px] h-5 rounded-full text-xs font-bold px-1 flex-shrink-0 ${active ? "bg-white text-[#0f2044]" : "bg-[#e85d26] text-white"}`}>
+                        {badge}
+                      </span>
+                    )}
+                    {active && <ChevronRight className="h-3.5 w-3.5 text-white/40 flex-shrink-0" />}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* Divider + breadcrumb to site */}
+      {/* Link to public site */}
       <div className="px-2 py-2">
         <Link href="/" className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors cursor-pointer">
           <Eye className="h-3.5 w-3.5" /> View public site
