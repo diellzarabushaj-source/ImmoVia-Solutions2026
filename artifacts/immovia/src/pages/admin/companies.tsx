@@ -219,7 +219,7 @@ function CompanyDrawer({ company, onClose, onAction }: { company: Company; onClo
                 <PauseCircle className="mr-1.5 h-3.5 w-3.5" /> Suspend
               </Button>
               <Button size="sm" variant="outline" className="border-yellow-200 text-yellow-700 hover:bg-yellow-50"
-                onClick={() => { onAction(company.id, "reviewing"); onClose(); }}>
+                onClick={() => { onAction(company.id, "pending"); onClose(); }}>
                 <Clock className="mr-1.5 h-3.5 w-3.5" /> Set Pending
               </Button>
               <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50"
@@ -357,7 +357,7 @@ export function AdminCompanies() {
                       <DropdownMenuItem onClick={() => handleAction(company.id, "suspended")}>
                         <PauseCircle className="mr-2 h-4 w-4 text-orange-500" /> Suspend
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleAction(company.id, "reviewing")}>
+                      <DropdownMenuItem onClick={() => handleAction(company.id, "pending")}>
                         <Clock className="mr-2 h-4 w-4 text-yellow-500" /> Set Pending
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleAction(company.id, "rejected")}>

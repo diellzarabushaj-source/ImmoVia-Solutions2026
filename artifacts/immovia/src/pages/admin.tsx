@@ -311,5 +311,10 @@ export default function AdminDashboard() {
     return <AdminLoginForm onSuccess={() => setAuthState("authenticated")} />;
   }
 
-  return <AdminShell onLogout={() => setAuthState("unauthenticated")} />;
+  const handleLogout = async () => {
+    await fetch("/api/admin-auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
+    setAuthState("unauthenticated");
+  };
+
+  return <AdminShell onLogout={handleLogout} />;
 }

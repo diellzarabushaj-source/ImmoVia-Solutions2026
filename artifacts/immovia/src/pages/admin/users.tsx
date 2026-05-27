@@ -53,6 +53,7 @@ export function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [confirm, setConfirm] = useState<PendingAction | null>(null);
   const [acting, setActing] = useState(false);
 
@@ -96,7 +97,8 @@ export function AdminUsers() {
       u.email.toLowerCase().includes(search.toLowerCase()) ||
       (u.city ?? "").toLowerCase().includes(search.toLowerCase());
     const matchRole = roleFilter === "all" || u.role === roleFilter;
-    return matchSearch && matchRole;
+    const matchStatus = statusFilter === "all" || (statusFilter === "verified" ? u.verified : !u.verified);
+    return matchSearch && matchRole && matchStatus;
   });
 
   const stats = {
@@ -140,6 +142,14 @@ export function AdminUsers() {
             <SelectItem value="homeowner">Homeowners</SelectItem>
             <SelectItem value="service_provider">Providers</SelectItem>
             <SelectItem value="admin">Admins</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="verified">Verified</SelectItem>
+            <SelectItem value="unverified">Unverified</SelectItem>
           </SelectContent>
         </Select>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
