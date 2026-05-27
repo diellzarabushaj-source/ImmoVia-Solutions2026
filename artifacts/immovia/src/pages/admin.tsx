@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, Link } from "wouter";
-import { useUser } from "@clerk/react";
+import { useUser, RedirectToSignIn } from "@clerk/react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { Button } from "@/components/ui/button";
 import {
@@ -217,17 +217,8 @@ export default function AdminDashboard() {
   const { isLoaded, isSignedIn } = useUser();
   const auth = useAuth();
 
-  // Redirect to sign-in if not authenticated with Clerk
-  useEffect(() => {
-    if (!isLoaded) return;
-    if (!isSignedIn) {
-      const basePath = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
-      window.location.href = `${basePath}/sign-in`;
-    }
-  }, [isLoaded, isSignedIn]);
-
-  // Loading: waiting for Clerk or DB sync
-  if (!isLoaded || auth.loading) {
+  // Clerk still loading
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0f2044]">
         <Loader2 className="h-8 w-8 animate-spin text-white/60" />
@@ -235,8 +226,13 @@ export default function AdminDashboard() {
     );
   }
 
-  // Not signed into Clerk
+  // Not signed into Clerk → show Clerk sign-in immediately
   if (!isSignedIn) {
+    return <RedirectToSignIn />;
+  }
+
+  // Clerk signed in but DB user still syncing
+  if (auth.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0f2044]">
         <Loader2 className="h-8 w-8 animate-spin text-white/60" />
