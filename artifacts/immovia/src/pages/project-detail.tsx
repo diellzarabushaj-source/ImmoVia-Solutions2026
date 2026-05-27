@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useRoute, Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
-import { useAuth } from "@/contexts/AuthContext";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,8 +10,6 @@ import {
   MapPin,
   Clock,
   FileText,
-  Mail,
-  Phone,
   Lock,
   Loader2,
   Hammer,
@@ -23,7 +21,6 @@ import {
   Briefcase,
   CalendarDays,
   ArrowRight,
-  User,
   CheckCircle2,
   Image,
 } from "lucide-react";
@@ -73,7 +70,6 @@ function getPostedLabel(createdAt: string, listings: { today: string; yesterday:
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:id");
   const { t } = useLanguage();
-  const { user } = useAuth();
   const id = params?.id;
 
   const [project, setProject] = useState<Project | null>(null);
@@ -311,7 +307,7 @@ export default function ProjectDetail() {
             )}
           </div>
 
-          {/* Right — contact sidebar */}
+          {/* Right — apply sidebar */}
           <div className="space-y-4">
             <motion.div
               className="bg-white rounded-2xl border border-border shadow-sm p-6 lg:sticky lg:top-24"
@@ -320,62 +316,21 @@ export default function ProjectDetail() {
               transition={{ delay: 0.2 }}
             >
               <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
-                <User className="w-4 h-4 text-primary" />
+                <Building2 className="w-4 h-4 text-primary" />
                 {t.projectDetail.contactTitle}
               </h2>
-
-              {user ? (
-                <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">{t.projectDetail.name}</p>
-                    <p className="text-sm font-semibold text-foreground">{project.fullName}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">{t.projectDetail.email}</p>
-                    <a href={`mailto:${project.email}`} className="text-sm font-medium text-primary hover:underline break-all">{project.email}</a>
-                  </div>
-                  {project.phone && (
-                    <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">{t.projectDetail.phone}</p>
-                      <a href={`tel:${project.phone}`} className="text-sm font-medium text-primary hover:underline">{project.phone}</a>
-                    </div>
-                  )}
-                  <div className="pt-2 flex flex-col gap-2">
-                    <Button asChild className="w-full">
-                      <a href={`mailto:${project.email}`}>
-                        <Mail className="w-4 h-4 mr-2" />
-                        {t.projectDetail.applyNow}
-                      </a>
-                    </Button>
-                    {project.phone && (
-                      <Button asChild variant="outline" className="w-full">
-                        <a href={`tel:${project.phone}`}>
-                          <Phone className="w-4 h-4 mr-2" />
-                          {t.projectDetail.phone}
-                        </a>
-                      </Button>
-                    )}
-                  </div>
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                  <Lock className="w-6 h-6 text-primary" />
                 </div>
-              ) : (
-                <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                    <Lock className="w-6 h-6 text-primary" />
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{t.projectDetail.contactGateLabel}</p>
-                  <Link href="/signup">
-                    <Button className="w-full mb-2">
-                      {t.projectDetail.registerToContact}
-                    </Button>
-                  </Link>
-                  <Link href="/login">
-                    <Button variant="ghost" className="w-full text-sm text-muted-foreground">
-                      {t.projectDetail.loginToApply}
-                      <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                    </Button>
-                  </Link>
-                </div>
-              )}
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{t.projectDetail.contactGateLabel}</p>
+                <Link href="/register-company">
+                  <Button className="w-full mb-2">
+                    {t.projectDetail.registerToContact}
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </Button>
+                </Link>
+              </div>
             </motion.div>
 
             {/* Back to all projects */}
@@ -392,20 +347,12 @@ export default function ProjectDetail() {
       {/* Sticky mobile CTA — hidden on lg+ where sidebar is visible */}
       <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur border-t border-border shadow-lg">
         <div className="container mx-auto px-4 py-3" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-          {user ? (
-            <Button asChild className="w-full" size="lg">
-              <a href={`mailto:${project.email}`}>
-                <Mail className="w-4 h-4 mr-2" />
-                {t.projectDetail.applyNow}
-              </a>
+          <Link href="/register-company">
+            <Button className="w-full" size="lg">
+              {t.projectDetail.registerToContact}
+              <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          ) : (
-            <Link href="/signup">
-              <Button className="w-full" size="lg">
-                {t.projectDetail.registerToContact}
-              </Button>
-            </Link>
-          )}
+          </Link>
         </div>
       </div>
 

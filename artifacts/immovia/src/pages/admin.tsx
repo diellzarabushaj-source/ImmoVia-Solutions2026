@@ -656,6 +656,7 @@ function AdminDashboardContent({ onLogout }: { onLogout: () => void }) {
                   <TableRow>
                     <TableHead>Company</TableHead>
                     <TableHead>Contact</TableHead>
+                    <TableHead>Services</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
@@ -664,7 +665,7 @@ function AdminDashboardContent({ onLogout }: { onLogout: () => void }) {
                 </TableHeader>
                 <TableBody>
                   {companiesLoading && (
-                    <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
                   )}
                   {!companiesLoading && companies?.map((company) => (
                     <TableRow key={company.id}>
@@ -672,6 +673,19 @@ function AdminDashboardContent({ onLogout }: { onLogout: () => void }) {
                       <TableCell>
                         <div className="text-sm">{company.contactName}</div>
                         <div className="text-xs text-muted-foreground">{company.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1 max-w-[160px]">
+                          {(company.serviceTypes ?? []).slice(0, 2).map((s: string) => (
+                            <span key={s} className="inline-block text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 capitalize">{s}</span>
+                          ))}
+                          {(company.serviceTypes ?? []).length > 2 && (
+                            <span className="inline-block text-xs bg-muted text-muted-foreground rounded px-1.5 py-0.5">+{(company.serviceTypes ?? []).length - 2}</span>
+                          )}
+                          {(company.serviceTypes ?? []).length === 0 && (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>{company.city}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{format(new Date(company.createdAt), "MMM d, yyyy")}</TableCell>
