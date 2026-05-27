@@ -17,7 +17,7 @@ description: How Clerk is wired into the ImmoVia Express+React stack; pitfalls a
 
 **clerkClient is an object, not a function** — `import { clerkClient as clerk } from "@clerk/express"` then `clerk.users.getUser(id)`. Do NOT call it as `clerkClient()`.
 
-**Admin auth** — express-session kept only for admin dashboard (`requireAdmin` checks `req.session.adminAuthenticated`). Clerk covers all end-user routes.
+**Admin auth** — `requireAdmin` middleware now uses Clerk JWT + DB role check (`getAuth(req)` → query usersTable by clerkUserId → role === "admin"). The old hardcoded session-based admin login (username/password) is removed. The frontend `admin.tsx` uses `useUser()` + `useAuth()`: if not signed into Clerk → redirect to `/sign-in`; if signed in but role !== "admin" → "Access Denied" page; if role === "admin" → AdminShell. Logout calls `auth.logout()` (Clerk signOut).
 
 ## Tailwind v4 + Clerk layers
 

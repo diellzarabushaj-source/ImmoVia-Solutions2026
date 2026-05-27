@@ -13,7 +13,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Loader2, Search, CheckCircle2, Users, MoreHorizontal, ShieldCheck, ShieldOff, Trash2, RefreshCw } from "lucide-react";
+import { Loader2, Search, CheckCircle2, MoreHorizontal, ShieldCheck, ShieldOff, Trash2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -35,9 +35,9 @@ function RoleBadge({ role }: { role: string }) {
     case "admin":
       return <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs">Admin</Badge>;
     case "service_provider":
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Provider</Badge>;
+      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Service Provider</Badge>;
     default:
-      return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200 text-xs">Client</Badge>;
+      return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200 text-xs">Project Poster</Badge>;
   }
 }
 
@@ -103,8 +103,8 @@ export function AdminUsers() {
 
   const stats = {
     total: users.length,
-    clients: users.filter((u) => u.role === "client" || u.role === "homeowner").length,
-    providers: users.filter((u) => u.role === "service_provider").length,
+    projectPosters: users.filter((u) => u.role === "client" || u.role === "homeowner" || u.role === "project_poster").length,
+    serviceProviders: users.filter((u) => u.role === "service_provider").length,
     verified: users.filter((u) => u.verified).length,
   };
 
@@ -118,8 +118,8 @@ export function AdminUsers() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: "Total Users", value: stats.total },
-          { label: "Clients", value: stats.clients },
-          { label: "Providers", value: stats.providers },
+          { label: "Project Posters", value: stats.projectPosters },
+          { label: "Service Providers", value: stats.serviceProviders },
           { label: "Verified", value: stats.verified },
         ].map((s) => (
           <Card key={s.label} className="p-4 border border-gray-200 shadow-sm">
@@ -135,12 +135,11 @@ export function AdminUsers() {
           <Input className="pl-9" placeholder="Search name, email, city…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All roles</SelectItem>
-            <SelectItem value="client">Clients</SelectItem>
-            <SelectItem value="homeowner">Homeowners</SelectItem>
-            <SelectItem value="service_provider">Providers</SelectItem>
+            <SelectItem value="all">All account types</SelectItem>
+            <SelectItem value="client">Project Posters</SelectItem>
+            <SelectItem value="service_provider">Service Providers</SelectItem>
             <SelectItem value="admin">Admins</SelectItem>
           </SelectContent>
         </Select>
@@ -162,7 +161,7 @@ export function AdminUsers() {
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="text-xs font-semibold text-gray-600">User</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Role</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Account Type</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">City</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Joined</TableHead>
@@ -177,46 +176,47 @@ export function AdminUsers() {
               <TableRow key={u.id} className="hover:bg-gray-50">
                 <TableCell>
                   <div className="font-medium text-sm">{u.fullName}</div>
-                  <div className="text-xs text-gray-500">{u.email}</div>
+                  <div className="text-xs text-gray-400">{u.email}</div>
                 </TableCell>
-                <TableCell>
-                  <RoleBadge role={u.role} />
-                  {u.providerType && <div className="text-xs text-gray-400 mt-0.5 capitalize">{u.providerType.replace("_", " ")}</div>}
-                </TableCell>
+                <TableCell><RoleBadge role={u.role} /></TableCell>
                 <TableCell className="text-sm text-gray-600">{u.city ?? "—"}</TableCell>
                 <TableCell>
-                  {u.verified
-                    ? <span className="inline-flex items-center gap-1 text-xs text-green-700"><CheckCircle2 className="h-3.5 w-3.5" />Verified</span>
-                    : <span className="text-xs text-gray-400">Unverified</span>}
+                  <StatusBadge status={u.verified ? "verified" : "unverified"} />
                 </TableCell>
-                <TableCell className="text-xs text-gray-500">{format(new Date(u.createdAt), "MMM d, yyyy")}</TableCell>
+                <TableCell className="text-xs text-gray-400">
+                  {format(new Date(u.createdAt), "MMM d, yyyy")}
+                </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuLabel className="text-xs text-gray-500">Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
                       {!u.verified && (
-                        <DropdownMenuItem onClick={() => requestAction(u, "approve")}>
-                          <ShieldCheck className="mr-2 h-4 w-4 text-green-600" /> Approve
+                        <DropdownMenuItem onClick={() => requestAction(u, "approve")} className="text-sm">
+                          <ShieldCheck className="h-3.5 w-3.5 mr-2 text-green-600" /> Approve
                         </DropdownMenuItem>
                       )}
                       {u.verified && (
-                        <DropdownMenuItem onClick={() => requestAction(u, "suspend")}>
-                          <ShieldOff className="mr-2 h-4 w-4 text-amber-600" /> Suspend
+                        <DropdownMenuItem onClick={() => requestAction(u, "suspend")} className="text-sm">
+                          <ShieldOff className="h-3.5 w-3.5 mr-2 text-yellow-600" /> Suspend
                         </DropdownMenuItem>
                       )}
                       {!u.verified && (
-                        <DropdownMenuItem onClick={() => requestAction(u, "reactivate")}>
-                          <RefreshCw className="mr-2 h-4 w-4 text-blue-600" /> Reactivate
+                        <DropdownMenuItem onClick={() => requestAction(u, "reactivate")} className="text-sm">
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-2 text-blue-600" /> Reactivate
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600" onClick={() => requestAction(u, "delete")}>
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      <DropdownMenuItem
+                        onClick={() => requestAction(u, "delete")}
+                        className="text-sm text-red-600 focus:text-red-600"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -224,23 +224,21 @@ export function AdminUsers() {
               </TableRow>
             ))}
             {!loading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">No users found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">No users match your search.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
       </Card>
 
-      {confirm && (
-        <ConfirmDialog
-          open={true}
-          title={confirm.label}
-          description={confirm.description}
-          confirmLabel={acting ? "Processing…" : confirm.label}
-          variant={confirm.action === "delete" ? "destructive" : "default"}
-          onConfirm={performAction}
-          onCancel={() => setConfirm(null)}
-        />
-      )}
+      <ConfirmDialog
+        open={confirm !== null}
+        title={confirm?.label ?? ""}
+        description={confirm?.description ?? ""}
+        confirmLabel={confirm?.action === "delete" ? "Delete" : "Confirm"}
+        variant={confirm?.action === "delete" ? "destructive" : "default"}
+        onConfirm={() => { void performAction(); }}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   );
 }
