@@ -192,24 +192,36 @@ function CompanyDrawer({ company, onClose, onAction }: { company: Company; onClo
             </div>
           </div>
 
-          <div className="pt-4 border-t space-y-2">
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">Actions</p>
+          <div className="pt-4 border-t space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Set status →</p>
+              {company.status === "approved" && (
+                <a
+                  href={`/companies/${company.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs text-blue-600 hover:underline font-medium"
+                >
+                  <ExternalLink className="h-3 w-3" /> View public profile
+                </a>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50"
                 onClick={() => { onAction(company.id, "approved"); onClose(); }}>
-                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Approve
+                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> approved
               </Button>
               <Button size="sm" variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50"
                 onClick={() => { onAction(company.id, "suspended"); onClose(); }}>
-                <PauseCircle className="mr-1.5 h-3.5 w-3.5" /> Suspend
+                <PauseCircle className="mr-1.5 h-3.5 w-3.5" /> suspended
               </Button>
               <Button size="sm" variant="outline" className="border-yellow-200 text-yellow-700 hover:bg-yellow-50"
                 onClick={() => { onAction(company.id, "pending"); onClose(); }}>
-                <Clock className="mr-1.5 h-3.5 w-3.5" /> Set Pending
+                <Clock className="mr-1.5 h-3.5 w-3.5" /> pending
               </Button>
               <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50"
                 onClick={() => { onAction(company.id, "rejected"); onClose(); }}>
-                <XCircle className="mr-1.5 h-3.5 w-3.5" /> Reject
+                <XCircle className="mr-1.5 h-3.5 w-3.5" /> rejected
               </Button>
             </div>
           </div>
@@ -336,17 +348,24 @@ export function AdminCompanies() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem asChild>
+                        <a href={`/companies/${company.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer">
+                          <ExternalLink className="mr-2 h-4 w-4" /> View public profile
+                        </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-xs text-gray-400 font-normal">Set status →</DropdownMenuLabel>
                       <DropdownMenuItem onClick={() => handleAction(company.id, "approved")}>
-                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Approve
+                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> approved
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleAction(company.id, "suspended")}>
-                        <PauseCircle className="mr-2 h-4 w-4 text-orange-500" /> Suspend
+                        <PauseCircle className="mr-2 h-4 w-4 text-orange-500" /> suspended
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleAction(company.id, "pending")}>
-                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> Set Pending
+                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> pending
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleAction(company.id, "rejected")}>
-                        <XCircle className="mr-2 h-4 w-4 text-red-500" /> Reject
+                        <XCircle className="mr-2 h-4 w-4 text-red-500" /> rejected
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(company.id)}>

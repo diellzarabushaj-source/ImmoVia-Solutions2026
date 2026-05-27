@@ -77,13 +77,13 @@ export function AdminPending() {
                     <TableCell className="text-xs text-gray-500">{format(new Date(p.createdAt), "MMM d")}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 h-7 px-2"
+                        <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 h-7 px-2.5 text-xs"
                           onClick={() => updateProject.mutate({ id: p.id, data: { status: "open" } }, { onSuccess: invalidateAll })}>
-                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> open
                         </Button>
-                        <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 h-7 px-2"
+                        <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 h-7 px-2.5 text-xs"
                           onClick={() => updateProject.mutate({ id: p.id, data: { status: "cancelled" } }, { onSuccess: invalidateAll })}>
-                          <XCircle className="h-3.5 w-3.5" />
+                          <XCircle className="h-3.5 w-3.5 mr-1" /> cancelled
                         </Button>
                       </div>
                     </TableCell>
@@ -144,13 +144,13 @@ export function AdminPending() {
                     <TableCell className="text-xs text-gray-500">{format(new Date(c.createdAt), "MMM d")}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 h-7 px-2"
+                        <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 h-7 px-2.5 text-xs"
                           onClick={() => updateCompany.mutate({ id: c.id, data: { status: "approved" } }, { onSuccess: invalidateAll })}>
-                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> approved
                         </Button>
-                        <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 h-7 px-2"
+                        <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 h-7 px-2.5 text-xs"
                           onClick={() => updateCompany.mutate({ id: c.id, data: { status: "rejected" } }, { onSuccess: invalidateAll })}>
-                          <XCircle className="h-3.5 w-3.5" />
+                          <XCircle className="h-3.5 w-3.5 mr-1" /> rejected
                         </Button>
                       </div>
                     </TableCell>

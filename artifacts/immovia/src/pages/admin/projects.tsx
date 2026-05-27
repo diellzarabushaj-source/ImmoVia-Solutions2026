@@ -163,10 +163,11 @@ export function AdminProjects() {
           <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="pending">Pending Review</SelectItem>
-            <SelectItem value="matched">Open / Public</SelectItem>
-            <SelectItem value="cancelled">Rejected</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="pending">pending</SelectItem>
+            <SelectItem value="reviewing">reviewing</SelectItem>
+            <SelectItem value="open">open</SelectItem>
+            <SelectItem value="matched">matched</SelectItem>
+            <SelectItem value="cancelled">cancelled</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -216,18 +217,27 @@ export function AdminProjects() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => setLocation(`/projects/${project.id}`)}>
-                        <Eye className="mr-2 h-4 w-4" /> View Public Page
+                      <DropdownMenuItem asChild>
+                        <a href={`/projects`} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer">
+                          <Eye className="mr-2 h-4 w-4" /> View on /projects
+                        </a>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-xs text-gray-400 font-normal">Set status →</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "open" } }, { onSuccess: invalidate })}>
+                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> open
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "reviewing" } }, { onSuccess: invalidate })}>
+                        <Eye className="mr-2 h-4 w-4 text-blue-500" /> reviewing
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "matched" } }, { onSuccess: invalidate })}>
-                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Approve (Make Public)
+                        <CheckCircle2 className="mr-2 h-4 w-4 text-purple-500" /> matched
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "pending" } }, { onSuccess: invalidate })}>
-                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> Set Pending Review
+                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> pending
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "cancelled" } }, { onSuccess: invalidate })}>
-                        <XCircle className="mr-2 h-4 w-4 text-red-500" /> Reject
+                        <XCircle className="mr-2 h-4 w-4 text-red-500" /> cancelled
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(project.id)}>
