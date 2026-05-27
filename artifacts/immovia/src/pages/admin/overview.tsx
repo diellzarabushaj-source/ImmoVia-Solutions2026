@@ -8,7 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import {
   Hammer, Building2, Clock, CheckCircle2, Users, Globe,
-  FileText, AlertTriangle, XCircle, Loader2, UserCheck, Briefcase
+  FileText, XCircle, Loader2, UserCheck, Briefcase, User
 } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -93,15 +93,27 @@ export function AdminOverview() {
     refetchStats();
   };
 
+  // Cast stats to include new fields
+  const s = stats as (typeof stats & {
+    individualProjectPosters?: number;
+    companyProjectPosters?: number;
+    individualServiceProviders?: number;
+    companyServiceProviders?: number;
+  }) | undefined;
+
   const statCards = [
-    { label: "Total Users", value: stats?.totalUsers ?? 0, icon: Users, color: "text-blue-600" },
-    { label: "Project Posters", value: stats?.projectPosters ?? 0, icon: Briefcase, color: "text-indigo-600" },
-    { label: "Service Providers", value: stats?.serviceProviders ?? 0, icon: UserCheck, color: "text-purple-600" },
-    { label: "Approved Profiles", value: stats?.approvedCompanies ?? 0, icon: CheckCircle2, color: "text-green-600" },
-    { label: "Total Projects", value: stats?.totalProjects ?? 0, icon: Hammer, color: "text-blue-600" },
-    { label: "Open Projects", value: stats?.openProjects ?? 0, icon: Globe, color: "text-emerald-600" },
-    { label: "Pending Review", value: (stats?.pendingProjects ?? 0) + (stats?.pendingCompanies ?? 0), icon: Clock, color: "text-yellow-600" },
-    { label: "Pending Companies", value: stats?.pendingCompanies ?? 0, icon: Building2, color: "text-orange-600" },
+    { label: "Total Users", value: s?.totalUsers ?? 0, icon: Users, color: "text-blue-600", span: false },
+    { label: "Project Posters", value: s?.projectPosters ?? 0, icon: Briefcase, color: "text-indigo-600", span: false },
+    { label: "Individual Project Posters", value: s?.individualProjectPosters ?? 0, icon: User, color: "text-indigo-400", span: false },
+    { label: "Company Project Posters", value: s?.companyProjectPosters ?? 0, icon: Building2, color: "text-indigo-500", span: false },
+    { label: "Service Providers", value: s?.serviceProviders ?? 0, icon: UserCheck, color: "text-purple-600", span: false },
+    { label: "Individual Service Providers", value: s?.individualServiceProviders ?? 0, icon: User, color: "text-purple-400", span: false },
+    { label: "Company Service Providers", value: s?.companyServiceProviders ?? 0, icon: Building2, color: "text-purple-500", span: false },
+    { label: "Approved Profiles", value: s?.approvedCompanies ?? 0, icon: CheckCircle2, color: "text-green-600", span: false },
+    { label: "Total Projects", value: s?.totalProjects ?? 0, icon: Hammer, color: "text-blue-600", span: false },
+    { label: "Open Projects", value: s?.openProjects ?? 0, icon: Globe, color: "text-emerald-600", span: false },
+    { label: "Pending Review", value: (s?.pendingProjects ?? 0) + (s?.pendingCompanies ?? 0), icon: Clock, color: "text-yellow-600", span: false },
+    { label: "Pending Companies", value: s?.pendingCompanies ?? 0, icon: Building2, color: "text-orange-600", span: false },
   ];
 
   return (
@@ -116,8 +128,8 @@ export function AdminOverview() {
         {statCards.map((card) => (
           <Card key={card.label} className="border border-gray-200 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4">
-              <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">{card.label}</CardTitle>
-              <card.icon className={`h-4 w-4 ${card.color}`} />
+              <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-tight">{card.label}</CardTitle>
+              <card.icon className={`h-4 w-4 flex-shrink-0 ${card.color}`} />
             </CardHeader>
             <CardContent className="pb-4 px-4">
               <div className="text-2xl font-bold text-gray-900">
@@ -235,13 +247,13 @@ export function AdminOverview() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-2">
-              {(stats?.projectsByStatus ?? []).map((item) => (
+              {(s?.projectsByStatus ?? []).map((item) => (
                 <div key={item.label} className="flex items-center justify-between">
                   <span className="text-sm capitalize text-gray-600">{item.label}</span>
                   <span className="text-sm font-semibold text-gray-900">{item.count}</span>
                 </div>
               ))}
-              {!stats?.projectsByStatus?.length && (
+              {!s?.projectsByStatus?.length && (
                 <p className="text-sm text-gray-400 py-2">No data yet</p>
               )}
             </div>
@@ -263,7 +275,7 @@ export function AdminOverview() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(stats?.recentActivity ?? []).map((item) => (
+                {(s?.recentActivity ?? []).map((item) => (
                   <TableRow key={`${item.type}-${item.id}`}>
                     <TableCell className="text-sm font-medium">{item.title}</TableCell>
                     <TableCell>
@@ -273,7 +285,7 @@ export function AdminOverview() {
                     <TableCell className="text-xs text-gray-500">{format(new Date(item.createdAt), "MMM d, yyyy")}</TableCell>
                   </TableRow>
                 ))}
-                {!stats?.recentActivity?.length && (
+                {!s?.recentActivity?.length && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-gray-400 py-6">No activity yet</TableCell>
                   </TableRow>

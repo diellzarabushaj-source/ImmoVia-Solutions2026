@@ -23,22 +23,41 @@ interface AdminUser {
   email: string;
   fullName: string;
   role: string;
-  providerType: string | null;
+  accountType: string | null;
+  accountSubtype: string | null;
   city: string | null;
   language: string;
   verified: boolean;
   createdAt: string;
 }
 
-function RoleBadge({ role }: { role: string }) {
-  switch (role) {
-    case "admin":
-      return <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs">Admin</Badge>;
-    case "service_provider":
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Service Provider</Badge>;
-    default:
-      return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200 text-xs">Project Poster</Badge>;
+function accountTypeLabel(accountType: string | null, accountSubtype: string | null): string {
+  const type = accountType === "project_poster" ? "Project Poster"
+    : accountType === "service_provider" ? "Service Provider"
+    : null;
+  const sub = accountSubtype === "individual" ? "Individual"
+    : accountSubtype === "company" ? "Company"
+    : null;
+  if (!type) return "Admin";
+  if (!sub) return type;
+  return `${sub} ${type}`;
+}
+
+function AccountTypeBadge({ accountType, accountSubtype, role }: { accountType: string | null; accountSubtype: string | null; role: string }) {
+  if (role === "admin") {
+    return <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs">Admin</Badge>;
   }
+  if (accountType === "project_poster") {
+    return <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-xs">
+      {accountTypeLabel(accountType, accountSubtype)}
+    </Badge>;
+  }
+  if (accountType === "service_provider") {
+    return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+      {accountTypeLabel(accountType, accountSubtype)}
+    </Badge>;
+  }
+  return <Badge variant="outline" className="text-xs">{accountTypeLabel(accountType, accountSubtype)}</Badge>;
 }
 
 type PendingAction = {
@@ -52,7 +71,8 @@ export function AdminUsers() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
+  const [accountTypeFilter, setAccountTypeFilter] = useState("all");
+  const [accountSubtypeFilter, setAccountSubtypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [confirm, setConfirm] = useState<PendingAction | null>(null);
   const [acting, setActing] = useState(false);
@@ -91,22 +111,26 @@ export function AdminUsers() {
     setConfirm({ userId: u.id, action, label: labels[action].label, description: labels[action].desc });
   };
 
+  const nonAdminUsers = users.filter((u) => u.role !== "admin");
+
+  const stats = {
+    total: nonAdminUsers.length,
+    projectPosters: nonAdminUsers.filter((u) => u.accountType === "project_poster").length,
+    serviceProviders: nonAdminUsers.filter((u) => u.accountType === "service_provider").length,
+    verified: users.filter((u) => u.verified).length,
+  };
+
   const filtered = users.filter((u) => {
     const matchSearch = !search ||
       u.fullName.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase()) ||
       (u.city ?? "").toLowerCase().includes(search.toLowerCase());
-    const matchRole = roleFilter === "all" || u.role === roleFilter;
+    const matchType = accountTypeFilter === "all" ||
+      (accountTypeFilter === "admin" ? u.role === "admin" : u.accountType === accountTypeFilter);
+    const matchSubtype = accountSubtypeFilter === "all" || u.accountSubtype === accountSubtypeFilter;
     const matchStatus = statusFilter === "all" || (statusFilter === "verified" ? u.verified : !u.verified);
-    return matchSearch && matchRole && matchStatus;
+    return matchSearch && matchType && matchSubtype && matchStatus;
   });
-
-  const stats = {
-    total: users.length,
-    projectPosters: users.filter((u) => u.role === "client" || u.role === "homeowner" || u.role === "project_poster").length,
-    serviceProviders: users.filter((u) => u.role === "service_provider").length,
-    verified: users.filter((u) => u.verified).length,
-  };
 
   return (
     <div className="p-8">
@@ -129,22 +153,30 @@ export function AdminUsers() {
         ))}
       </div>
 
-      <div className="flex gap-3 mb-4">
-        <div className="relative flex-1 max-w-xs">
+      <div className="flex gap-3 mb-4 flex-wrap">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input className="pl-9" placeholder="Search name, email, city…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+        <Select value={accountTypeFilter} onValueChange={setAccountTypeFilter}>
+          <SelectTrigger className="w-52"><SelectValue placeholder="Account type" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All account types</SelectItem>
-            <SelectItem value="client">Project Posters</SelectItem>
+            <SelectItem value="project_poster">Project Posters</SelectItem>
             <SelectItem value="service_provider">Service Providers</SelectItem>
             <SelectItem value="admin">Admins</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={accountSubtypeFilter} onValueChange={setAccountSubtypeFilter}>
+          <SelectTrigger className="w-36"><SelectValue placeholder="Subtype" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All subtypes</SelectItem>
+            <SelectItem value="individual">Individual</SelectItem>
+            <SelectItem value="company">Company</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             <SelectItem value="verified">Verified</SelectItem>
@@ -178,7 +210,9 @@ export function AdminUsers() {
                   <div className="font-medium text-sm">{u.fullName}</div>
                   <div className="text-xs text-gray-400">{u.email}</div>
                 </TableCell>
-                <TableCell><RoleBadge role={u.role} /></TableCell>
+                <TableCell>
+                  <AccountTypeBadge accountType={u.accountType} accountSubtype={u.accountSubtype} role={u.role} />
+                </TableCell>
                 <TableCell className="text-sm text-gray-600">{u.city ?? "—"}</TableCell>
                 <TableCell>
                   <StatusBadge status={u.verified ? "verified" : "unverified"} />
@@ -224,7 +258,7 @@ export function AdminUsers() {
               </TableRow>
             ))}
             {!loading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">No users match your search.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">No users match your filters.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>

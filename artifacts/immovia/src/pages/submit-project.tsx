@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
-import { useAuth, normalizeRole } from "@/contexts/AuthContext";
+import { useAuth, isProjectPoster } from "@/contexts/AuthContext";
 import { useCreateProject } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,15 +39,13 @@ export default function SubmitProject() {
 
   const createProject = useCreateProject();
 
-  const role = user ? normalizeRole(user.role) : null;
-
   useEffect(() => {
-    if (!authLoading && user && role !== "client") {
+    if (!authLoading && user && !isProjectPoster(user)) {
       setAuthError(t.auth.mustBeClient);
     } else {
       setAuthError(null);
     }
-  }, [authLoading, user, role, t.auth.mustBeClient]);
+  }, [authLoading, user, t.auth.mustBeClient]);
 
   const [projectPhotos, setProjectPhotos] = useState<string[]>([]);
 

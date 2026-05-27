@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useAuth, normalizeRole } from "@/contexts/AuthContext";
+import { useAuth, isProjectPoster, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import {
   billingApi,
@@ -164,15 +164,13 @@ export default function ClientDashboard() {
     });
   };
 
-  const role = user ? normalizeRole(user.role) : null;
-
   useEffect(() => {
     if (!loading && !user) setLocation("/login");
   }, [loading, user, setLocation]);
 
   useEffect(() => {
     if (!user) return;
-    if (role !== "client") return;
+    if (!isProjectPoster(user)) return;
     void (async () => {
       try {
         const pjs = await billingApi.myProjects();
@@ -202,7 +200,7 @@ export default function ClientDashboard() {
         // ignore
       }
     })();
-  }, [user, role]);
+  }, [user]);
 
   if (loading || !user) {
     return (
@@ -212,8 +210,8 @@ export default function ClientDashboard() {
     );
   }
 
-  if (role !== "client") {
-    setLocation(role === "service_provider" ? "/provider" : "/admin");
+  if (!isProjectPoster(user)) {
+    setLocation(isServiceProvider(user) ? "/provider" : "/admin");
     return null;
   }
 

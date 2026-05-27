@@ -1,0 +1,181 @@
+Standardize the entire marketplace account system with ONE clear structure.
+
+Do not create new role names.
+Do not use client, freelancer, worker, employer, contractor, talent, customer, or job seeker.
+Use only these official names everywhere:
+
+1. Project Poster
+2. Service Provider
+
+Each has 2 subtypes:
+
+Project Poster:
+- Individual Project Poster
+- Company Project Poster
+
+Service Provider:
+- Individual Service Provider
+- Company Service Provider
+
+DATABASE VALUES MUST BE:
+
+role:
+- admin
+- user
+
+account_type:
+- project_poster
+- service_provider
+
+account_subtype:
+- individual
+- company
+
+Admin is only role = admin.
+Admin is NOT an account_type.
+
+Do not create 4 separate main roles.
+Do not create values like individual_project_poster or company_service_provider.
+The correct logic is always:
+account_type + account_subtype.
+
+Examples:
+account_type = project_poster + account_subtype = individual = Individual Project Poster
+account_type = project_poster + account_subtype = company = Company Project Poster
+account_type = service_provider + account_subtype = individual = Individual Service Provider
+account_type = service_provider + account_subtype = company = Company Service Provider
+
+USER-FRIENDLY UI:
+
+The official names must stay visible, but make the wording easy for users.
+
+Onboarding must have 2 steps only.
+
+STEP 1:
+Question: What do you want to do?
+
+Option 1:
+Title: I need work done
+Official label: Project Poster
+Description: Post a project and receive applications from individuals or companies.
+Set account_type = project_poster
+
+Option 2:
+Title: I want to offer my services
+Official label: Service Provider
+Description: Create your profile, browse projects, and apply for work.
+Set account_type = service_provider
+
+STEP 2:
+Question: Are you registering as an individual or a company?
+
+Option 1:
+Title: Individual
+Set account_subtype = individual
+
+Option 2:
+Title: Company
+Set account_subtype = company
+
+After selection, show the final account type:
+- Individual Project Poster
+- Company Project Poster
+- Individual Service Provider
+- Company Service Provider
+
+MAIN PAGE:
+
+Create two clear sections/cards:
+
+Card 1:
+Title: Need work done?
+Official label: Project Poster
+Description: Post a project and find individuals or companies who can help.
+Button: Post a project
+
+Card 2:
+Title: Offer your services?
+Official label: Service Provider
+Description: Create your profile, browse open projects, and apply for work.
+Button: Find projects
+
+PERMISSIONS:
+
+Only Project Posters can create projects.
+Only Service Providers can apply to projects.
+
+Rules:
+if account_type = project_poster, user can create projects.
+if account_type = service_provider, user can apply to open projects.
+
+PROJECT STATUS:
+- draft
+- pending_review
+- open
+- in_progress
+- completed
+- cancelled
+- rejected
+
+New projects must become pending_review.
+Admin must approve them before they become public.
+Only open projects are public.
+
+PROFILE STATUS:
+- draft
+- pending_review
+- approved
+- rejected
+- suspended
+
+Only approved profiles are public.
+
+ADMIN DASHBOARD:
+
+Use the same names everywhere:
+- Project Posters
+- Service Providers
+- Individual Project Posters
+- Company Project Posters
+- Individual Service Providers
+- Company Service Providers
+
+Admin sidebar:
+- Overview
+- Project Posters
+- Service Providers
+- Projects
+- Applications
+- Pending Reviews
+- Categories
+- Settings
+
+Admin must be able to:
+- view users
+- filter by account_type
+- filter by account_subtype
+- approve profiles
+- reject profiles
+- suspend profiles
+- approve projects
+- reject projects
+- manage pending reviews
+
+PUBLIC VISIBILITY:
+
+Show only:
+- approved profiles
+- open projects
+
+Hide:
+- draft
+- pending_review
+- rejected
+- suspended
+
+IMPORTANT:
+Before changing code, inspect the current app and replace inconsistent naming with this structure.
+Do not delete existing functionality.
+Do not redesign the whole website.
+Do not change the database structure unnecessarily.
+Focus on making the account system consistent, simple, and user-friendly.

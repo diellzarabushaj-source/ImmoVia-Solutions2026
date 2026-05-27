@@ -1,0 +1,274 @@
+Standardize the entire marketplace account system with ONE clear structure.
+
+Do not create new role names.
+Do not use client, freelancer, worker, employer, contractor, talent, customer, or job seeker.
+Use only these official names everywhere:
+
+1. Project Poster
+2. Service Provider
+
+Each has 2 subtypes:
+
+Project Poster:
+- Individual Project Poster
+- Company Project Poster
+
+Service Provider:
+- Individual Service Provider
+- Company Service Provider
+
+DATABASE VALUES MUST BE:
+
+role:
+- admin
+- user
+
+account_type:
+- project_poster
+- service_provider
+
+account_subtype:
+- individual
+- company
+
+Admin is only role = admin.
+Admin is NOT an account_type.
+Admin must use and manage the same account_type and account_subtype structure as the public app.
+
+Do not create 4 separate main roles.
+Do not create values like individual_project_poster or company_service_provider.
+The correct logic is always:
+account_type + account_subtype.
+
+Examples:
+account_type = project_poster + account_subtype = individual = Individual Project Poster
+account_type = project_poster + account_subtype = company = Company Project Poster
+account_type = service_provider + account_subtype = individual = Individual Service Provider
+account_type = service_provider + account_subtype = company = Company Service Provider
+
+USER-FRIENDLY UI:
+
+The official names must stay visible, but make the wording easy for users.
+
+Onboarding must have 2 steps only.
+
+STEP 1:
+Question: What do you want to do?
+
+Option 1:
+Title: I need work done
+Official label: Project Poster
+Description: Post a project and receive applications from individuals or companies.
+Set account_type = project_poster
+
+Option 2:
+Title: I want to offer my services
+Official label: Service Provider
+Description: Create your profile, browse projects, and apply for work.
+Set account_type = service_provider
+
+STEP 2:
+Question: Are you registering as an individual or a company?
+
+Option 1:
+Title: Individual
+Set account_subtype = individual
+
+Option 2:
+Title: Company
+Set account_subtype = company
+
+After selection, show the final account type:
+- Individual Project Poster
+- Company Project Poster
+- Individual Service Provider
+- Company Service Provider
+
+MAIN PAGE:
+
+Create two clear sections/cards:
+
+Card 1:
+Title: Need work done?
+Official label: Project Poster
+Description: Post a project and find individuals or companies who can help.
+Button: Post a project
+
+Card 2:
+Title: Offer your services?
+Official label: Service Provider
+Description: Create your profile, browse open projects, and apply for work.
+Button: Find projects
+
+PERMISSIONS:
+
+Only Project Posters can create projects.
+Only Service Providers can apply to projects.
+
+Rules:
+if account_type = project_poster, user can create projects.
+if account_type = service_provider, user can apply to open projects.
+
+PROJECT STATUS:
+- draft
+- pending_review
+- open
+- in_progress
+- completed
+- cancelled
+- rejected
+
+New projects must become pending_review.
+Admin must approve them before they become public.
+Only open projects are public.
+
+PROFILE STATUS:
+- draft
+- pending_review
+- approved
+- rejected
+- suspended
+
+Only approved profiles are public.
+
+ADMIN DASHBOARD MUST BE FULLY SYNCHRONIZED WITH THIS STRUCTURE:
+
+The admin dashboard must use the exact same terminology, database fields, filters, permissions, and status logic as the public app.
+
+Admin dashboard must NOT use different names such as clients, freelancers, workers, employers, contractors, customers, or providers.
+
+Use only:
+- Project Posters
+- Service Providers
+- Individual Project Posters
+- Company Project Posters
+- Individual Service Providers
+- Company Service Providers
+
+Admin sidebar:
+- Overview
+- Project Posters
+- Service Providers
+- Projects
+- Applications
+- Pending Reviews
+- Categories
+- Settings
+
+Admin overview cards:
+- Total Project Posters
+- Individual Project Posters
+- Company Project Posters
+- Total Service Providers
+- Individual Service Providers
+- Company Service Providers
+- Pending Profiles
+- Approved Profiles
+- Rejected Profiles
+- Suspended Profiles
+- Pending Projects
+- Open Projects
+- Applications
+
+Admin filters must use only:
+
+account_type:
+- Project Poster
+- Service Provider
+
+account_subtype:
+- Individual
+- Company
+
+status:
+- draft
+- pending_review
+- approved
+- rejected
+- suspended
+- open
+- in_progress
+- completed
+- cancelled
+
+Admin must be able to:
+- view all users
+- view Project Posters
+- view Service Providers
+- filter by account_type
+- filter by account_subtype
+- filter by status
+- approve profiles
+- reject profiles
+- suspend profiles
+- reactivate profiles
+- approve projects
+- reject projects
+- manage pending reviews
+- view applications
+- manage categories
+
+ADMIN PERMISSION RULES:
+
+Only users with role = admin can access /admin.
+
+Admin can manage users, profiles, projects, applications, categories, and pending reviews.
+
+Admin must not be treated as a Project Poster or Service Provider unless the admin also has a normal user account separately.
+
+Admin actions must update the same fields used by the public app:
+- role
+- account_type
+- account_subtype
+- status
+
+There must not be separate admin-only status fields that conflict with public visibility.
+
+PUBLIC VISIBILITY:
+
+Show only:
+- approved profiles
+- open projects
+
+Hide:
+- draft
+- pending_review
+- rejected
+- suspended
+
+SYNC RULES:
+
+If admin approves a profile:
+profile status becomes approved
+profile becomes public
+
+If admin rejects a profile:
+profile status becomes rejected
+profile stays hidden
+
+If admin suspends a profile:
+profile status becomes suspended
+profile stays hidden
+
+If admin approves a project:
+project status becomes open
+project becomes public
+
+If admin rejects a project:
+project status becomes rejected
+project stays hidden
+
+If a Project Poster creates a new project:
+project status becomes pending_review
+project stays hidden until admin approval
+
+If a user creates or updates a profile:
+profile status becomes pending_review
+profile stays hidden until admin approval
+
+IMPORTANT:
+Before changing code, inspect the current app and replace inconsistent naming with this structure.
+Do not delete existing functionality.
+Do not redesign the whole website.
+Do not change the database structure unnecessarily.
+Focus on making the account system consistent, simple, user-friendly, and fully synchronized between public pages, user dashboards, and admin dashboard.

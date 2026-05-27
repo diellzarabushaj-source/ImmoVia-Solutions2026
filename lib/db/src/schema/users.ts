@@ -5,9 +5,13 @@ export const usersTable = pgTable("users", {
   clerkUserId: text("clerk_user_id").unique(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull().default(""),
-  // role: client | service_provider | admin
+  // role: user | admin
   role: text("role").notNull(),
-  // For service_provider only: individual | small_team | company
+  // account_type: project_poster | service_provider (null for admin)
+  accountType: text("account_type"),
+  // account_subtype: individual | company (null for admin)
+  accountSubtype: text("account_subtype"),
+  // Legacy field kept for backward compatibility
   providerType: text("provider_type"),
   fullName: text("full_name").notNull(),
   slug: text("slug").unique(),

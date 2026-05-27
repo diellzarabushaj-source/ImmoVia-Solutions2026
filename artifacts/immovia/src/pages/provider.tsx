@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useAuth, normalizeRole } from "@/contexts/AuthContext";
+import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import {
   billingApi,
@@ -82,13 +82,11 @@ export default function ProviderDashboard() {
     });
   };
 
-  const role = user ? normalizeRole(user.role) : null;
-
   useEffect(() => {
-    if (!loading && (!user || role !== "service_provider")) {
+    if (!loading && (!user || !isServiceProvider(user))) {
       setLocation("/login");
     }
-  }, [loading, user, role, setLocation]);
+  }, [loading, user, setLocation]);
 
   const refreshAll = async () => {
     try {
@@ -114,10 +112,10 @@ export default function ProviderDashboard() {
   };
 
   useEffect(() => {
-    if (user && role === "service_provider") void refreshAll();
-  }, [user, role]);
+    if (user && isServiceProvider(user)) void refreshAll();
+  }, [user]);
 
-  if (loading || !user || role !== "service_provider") {
+  if (loading || !user || !isServiceProvider(user)) {
     return (
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

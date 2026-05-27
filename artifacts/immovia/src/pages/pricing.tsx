@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useAuth, normalizeRole } from "@/contexts/AuthContext";
+import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import {
@@ -44,8 +44,7 @@ export default function Pricing() {
     void billingApi.packs().then(setPacks).catch(() => setPacks([]));
   }, []);
 
-  const normalizedRole = user ? normalizeRole(user.role) : null;
-  const isProvider = normalizedRole === "service_provider";
+  const isProvider = isServiceProvider(user);
 
   const handlePlanCta = (plan: SubscriptionPlan) => {
     setError(null);

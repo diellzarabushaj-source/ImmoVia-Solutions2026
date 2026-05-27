@@ -12,6 +12,8 @@ router.get("/admin/users", requireAdmin, async (_req, res): Promise<void> => {
       email: usersTable.email,
       fullName: usersTable.fullName,
       role: usersTable.role,
+      accountType: usersTable.accountType,
+      accountSubtype: usersTable.accountSubtype,
       providerType: usersTable.providerType,
       city: usersTable.city,
       language: usersTable.language,

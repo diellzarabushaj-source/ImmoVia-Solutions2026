@@ -1,19 +1,38 @@
 import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from "react";
 import { useUser, useClerk } from "@clerk/react";
 
-export type UserRole = "client" | "service_provider" | "admin" | "homeowner" | "contractor";
+export type UserRole = "user" | "admin" | "client" | "service_provider" | "homeowner" | "contractor";
+export type AccountType = "project_poster" | "service_provider";
+export type AccountSubtype = "individual" | "company";
 export type ProviderType = "individual" | "small_team" | "company";
 
 export function normalizeRole(role: UserRole): "client" | "service_provider" | "admin" {
   if (role === "homeowner" || role === "client") return "client";
   if (role === "admin") return "admin";
+  if (role === "user") return "client"; // user without account_type defaults to client
   return "service_provider";
+}
+
+export function isProjectPoster(user: AuthUser | null): boolean {
+  if (!user) return false;
+  if (user.accountType === "project_poster") return true;
+  // Legacy fallback
+  return user.role === "client" || user.role === "homeowner";
+}
+
+export function isServiceProvider(user: AuthUser | null): boolean {
+  if (!user) return false;
+  if (user.accountType === "service_provider") return true;
+  // Legacy fallback
+  return user.role === "service_provider" || user.role === "contractor";
 }
 
 export interface AuthUser {
   id: number;
   email: string;
   role: UserRole;
+  accountType?: AccountType | null;
+  accountSubtype?: AccountSubtype | null;
   providerType?: ProviderType | null;
   fullName: string;
   slug: string | null;
@@ -32,9 +51,11 @@ export interface AuthUser {
 }
 
 export interface SignupData {
-  email: string;
-  password: string;
-  role: UserRole;
+  email?: string;
+  password?: string;
+  role?: UserRole;
+  accountType?: AccountType;
+  accountSubtype?: AccountSubtype;
   providerType?: ProviderType;
   fullName?: string;
   phone?: string;
@@ -165,6 +186,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (data: SignupData) => {
     setPendingSignup({
+      accountType: data.accountType,
+      accountSubtype: data.accountSubtype,
       role: data.role,
       providerType: data.providerType,
       fullName: data.fullName,

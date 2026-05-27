@@ -1,17 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useUser } from "@clerk/react";
-import { setPendingSignup, type ProviderType } from "@/contexts/AuthContext";
+import { setPendingSignup } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import { Button } from "@/components/ui/button";
-import { Home, Building2, User, Users } from "lucide-react";
+import { Briefcase, User, Building2, ChevronLeft } from "lucide-react";
+
+type AccountType = "project_poster" | "service_provider";
+type AccountSubtype = "individual" | "company";
 
 export default function Signup() {
   const { isSignedIn, isLoaded } = useUser();
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const [, setLocation] = useLocation();
-  const [role, setRole] = useState<"client" | "service_provider" | null>(null);
-  const [providerType, setProviderType] = useState<ProviderType>("individual");
+  const [accountType, setAccountType] = useState<AccountType | null>(null);
+  const [step, setStep] = useState<1 | 2>(1);
 
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -20,139 +23,134 @@ export default function Signup() {
     if (isSignedIn) setLocation("/dashboard");
   }, [isLoaded, isSignedIn]);
 
-  const handleRoleSelect = (selectedRole: "client" | "service_provider") => {
-    if (selectedRole === "client") {
-      setPendingSignup({ role: selectedRole, language });
-      window.location.href = `${basePath}/sign-up`;
-    } else {
-      setRole(selectedRole);
-    }
+  const handleAccountTypeSelect = (type: AccountType) => {
+    setAccountType(type);
+    setStep(2);
   };
 
-  const handleProviderContinue = () => {
-    setPendingSignup({ role: "service_provider", providerType, language });
+  const handleSubtypeSelect = (subtype: AccountSubtype) => {
+    setPendingSignup({ accountType: accountType!, accountSubtype: subtype, language });
     window.location.href = `${basePath}/sign-up`;
   };
 
-  // Role selection screen
-  if (!role) {
+  const accountTypeLabel = (type: AccountType) =>
+    type === "project_poster" ? "Project Poster" : "Service Provider";
+
+  const subtypeLabel = (sub: AccountSubtype) =>
+    sub === "individual" ? "Individual" : "Company";
+
+  const fullLabel = (type: AccountType, sub: AccountSubtype) =>
+    `${sub === "individual" ? "Individual" : "Company"} ${type === "project_poster" ? "Project Poster" : "Service Provider"}`;
+
+  // ── Step 1: Account type ───────────────────────────────────────────────────
+  if (step === 1) {
     return (
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <div className="text-center mb-10">
           <div className="flex justify-center mb-5">
-            <img
-              src="/logo-color.png"
-              alt="ImmoVia"
-              className="h-16 md:h-20 w-auto object-contain"
-              decoding="async"
-            />
+            <img src="/logo-color.png" alt="ImmoVia" className="h-16 md:h-20 w-auto object-contain" decoding="async" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-serif font-bold mb-3">{t.auth.signupTitle}</h1>
-          <p className="text-muted-foreground">{t.auth.chooseRole}</p>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold mb-3">Create an Account</h1>
+          <p className="text-muted-foreground">What do you want to do?</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Project Poster */}
           <button
             type="button"
-            onClick={() => handleRoleSelect("client")}
+            onClick={() => handleAccountTypeSelect("project_poster")}
             className="text-left p-8 rounded-xl border-2 border-border hover:border-primary transition-all bg-card hover:shadow-lg group"
             data-testid="role-client"
           >
             <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-              <Home className="w-6 h-6 text-primary" />
+              <Briefcase className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="text-xl font-bold mb-2">{t.auth.roleHomeowner}</h3>
-            <p className="text-sm text-muted-foreground">{t.auth.roleHomeownerDesc}</p>
+            <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Project Poster</div>
+            <h3 className="text-xl font-bold mb-2">I need work done</h3>
+            <p className="text-sm text-muted-foreground">Post a project and receive applications from individuals or companies.</p>
           </button>
+
+          {/* Service Provider */}
           <button
             type="button"
-            onClick={() => setRole("service_provider")}
+            onClick={() => handleAccountTypeSelect("service_provider")}
             className="text-left p-8 rounded-xl border-2 border-border hover:border-primary transition-all bg-card hover:shadow-lg group"
             data-testid="role-provider"
           >
             <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
               <Building2 className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="text-xl font-bold mb-2">{t.auth.roleContractor}</h3>
-            <p className="text-sm text-muted-foreground">{t.auth.roleContractorDesc}</p>
+            <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Service Provider</div>
+            <h3 className="text-xl font-bold mb-2">I want to offer my services</h3>
+            <p className="text-sm text-muted-foreground">Create your profile, browse open projects, and apply for work.</p>
           </button>
         </div>
-        <p className="text-center text-sm text-muted-foreground mt-8">
-          {t.auth.haveAccount}{" "}
-          <Link href="/login" className="text-primary font-semibold hover:underline">
-            {t.auth.loginLink}
-          </Link>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/login" className="text-primary font-semibold hover:underline">Sign in</Link>
         </p>
       </div>
     );
   }
 
-  // Provider type selection screen
+  // ── Step 2: Individual or Company ──────────────────────────────────────────
   return (
     <div className="container mx-auto px-4 py-16 max-w-xl">
       <div className="text-center mb-8">
         <div className="flex justify-center mb-5">
-          <img
-            src="/logo-color.png"
-            alt="ImmoVia"
-            className="h-16 md:h-20 w-auto object-contain"
-            decoding="async"
-          />
+          <img src="/logo-color.png" alt="ImmoVia" className="h-16 md:h-20 w-auto object-contain" decoding="async" />
         </div>
-        <h1 className="text-3xl font-serif font-bold mb-2">{t.auth.signupContractor}</h1>
+        <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
+          {accountTypeLabel(accountType!)}
+        </div>
+        <h1 className="text-3xl font-serif font-bold mb-2">Are you an individual or a company?</h1>
         <button
           type="button"
-          onClick={() => setRole(null)}
-          className="text-sm text-muted-foreground hover:text-primary"
+          onClick={() => setStep(1)}
+          className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 mx-auto"
         >
-          &larr; {t.auth.changeRole}
+          <ChevronLeft className="w-4 h-4" /> Back
         </button>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-6 md:p-8 space-y-6">
-        <div>
-          <p className="font-medium text-foreground mb-3">{t.auth.providerType}</p>
-          <div className="grid grid-cols-3 gap-2">
-            {(["individual", "small_team", "company"] as ProviderType[]).map((pt) => (
-              <button
-                key={pt}
-                type="button"
-                onClick={() => setProviderType(pt)}
-                className={`p-3 rounded-lg border-2 text-left transition ${
-                  providerType === pt ? "border-primary bg-primary/5" : "border-border"
-                }`}
-                data-testid={`provider-type-${pt}`}
-              >
-                <div className="flex items-center gap-1 mb-1">
-                  {pt === "individual" && <User className="w-4 h-4 text-primary" />}
-                  {pt === "small_team" && <Users className="w-4 h-4 text-primary" />}
-                  {pt === "company" && <Building2 className="w-4 h-4 text-primary" />}
+      <div className="grid grid-cols-1 gap-4 mb-6">
+        {(["individual", "company"] as AccountSubtype[]).map((sub) => (
+          <button
+            key={sub}
+            type="button"
+            onClick={() => handleSubtypeSelect(sub)}
+            className="text-left p-6 rounded-xl border-2 border-border hover:border-primary transition-all bg-card hover:shadow-lg group"
+            data-testid={`subtype-${sub}`}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                {sub === "individual"
+                  ? <User className="w-5 h-5 text-primary" />
+                  : <Building2 className="w-5 h-5 text-primary" />
+                }
+              </div>
+              <div>
+                <div className="text-xs text-primary font-semibold uppercase tracking-wide">
+                  {fullLabel(accountType!, sub)}
                 </div>
-                <div className="text-xs font-semibold">
-                  {pt === "individual" && t.auth.providerTypeIndividual}
-                  {pt === "small_team" && t.auth.providerTypeSmallTeam}
-                  {pt === "company" && t.auth.providerTypeCompany}
+                <div className="font-bold text-lg">{subtypeLabel(sub)}</div>
+                <div className="text-sm text-muted-foreground">
+                  {sub === "individual"
+                    ? "Registering as a single person"
+                    : "Registering as a business or organization"
+                  }
                 </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          className="w-full"
-          onClick={handleProviderContinue}
-          data-testid="button-signup"
-        >
-          {t.auth.createAccount}
-        </Button>
-
-        <p className="text-center text-sm text-muted-foreground">
-          {t.auth.haveAccount}{" "}
-          <Link href="/login" className="text-primary font-semibold hover:underline">
-            {t.auth.loginLink}
-          </Link>
-        </p>
+              </div>
+            </div>
+          </button>
+        ))}
       </div>
+
+      <p className="text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link href="/login" className="text-primary font-semibold hover:underline">Sign in</Link>
+      </p>
     </div>
   );
 }
