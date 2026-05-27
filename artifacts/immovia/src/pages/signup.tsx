@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useUser } from "@clerk/react";
 import { setPendingSignup } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
@@ -13,6 +13,7 @@ export default function Signup() {
   const { isSignedIn, isLoaded } = useUser();
   const { language } = useLanguage();
   const [, setLocation] = useLocation();
+  const search = useSearch();
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [step, setStep] = useState<1 | 2>(1);
 
@@ -22,6 +23,15 @@ export default function Signup() {
     if (!isLoaded) return;
     if (isSignedIn) setLocation("/dashboard");
   }, [isLoaded, isSignedIn]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const preselected = params.get("account_type") as AccountType | null;
+    if (preselected === "project_poster" || preselected === "service_provider") {
+      setAccountType(preselected);
+      setStep(2);
+    }
+  }, []);
 
   const handleAccountTypeSelect = (type: AccountType) => {
     setAccountType(type);

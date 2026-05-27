@@ -22,19 +22,12 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-  const generalLinks = [
+  const navLinks = [
     { href: "/", label: t.nav.home },
-    { href: "/companies", label: t.nav.companies },
+    { href: "/companies", label: t.nav.browseServiceProviders },
     { href: "/pricing", label: t.nav.pricing },
     { href: "/contact", label: t.nav.contact },
   ];
-
-  const actionLinks = [
-    { href: "/submit-project", label: t.nav.submitProject },
-    { href: "/register-company", label: t.nav.registerCompany },
-  ];
-
-  const navLinks = [...generalLinks, ...actionLinks];
 
   const langOptions = [
     { code: 'en' as const, label: 'English', flag: 'EN' },
@@ -66,7 +59,7 @@ export function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-0.5">
-          {generalLinks.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -81,7 +74,7 @@ export function Navbar() {
 
           <div className="w-px h-5 bg-border mx-2 shrink-0" />
 
-          <Link href="/submit-project" data-testid="nav-submit-project">
+          <Link href="/signup?account_type=project_poster" data-testid="nav-submit-project">
             <Button
               size="sm"
               className={`text-sm ${location === "/submit-project" ? "opacity-90" : ""}`}
@@ -90,7 +83,7 @@ export function Navbar() {
             </Button>
           </Link>
 
-          <Link href="/register-company" data-testid="nav-register-company">
+          <Link href="/signup?account_type=service_provider" data-testid="nav-register-company">
             <Button
               variant="outline"
               size="sm"
@@ -203,6 +196,12 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              <Link href="/signup?account_type=project_poster" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                {t.nav.submitProject}
+              </Link>
+              <Link href="/signup?account_type=service_provider" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                {t.nav.registerCompany}
+              </Link>
               <div className="border-t border-border mt-2 pt-2 flex flex-col gap-1">
                 {user ? (
                   <>

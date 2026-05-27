@@ -1,0 +1,152 @@
+Update the Home page cards so there are exactly 4 clear action cards.
+
+Do not change the database.
+Do not rename variables.
+Do not create new roles.
+Do not change authentication.
+Do not change admin logic.
+Do not redesign the whole website from scratch.
+
+Keep the backend logic exactly:
+
+role = admin/user
+account_type = project_poster/service_provider
+account_subtype = individual/company
+status = approval/visibility state
+
+The Home page must show 4 main action cards:
+
+CARD 1:
+Purpose:
+Browse existing projects
+
+Title:
+Browse Projects
+
+Description:
+View open projects posted by approved Project Posters.
+
+Button:
+View Projects
+
+Route:
+Go to Browse Projects page.
+
+Visibility logic:
+Show only projects where:
+status = open
+
+This card does NOT start signup.
+This card is for browsing only.
+
+CARD 2:
+Purpose:
+Register as Project Poster
+
+Title:
+Post a Project
+
+Official label:
+Project Poster
+
+Description:
+Create an account as a Project Poster and post your project to receive applications from Service Providers.
+
+Button:
+Register as Project Poster
+
+Route:
+Go to signup/onboarding and preselect:
+account_type = project_poster
+
+This card starts registration.
+
+CARD 3:
+Purpose:
+Browse existing Service Providers
+
+Title:
+Browse Service Providers
+
+Description:
+Find approved individuals and companies offering services.
+
+Button:
+View Service Providers
+
+Route:
+Go to Browse Service Providers page.
+
+Visibility logic:
+Show only profiles where:
+account_type = service_provider
+status = approved
+
+This card does NOT start signup.
+This card is for browsing only.
+
+CARD 4:
+Purpose:
+Register as Service Provider
+
+Title:
+Offer Services
+
+Official label:
+Service Provider
+
+Description:
+Create your profile as a Service Provider, browse open projects, and apply for work.
+
+Button:
+Register as Service Provider
+
+Route:
+Go to signup/onboarding and preselect:
+account_type = service_provider
+
+This card starts registration.
+
+IMPORTANT:
+Do not confuse browse actions with registration actions.
+
+Browse Projects = view open projects only.
+Post a Project = register/onboard as project_poster.
+
+Browse Service Providers = view approved service provider profiles only.
+Offer Services = register/onboard as service_provider.
+
+Use these official terms only:
+- Project Poster
+- Service Provider
+- Individual Project Poster
+- Company Project Poster
+- Individual Service Provider
+- Company Service Provider
+
+Do not use:
+client, customer, homeowner, contractor, freelancer, worker, employer, job seeker, talent, professional, pro.
+
+The 4 cards should be clear, user-friendly, and visually consistent with the current design.
+
+Suggested layout:
+Desktop:
+2x2 grid
+
+Mobile:
+single column
+
+Card order:
+1. Browse Projects
+2. Post a Project
+3. Browse Service Providers
+4. Offer Services
+
+Button routing must be correct:
+- View Projects -> browse projects page
+- Register as Project Poster -> signup/onboarding with account_type = project_poster
+- View Service Providers -> browse service providers page
+- Register as Service Provider -> signup/onboarding with account_type = service_provider
+
+Final goal:
+Users must immediately understand the difference between browsing and registering.
