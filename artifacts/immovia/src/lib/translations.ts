@@ -108,6 +108,7 @@ export const translations = {
       results: 'rezultate',
       noResultsFilter: 'Asnjë projekt nuk përputhet me filtrat tuaj.',
       noResultsFilterHint: 'Provoni filtra të ndryshme ose pastroni të gjithë.',
+      noResultsHint: 'Kthehu së shpejti — projekte të reja postohen çdo ditë',
     },
     projectDetail: {
       seoProject: 'Projekt',
@@ -777,6 +778,7 @@ export const translations = {
       results: 'results',
       noResultsFilter: 'No projects match your filters.',
       noResultsFilterHint: 'Try different filters or clear them all.',
+      noResultsHint: 'Check back soon — new projects are posted every day',
     },
     projectDetail: {
       seoProject: 'Project',
@@ -1446,6 +1448,7 @@ export const translations = {
       results: 'Ergebnisse',
       noResultsFilter: 'Keine Projekte entsprechen Ihren Filtern.',
       noResultsFilterHint: 'Versuchen Sie andere Filter oder setzen Sie sie zurück.',
+      noResultsHint: 'Schauen Sie bald wieder vorbei — täglich neue Projekte',
     },
     projectDetail: {
       seoProject: 'Projekt',
@@ -2115,6 +2118,7 @@ export const translations = {
       results: 'résultats',
       noResultsFilter: 'Aucun projet ne correspond à vos filtres.',
       noResultsFilterHint: 'Essayez différents filtres ou effacez-les tous.',
+      noResultsHint: 'Revenez bientôt — de nouveaux projets sont publiés chaque jour',
     },
     projectDetail: {
       seoProject: 'Projet',

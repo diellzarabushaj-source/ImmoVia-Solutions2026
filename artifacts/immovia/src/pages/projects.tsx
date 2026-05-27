@@ -381,7 +381,7 @@ export default function Projects() {
             <p className="text-muted-foreground text-sm mb-6">
               {hasFilters
                 ? (t.listings.noResultsFilterHint ?? "Try adjusting your filters or search terms")
-                : "Check back soon — new projects are posted every day"}
+                : (t.listings.noResultsHint ?? "Check back soon — new projects are posted every day")}
             </p>
             {hasFilters && (
               <Button variant="outline" onClick={clearFilters}>
