@@ -497,44 +497,94 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.browse.title}</h2>
             <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Card 1: Browse Projects (browse only) */}
             <motion.div
-              className="bg-primary/5 border border-primary/20 rounded-2xl p-8 flex flex-col gap-4"
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+              className="bg-muted/40 border border-border rounded-2xl p-8 flex flex-col gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.0 }}
               viewport={{ once: true }}
             >
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <FileText className="w-6 h-6 text-primary" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="text-xl font-bold text-foreground mb-2">{t.browse.projectsTitle}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.projectsDesc}</p>
               </div>
-              <Link href="/">
-                <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/8">
+              <Link href="/#project-listings">
+                <Button variant="outline" className="w-full border-primary/40 text-primary hover:bg-primary/8" data-testid="browse-card-view-projects">
                   {t.browse.projectsCta} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </motion.div>
+
+            {/* Card 2: Post a Project (registration) */}
             <motion.div
-              className="bg-primary/5 border border-primary/20 rounded-2xl p-8 flex flex-col gap-4"
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+              className="bg-primary rounded-2xl p-8 flex flex-col gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                <Briefcase className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">{t.browse.card2Label}</div>
+                <h3 className="text-xl font-bold text-white mb-2">{t.browse.card2Title}</h3>
+                <p className="text-white/75 text-sm leading-relaxed">{t.browse.card2Desc}</p>
+              </div>
+              <Link href="/signup?account_type=project_poster">
+                <Button className="w-full bg-white text-primary hover:bg-white/90 font-semibold" data-testid="browse-card-register-poster">
+                  {t.browse.card2Cta} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+
+            {/* Card 3: Browse Service Providers (browse only) */}
+            <motion.div
+              className="bg-muted/40 border border-border rounded-2xl p-8 flex flex-col gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
             >
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Users className="w-6 h-6 text-primary" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="text-xl font-bold text-foreground mb-2">{t.browse.providersTitle}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.providersDesc}</p>
               </div>
               <Link href="/companies">
-                <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/8">
+                <Button variant="outline" className="w-full border-primary/40 text-primary hover:bg-primary/8" data-testid="browse-card-view-providers">
                   {t.browse.providersCta} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+
+            {/* Card 4: Offer Services (registration) */}
+            <motion.div
+              className="bg-primary rounded-2xl p-8 flex flex-col gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">{t.browse.card4Label}</div>
+                <h3 className="text-xl font-bold text-white mb-2">{t.browse.card4Title}</h3>
+                <p className="text-white/75 text-sm leading-relaxed">{t.browse.card4Desc}</p>
+              </div>
+              <Link href="/signup?account_type=service_provider">
+                <Button className="w-full bg-white text-primary hover:bg-white/90 font-semibold" data-testid="browse-card-register-provider">
+                  {t.browse.card4Cta} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </motion.div>
