@@ -134,6 +134,11 @@ export interface AdminStats {
   pendingProjects: number;
   totalCompanies: number;
   pendingCompanies: number;
+  totalUsers: number;
+  serviceProviders: number;
+  projectPosters: number;
+  approvedCompanies: number;
+  openProjects: number;
   projectsByType: CountByLabel[];
   projectsByStatus: CountByLabel[];
   recentActivity: ActivityItem[];

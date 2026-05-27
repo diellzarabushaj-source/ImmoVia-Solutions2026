@@ -30,22 +30,7 @@ import {
 import { format } from "date-fns";
 import { useLocation } from "wouter";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
-
-function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case "pending":
-    case "reviewing":
-      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Pending Review</Badge>;
-    case "matched":
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Open / Public</Badge>;
-    case "completed":
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Completed</Badge>;
-    case "cancelled":
-      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">Rejected</Badge>;
-    default:
-      return <Badge variant="outline" className="text-xs">{status}</Badge>;
-  }
-}
+import { StatusBadge } from "@/components/admin/StatusBadge";
 
 function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
   const [loading, setLoading] = useState(false);

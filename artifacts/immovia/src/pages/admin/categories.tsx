@@ -12,7 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Loader2, Plus, Pencil, Trash2, Tag, Power } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
@@ -137,6 +137,8 @@ export function AdminCategories() {
   const [editing, setEditing] = useState<Category | null>(null);
   const [seeding, setSeeding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+  const [search, setSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
 
   const load = () => {
     setLoading(true);
@@ -147,6 +149,15 @@ export function AdminCategories() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const filtered = categories.filter((c) => {
+    const matchSearch = !search ||
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.slug.toLowerCase().includes(search.toLowerCase());
+    const matchActive = activeFilter === "all" ||
+      (activeFilter === "active" ? c.active : !c.active);
+    return matchSearch && matchActive;
+  });
 
   const deleteCategory = async () => {
     if (!deleteTarget) return;
@@ -194,6 +205,21 @@ export function AdminCategories() {
         </div>
       </div>
 
+      <div className="flex gap-3 mb-4">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input className="pl-9" placeholder="Search categories…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <Select value={activeFilter} onValueChange={setActiveFilter}>
+          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <Card className="border border-gray-200 shadow-sm">
         <Table>
           <TableHeader>
@@ -210,7 +236,7 @@ export function AdminCategories() {
             {loading && (
               <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
-            {!loading && categories.map((cat) => (
+            {!loading && filtered.map((cat) => (
               <TableRow key={cat.id} className="hover:bg-gray-50">
                 <TableCell className="font-medium text-sm">{cat.name}</TableCell>
                 <TableCell><code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">{cat.slug}</code></TableCell>
@@ -236,8 +262,8 @@ export function AdminCategories() {
                 </TableCell>
               </TableRow>
             ))}
-            {!loading && categories.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">No categories yet. Use "Seed Defaults" to add standard service types.</TableCell></TableRow>
+            {!loading && filtered.length === 0 && (
+              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">{categories.length === 0 ? 'No categories yet. Use "Seed Defaults" to add standard service types.' : "No categories match your search."}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>

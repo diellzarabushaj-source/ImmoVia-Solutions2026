@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
@@ -12,9 +13,11 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Loader2, MoreHorizontal, CheckCircle2, XCircle, Flag, Trash2, RefreshCw } from "lucide-react";
+import { Loader2, MoreHorizontal, CheckCircle2, XCircle, Flag, Trash2, RefreshCw, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { Input } from "@/components/ui/input";
+import { StatusBadge } from "@/components/admin/StatusBadge";
 
 interface Report {
   id: number;
@@ -26,23 +29,11 @@ interface Report {
   createdAt: string;
 }
 
-function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case "open":
-      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">Open</Badge>;
-    case "resolved":
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Resolved</Badge>;
-    case "dismissed":
-      return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200 text-xs">Dismissed</Badge>;
-    default:
-      return <Badge variant="outline" className="text-xs">{status}</Badge>;
-  }
-}
-
 export function AdminReports() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
   const load = () => {
@@ -70,7 +61,15 @@ export function AdminReports() {
     load();
   };
 
-  const filtered = reports.filter((r) => statusFilter === "all" || r.status === statusFilter);
+  const filtered = reports.filter((r) => {
+    const matchStatus = statusFilter === "all" || r.status === statusFilter;
+    const matchSearch = !search ||
+      r.reason.toLowerCase().includes(search.toLowerCase()) ||
+      r.targetType.toLowerCase().includes(search.toLowerCase()) ||
+      String(r.targetId).includes(search) ||
+      (r.reporterId !== null && String(r.reporterId).includes(search));
+    return matchStatus && matchSearch;
+  });
   const openCount = reports.filter((r) => r.status === "open").length;
 
   return (
@@ -88,7 +87,11 @@ export function AdminReports() {
         </Button>
       </div>
 
-      <div className="mb-4">
+      <div className="flex gap-3 mb-4">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input className="pl-9" placeholder="Search reason, target…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
           <SelectContent>

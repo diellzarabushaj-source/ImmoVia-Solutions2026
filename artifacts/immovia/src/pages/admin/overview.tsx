@@ -1,40 +1,17 @@
 import { useEffect, useState } from "react";
 import { useGetAdminStats } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import {
-  Hammer, Building2, Clock, CheckCircle2, Users, TrendingUp,
-  FileText, AlertTriangle, XCircle, Loader2
+  Hammer, Building2, Clock, CheckCircle2, Users, Globe,
+  FileText, AlertTriangle, XCircle, Loader2, UserCheck, Briefcase
 } from "lucide-react";
 import { format } from "date-fns";
-
-function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case "pending":
-    case "reviewing":
-      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Pending</Badge>;
-    case "approved":
-    case "matched":
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Approved</Badge>;
-    case "completed":
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Completed</Badge>;
-    case "rejected":
-    case "cancelled":
-      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">Rejected</Badge>;
-    default:
-      return <Badge variant="outline" className="text-xs">{status}</Badge>;
-  }
-}
-
-interface QuickMetrics {
-  totalUsers: number;
-  totalApplications: number;
-  openReports: number;
-}
+import { StatusBadge } from "@/components/admin/StatusBadge";
 
 interface PendingProject {
   id: number;
@@ -42,7 +19,6 @@ interface PendingProject {
   projectType: string;
   city: string;
   createdAt: string;
-  status: string;
 }
 
 interface PendingCompany {
@@ -51,12 +27,10 @@ interface PendingCompany {
   contactName: string;
   city: string;
   createdAt: string;
-  status: string;
 }
 
 export function AdminOverview() {
   const { data: stats, isLoading, refetch: refetchStats } = useGetAdminStats();
-  const [quick, setQuick] = useState<QuickMetrics | null>(null);
   const [pendingProjects, setPendingProjects] = useState<PendingProject[]>([]);
   const [pendingCompanies, setPendingCompanies] = useState<PendingCompany[]>([]);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -73,21 +47,7 @@ export function AdminOverview() {
       .catch(() => {});
   };
 
-  useEffect(() => {
-    Promise.all([
-      fetch("/api/admin/users", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-      fetch("/api/admin/applications", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-      fetch("/api/admin/reports", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-    ]).then(([users, apps, reports]) => {
-      setQuick({
-        totalUsers: Array.isArray(users) ? users.length : 0,
-        totalApplications: Array.isArray(apps) ? apps.length : 0,
-        openReports: Array.isArray(reports) ? (reports as { status: string }[]).filter((r) => r.status === "open").length : 0,
-      });
-    }).catch(() => {});
-
-    loadPending();
-  }, []);
+  useEffect(() => { loadPending(); }, []);
 
   const approveProject = async (id: number) => {
     setActionLoading(`proj-approve-${id}`);
@@ -134,14 +94,14 @@ export function AdminOverview() {
   };
 
   const statCards = [
+    { label: "Total Users", value: stats?.totalUsers ?? 0, icon: Users, color: "text-blue-600" },
+    { label: "Project Posters", value: stats?.projectPosters ?? 0, icon: Briefcase, color: "text-indigo-600" },
+    { label: "Service Providers", value: stats?.serviceProviders ?? 0, icon: UserCheck, color: "text-purple-600" },
+    { label: "Approved Profiles", value: stats?.approvedCompanies ?? 0, icon: CheckCircle2, color: "text-green-600" },
     { label: "Total Projects", value: stats?.totalProjects ?? 0, icon: Hammer, color: "text-blue-600" },
-    { label: "Pending Projects", value: stats?.pendingProjects ?? 0, icon: Clock, color: "text-yellow-600" },
-    { label: "Total Companies", value: stats?.totalCompanies ?? 0, icon: Building2, color: "text-indigo-600" },
-    { label: "Pending Companies", value: stats?.pendingCompanies ?? 0, icon: Clock, color: "text-orange-600" },
-    { label: "Registered Users", value: quick?.totalUsers ?? "—", icon: Users, color: "text-green-600" },
-    { label: "Applications", value: quick?.totalApplications ?? "—", icon: FileText, color: "text-purple-600" },
-    { label: "Open Reports", value: quick?.openReports ?? "—", icon: AlertTriangle, color: "text-red-500" },
-    { label: "Approved", value: (stats?.totalProjects ?? 0) - (stats?.pendingProjects ?? 0), icon: TrendingUp, color: "text-emerald-600" },
+    { label: "Open Projects", value: stats?.openProjects ?? 0, icon: Globe, color: "text-emerald-600" },
+    { label: "Pending Review", value: (stats?.pendingProjects ?? 0) + (stats?.pendingCompanies ?? 0), icon: Clock, color: "text-yellow-600" },
+    { label: "Pending Companies", value: stats?.pendingCompanies ?? 0, icon: Building2, color: "text-orange-600" },
   ];
 
   return (
@@ -161,7 +121,7 @@ export function AdminOverview() {
             </CardHeader>
             <CardContent className="pb-4 px-4">
               <div className="text-2xl font-bold text-gray-900">
-                {isLoading && typeof card.value === "number" && card.value === 0 ? "…" : card.value}
+                {isLoading ? "…" : card.value}
               </div>
             </CardContent>
           </Card>
@@ -170,9 +130,8 @@ export function AdminOverview() {
 
       {/* Pending quick-action lists */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Pending Projects */}
         <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <Hammer className="h-4 w-4 text-yellow-500" />
               Pending Projects
@@ -219,9 +178,8 @@ export function AdminOverview() {
           </CardContent>
         </Card>
 
-        {/* Pending Companies */}
         <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <Building2 className="h-4 w-4 text-orange-500" />
               Pending Companies
@@ -269,7 +227,7 @@ export function AdminOverview() {
         </Card>
       </div>
 
-      {/* Status breakdown */}
+      {/* Status breakdown + activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border border-gray-200 shadow-sm">
           <CardHeader className="pb-3">

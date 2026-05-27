@@ -1,0 +1,346 @@
+IMPORTANT: Before making any new changes, standardize the entire marketplace terminology and structure.
+
+The platform must use ONLY these exact names everywhere in the app, database, admin dashboard, main page, onboarding, filters, buttons, public profiles, and code logic.
+
+Do not use different names like client, customer, freelancer, worker, job seeker, employer, provider, contractor, talent, company user, business user, etc.
+
+Use only this simple structure:
+
+MAIN ROLE 1:
+PROJECT POSTER
+
+Meaning:
+A Project Poster is a person or company that posts a project because they need workers, service providers, companies, or professionals.
+
+PROJECT POSTER has 2 subtypes:
+1. Individual Project Poster
+2. Company Project Poster
+
+MAIN ROLE 2:
+SERVICE PROVIDER
+
+Meaning:
+A Service Provider is a person or company that offers work, applies to projects, or wants to get hired.
+
+SERVICE PROVIDER has 2 subtypes:
+1. Individual Service Provider
+2. Company Service Provider
+
+So the marketplace has:
+
+1. Project Poster
+   - Individual Project Poster
+   - Company Project Poster
+
+2. Service Provider
+   - Individual Service Provider
+   - Company Service Provider
+
+Use these exact database values:
+
+role:
+- admin
+- user
+
+account_type:
+- project_poster
+- service_provider
+
+account_subtype:
+- individual
+- company
+
+Do not create any other account_type values.
+Do not create 4 main roles.
+Do not mix admin with account_type.
+Admin is only role = admin.
+
+Correct examples:
+
+Example 1:
+role = user
+account_type = project_poster
+account_subtype = individual
+Display name: Individual Project Poster
+
+Example 2:
+role = user
+account_type = project_poster
+account_subtype = company
+Display name: Company Project Poster
+
+Example 3:
+role = user
+account_type = service_provider
+account_subtype = individual
+Display name: Individual Service Provider
+
+Example 4:
+role = user
+account_type = service_provider
+account_subtype = company
+Display name: Company Service Provider
+
+Example 5:
+role = admin
+Admin can manage the platform, but admin is not a marketplace account_type.
+
+MAIN PAGE REQUIREMENTS:
+
+Update the main page so the marketplace is explained with only these 2 main roles.
+
+Section 1:
+“For Project Posters”
+Description:
+Post your project, describe what kind of worker, company, or service you need, and receive applications from verified service providers.
+
+Show 2 options:
+- I am an Individual Project Poster
+- I am a Company Project Poster
+
+Section 2:
+“For Service Providers”
+Description:
+Create your profile, offer your services, browse available projects, and apply to projects that match your skills or company services.
+
+Show 2 options:
+- I am an Individual Service Provider
+- I am a Company Service Provider
+
+ONBOARDING REQUIREMENTS:
+
+During registration/onboarding, ask the user only 2 simple questions.
+
+Question 1:
+What do you want to do?
+
+Option A:
+Post projects
+
+This sets:
+account_type = project_poster
+
+Option B:
+Offer services / apply to projects
+
+This sets:
+account_type = service_provider
+
+Question 2:
+Are you registering as an individual or a company?
+
+Option A:
+Individual
+
+This sets:
+account_subtype = individual
+
+Option B:
+Company
+
+This sets:
+account_subtype = company
+
+After this, redirect users to the correct dashboard.
+
+DASHBOARD REQUIREMENTS:
+
+Project Poster dashboard:
+For users with account_type = project_poster.
+
+They can:
+- create projects
+- edit their own projects
+- view applications received
+- manage their profile
+- see project statuses
+- contact service providers if this exists
+
+Service Provider dashboard:
+For users with account_type = service_provider.
+
+They can:
+- create/edit their service profile
+- browse open projects
+- apply to projects
+- view their applications
+- manage their profile
+
+Company users and individual users should share the same main dashboard logic, but the profile fields should adapt depending on account_subtype.
+
+If account_subtype = individual, show individual profile fields.
+If account_subtype = company, show company profile fields.
+
+ADMIN DASHBOARD REQUIREMENTS:
+
+The admin dashboard must use the same terminology everywhere:
+
+- Project Posters
+- Service Providers
+- Individual Project Posters
+- Company Project Posters
+- Individual Service Providers
+- Company Service Providers
+
+Admin dashboard sidebar:
+- Overview
+- Project Posters
+- Service Providers
+- Projects
+- Applications
+- Pending Reviews
+- Categories
+- Settings
+
+Admin overview cards:
+- Total Project Posters
+- Individual Project Posters
+- Company Project Posters
+- Total Service Providers
+- Individual Service Providers
+- Company Service Providers
+- Pending Profiles
+- Pending Projects
+- Open Projects
+- Applications
+
+Admin filters:
+- account_type: project_poster / service_provider
+- account_subtype: individual / company
+- status: draft / pending_review / approved / rejected / suspended
+
+Do not show confusing filters like client/provider/freelancer/employer/customer.
+
+PROJECT LOGIC:
+
+Only Project Posters can create projects.
+
+Rule:
+if account_type = project_poster, user can create projects.
+if account_type = service_provider, user cannot create projects but can apply to projects.
+
+Project statuses:
+- draft
+- pending_review
+- open
+- in_progress
+- completed
+- cancelled
+- rejected
+
+When a Project Poster creates a project, it becomes pending_review.
+Admin must approve the project before it becomes public.
+Approved projects become open.
+Only open projects are visible publicly.
+
+APPLICATION LOGIC:
+
+Only Service Providers can apply to projects.
+
+Rule:
+if account_type = service_provider, user can apply to open projects.
+if account_type = project_poster, user cannot apply to projects.
+
+PROFILE LOGIC:
+
+All users can have a profile.
+
+Profile statuses:
+- draft
+- pending_review
+- approved
+- rejected
+- suspended
+
+Only approved profiles are public.
+
+Individual profile fields:
+- full name
+- profession
+- skills
+- experience
+- location
+- phone
+- email
+- description
+- profile image
+
+Company profile fields:
+- company name
+- company logo
+- services
+- category
+- location
+- phone
+- email
+- website
+- description
+- portfolio/images
+
+PUBLIC VISIBILITY RULES:
+
+Only show approved profiles publicly.
+Only show open projects publicly.
+
+Hide:
+- draft
+- pending_review
+- rejected
+- suspended
+
+TERMINOLOGY LOCK:
+
+Use these exact display labels:
+
+account_type = project_poster
+Display label: Project Poster
+
+account_type = service_provider
+Display label: Service Provider
+
+account_subtype = individual
+Display label: Individual
+
+account_subtype = company
+Display label: Company
+
+Combined labels:
+project_poster + individual = Individual Project Poster
+project_poster + company = Company Project Poster
+service_provider + individual = Individual Service Provider
+service_provider + company = Company Service Provider
+
+Do not invent new labels.
+
+Before coding, first inspect the current app and identify all places where inconsistent terms are used.
+Then replace them with the standardized terminology above.
+
+Check and update:
+- database fields
+- onboarding
+- registration
+- dashboards
+- admin dashboard
+- main page
+- navigation
+- public pages
+- buttons
+- filters
+- status badges
+- API/backend logic
+- permissions
+
+Do this carefully without deleting existing functionality.
+
+Final goal:
+The entire marketplace must clearly work with 2 main account types and 4 subtypes:
+
+1. Project Poster
+   - Individual
+   - Company
+
+2. Service Provider
+   - Individual
+   - Company
+
+Keep this naming consistent everywhere.

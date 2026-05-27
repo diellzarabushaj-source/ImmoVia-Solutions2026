@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Loader2, MoreHorizontal, CheckCircle2, XCircle, Clock, Plus, Trash2 } from "lucide-react";
+import { Loader2, MoreHorizontal, CheckCircle2, XCircle, Clock, Plus, Trash2, Search } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -90,6 +90,7 @@ export function AdminApplications() {
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
   const load = () => {
     setLoading(true);
@@ -116,7 +117,16 @@ export function AdminApplications() {
     load();
   };
 
-  const filtered = statusFilter === "all" ? apps : apps.filter((a) => a.status === statusFilter);
+  const filtered = apps.filter((a) => {
+    const matchStatus = statusFilter === "all" || a.status === statusFilter;
+    const matchSearch = !search ||
+      (a.project?.fullName ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (a.project?.city ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (a.applicant?.fullName ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (a.applicant?.email ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (a.message ?? "").toLowerCase().includes(search.toLowerCase());
+    return matchStatus && matchSearch;
+  });
 
   return (
     <div className="p-8">
@@ -131,6 +141,10 @@ export function AdminApplications() {
       </div>
 
       <div className="flex gap-3 mb-4">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input className="pl-9" placeholder="Search project, applicant…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>

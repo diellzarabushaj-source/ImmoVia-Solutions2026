@@ -884,7 +884,7 @@ components:
 
     AdminStats:
       type: object
-      required: [totalProjects, pendingProjects, totalCompanies, pendingCompanies, projectsByType, projectsByStatus, recentActivity]
+      required: [totalProjects, pendingProjects, totalCompanies, pendingCompanies, projectsByType, projectsByStatus, recentActivity, totalUsers, serviceProviders, projectPosters, approvedCompanies, openProjects]
       properties:
         totalProjects:
           type: integer
@@ -893,6 +893,16 @@ components:
         totalCompanies:
           type: integer
         pendingCompanies:
+          type: integer
+        totalUsers:
+          type: integer
+        serviceProviders:
+          type: integer
+        projectPosters:
+          type: integer
+        approvedCompanies:
+          type: integer
+        openProjects:
           type: integer
         projectsByType:
           type: array

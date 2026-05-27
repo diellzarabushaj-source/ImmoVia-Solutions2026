@@ -260,6 +260,11 @@ export const GetAdminStatsResponse = zod.object({
   "pendingProjects": zod.number(),
   "totalCompanies": zod.number(),
   "pendingCompanies": zod.number(),
+  "totalUsers": zod.number(),
+  "serviceProviders": zod.number(),
+  "projectPosters": zod.number(),
+  "approvedCompanies": zod.number(),
+  "openProjects": zod.number(),
   "projectsByType": zod.array(zod.object({
   "label": zod.string(),
   "count": zod.number()
