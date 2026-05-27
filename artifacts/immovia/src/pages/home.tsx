@@ -373,7 +373,8 @@ export default function Home() {
           className="container mx-auto px-4 relative z-10"
           style={{ rotateX: tiltX, rotateY: tiltY, transformPerspective: 1400, transformStyle: "preserve-3d" }}
         >
-          <motion.div className="max-w-4xl mx-auto text-center" initial="initial" animate="animate" variants={stagger}>
+          <div className="max-w-6xl mx-auto grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-10 xl:gap-14 items-center">
+          <motion.div className="text-center" initial="initial" animate="animate" variants={stagger}>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-white/15 border border-white/30 text-white text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-8"
               style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
               <Star className="w-3 h-3 text-primary fill-primary" />
@@ -459,6 +460,35 @@ export default function Home() {
               ))}
             </motion.div>
           </motion.div>
+
+          {/* Right: professional marketplace image — xl+ only */}
+          <motion.div
+            className="hidden xl:block"
+            initial={{ opacity: 0, x: 32 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-white/10" style={{ aspectRatio: "3/4" }}>
+              <img
+                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&q=80&fit=crop"
+                alt="Project Poster and Service Provider discussing a project"
+                className="w-full h-full object-cover object-top"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/65 via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3.5 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-white text-xs font-bold">5,000+ Projects Posted</p>
+                  <p className="text-white/65 text-[10px]">320+ approved Service Providers</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          </div>
         </motion.div>
       </motion.section>
 
@@ -578,87 +608,130 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {/* Card 1: Browse Projects (browse only) */}
             <motion.div
-              className="bg-muted/40 border border-border rounded-2xl p-8 flex flex-col gap-4"
+              className="bg-muted/40 border border-border rounded-2xl overflow-hidden flex flex-col"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.0 }}
               viewport={{ once: true }}
             >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <FileText className="w-6 h-6 text-primary" />
+              <div className="relative h-44 overflow-hidden flex-shrink-0">
+                <img
+                  src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=75&fit=crop"
+                  alt="Browse open projects"
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-muted/80 to-transparent" />
+                <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-primary" />
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-foreground mb-2">{t.browse.projectsTitle}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.projectsDesc}</p>
+              <div className="p-6 flex flex-col gap-4 flex-1">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-foreground mb-2">{t.browse.projectsTitle}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.projectsDesc}</p>
+                </div>
+                <Link href="/#project-listings">
+                  <Button variant="outline" className="w-full border-primary/40 text-primary hover:bg-primary/8" data-testid="browse-card-view-projects">
+                    {t.browse.projectsCta} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
-              <Link href="/#project-listings">
-                <Button variant="outline" className="w-full border-primary/40 text-primary hover:bg-primary/8" data-testid="browse-card-view-projects">
-                  {t.browse.projectsCta} <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
             </motion.div>
 
             {/* Card 2: Post a Project (registration) */}
             <motion.div
-              className="bg-primary rounded-2xl p-8 flex flex-col gap-4"
+              className="bg-primary rounded-2xl overflow-hidden flex flex-col"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               viewport={{ once: true }}
             >
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                <Briefcase className="w-6 h-6 text-white" />
+              <div className="relative h-44 overflow-hidden flex-shrink-0">
+                <img
+                  src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&q=75&fit=crop"
+                  alt="Post a new project"
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/20" />
+                <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-white" />
+                </div>
               </div>
-              <div className="flex-1">
-                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">{t.browse.card2Label}</div>
-                <h3 className="text-xl font-bold text-white mb-2">{t.browse.card2Title}</h3>
-                <p className="text-white/75 text-sm leading-relaxed">{t.browse.card2Desc}</p>
+              <div className="p-6 flex flex-col gap-4 flex-1">
+                <div className="flex-1">
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">{t.browse.card2Label}</div>
+                  <h3 className="text-xl font-bold text-white mb-2">{t.browse.card2Title}</h3>
+                  <p className="text-white/75 text-sm leading-relaxed">{t.browse.card2Desc}</p>
+                </div>
+                <Link href="/signup?account_type=project_poster">
+                  <Button className="w-full bg-white text-primary hover:bg-white/90 font-semibold" data-testid="browse-card-register-poster">
+                    {t.browse.card2Cta} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
-              <Link href="/signup?account_type=project_poster">
-                <Button className="w-full bg-white text-primary hover:bg-white/90 font-semibold" data-testid="browse-card-register-poster">
-                  {t.browse.card2Cta} <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
             </motion.div>
 
             {/* Card 3: Browse Service Providers (browse only) */}
             <motion.div
-              className="bg-muted/40 border border-border rounded-2xl p-8 flex flex-col gap-4"
+              className="bg-muted/40 border border-border rounded-2xl overflow-hidden flex flex-col"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary" />
+              <div className="relative h-44 overflow-hidden flex-shrink-0">
+                <img
+                  src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=600&q=75&fit=crop"
+                  alt="Browse approved Service Providers"
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-muted/80 to-transparent" />
+                <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-foreground mb-2">{t.browse.providersTitle}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.providersDesc}</p>
+              <div className="p-6 flex flex-col gap-4 flex-1">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-foreground mb-2">{t.browse.providersTitle}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.providersDesc}</p>
+                </div>
+                <Link href="/companies">
+                  <Button variant="outline" className="w-full border-primary/40 text-primary hover:bg-primary/8" data-testid="browse-card-view-providers">
+                    {t.browse.providersCta} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
-              <Link href="/companies">
-                <Button variant="outline" className="w-full border-primary/40 text-primary hover:bg-primary/8" data-testid="browse-card-view-providers">
-                  {t.browse.providersCta} <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
             </motion.div>
 
             {/* Card 4: Offer Services (registration) */}
             <motion.div
-              className="bg-primary rounded-2xl p-8 flex flex-col gap-4"
+              className="bg-primary rounded-2xl overflow-hidden flex flex-col"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
               viewport={{ once: true }}
             >
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-white" />
+              <div className="relative h-44 overflow-hidden flex-shrink-0">
+                <img
+                  src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=75&fit=crop"
+                  alt="Create a Service Provider profile"
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/20" />
+                <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-white" />
+                </div>
               </div>
-              <div className="flex-1">
-                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">{t.browse.card4Label}</div>
-                <h3 className="text-xl font-bold text-white mb-2">{t.browse.card4Title}</h3>
-                <p className="text-white/75 text-sm leading-relaxed">{t.browse.card4Desc}</p>
-              </div>
+              <div className="p-6 flex flex-col gap-4 flex-1">
+                <div className="flex-1">
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">{t.browse.card4Label}</div>
+                  <h3 className="text-xl font-bold text-white mb-2">{t.browse.card4Title}</h3>
+                  <p className="text-white/75 text-sm leading-relaxed">{t.browse.card4Desc}</p>
+                </div>
               <Link href="/signup?account_type=service_provider">
                 <Button className="w-full bg-white text-primary hover:bg-white/90 font-semibold" data-testid="browse-card-register-provider">
                   {t.browse.card4Cta} <ArrowRight className="ml-2 h-4 w-4" />
