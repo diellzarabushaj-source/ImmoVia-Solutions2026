@@ -32,24 +32,11 @@ export async function requireProvider(req: Request, res: Response, next: NextFun
   next();
 }
 
-// requireUserAdmin: admin via Clerk JWT + DB role='admin' only.
+// requireUserAdmin: admin via session (set by /api/admin-auth/login).
 export async function requireUserAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-  const auth = getAuth(req);
-  if (!auth?.userId) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
-
-  const [user] = await db
-    .select({ id: usersTable.id, role: usersTable.role })
-    .from(usersTable)
-    .where(eq(usersTable.clerkUserId, auth.userId))
-    .limit(1);
-
-  if (user?.role === "admin") {
-    req.userId = user.id;
+  if (req.session.adminAuthenticated === true) {
     next();
     return;
   }
-  res.status(403).json({ error: "Forbidden" });
+  res.status(401).json({ error: "Unauthorized" });
 }
