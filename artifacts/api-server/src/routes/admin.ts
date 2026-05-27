@@ -34,7 +34,7 @@ router.get("/admin/stats", requireAdmin, async (req, res): Promise<void> => {
         and(eq(usersTable.accountType, "service_provider"), eq(usersTable.accountSubtype, "company"))
       ),
       db.select({ count: count() }).from(companiesTable).where(eq(companiesTable.status, "approved")),
-      db.select({ count: count() }).from(projectsTable).where(eq(projectsTable.status, "matched")),
+      db.select({ count: count() }).from(projectsTable).where(eq(projectsTable.status, "open")),
     ]);
 
   const projectsByTypeRaw = await db
