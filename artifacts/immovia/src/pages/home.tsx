@@ -28,7 +28,6 @@ import {
   Search,
   Home as HomeIcon,
   Briefcase,
-  Lock,
   MapPin,
   Clock,
   User,
@@ -233,7 +232,7 @@ export default function Home() {
   );
   const hasListingFilter = !!(listingTypeFilter || listingCityFilter || listingSizeFilter || listingBudgetFilter);
   const previewProjects = useMemo(() => {
-    let list = (projects ?? []).filter(p => p.status === "open");
+    let list = (projects ?? []).filter(p => p.status === "open" || p.status === "pending" || p.status === "reviewing");
     if (listingTypeFilter) list = list.filter(p => p.projectType === listingTypeFilter);
     if (listingCityFilter) list = list.filter(p => p.city.toLowerCase().includes(listingCityFilter.toLowerCase()));
     if (listingSizeFilter) list = list.filter(p => p.size === listingSizeFilter);
@@ -960,42 +959,14 @@ export default function Home() {
                 ))}
               </motion.div>
 
-              {!user && (
-                <div className="relative mt-5">
-                  <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-muted/30 z-10 pointer-events-none" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
-                    {previewProjects.slice(0, 3).map((project, idx) => (
-                      <div key={`ghost-${idx}`}>
-                        <ProjectPreviewCard project={project} t={t} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-                    <div className="bg-white/95 backdrop-blur-sm border border-border rounded-2xl px-8 py-8 text-center shadow-lg max-w-sm mx-auto">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                        <Lock className="w-6 h-6 text-primary" />
-                      </div>
-                      <p className="text-sm font-medium text-foreground mb-5">{t.listings.gateLabel}</p>
-                      <Link href="/signup?account_type=service_provider">
-                        <Button size="lg" className="w-full" data-testid="listings-gate-cta">
-                          {t.listings.gateCta}
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {user && (
-                <div className="text-center mt-10">
-                  <Link href="/submit-project">
-                    <Button variant="outline" size="lg" data-testid="listings-see-all">
-                      {t.listings.seeAll}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              )}
+              <div className="text-center mt-10">
+              <Link href="/projects">
+                <Button variant="outline" size="lg" data-testid="listings-see-all">
+                  {t.listings.seeAll}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
             </div>
           )}
         </div>
