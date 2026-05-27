@@ -27,6 +27,7 @@ import {
   MoreHorizontal, CheckCircle2, XCircle, Clock, Trash2, Loader2,
   Plus, Hammer, Eye, Search, Globe
 } from "lucide-react";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { useLocation } from "wouter";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -212,12 +213,18 @@ export function AdminProjects() {
                 <TableCell><StatusBadge status={project.status} /></TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    {project.status !== "open" && project.status !== "cancelled" && (
+                    {(project.status === "pending" || project.status === "reviewing") && (
                       <Button
                         size="sm"
                         className="h-7 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
                         disabled={updateProject.isPending}
-                        onClick={() => updateProject.mutate({ id: project.id, data: { status: "open" } }, { onSuccess: invalidate })}
+                        onClick={() => updateProject.mutate(
+                          { id: project.id, data: { status: "open" } },
+                          {
+                            onSuccess: () => { invalidate(); toast.success("Project published — now visible on the website."); },
+                            onError: () => toast.error("Failed to publish project. Please try again."),
+                          }
+                        )}
                         title="Publish to website"
                       >
                         <Globe className="h-3.5 w-3.5" />
