@@ -978,7 +978,7 @@ export default function Home() {
                         <Lock className="w-6 h-6 text-primary" />
                       </div>
                       <p className="text-sm font-medium text-foreground mb-5">{t.listings.gateLabel}</p>
-                      <Link href="/signup">
+                      <Link href="/signup?account_type=service_provider">
                         <Button size="lg" className="w-full" data-testid="listings-gate-cta">
                           {t.listings.gateCta}
                         </Button>

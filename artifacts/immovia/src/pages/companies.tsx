@@ -493,7 +493,7 @@ export default function Companies() {
         <div className="relative">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           <AnimatePresence>
-            {(user ? filtered : filtered.slice(0, 6)).map((company, idx) => {
+            {(user ? filtered : filtered.slice(0, 8)).map((company, idx) => {
               const isIndividual = company.workerType === "individual";
               return (
                 <motion.div
@@ -610,11 +610,11 @@ export default function Companies() {
           </div>
 
           {/* Gate overlay for non-logged-in users */}
-          {!user && filtered.length > 6 && (
+          {!user && filtered.length > 8 && (
             <div className="relative mt-5">
               <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-background z-10 pointer-events-none" />
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
-                {filtered.slice(6, 9).map((company) => {
+                {filtered.slice(8, 11).map((company) => {
                   const isIndividual = company.workerType === "individual";
                   return (
                     <div key={`ghost-${company.id}`} className="bg-white rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
@@ -652,7 +652,7 @@ export default function Companies() {
                     <Lock className="w-6 h-6 text-primary" />
                   </div>
                   <p className="text-sm font-medium text-foreground mb-5">{t.professionals.gateLabel}</p>
-                  <Link href="/signup">
+                  <Link href="/signup?account_type=project_poster">
                     <Button size="lg" className="w-full" data-testid="companies-gate-cta">
                       {t.professionals.gateCta}
                     </Button>
