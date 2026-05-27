@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search, MapPin, Clock, FileText, X, ArrowUpDown,
   ChevronDown, Lock, Hammer, Building2, Sofa, TreePine,
-  Wrench, Plug, Briefcase,
+  Wrench, Plug, Briefcase, Crosshair,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
@@ -301,19 +301,33 @@ export default function Projects() {
         <div className="container mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
 
           {/* City filter */}
-          <div className="relative flex items-center">
-            <MapPin className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+          <div className="relative flex items-center flex-1 min-w-[180px] sm:flex-initial">
+            <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
             <input
-              placeholder={t.companies.cityPlaceholder ?? "City…"}
-              className="pl-7 pr-7 h-8 text-sm w-36 md:w-44 rounded-lg border border-border bg-white outline-none focus:ring-1 focus:ring-primary"
+              placeholder={t.listings.cityFilterPlaceholder ?? t.companies.cityPlaceholder ?? "Filter by city…"}
+              className="pl-9 pr-16 h-10 text-sm w-full sm:w-56 rounded-lg border border-border bg-white outline-none focus:ring-1 focus:ring-primary"
               value={cityFilter}
               onChange={e => setCityFilter(e.target.value)}
             />
-            {cityFilter && (
-              <button onClick={() => setCityFilter("")} className="absolute right-2 text-muted-foreground hover:text-foreground">
-                <X className="h-3 w-3" />
+            {cityFilter ? (
+              <button
+                onClick={() => setCityFilter("")}
+                className="absolute right-2 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                aria-label={t.listings.clearFilters ?? "Clear"}
+              >
+                <X className="h-3.5 w-3.5" />
               </button>
-            )}
+            ) : userCity ? (
+              <button
+                onClick={() => setCityFilter(userCity)}
+                className="absolute right-2 flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-primary hover:bg-primary/10"
+                title={t.listings.useMyLocation ?? "Use my location"}
+                aria-label={t.listings.useMyLocation ?? "Use my location"}
+              >
+                <Crosshair className="h-3 w-3" />
+                <span className="hidden sm:inline">{userCity}</span>
+              </button>
+            ) : null}
           </div>
 
           {/* Size filter */}
@@ -359,7 +373,9 @@ export default function Projects() {
             >
               {SORT_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.value === "newest" ? "Newest first" : "Oldest first"}
+                  {opt.value === "newest"
+                    ? (t.listings.sortNewest ?? "Newest first")
+                    : (t.listings.sortOldest ?? "Oldest first")}
                 </option>
               ))}
             </select>

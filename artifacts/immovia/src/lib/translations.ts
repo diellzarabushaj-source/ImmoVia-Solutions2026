@@ -112,6 +112,10 @@ export const translations = {
       noProjectsInCity: 'Ende nuk ka projekte në {city}',
       showingAllInstead: 'Po shfaqim të gjitha projektet e hapura.',
       sortedNearYou: 'Po shfaqim së pari projektet pranë {city}',
+      sortNewest: 'Më të rejat',
+      sortOldest: 'Më të vjetrat',
+      useMyLocation: 'Përdor lokacionin tim',
+      cityFilterPlaceholder: 'Filtro sipas qytetit…',
     },
     projectDetail: {
       seoProject: 'Projekt',
@@ -785,6 +789,10 @@ export const translations = {
       noProjectsInCity: 'No projects in {city} yet',
       showingAllInstead: 'Showing all open projects instead.',
       sortedNearYou: 'Showing projects near {city} first',
+      sortNewest: 'Newest first',
+      sortOldest: 'Oldest first',
+      useMyLocation: 'Use my location',
+      cityFilterPlaceholder: 'Filter by city…',
     },
     projectDetail: {
       seoProject: 'Project',
@@ -1458,6 +1466,10 @@ export const translations = {
       noProjectsInCity: 'Noch keine Projekte in {city}',
       showingAllInstead: 'Wir zeigen stattdessen alle offenen Projekte.',
       sortedNearYou: 'Projekte in der Nähe von {city} werden zuerst angezeigt',
+      sortNewest: 'Neueste zuerst',
+      sortOldest: 'Älteste zuerst',
+      useMyLocation: 'Meinen Standort verwenden',
+      cityFilterPlaceholder: 'Nach Stadt filtern…',
     },
     projectDetail: {
       seoProject: 'Projekt',
@@ -2131,6 +2143,10 @@ export const translations = {
       noProjectsInCity: 'Aucun projet à {city} pour le moment',
       showingAllInstead: 'Affichage de tous les projets ouverts à la place.',
       sortedNearYou: 'Affichage des projets près de {city} en premier',
+      sortNewest: 'Plus récents d\'abord',
+      sortOldest: 'Plus anciens d\'abord',
+      useMyLocation: 'Utiliser ma position',
+      cityFilterPlaceholder: 'Filtrer par ville…',
     },
     projectDetail: {
       seoProject: 'Projet',
