@@ -15,6 +15,7 @@ export const translations = {
       dashboard: 'Paneli',
       profile: 'Profili',
       logout: 'Dil',
+      browseProjects: 'Shfleto Projektet',
       browseServiceProviders: 'Shfleto Ofruesit',
     },
     footer: {
@@ -657,6 +658,7 @@ export const translations = {
       dashboard: 'Dashboard',
       profile: 'Profile',
       logout: 'Log Out',
+      browseProjects: 'Browse Projects',
       browseServiceProviders: 'Browse Service Providers',
     },
     footer: {
@@ -1299,6 +1301,7 @@ export const translations = {
       dashboard: 'Dashboard',
       profile: 'Profil',
       logout: 'Abmelden',
+      browseProjects: 'Projekte durchsuchen',
       browseServiceProviders: 'Dienstleister durchsuchen',
     },
     footer: {
@@ -1941,6 +1944,7 @@ export const translations = {
       dashboard: 'Tableau de Bord',
       profile: 'Profil',
       logout: 'Déconnexion',
+      browseProjects: 'Parcourir les Projets',
       browseServiceProviders: 'Parcourir les Prestataires',
     },
     footer: {
