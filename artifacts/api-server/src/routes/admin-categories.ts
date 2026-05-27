@@ -11,10 +11,11 @@ router.get("/admin/categories", requireAdmin, async (_req, res): Promise<void> =
 });
 
 router.post("/admin/categories", requireAdmin, async (req, res): Promise<void> => {
-  const { name, slug, description } = req.body as {
+  const { name, slug, type, active } = req.body as {
     name?: string;
     slug?: string;
-    description?: string;
+    type?: string;
+    active?: boolean;
   };
 
   if (!name || !slug) {
@@ -24,7 +25,12 @@ router.post("/admin/categories", requireAdmin, async (req, res): Promise<void> =
 
   const [created] = await db
     .insert(categoriesTable)
-    .values({ name, slug, description: description ?? null })
+    .values({
+      name,
+      slug,
+      type: type ?? "service",
+      active: active !== undefined ? active : true,
+    })
     .returning();
 
   res.status(201).json({ ...created, createdAt: created!.createdAt.toISOString() });
@@ -32,15 +38,21 @@ router.post("/admin/categories", requireAdmin, async (req, res): Promise<void> =
 
 router.patch("/admin/categories/:id", requireAdmin, async (req, res): Promise<void> => {
   const id = Number(req.params["id"]);
-  const { name, slug, description } = req.body as {
+  const { name, slug, type, active } = req.body as {
     name?: string;
     slug?: string;
-    description?: string;
+    type?: string;
+    active?: boolean;
   };
 
   const [updated] = await db
     .update(categoriesTable)
-    .set({ ...(name ? { name } : {}), ...(slug ? { slug } : {}), ...(description !== undefined ? { description } : {}) })
+    .set({
+      ...(name !== undefined ? { name } : {}),
+      ...(slug !== undefined ? { slug } : {}),
+      ...(type !== undefined ? { type } : {}),
+      ...(active !== undefined ? { active } : {}),
+    })
     .where(eq(categoriesTable.id, id))
     .returning();
 

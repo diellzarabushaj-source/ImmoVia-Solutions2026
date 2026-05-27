@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { db, platformSettingsTable } from "@workspace/db";
 import { requireAdmin } from "../middlewares/requireAdmin";
 
@@ -31,7 +31,7 @@ router.get("/admin/settings", requireAdmin, async (_req, res): Promise<void> => 
   res.json(rows.map((r) => ({ ...r, updatedAt: r.updatedAt.toISOString() })));
 });
 
-router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
+router.patch("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
   const updates = req.body as Record<string, string>;
 
   if (!updates || typeof updates !== "object") {

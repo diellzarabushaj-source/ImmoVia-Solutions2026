@@ -315,6 +315,280 @@ paths:
               schema:
                 $ref: "#/components/schemas/AdminStats"
 
+  /admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [admin]
+      summary: List all registered users
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+
+  /admin/users/{id}:
+    patch:
+      operationId: patchAdminUser
+      tags: [admin]
+      summary: Approve, suspend, reactivate or delete a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUserAction"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "204":
+          description: User deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/applications:
+    get:
+      operationId: listAdminApplications
+      tags: [admin]
+      summary: List all service-provider applications
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminApplication"
+    post:
+      operationId: createAdminApplication
+      tags: [admin]
+      summary: Create a project application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminApplicationInput"
+      responses:
+        "201":
+          description: Created application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminApplication"
+
+  /admin/applications/{id}:
+    patch:
+      operationId: patchAdminApplication
+      tags: [admin]
+      summary: Update application status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatusUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminApplication"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteAdminApplication
+      tags: [admin]
+      summary: Delete an application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /admin/categories:
+    get:
+      operationId: listAdminCategories
+      tags: [admin]
+      summary: List all service categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminCategory"
+    post:
+      operationId: createAdminCategory
+      tags: [admin]
+      summary: Create a service category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCategory"
+
+  /admin/categories/{id}:
+    patch:
+      operationId: patchAdminCategory
+      tags: [admin]
+      summary: Update a service category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCategoryInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCategory"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteAdminCategory
+      tags: [admin]
+      summary: Delete a service category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /admin/reports:
+    get:
+      operationId: listAdminReports
+      tags: [admin]
+      summary: List all user-submitted reports
+      responses:
+        "200":
+          description: List of reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminReport"
+
+  /admin/reports/{id}:
+    patch:
+      operationId: patchAdminReport
+      tags: [admin]
+      summary: Update report status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatusUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReport"
+
+  /admin/settings:
+    get:
+      operationId: getAdminSettings
+      tags: [admin]
+      summary: Get all platform settings
+      responses:
+        "200":
+          description: List of settings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminSetting"
+    patch:
+      operationId: patchAdminSettings
+      tags: [admin]
+      summary: Update one or more platform settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KeyValueMap"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminSetting"
+
   /storage/uploads/request-url:
     post:
       tags: [Storage]
@@ -656,6 +930,147 @@ components:
         status:
           type: string
         createdAt:
+          type: string
+          format: date-time
+
+    StatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    KeyValueMap:
+      type: object
+      additionalProperties:
+        type: string
+
+    AdminUser:
+      type: object
+      required: [id, email, fullName, role, language, verified, createdAt]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+        providerType:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        language:
+          type: string
+        verified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminUserAction:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          description: "approve | suspend | reactivate | delete"
+
+    AdminApplication:
+      type: object
+      required: [id, status, createdAt]
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: ["integer", "null"]
+        applicantUserId:
+          type: ["integer", "null"]
+        message:
+          type: ["string", "null"]
+        proposedPrice:
+          type: ["string", "null"]
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminApplicationInput:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        applicantUserId:
+          type: integer
+        message:
+          type: string
+        proposedPrice:
+          type: string
+
+    AdminCategory:
+      type: object
+      required: [id, name, slug, type, active, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        type:
+          type: string
+          description: "service | project"
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminCategoryInput:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        type:
+          type: string
+        active:
+          type: boolean
+
+    AdminReport:
+      type: object
+      required: [id, targetType, targetId, reason, status, createdAt]
+      properties:
+        id:
+          type: integer
+        reporterId:
+          type: ["integer", "null"]
+        targetType:
+          type: string
+        targetId:
+          type: integer
+        reason:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminSetting:
+      type: object
+      required: [id, key, value, updatedAt]
+      properties:
+        id:
+          type: integer
+        key:
+          type: string
+        value:
+          type: string
+        updatedAt:
           type: string
           format: date-time
 

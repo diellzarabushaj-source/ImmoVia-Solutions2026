@@ -7,7 +7,15 @@
  */
 
 export * from './activityItem';
+export * from './adminApplication';
+export * from './adminApplicationInput';
+export * from './adminCategory';
+export * from './adminCategoryInput';
+export * from './adminReport';
+export * from './adminSetting';
 export * from './adminStats';
+export * from './adminUser';
+export * from './adminUserAction';
 export * from './chatMessageInput';
 export * from './chatResponse';
 export * from './company';
@@ -17,10 +25,12 @@ export * from './countByLabel';
 export * from './errorEnvelope';
 export * from './errorResponse';
 export * from './healthStatus';
+export * from './keyValueMap';
 export * from './listCompaniesParams';
 export * from './listProjectsParams';
 export * from './project';
 export * from './projectInput';
 export * from './projectUpdate';
+export * from './statusUpdate';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';

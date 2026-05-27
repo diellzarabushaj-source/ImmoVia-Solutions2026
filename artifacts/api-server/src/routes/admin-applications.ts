@@ -1,58 +1,65 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
-import { db, applicationsTable, projectsTable, companiesTable } from "@workspace/db";
+import { db, applicationsTable, projectsTable, usersTable } from "@workspace/db";
 import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
-router.get("/admin/applications", requireAdmin, async (req, res): Promise<void> => {
+router.get("/admin/applications", requireAdmin, async (_req, res): Promise<void> => {
   const rows = await db
     .select({
       id: applicationsTable.id,
       projectId: applicationsTable.projectId,
-      companyId: applicationsTable.companyId,
-      status: applicationsTable.status,
+      applicantUserId: applicationsTable.applicantUserId,
       message: applicationsTable.message,
+      proposedPrice: applicationsTable.proposedPrice,
+      status: applicationsTable.status,
       createdAt: applicationsTable.createdAt,
     })
     .from(applicationsTable)
     .orderBy(desc(applicationsTable.createdAt));
 
   const projectIds = [...new Set(rows.map((r) => r.projectId).filter(Boolean))] as number[];
-  const companyIds = [...new Set(rows.map((r) => r.companyId).filter(Boolean))] as number[];
+  const userIds = [...new Set(rows.map((r) => r.applicantUserId).filter(Boolean))] as number[];
 
-  const [projects, companies] = await Promise.all([
+  const [projects, applicants] = await Promise.all([
     projectIds.length
       ? db.select({ id: projectsTable.id, fullName: projectsTable.fullName, city: projectsTable.city }).from(projectsTable)
       : [],
-    companyIds.length
-      ? db.select({ id: companiesTable.id, companyName: companiesTable.companyName }).from(companiesTable)
+    userIds.length
+      ? db.select({ id: usersTable.id, fullName: usersTable.fullName, email: usersTable.email }).from(usersTable)
       : [],
   ]);
 
   const projectMap = new Map(projects.map((p) => [p.id, p]));
-  const companyMap = new Map(companies.map((c) => [c.id, c]));
+  const userMap = new Map(applicants.map((u) => [u.id, u]));
 
   res.json(
     rows.map((r) => ({
       ...r,
       createdAt: r.createdAt.toISOString(),
-      project: r.projectId ? projectMap.get(r.projectId) ?? null : null,
-      company: r.companyId ? companyMap.get(r.companyId) ?? null : null,
+      project: r.projectId ? (projectMap.get(r.projectId) ?? null) : null,
+      applicant: r.applicantUserId ? (userMap.get(r.applicantUserId) ?? null) : null,
     })),
   );
 });
 
 router.post("/admin/applications", requireAdmin, async (req, res): Promise<void> => {
-  const { projectId, companyId, message } = req.body as {
+  const { projectId, applicantUserId, message, proposedPrice } = req.body as {
     projectId?: number;
-    companyId?: number;
+    applicantUserId?: number;
     message?: string;
+    proposedPrice?: string;
   };
 
   const [created] = await db
     .insert(applicationsTable)
-    .values({ projectId: projectId ?? null, companyId: companyId ?? null, message: message ?? null })
+    .values({
+      projectId: projectId ?? null,
+      applicantUserId: applicantUserId ?? null,
+      message: message ?? null,
+      proposedPrice: proposedPrice ?? null,
+    })
     .returning();
 
   res.status(201).json({ ...created, createdAt: created!.createdAt.toISOString() });

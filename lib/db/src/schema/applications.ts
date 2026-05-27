@@ -3,9 +3,10 @@ import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
 export const applicationsTable = pgTable("applications", {
   id: serial("id").primaryKey(),
   projectId: integer("project_id"),
-  companyId: integer("company_id"),
-  status: text("status").notNull().default("pending"),
+  applicantUserId: integer("applicant_user_id"),
   message: text("message"),
+  proposedPrice: text("proposed_price"),
+  status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

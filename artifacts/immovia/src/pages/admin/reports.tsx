@@ -12,15 +12,16 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Loader2, MoreHorizontal, CheckCircle2, XCircle, Flag, Trash2 } from "lucide-react";
+import { Loader2, MoreHorizontal, CheckCircle2, XCircle, Flag, Trash2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 interface Report {
   id: number;
+  reporterId: number | null;
   targetType: string;
   targetId: number;
   reason: string;
-  reporterEmail: string | null;
   status: string;
   createdAt: string;
 }
@@ -42,6 +43,7 @@ export function AdminReports() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -61,14 +63,14 @@ export function AdminReports() {
     load();
   };
 
-  const deleteReport = async (id: number) => {
-    if (!confirm("Delete this report?")) return;
-    await fetch(`/api/admin/reports/${id}`, { method: "DELETE", credentials: "include" });
+  const deleteReport = async () => {
+    if (deleteTarget === null) return;
+    await fetch(`/api/admin/reports/${deleteTarget}`, { method: "DELETE", credentials: "include" });
+    setDeleteTarget(null);
     load();
   };
 
   const filtered = reports.filter((r) => statusFilter === "all" || r.status === statusFilter);
-
   const openCount = reports.filter((r) => r.status === "open").length;
 
   return (
@@ -81,8 +83,8 @@ export function AdminReports() {
             {openCount > 0 && <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold">{openCount}</span>}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={load}>
-          <Flag className="h-4 w-4 mr-1.5" /> Refresh
+        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
         </Button>
       </div>
 
@@ -105,7 +107,7 @@ export function AdminReports() {
               <TableHead className="text-xs font-semibold text-gray-600">ID</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Target</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Reason</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Reporter</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Reporter ID</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Date</TableHead>
               <TableHead className="text-right text-xs font-semibold text-gray-600">Actions</TableHead>
@@ -123,7 +125,7 @@ export function AdminReports() {
                   <span className="text-xs text-gray-500 ml-1">#{r.targetId}</span>
                 </TableCell>
                 <TableCell className="text-sm text-gray-700 max-w-[200px] truncate">{r.reason}</TableCell>
-                <TableCell className="text-xs text-gray-500">{r.reporterEmail ?? "—"}</TableCell>
+                <TableCell className="text-xs text-gray-500">{r.reporterId ? `#${r.reporterId}` : "—"}</TableCell>
                 <TableCell><StatusBadge status={r.status} /></TableCell>
                 <TableCell className="text-xs text-gray-500">{format(new Date(r.createdAt), "MMM d, yyyy")}</TableCell>
                 <TableCell className="text-right">
@@ -137,7 +139,7 @@ export function AdminReports() {
                       <DropdownMenuItem onClick={() => updateStatus(r.id, "dismissed")}><XCircle className="mr-2 h-4 w-4 text-gray-400" /> Dismiss</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateStatus(r.id, "open")}><Flag className="mr-2 h-4 w-4 text-red-500" /> Reopen</DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600" onClick={() => deleteReport(r.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(r.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -154,6 +156,18 @@ export function AdminReports() {
           </TableBody>
         </Table>
       </Card>
+
+      {deleteTarget !== null && (
+        <ConfirmDialog
+          open={true}
+          title="Delete Report"
+          description="Permanently delete this report? This cannot be undone."
+          confirmLabel="Delete"
+          variant="destructive"
+          onConfirm={deleteReport}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }

@@ -3,36 +3,40 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
-import { Loader2, Plus, Pencil, Trash2, Tag } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
+import { Loader2, Plus, Pencil, Trash2, Tag, Power } from "lucide-react";
 import { format } from "date-fns";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 interface Category {
   id: number;
   name: string;
   slug: string;
-  description: string | null;
+  type: string;
+  active: boolean;
   createdAt: string;
 }
 
 const DEFAULTS = [
-  { name: "Renovation", slug: "renovation", description: "General renovation services" },
-  { name: "Construction", slug: "construction", description: "New builds and structural work" },
-  { name: "Interior Design", slug: "interior-design", description: "Interior decoration and design" },
-  { name: "Plumbing", slug: "plumbing", description: "Plumbing installation and repair" },
-  { name: "Electrical", slug: "electrical", description: "Electrical installation and maintenance" },
-  { name: "Painting", slug: "painting", description: "Interior and exterior painting" },
-  { name: "Flooring", slug: "flooring", description: "Floor installation and finishing" },
-  { name: "Roofing", slug: "roofing", description: "Roof installation and repair" },
-  { name: "Landscaping", slug: "landscaping", description: "Garden and outdoor services" },
-  { name: "HVAC", slug: "hvac", description: "Heating, ventilation and air conditioning" },
-  { name: "Cleaning", slug: "cleaning", description: "Professional cleaning services" },
+  { name: "Renovation", slug: "renovation", type: "service" },
+  { name: "Construction", slug: "construction", type: "service" },
+  { name: "Interior Design", slug: "interior-design", type: "service" },
+  { name: "Plumbing", slug: "plumbing", type: "service" },
+  { name: "Electrical", slug: "electrical", type: "service" },
+  { name: "Painting", slug: "painting", type: "service" },
+  { name: "Flooring", slug: "flooring", type: "service" },
+  { name: "Roofing", slug: "roofing", type: "service" },
+  { name: "Landscaping", slug: "landscaping", type: "service" },
+  { name: "HVAC", slug: "hvac", type: "service" },
+  { name: "Cleaning", slug: "cleaning", type: "service" },
 ];
 
 function slugify(s: string) {
@@ -51,13 +55,15 @@ function CategoryDialog({
   const [error, setError] = useState("");
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
-  const [description, setDescription] = useState(initial?.description ?? "");
+  const [type, setType] = useState(initial?.type ?? "service");
+  const [active, setActive] = useState(initial?.active !== undefined ? initial.active : true);
 
   useEffect(() => {
     if (open) {
       setName(initial?.name ?? "");
       setSlug(initial?.slug ?? "");
-      setDescription(initial?.description ?? "");
+      setType(initial?.type ?? "service");
+      setActive(initial?.active !== undefined ? initial.active : true);
       setError("");
     }
   }, [open, initial]);
@@ -71,7 +77,7 @@ function CategoryDialog({
       const method = initial ? "PATCH" : "POST";
       const res = await fetch(url, {
         method, headers: { "Content-Type": "application/json" },
-        credentials: "include", body: JSON.stringify({ name, slug, description: description || null }),
+        credentials: "include", body: JSON.stringify({ name, slug, type, active }),
       });
       if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? "Failed."); return; }
       onSaved(); onClose();
@@ -92,8 +98,24 @@ function CategoryDialog({
             <Input value={slug} onChange={(e) => setSlug(e.target.value)} required disabled={loading} placeholder="e.g. renovation" />
           </div>
           <div className="space-y-1.5">
-            <Label>Description</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} disabled={loading} placeholder="Short description…" />
+            <Label>Type</Label>
+            <Select value={type} onValueChange={setType} disabled={loading}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="service">Service</SelectItem>
+                <SelectItem value="project">Project</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => setActive((v) => !v)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${active ? "bg-[#1a3a6e]" : "bg-gray-200"}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${active ? "translate-x-6" : "translate-x-1"}`} />
+            </button>
+            <Label className="cursor-pointer" onClick={() => setActive((v) => !v)}>{active ? "Active" : "Inactive"}</Label>
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
           <DialogFooter>
@@ -114,6 +136,7 @@ export function AdminCategories() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -125,9 +148,18 @@ export function AdminCategories() {
 
   useEffect(() => { load(); }, []);
 
-  const deleteCategory = async (id: number) => {
-    if (!confirm("Delete this category?")) return;
-    await fetch(`/api/admin/categories/${id}`, { method: "DELETE", credentials: "include" });
+  const deleteCategory = async () => {
+    if (!deleteTarget) return;
+    await fetch(`/api/admin/categories/${deleteTarget.id}`, { method: "DELETE", credentials: "include" });
+    setDeleteTarget(null);
+    load();
+  };
+
+  const toggleActive = async (cat: Category) => {
+    await fetch(`/api/admin/categories/${cat.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      credentials: "include", body: JSON.stringify({ active: !cat.active }),
+    });
     load();
   };
 
@@ -148,7 +180,7 @@ export function AdminCategories() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Service Categories</h1>
-          <p className="text-sm text-gray-500 mt-1">{categories.length} categories defined</p>
+          <p className="text-sm text-gray-500 mt-1">{categories.length} categories — {categories.filter((c) => c.active).length} active</p>
         </div>
         <div className="flex gap-2">
           {categories.length === 0 && (
@@ -168,27 +200,36 @@ export function AdminCategories() {
             <TableRow className="bg-gray-50">
               <TableHead className="text-xs font-semibold text-gray-600">Name</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Slug</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Description</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Type</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Created</TableHead>
               <TableHead className="text-right text-xs font-semibold text-gray-600">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && (
-              <TableRow><TableCell colSpan={5} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
             {!loading && categories.map((cat) => (
               <TableRow key={cat.id} className="hover:bg-gray-50">
                 <TableCell className="font-medium text-sm">{cat.name}</TableCell>
                 <TableCell><code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">{cat.slug}</code></TableCell>
-                <TableCell className="text-sm text-gray-600 max-w-[240px] truncate">{cat.description ?? "—"}</TableCell>
+                <TableCell className="text-sm capitalize text-gray-600">{cat.type}</TableCell>
+                <TableCell>
+                  {cat.active
+                    ? <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />Active</span>
+                    : <span className="inline-flex items-center gap-1 text-xs text-gray-400"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block" />Inactive</span>}
+                </TableCell>
                 <TableCell className="text-xs text-gray-500">{format(new Date(cat.createdAt), "MMM d, yyyy")}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-[#1a3a6e]" title={cat.active ? "Deactivate" : "Activate"} onClick={() => toggleActive(cat)}>
+                      <Power className="h-3.5 w-3.5" />
+                    </Button>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => { setEditing(cat); setDialogOpen(true); }}>
                       <Pencil className="h-3.5 w-3.5 text-gray-500" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => deleteCategory(cat.id)}>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setDeleteTarget(cat)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -196,7 +237,7 @@ export function AdminCategories() {
               </TableRow>
             ))}
             {!loading && categories.length === 0 && (
-              <TableRow><TableCell colSpan={5} className="h-24 text-center text-gray-400">No categories yet. Use "Seed Defaults" to add standard service types.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">No categories yet. Use "Seed Defaults" to add standard service types.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -208,6 +249,18 @@ export function AdminCategories() {
         onSaved={load}
         initial={editing}
       />
+
+      {deleteTarget && (
+        <ConfirmDialog
+          open={true}
+          title="Delete Category"
+          description={`Permanently delete "${deleteTarget.name}"? This cannot be undone.`}
+          confirmLabel="Delete"
+          variant="destructive"
+          onConfirm={deleteCategory}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }

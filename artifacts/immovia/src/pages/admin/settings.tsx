@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, Settings, RefreshCw } from "lucide-react";
+import { Loader2, Save, CheckCircle2, RefreshCw } from "lucide-react";
 
 interface Setting {
   id: number;
@@ -70,7 +70,7 @@ export function AdminSettings() {
     setSaving(true); setError(""); setSaved(false);
     try {
       const res = await fetch("/api/admin/settings", {
-        method: "PUT", headers: { "Content-Type": "application/json" },
+        method: "PATCH", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify(values),
       });
       if (!res.ok) { setError("Failed to save settings."); return; }
@@ -110,7 +110,7 @@ export function AdminSettings() {
 
       {saved && (
         <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2">
-          <Settings className="h-4 w-4" /> Settings saved successfully.
+          <CheckCircle2 className="h-4 w-4" /> Settings saved successfully.
         </div>
       )}
       {error && (

@@ -139,6 +139,87 @@ export interface AdminStats {
   recentActivity: ActivityItem[];
 }
 
+export interface StatusUpdate {
+  status: string;
+}
+
+export interface KeyValueMap {[key: string]: string}
+
+export interface AdminUser {
+  id: number;
+  email: string;
+  fullName: string;
+  role: string;
+  /** @nullable */
+  providerType?: string | null;
+  /** @nullable */
+  city?: string | null;
+  language: string;
+  verified: boolean;
+  createdAt: string;
+}
+
+export interface AdminUserAction {
+  /** approve | suspend | reactivate | delete */
+  action: string;
+}
+
+export interface AdminApplication {
+  id: number;
+  /** @nullable */
+  projectId?: number | null;
+  /** @nullable */
+  applicantUserId?: number | null;
+  /** @nullable */
+  message?: string | null;
+  /** @nullable */
+  proposedPrice?: string | null;
+  status: string;
+  createdAt: string;
+}
+
+export interface AdminApplicationInput {
+  projectId?: number;
+  applicantUserId?: number;
+  message?: string;
+  proposedPrice?: string;
+}
+
+export interface AdminCategory {
+  id: number;
+  name: string;
+  slug: string;
+  /** service | project */
+  type: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface AdminCategoryInput {
+  name?: string;
+  slug?: string;
+  type?: string;
+  active?: boolean;
+}
+
+export interface AdminReport {
+  id: number;
+  /** @nullable */
+  reporterId?: number | null;
+  targetType: string;
+  targetId: number;
+  reason: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface AdminSetting {
+  id: number;
+  key: string;
+  value: string;
+  updatedAt: string;
+}
+
 export interface ChatMessageInput {
   /** @minLength 1 */
   message: string;

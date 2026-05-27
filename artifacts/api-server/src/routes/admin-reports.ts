@@ -11,11 +11,11 @@ router.get("/admin/reports", requireAdmin, async (_req, res): Promise<void> => {
 });
 
 router.post("/admin/reports", async (req, res): Promise<void> => {
-  const { targetType, targetId, reason, reporterEmail } = req.body as {
+  const { targetType, targetId, reason, reporterId } = req.body as {
     targetType?: string;
     targetId?: number;
     reason?: string;
-    reporterEmail?: string;
+    reporterId?: number;
   };
 
   if (!targetType || !targetId || !reason) {
@@ -25,7 +25,7 @@ router.post("/admin/reports", async (req, res): Promise<void> => {
 
   const [created] = await db
     .insert(reportsTable)
-    .values({ targetType, targetId, reason, reporterEmail: reporterEmail ?? null })
+    .values({ targetType, targetId, reason, reporterId: reporterId ?? null })
     .returning();
 
   res.status(201).json({ ...created, createdAt: created!.createdAt.toISOString() });

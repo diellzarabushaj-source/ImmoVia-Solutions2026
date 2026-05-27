@@ -279,6 +279,223 @@ export const GetAdminStatsResponse = zod.object({
 
 
 /**
+ * @summary List all registered users
+ */
+export const ListAdminUsersResponseItem = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "fullName": zod.string(),
+  "role": zod.string(),
+  "providerType": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "language": zod.string(),
+  "verified": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListAdminUsersResponse = zod.array(ListAdminUsersResponseItem)
+
+
+/**
+ * @summary Approve, suspend, reactivate or delete a user
+ */
+export const PatchAdminUserParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const PatchAdminUserBody = zod.object({
+  "action": zod.string().describe('approve | suspend | reactivate | delete')
+})
+
+export const PatchAdminUserResponse = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "fullName": zod.string(),
+  "role": zod.string(),
+  "providerType": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "language": zod.string(),
+  "verified": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List all service-provider applications
+ */
+export const ListAdminApplicationsResponseItem = zod.object({
+  "id": zod.number(),
+  "projectId": zod.number().nullish(),
+  "applicantUserId": zod.number().nullish(),
+  "message": zod.string().nullish(),
+  "proposedPrice": zod.string().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListAdminApplicationsResponse = zod.array(ListAdminApplicationsResponseItem)
+
+
+/**
+ * @summary Create a project application
+ */
+export const CreateAdminApplicationBody = zod.object({
+  "projectId": zod.number().optional(),
+  "applicantUserId": zod.number().optional(),
+  "message": zod.string().optional(),
+  "proposedPrice": zod.string().optional()
+})
+
+
+/**
+ * @summary Update application status
+ */
+export const PatchAdminApplicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const PatchAdminApplicationBody = zod.object({
+  "status": zod.string()
+})
+
+export const PatchAdminApplicationResponse = zod.object({
+  "id": zod.number(),
+  "projectId": zod.number().nullish(),
+  "applicantUserId": zod.number().nullish(),
+  "message": zod.string().nullish(),
+  "proposedPrice": zod.string().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an application
+ */
+export const DeleteAdminApplicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List all service categories
+ */
+export const ListAdminCategoriesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "slug": zod.string(),
+  "type": zod.string().describe('service | project'),
+  "active": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListAdminCategoriesResponse = zod.array(ListAdminCategoriesResponseItem)
+
+
+/**
+ * @summary Create a service category
+ */
+export const CreateAdminCategoryBody = zod.object({
+  "name": zod.string().optional(),
+  "slug": zod.string().optional(),
+  "type": zod.string().optional(),
+  "active": zod.boolean().optional()
+})
+
+
+/**
+ * @summary Update a service category
+ */
+export const PatchAdminCategoryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const PatchAdminCategoryBody = zod.object({
+  "name": zod.string().optional(),
+  "slug": zod.string().optional(),
+  "type": zod.string().optional(),
+  "active": zod.boolean().optional()
+})
+
+export const PatchAdminCategoryResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "slug": zod.string(),
+  "type": zod.string().describe('service | project'),
+  "active": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a service category
+ */
+export const DeleteAdminCategoryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List all user-submitted reports
+ */
+export const ListAdminReportsResponseItem = zod.object({
+  "id": zod.number(),
+  "reporterId": zod.number().nullish(),
+  "targetType": zod.string(),
+  "targetId": zod.number(),
+  "reason": zod.string(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListAdminReportsResponse = zod.array(ListAdminReportsResponseItem)
+
+
+/**
+ * @summary Update report status
+ */
+export const PatchAdminReportParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const PatchAdminReportBody = zod.object({
+  "status": zod.string()
+})
+
+export const PatchAdminReportResponse = zod.object({
+  "id": zod.number(),
+  "reporterId": zod.number().nullish(),
+  "targetType": zod.string(),
+  "targetId": zod.number(),
+  "reason": zod.string(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get all platform settings
+ */
+export const GetAdminSettingsResponseItem = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "value": zod.string(),
+  "updatedAt": zod.coerce.date()
+})
+export const GetAdminSettingsResponse = zod.array(GetAdminSettingsResponseItem)
+
+
+/**
+ * @summary Update one or more platform settings
+ */
+export const PatchAdminSettingsBody = zod.record(zod.string(), zod.string())
+
+export const PatchAdminSettingsResponseItem = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "value": zod.string(),
+  "updatedAt": zod.coerce.date()
+})
+export const PatchAdminSettingsResponse = zod.array(PatchAdminSettingsResponseItem)
+
+
+/**
  * Returns a presigned GCS URL for direct upload. The client sends JSON
 metadata here, then uploads the file directly to the returned URL.
 
