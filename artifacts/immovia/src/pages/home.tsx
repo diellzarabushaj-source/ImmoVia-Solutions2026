@@ -196,6 +196,10 @@ export default function Home() {
   const [listingCityFilter, setListingCityFilter] = useState(() => new URLSearchParams(search).get("city") ?? "");
   const [listingSizeFilter, setListingSizeFilter] = useState(() => new URLSearchParams(search).get("size") ?? "");
   const [listingBudgetFilter, setListingBudgetFilter] = useState(() => new URLSearchParams(search).get("budget") ?? "");
+  const [activeTab, setActiveTab] = useState<"service" | "project">("service");
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchCategory, setSearchCategory] = useState("");
+  const [searchCity, setSearchCity] = useState("");
   const listingSearchRef = useRef(search);
   listingSearchRef.current = search;
   // Inbound URL → state
@@ -258,6 +262,16 @@ export default function Home() {
     mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
   };
   const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
+
+  const SEARCH_CATEGORIES = ["renovation", "construction", "interior", "exterior", "plumbing", "electric"] as const;
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchKeyword.trim()) params.set("keyword", searchKeyword.trim());
+    if (searchCategory) params.set("service", searchCategory);
+    if (searchCity.trim()) params.set("city", searchCity.trim());
+    const qs = params.toString();
+    navigate(activeTab === "service" ? `/companies${qs ? `?${qs}` : ""}` : `/projects${qs ? `?${qs}` : ""}`);
+  };
 
   const services = [
     {
@@ -373,121 +387,125 @@ export default function Home() {
           className="container mx-auto px-4 relative z-10"
           style={{ rotateX: tiltX, rotateY: tiltY, transformPerspective: 1400, transformStyle: "preserve-3d" }}
         >
-          <div className="max-w-6xl mx-auto grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-10 xl:gap-14 items-center">
+          <div className="max-w-3xl mx-auto">
           <motion.div className="text-center" initial="initial" animate="animate" variants={stagger}>
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-white/15 border border-white/30 text-white text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-8"
+
+            {/* Badge */}
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-white/15 border border-white/30 text-white text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-6"
               style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
               <Star className="w-3 h-3 text-primary fill-primary" />
               {t.hero.badge}
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-4 leading-[1.05]"
+            {/* Headline */}
+            <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-4 leading-[1.08] text-white"
               style={{ textShadow: "0 2px 20px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.4)" }}>
-              {t.hero.title.split('\n').map((line, i) => (
-                <span key={i} className={i === 1 ? "text-primary drop-shadow-lg" : i === 2 ? "text-blue-300 drop-shadow-lg" : "text-white"}>
-                  {line}{i < t.hero.title.split('\n').length - 1 && <br />}
-                </span>
-              ))}
+              {t.search.headline}
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-lg md:text-xl font-light text-white mb-10 max-w-2xl mx-auto leading-relaxed"
-              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>
-              {t.hero.subtitle}
+            <motion.p variants={fadeUp} className="text-base md:text-lg font-light text-white/80 mb-8 max-w-xl mx-auto leading-relaxed"
+              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+              {t.search.subtitle}
             </motion.p>
 
-            {/* Persona cards */}
-            <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto mb-10">
-              {/* Project Poster persona */}
-              <Link href="/signup?account_type=project_poster">
-                <div className="group rounded-xl p-5 text-left border border-white/20 cursor-pointer transition-all duration-200 hover:border-blue-400/50"
-                  style={{ background: "rgba(10,20,50,0.60)", backdropFilter: "blur(14px)" }}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/30 border border-primary/40 flex items-center justify-center flex-shrink-0">
-                      <HomeIcon className="w-4 h-4 text-blue-300" />
-                    </div>
-                    <span className="text-blue-300 text-[10px] font-bold uppercase tracking-widest">{t.hero.persona1Label}</span>
+            {/* ── Smart Search Card ── */}
+            <motion.div variants={fadeUp} className="bg-white rounded-2xl shadow-2xl shadow-black/40 overflow-hidden mb-6 text-left">
+
+              {/* Tabs */}
+              <div className="flex">
+                <button
+                  onClick={() => setActiveTab("service")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-5 py-4 text-sm font-semibold transition-all duration-200 border-b-2 ${
+                    activeTab === "service"
+                      ? "bg-primary text-white border-primary"
+                      : "bg-white text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
+                  }`}
+                >
+                  <Users className="w-4 h-4 flex-shrink-0" />
+                  <span>{t.search.tab1}</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("project")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-5 py-4 text-sm font-semibold transition-all duration-200 border-b-2 ${
+                    activeTab === "project"
+                      ? "bg-primary text-white border-primary"
+                      : "bg-white text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
+                  }`}
+                >
+                  <FileText className="w-4 h-4 flex-shrink-0" />
+                  <span>{t.search.tab2}</span>
+                </button>
+              </div>
+
+              {/* Inputs */}
+              <div className="p-5">
+                <p className="text-xs text-muted-foreground mb-4">
+                  {activeTab === "service" ? t.search.tab1Helper : t.search.tab2Helper}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1 min-w-0">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <input
+                      value={searchKeyword}
+                      onChange={e => setSearchKeyword(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && handleSearch()}
+                      placeholder={activeTab === "service" ? t.search.keywordPlaceholder1 : t.search.keywordPlaceholder2}
+                      className="w-full h-11 rounded-xl border border-border bg-muted/30 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
                   </div>
-                  <h3 className="text-white text-base font-bold mb-1 leading-snug">{t.hero.persona1Title}</h3>
-                  <p className="text-white/65 text-xs leading-relaxed mb-2">{t.hero.persona1Desc}</p>
-                  <p className="text-white/40 text-[10px] leading-relaxed mb-3">{t.hero.persona1Small}</p>
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-300 group-hover:gap-2 transition-all">
-                    {t.hero.persona1Cta} <ArrowRight className="w-3 h-3" />
-                  </span>
-                </div>
-              </Link>
-
-              {/* Service Provider persona */}
-              <Link href="/signup?account_type=service_provider">
-                <div className="group rounded-xl p-5 text-left border border-white/20 cursor-pointer transition-all duration-200 hover:border-blue-400/50"
-                  style={{ background: "rgba(10,20,50,0.60)", backdropFilter: "blur(14px)" }}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/30 border border-primary/40 flex items-center justify-center flex-shrink-0">
-                      <Briefcase className="w-4 h-4 text-blue-300" />
-                    </div>
-                    <span className="text-blue-300 text-[10px] font-bold uppercase tracking-widest">{t.hero.persona2Label}</span>
+                  <select
+                    value={searchCategory}
+                    onChange={e => setSearchCategory(e.target.value)}
+                    className="h-11 rounded-xl border border-border bg-muted/30 px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 sm:w-44"
+                  >
+                    <option value="">{t.search.categoryAll}</option>
+                    {SEARCH_CATEGORIES.map(cat => (
+                      <option key={cat} value={cat}>{(t.offers as Record<string,string>)[cat] ?? cat}</option>
+                    ))}
+                  </select>
+                  <div className="relative sm:w-40">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <input
+                      value={searchCity}
+                      onChange={e => setSearchCity(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && handleSearch()}
+                      placeholder={t.search.locationPlaceholder}
+                      className="w-full h-11 rounded-xl border border-border bg-muted/30 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
                   </div>
-                  <h3 className="text-white text-base font-bold mb-1 leading-snug">{t.hero.persona2Title}</h3>
-                  <p className="text-white/65 text-xs leading-relaxed mb-2">{t.hero.persona2Desc}</p>
-                  <p className="text-white/40 text-[10px] leading-relaxed mb-3">{t.hero.persona2Small}</p>
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-300 group-hover:gap-2 transition-all">
-                    {t.hero.persona2Cta} <ArrowRight className="w-3 h-3" />
-                  </span>
-                </div>
-              </Link>
-            </motion.div>
-
-            {/* CTAs */}
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
-              <Link href="/signup?account_type=project_poster">
-                <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white text-base px-8 shadow-lg shadow-primary/30" data-testid="hero-cta-project">
-                  <FileText className="mr-2 h-4 w-4" />
-                  {t.hero.ctaProject}
-                </Button>
-              </Link>
-              <Link href="/signup?account_type=service_provider">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white/10 border-white/40 hover:bg-white/20 text-white text-base px-8 backdrop-blur-sm" data-testid="hero-cta-company">
-                  {t.hero.ctaCompany}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="flex flex-wrap items-center justify-center gap-6 text-white/80 text-xs font-medium">
-              {[t.hero.trustBadge1, t.hero.trustBadge2, t.hero.trustBadge3].map((badge, i) => (
-                <span key={i} className="flex items-center gap-1.5" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-primary drop-shadow" />
-                  {badge}
-                </span>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Right: professional marketplace image — xl+ only */}
-          <motion.div
-            className="hidden xl:block"
-            initial={{ opacity: 0, x: 32 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-white/10" style={{ aspectRatio: "3/4" }}>
-              <img
-                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&q=80&fit=crop"
-                alt="Project Poster and Service Provider discussing a project"
-                className="w-full h-full object-cover object-top"
-                loading="eager"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/65 via-transparent to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3.5 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-white text-xs font-bold">5,000+ Projects Posted</p>
-                  <p className="text-white/65 text-[10px]">320+ approved Service Providers</p>
+                  <Button
+                    onClick={handleSearch}
+                    className="h-11 px-6 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/30 sm:flex-shrink-0"
+                    data-testid="hero-smart-search-btn"
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    {activeTab === "service" ? t.search.btn1 : t.search.btn2}
+                  </Button>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
+            {/* Sub-CTA */}
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <span className="text-white/65 text-sm" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                {t.search.ctaText}
+              </span>
+              <div className="flex gap-2 flex-wrap justify-center">
+                <Link href="/signup?account_type=project_poster">
+                  <Button size="sm" className="bg-white text-primary hover:bg-white/90 font-semibold" data-testid="hero-cta-project">
+                    <FileText className="mr-1.5 h-3.5 w-3.5" />
+                    {t.search.ctaPost}
+                  </Button>
+                </Link>
+                <Link href="/signup?account_type=service_provider">
+                  <Button size="sm" variant="outline" className="border-white/40 text-white hover:bg-white/15 backdrop-blur-sm font-semibold" data-testid="hero-cta-company">
+                    <Briefcase className="mr-1.5 h-3.5 w-3.5" />
+                    {t.search.ctaOffer}
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+
+          </motion.div>
           </div>
         </motion.div>
       </motion.section>

@@ -1,0 +1,414 @@
+Create a mega user-friendly Smart Search as the first main element on the Home page.
+
+This is a FRONTEND/UI + SEARCH ROUTING task.
+
+IMPORTANT:
+Frontend must be very user-friendly.
+Backend must stay strict.
+
+Do not change the database.
+Do not rename variables.
+Do not create new roles.
+Do not change authentication.
+Do not change admin logic.
+Do not change account_type, account_subtype, role, or status.
+
+Backend values must remain:
+
+role = admin/user
+account_type = project_poster/service_provider
+account_subtype = individual/company
+status = approval/visibility state
+
+Do not store frontend text as backend values.
+
+GOAL:
+
+The Smart Search should be the first important element users see on the Home page.
+
+It must feel simple, modern, and easy even for a first-time visitor.
+
+The user should instantly understand:
+
+1. I need a service
+2. I want to find projects
+
+Do not make users think about technical account types at this stage.
+
+FRONTEND UX:
+
+Use two large friendly tabs:
+
+Tab 1:
+I need a service
+
+Meaning:
+The user wants to find approved Service Providers.
+
+Backend search target:
+Browse Service Providers
+
+Backend filter:
+account_type = service_provider
+status = approved
+
+Tab 2:
+I want to find projects
+
+Meaning:
+The user offers services and wants to find open projects.
+
+Backend search target:
+Browse Projects
+
+Backend filter:
+status = open
+
+SEARCH CARD PLACEMENT:
+
+Place the Smart Search inside the Hero section or directly under the Hero headline.
+
+The search should be visually dominant and easy to use.
+
+HERO STRUCTURE:
+
+Headline:
+What do you need today?
+
+Subtitle:
+Search open projects or find approved Service Providers in seconds.
+
+Then show the Smart Search card.
+
+SMART SEARCH CARD DESIGN:
+
+Use:
+- large white/glass card
+- rounded corners
+- soft shadow
+- blue active tab
+- simple icons
+- large inputs
+- clear search button
+- mobile responsive layout
+
+Desktop:
+Tabs on top
+Inputs in one row if possible:
+Keyword | Category | Location | Search button
+
+Mobile:
+Tabs on top
+Inputs stacked vertically
+Full-width search button
+
+TAB 1 UI:
+
+Tab label:
+I need a service
+
+Small helper text:
+Find approved individuals and companies offering services.
+
+Keyword placeholder:
+What service do you need?
+
+Examples:
+Renovation
+Electrician
+Cleaning
+Interior design
+Plumbing
+
+Category placeholder:
+Select category
+
+Location placeholder:
+Where?
+
+Button:
+Find Service Providers
+
+Backend logic:
+Navigate to Browse Service Providers page with query parameters:
+keyword
+category
+location
+
+Always apply:
+account_type = service_provider
+status = approved
+
+TAB 2 UI:
+
+Tab label:
+I want to find projects
+
+Small helper text:
+Browse open projects and apply with your services.
+
+Keyword placeholder:
+What type of project are you looking for?
+
+Examples:
+Renovation projects
+Electrical projects
+Construction work
+Cleaning jobs
+Plumbing projects
+
+Category placeholder:
+Select category
+
+Location placeholder:
+Where?
+
+Button:
+Find Projects
+
+Backend logic:
+Navigate to Browse Projects page with query parameters:
+keyword
+category
+location
+
+Always apply:
+status = open
+
+VERY IMPORTANT UX RULE:
+
+Do not show technical labels like account_type, service_provider, project_poster, or status to normal users.
+
+Users see friendly text.
+Backend uses strict values.
+
+FRONTEND/BACKEND MAPPING:
+
+Frontend:
+I need a service
+
+Backend:
+account_type = service_provider
+status = approved
+
+Frontend:
+I want to find projects
+
+Backend:
+status = open
+
+Frontend:
+Find Service Providers
+
+Route:
+Browse Service Providers page
+
+Frontend:
+Find Projects
+
+Route:
+Browse Projects page
+
+NO REGISTRATION INSIDE SEARCH:
+
+The Smart Search is for browsing first.
+
+Do not force registration immediately.
+
+Users should be able to search and preview results publicly.
+
+Registration can be required later for:
+- posting a project
+- applying to a project
+- contacting
+- saving favorites if available
+
+ADD SIMPLE CTA BELOW SEARCH:
+
+Below the search card, add small text:
+
+Want to post or offer services?
+
+Buttons:
+Post a Project
+Offer Services
+
+Button logic:
+Post a Project -> signup/onboarding with account_type = project_poster
+Offer Services -> signup/onboarding with account_type = service_provider
+
+LANGUAGES:
+
+Apply this Smart Search in all supported languages.
+
+Backend values must always remain English snake_case.
+
+English:
+
+Headline:
+What do you need today?
+
+Subtitle:
+Search open projects or find approved Service Providers in seconds.
+
+Tabs:
+I need a service
+I want to find projects
+
+Buttons:
+Find Service Providers
+Find Projects
+
+Albanian:
+
+Headline:
+Çfarë ju duhet sot?
+
+Subtitle:
+Gjeni projekte të hapura ose Ofrues të aprovuar të Shërbimeve për pak sekonda.
+
+Tabs:
+Kam nevojë për shërbim
+Dua të gjej projekte
+
+Buttons:
+Gjej Ofrues Shërbimi
+Gjej Projekte
+
+German:
+
+Headline:
+Was brauchen Sie heute?
+
+Subtitle:
+Finden Sie offene Projekte oder geprüfte Dienstleister in wenigen Sekunden.
+
+Tabs:
+Ich brauche einen Service
+Ich möchte Projekte finden
+
+Buttons:
+Dienstleister finden
+Projekte finden
+
+French:
+
+Headline:
+De quoi avez-vous besoin aujourd’hui ?
+
+Subtitle:
+Trouvez des projets ouverts ou des Prestataires de services approuvés en quelques secondes.
+
+Tabs:
+J’ai besoin d’un service
+Je veux trouver des projets
+
+Buttons:
+Trouver des prestataires
+Trouver des projets
+
+DESIGN DETAILS:
+
+Make it look premium and simple.
+
+Use:
+- clear headline
+- large search card
+- two friendly tabs
+- icons if available
+- category dropdown
+- location field
+- one strong blue search button
+- soft background gradient
+- professional marketplace feeling
+
+Avoid:
+- too much text
+- technical wording
+- too many filters on Home
+- forcing registration before search
+- showing backend values in UI
+- adding more than two tabs
+
+ADVANCED FILTERS:
+
+Do not put advanced filters on Home.
+
+Home search should only include:
+- keyword
+- category
+- location
+
+Advanced filters belong on Browse Projects and Browse Service Providers pages.
+
+BROWSE PAGE BEHAVIOR:
+
+When user searches from Home:
+
+If active tab = I need a service:
+Go to Browse Service Providers page.
+Apply:
+account_type = service_provider
+status = approved
+keyword
+category
+location
+
+If active tab = I want to find projects:
+Go to Browse Projects page.
+Apply:
+status = open
+keyword
+category
+location
+
+SEARCH EMPTY STATES:
+
+If no Service Providers found:
+Title:
+No Service Providers found
+
+Text:
+Try another category or location.
+
+Buttons:
+Clear Search
+Post a Project
+
+Post a Project route:
+signup/onboarding with account_type = project_poster
+
+If no Projects found:
+Title:
+No open projects found
+
+Text:
+Try another category or location.
+
+Buttons:
+Clear Search
+Offer Services
+
+Offer Services route:
+signup/onboarding with account_type = service_provider
+
+FINAL CHECK:
+
+After implementation, verify:
+
+1. Smart Search is the first main element on Home
+2. It has exactly two tabs
+3. Tab 1 searches approved Service Providers
+4. Tab 2 searches open Projects
+5. Users do not see backend values
+6. Backend filters remain strict
+7. Search works with keyword, category, and location
+8. Mobile design is clean
+9. No registration is forced before search
+10. Post a Project and Offer Services buttons still route correctly
+11. Backend values are unchanged
+12. Admin logic is unchanged
+
+Final principle:
+Make the frontend feel extremely simple.
+Keep the backend extremely strict.
