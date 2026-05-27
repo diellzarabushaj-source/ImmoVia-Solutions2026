@@ -732,11 +732,12 @@ export default function Home() {
                   <h3 className="text-xl font-bold text-white mb-2">{t.browse.card4Title}</h3>
                   <p className="text-white/75 text-sm leading-relaxed">{t.browse.card4Desc}</p>
                 </div>
-              <Link href="/signup?account_type=service_provider">
-                <Button className="w-full bg-white text-primary hover:bg-white/90 font-semibold" data-testid="browse-card-register-provider">
-                  {t.browse.card4Cta} <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+                <Link href="/signup?account_type=service_provider">
+                  <Button className="w-full bg-white text-primary hover:bg-white/90 font-semibold" data-testid="browse-card-register-provider">
+                    {t.browse.card4Cta} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -1092,10 +1093,19 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground">{t.howItWorks.posterSubtitle}</p>
               </div>
               <div className="flex flex-col gap-3">
-                {[t.howItWorks.posterStep1, t.howItWorks.posterStep2, t.howItWorks.posterStep3, t.howItWorks.posterStep4, t.howItWorks.posterStep5].map((step, i) => (
+                {([
+                  { step: t.howItWorks.posterStep1, icon: User },
+                  { step: t.howItWorks.posterStep2, icon: FileText },
+                  { step: t.howItWorks.posterStep3, icon: Clock },
+                  { step: t.howItWorks.posterStep4, icon: Users },
+                  { step: t.howItWorks.posterStep5, icon: CheckCircle2 },
+                ] as { step: string; icon: React.ElementType }[]).map(({ step, icon: StepIcon }, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{i + 1}</div>
-                    <p className="text-sm text-foreground leading-relaxed pt-1">{step}</p>
+                    <div className="flex items-start gap-2 flex-1 pt-1">
+                      <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-foreground leading-relaxed">{step}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1119,10 +1129,19 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground">{t.howItWorks.providerSubtitle}</p>
               </div>
               <div className="flex flex-col gap-3">
-                {[t.howItWorks.providerStep1, t.howItWorks.providerStep2, t.howItWorks.providerStep3, t.howItWorks.providerStep4, t.howItWorks.providerStep5].map((step, i) => (
+                {([
+                  { step: t.howItWorks.providerStep1, icon: User },
+                  { step: t.howItWorks.providerStep2, icon: Clock },
+                  { step: t.howItWorks.providerStep3, icon: Search },
+                  { step: t.howItWorks.providerStep4, icon: ArrowRight },
+                  { step: t.howItWorks.providerStep5, icon: HeadphonesIcon },
+                ] as { step: string; icon: React.ElementType }[]).map(({ step, icon: StepIcon }, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{i + 1}</div>
-                    <p className="text-sm text-foreground leading-relaxed pt-1">{step}</p>
+                    <div className="flex items-start gap-2 flex-1 pt-1">
+                      <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-foreground leading-relaxed">{step}</p>
+                    </div>
                   </div>
                 ))}
               </div>
