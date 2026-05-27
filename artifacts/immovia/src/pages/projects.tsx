@@ -217,8 +217,8 @@ export default function Projects() {
             )}
           </div>
 
-          {/* Service type pills */}
-          <div className="max-w-3xl mx-auto mt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {/* Service type pills — edge-to-edge horizontal scroll */}
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4">
             <button
               onClick={() => setTypeFilter("")}
               className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${

@@ -460,25 +460,25 @@ export default function Home() {
               <div className="flex">
                 <button
                   onClick={() => setActiveTab("service")}
-                  className={`flex-1 flex items-center justify-center gap-2 px-5 py-4 text-sm font-semibold transition-all duration-200 border-b-2 ${
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 sm:px-5 py-3.5 sm:py-4 text-xs sm:text-sm font-semibold transition-all duration-200 border-b-2 min-h-[52px] ${
                     activeTab === "service"
                       ? "bg-primary text-white border-primary"
                       : "bg-white text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
                   }`}
                 >
                   <Users className="w-4 h-4 flex-shrink-0" />
-                  <span>{t.search.tab1}</span>
+                  <span className="leading-tight text-center">{t.search.tab1}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("project")}
-                  className={`flex-1 flex items-center justify-center gap-2 px-5 py-4 text-sm font-semibold transition-all duration-200 border-b-2 ${
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 sm:px-5 py-3.5 sm:py-4 text-xs sm:text-sm font-semibold transition-all duration-200 border-b-2 min-h-[52px] ${
                     activeTab === "project"
                       ? "bg-primary text-white border-primary"
                       : "bg-white text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
                   }`}
                 >
                   <FileText className="w-4 h-4 flex-shrink-0" />
-                  <span>{t.search.tab2}</span>
+                  <span className="leading-tight text-center">{t.search.tab2}</span>
                 </button>
               </div>
 
