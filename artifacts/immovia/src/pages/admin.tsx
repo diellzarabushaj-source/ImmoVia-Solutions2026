@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
-import { useUser, RedirectToSignIn } from "@clerk/react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LayoutDashboard,
   Hammer,
@@ -16,11 +18,11 @@ import {
   LogOut,
   Shield,
   Eye,
+  EyeOff,
   Loader2,
   ChevronRight,
   ShieldOff,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 
 import { AdminOverview } from "./admin/overview";
 import { AdminProjects } from "./admin/projects";
@@ -31,6 +33,10 @@ import { AdminApplications } from "./admin/applications";
 import { AdminCategories } from "./admin/categories";
 import { AdminReports } from "./admin/reports";
 import { AdminSettings } from "./admin/settings";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type AuthState = "loading" | "authenticated" | "unauthenticated";
 
 // ─── Nav Config ──────────────────────────────────────────────────────────────
 
@@ -45,6 +51,109 @@ const NAV_ITEMS = [
   { path: "/admin/reports", label: "Reports", icon: Flag, badge: true },
   { path: "/admin/settings", label: "Settings", icon: Settings },
 ] as const;
+
+// ─── Login Form ───────────────────────────────────────────────────────────────
+
+function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin-auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password }),
+      });
+      if (res.ok) {
+        onSuccess();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError((data as { error?: string }).error ?? "Invalid credentials.");
+      }
+    } catch {
+      setError("Connection error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f2044] to-[#1a3a6e] px-4">
+      <Card className="w-full max-w-sm shadow-2xl border-0">
+        <CardHeader className="text-center pb-4 pt-8">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1a3a6e]">
+            <Shield className="h-7 w-7 text-white" />
+          </div>
+          <CardTitle className="text-xl font-bold tracking-tight">ImmoVia Admin</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">Restricted access</p>
+        </CardHeader>
+        <CardContent className="pb-8">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter username"
+                required
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  required
+                  disabled={loading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                {error}
+              </p>
+            )}
+            <Button
+              type="submit"
+              className="w-full bg-[#1a3a6e] hover:bg-[#0f2044]"
+              disabled={loading}
+            >
+              {loading ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in…</>
+              ) : "Sign in"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 // ─── Pending Badges ───────────────────────────────────────────────────────────
 
@@ -180,45 +289,18 @@ function AdminShell({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-// ─── Access Denied ────────────────────────────────────────────────────────────
-
-function AccessDenied({ onLogout }: { onLogout: () => void }) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f2044] to-[#1a3a6e] px-4">
-      <div className="text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
-          <ShieldOff className="h-8 w-8 text-white/70" />
-        </div>
-        <h1 className="text-xl font-bold text-white mb-2">Access Denied</h1>
-        <p className="text-white/60 text-sm mb-6">
-          You do not have admin permissions to access this area.
-        </p>
-        <div className="flex flex-col gap-2 items-center">
-          <Link href="/">
-            <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-              Return to site
-            </Button>
-          </Link>
-          <button
-            onClick={onLogout}
-            className="text-xs text-white/40 hover:text-white/70 mt-2"
-          >
-            Sign out
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
-  const { isLoaded, isSignedIn } = useUser();
-  const auth = useAuth();
+  const [authState, setAuthState] = useState<AuthState>("loading");
 
-  // Clerk still loading
-  if (!isLoaded) {
+  useEffect(() => {
+    fetch("/api/admin-auth/verify", { credentials: "include" })
+      .then((r) => { setAuthState(r.ok ? "authenticated" : "unauthenticated"); })
+      .catch(() => setAuthState("unauthenticated"));
+  }, []);
+
+  if (authState === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0f2044]">
         <Loader2 className="h-8 w-8 animate-spin text-white/60" />
@@ -226,24 +308,14 @@ export default function AdminDashboard() {
     );
   }
 
-  // Not signed into Clerk → show Clerk sign-in immediately
-  if (!isSignedIn) {
-    return <RedirectToSignIn />;
+  if (authState === "unauthenticated") {
+    return <AdminLoginForm onSuccess={() => setAuthState("authenticated")} />;
   }
 
-  // Clerk signed in but DB user still syncing
-  if (auth.loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0f2044]">
-        <Loader2 className="h-8 w-8 animate-spin text-white/60" />
-      </div>
-    );
-  }
+  const handleLogout = async () => {
+    await fetch("/api/admin-auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
+    setAuthState("unauthenticated");
+  };
 
-  // Signed in but not admin
-  if (auth.user?.role !== "admin") {
-    return <AccessDenied onLogout={auth.logout} />;
-  }
-
-  return <AdminShell onLogout={auth.logout} />;
+  return <AdminShell onLogout={handleLogout} />;
 }
