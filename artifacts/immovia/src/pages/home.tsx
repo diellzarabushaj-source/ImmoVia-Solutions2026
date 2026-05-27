@@ -203,6 +203,10 @@ export default function Home() {
   const [searchCategory, setSearchCategory] = useState("");
   const [searchCity, setSearchCity] = useState("");
   const [isLocating, setIsLocating] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suggestWrapRef = useRef<HTMLDivElement>(null);
   const listingSearchRef = useRef(search);
   listingSearchRef.current = search;
   // Inbound URL → state
@@ -265,6 +269,21 @@ export default function Home() {
     mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
   };
   const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
+
+  const fetchSuggestions = (val: string, tab: string) => {
+    if (suggestDebounce.current) clearTimeout(suggestDebounce.current);
+    if (val.trim().length < 2) { setSuggestions([]); setShowSuggestions(false); return; }
+    suggestDebounce.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search/suggestions?q=${encodeURIComponent(val.trim())}&tab=${tab}`);
+        const data = await res.json() as string[];
+        setSuggestions(data);
+        setShowSuggestions(data.length > 0);
+      } catch {
+        setSuggestions([]);
+      }
+    }, 260);
+  };
 
   const detectLocation = () => {
     if (!navigator.geolocation) return;
@@ -469,15 +488,41 @@ export default function Home() {
                   {activeTab === "service" ? t.search.tab1Helper : t.search.tab2Helper}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1 min-w-0">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <div className="relative flex-1 min-w-0" ref={suggestWrapRef}>
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
                     <input
                       value={searchKeyword}
-                      onChange={e => setSearchKeyword(e.target.value)}
-                      onKeyDown={e => e.key === "Enter" && handleSearch()}
+                      onChange={e => {
+                        setSearchKeyword(e.target.value);
+                        fetchSuggestions(e.target.value, activeTab);
+                      }}
+                      onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") { setShowSuggestions(false); handleSearch(); }
+                        if (e.key === "Escape") setShowSuggestions(false);
+                      }}
                       placeholder={activeTab === "service" ? t.search.keywordPlaceholder1 : t.search.keywordPlaceholder2}
                       className="w-full h-11 rounded-xl border border-border bg-muted/30 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      autoComplete="off"
                     />
+                    {showSuggestions && suggestions.length > 0 && (
+                      <ul className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 bg-white border border-border rounded-xl shadow-lg overflow-hidden">
+                        {suggestions.map((s, i) => (
+                          <li
+                            key={i}
+                            onMouseDown={() => {
+                              setSearchKeyword(s);
+                              setShowSuggestions(false);
+                            }}
+                            className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-foreground hover:bg-primary/8 cursor-pointer transition-colors"
+                          >
+                            <Search className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                   <select
                     value={searchCategory}

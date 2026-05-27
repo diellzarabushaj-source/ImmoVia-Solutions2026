@@ -21,6 +21,7 @@ import adminApplicationsRouter from "./admin-applications";
 import adminCategoriesRouter from "./admin-categories";
 import adminReportsRouter from "./admin-reports";
 import adminSettingsRouter from "./admin-settings";
+import searchRouter from "./search";
 
 const router: IRouter = Router();
 
@@ -46,5 +47,6 @@ router.use(adminApplicationsRouter);
 router.use(adminCategoriesRouter);
 router.use(adminReportsRouter);
 router.use(adminSettingsRouter);
+router.use(searchRouter);
 
 export default router;
