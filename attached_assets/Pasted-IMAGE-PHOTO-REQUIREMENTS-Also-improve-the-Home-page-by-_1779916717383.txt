@@ -1,0 +1,91 @@
+IMAGE / PHOTO REQUIREMENTS:
+
+Also improve the Home page by adding professional, relevant images or visual placeholders.
+
+IMPORTANT:
+Do not use random unrelated images.
+Do not use low-quality images.
+Do not use images that make the platform look cheap.
+Do not add too many images.
+Do not break mobile layout.
+Do not change backend logic.
+
+Use images only to support the marketplace message.
+
+Recommended image types:
+- people discussing a project
+- construction/service teamwork
+- real estate or property service visuals
+- professionals working
+- company/service collaboration
+- clean office or planning scene
+- project management / service marketplace style visuals
+
+Avoid:
+- generic stock photos that look fake
+- overly dark images
+- random houses without context
+- luxury-only real estate images
+- photos that suggest only one industry
+- images that make it look like only a construction website
+
+Where to add images:
+
+1. Hero section:
+Add one strong professional hero image or illustration on the right side.
+It should visually show collaboration between Project Posters and Service Providers.
+
+2. Four action cards:
+Add small icons or simple images for each card:
+- Browse Projects: project/list/search icon
+- Post a Project: document/posting icon
+- Browse Service Providers: people/search icon
+- Offer Services: service/profile icon
+
+3. How It Works section:
+Use simple icons for each step instead of large images.
+
+4. Browse marketplace section:
+Use clean visual cards with icons or small thumbnails.
+
+Image style:
+- modern
+- professional
+- trustworthy
+- clean
+- blue/white compatible
+- consistent with current design
+- optimized for fast loading
+- responsive on mobile
+
+If using external images:
+Use only safe, reliable, royalty-free images or placeholders.
+Prefer local assets if the project already has images.
+Optimize images for web performance.
+
+If no final images are available:
+Use elegant placeholders or icons for now, but structure the UI so real images can be added later easily.
+
+Accessibility:
+Every image must have meaningful alt text.
+
+Examples:
+Hero image alt:
+“Project Poster and Service Provider discussing a project”
+
+Browse Projects icon alt:
+“Browse open projects”
+
+Post a Project icon alt:
+“Post a new project”
+
+Browse Service Providers icon alt:
+“Browse approved Service Providers”
+
+Offer Services icon alt:
+“Create a Service Provider profile”
+
+Final goal:
+The Home page should look more visual and professional, but images should support the exact marketplace logic:
+Project Posters post projects.
+Service Providers offer services and apply to projects.

@@ -1205,60 +1205,74 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── DUAL CTA ── */}
-      <section className="py-14 md:py-20 bg-foreground text-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Homeowner CTA */}
-            <motion.div
-              className="bg-primary rounded-2xl p-8 flex flex-col gap-5"
-              initial={{ opacity: 0, x: -24 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <Hammer className="w-8 h-8 text-white/70" />
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-2">{t.cta.title}</h3>
-                <p className="text-white/75 text-sm leading-relaxed">{t.cta.subtitle}</p>
+      {/* ── FINAL CTA ── */}
+      <section className="py-16 md:py-24 bg-foreground text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-primary opacity-[0.06] blur-[100px] pointer-events-none" />
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            className="text-center max-w-2xl mx-auto mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t.cta.title}</h2>
+            <p className="text-white/65 text-lg leading-relaxed">{t.cta.subtitle}</p>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            viewport={{ once: true }}
+          >
+            {/* Project Poster card */}
+            <div className="bg-primary rounded-2xl p-7 flex flex-col gap-4">
+              <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-white" />
               </div>
-              <Link href="/submit-project">
+              <div>
+                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Project Poster</div>
+                <h3 className="text-xl font-bold text-white mb-1">{t.cta.button}</h3>
+                <p className="text-white/70 text-sm leading-relaxed">{t.cta.subtitle}</p>
+              </div>
+              <Link href="/signup?account_type=project_poster">
                 <Button
                   size="lg"
-                  className="bg-white text-primary hover:bg-white/90 font-semibold w-full sm:w-auto"
+                  className="bg-white text-primary hover:bg-white/90 font-semibold w-full"
                   data-testid="footer-cta-project"
                 >
                   {t.cta.button}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-            </motion.div>
+            </div>
 
-            {/* Company CTA */}
-            <motion.div
-              className="bg-white/8 border border-white/15 rounded-2xl p-8 flex flex-col gap-5"
-              initial={{ opacity: 0, x: 24 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <Building2 className="w-8 h-8 text-primary" />
+            {/* Service Provider card */}
+            <div className="bg-white/8 border border-white/15 rounded-2xl p-7 flex flex-col gap-4">
+              <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center">
+                <Briefcase className="w-5 h-5 text-white" />
+              </div>
               <div>
-                <h3 className="text-2xl font-bold text-white mb-2">{t.cta.companyTitle}</h3>
+                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Service Provider</div>
+                <h3 className="text-xl font-bold text-white mb-1">{t.cta.companyTitle}</h3>
                 <p className="text-white/65 text-sm leading-relaxed">{t.cta.companySubtitle}</p>
               </div>
-              <Link href="/register-company">
+              <Link href="/signup?account_type=service_provider">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 font-semibold w-full sm:w-auto"
+                  className="border-white/30 text-white hover:bg-white/15 font-semibold w-full"
                   data-testid="footer-cta-company"
                 >
                   {t.cta.companyButton}
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
