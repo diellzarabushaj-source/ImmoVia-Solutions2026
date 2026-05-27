@@ -684,7 +684,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SERVICES / OFFERS ── */}
+      {/* ── OUR PROFESSIONALS ── */}
       <section className="py-14 md:py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
@@ -694,8 +694,8 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.offers.title}</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">{t.offers.subtitle}</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.professionals.title}</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">{t.professionals.subtitle}</p>
             <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
           </motion.div>
 
@@ -746,93 +746,6 @@ export default function Home() {
               </motion.div>
             ))}
           </motion.div>
-        </div>
-      </section>
-
-      {/* ── PROFESSIONALS PREVIEW ── */}
-      <section className="py-14 md:py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="text-center mb-14"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{t.professionals.title}</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">{t.professionals.subtitle}</p>
-            <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
-          </motion.div>
-
-          {isLoadingCompanies && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-border p-4 flex gap-3 items-start">
-                  <Skeleton className="w-11 h-11 rounded-xl flex-shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                    <Skeleton className="h-3 w-1/3" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!isLoadingCompanies && previewCompanies.length > 0 && (
-            <div className="relative">
-              <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
-                variants={stagger}
-                initial="initial"
-                whileInView="animate"
-                viewport={{ once: true, margin: "-40px" }}
-              >
-                {previewCompanies.map((company, idx) => (
-                  <motion.div key={company.id} variants={fadeUp}>
-                    <CompanyPreviewCard company={company} t={t} />
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              {!user && (
-                <div className="relative mt-5">
-                  <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-white z-10 pointer-events-none" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
-                    {previewCompanies.slice(0, 3).map((company, idx) => (
-                      <div key={`ghost-${idx}`}>
-                        <CompanyPreviewCard company={company} t={t} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-                    <div className="bg-white/90 backdrop-blur-sm border border-border rounded-2xl px-8 py-8 text-center shadow-lg max-w-sm mx-auto">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                        <Lock className="w-6 h-6 text-primary" />
-                      </div>
-                      <p className="text-sm font-medium text-foreground mb-5">{t.professionals.gateLabel}</p>
-                      <Link href="/signup">
-                        <Button size="lg" className="w-full" data-testid="professionals-gate-cta">
-                          {t.professionals.gateCta}
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {user && (
-                <div className="text-center mt-10">
-                  <Link href="/companies">
-                    <Button variant="outline" size="lg" data-testid="professionals-see-all">
-                      {t.professionals.seeAll}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </section>
 
