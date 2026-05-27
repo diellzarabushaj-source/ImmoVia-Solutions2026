@@ -78,7 +78,7 @@ export function AdminPending() {
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 h-7 px-2"
-                          onClick={() => updateProject.mutate({ id: p.id, data: { status: "matched" } }, { onSuccess: invalidateAll })}>
+                          onClick={() => updateProject.mutate({ id: p.id, data: { status: "open" } }, { onSuccess: invalidateAll })}>
                           <CheckCircle2 className="h-3.5 w-3.5" />
                         </Button>
                         <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 h-7 px-2"
