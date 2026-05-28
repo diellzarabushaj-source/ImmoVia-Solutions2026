@@ -7,8 +7,8 @@ export default defineConfig({
   name: "immovia-blog",
   title: "ImmoVia Blog",
 
-  projectId: process.env.SANITY_STUDIO_PROJECT_ID ?? "",
-  dataset: process.env.SANITY_STUDIO_DATASET ?? "production",
+  projectId: "c0tinigu",
+  dataset: "production",
 
   plugins: [structureTool(), visionTool()],
 
