@@ -30,6 +30,8 @@ import Pricing from "@/pages/pricing";
 import ProviderDashboard from "@/pages/provider";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
+import Blog from "@/pages/blog";
+import BlogPost from "@/pages/blog-post";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -177,6 +179,8 @@ function Router() {
         <Route path="/pricing" component={Pricing} />
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
+        <Route path="/blog" component={Blog} />
+        <Route path="/blog/:slug" component={BlogPost} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

@@ -18,6 +18,7 @@ export const translations = {
       howItWorks: 'Si Funksionon',
       browseProjects: 'Shfleto Projektet',
       browseServiceProviders: 'Shfleto Ofruesit',
+      blog: 'Blog',
     },
     footer: {
       admin: 'Admin',
@@ -695,6 +696,7 @@ export const translations = {
       howItWorks: 'How It Works',
       browseProjects: 'Browse Projects',
       browseServiceProviders: 'Browse Service Providers',
+      blog: 'Blog',
     },
     footer: {
       admin: 'Admin',
@@ -1372,6 +1374,7 @@ export const translations = {
       howItWorks: 'So funktioniert es',
       browseProjects: 'Projekte durchsuchen',
       browseServiceProviders: 'Dienstleister durchsuchen',
+      blog: 'Blog',
     },
     footer: {
       admin: 'Admin',
@@ -2049,6 +2052,7 @@ export const translations = {
       howItWorks: 'Comment ça marche',
       browseProjects: 'Parcourir les Projets',
       browseServiceProviders: 'Parcourir les Prestataires',
+      blog: 'Blog',
     },
     footer: {
       admin: 'Admin',
