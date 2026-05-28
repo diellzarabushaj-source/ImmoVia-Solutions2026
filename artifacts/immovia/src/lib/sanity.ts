@@ -14,6 +14,7 @@ export type PortableTextBlock = any;
 
 const PROJECT_ID = import.meta.env.VITE_SANITY_PROJECT_ID as string | undefined;
 const DATASET = (import.meta.env.VITE_SANITY_DATASET as string | undefined) ?? "production";
+const API_VERSION = (import.meta.env.VITE_SANITY_API_VERSION as string | undefined) ?? "2024-01-01";
 
 export const isSanityConfigured = Boolean(PROJECT_ID);
 
@@ -25,7 +26,7 @@ function getClient(): SanityClient {
     _client = createClient({
       projectId: PROJECT_ID,
       dataset: DATASET,
-      apiVersion: "2024-01-01",
+      apiVersion: API_VERSION,
       useCdn: true,
     });
   }
