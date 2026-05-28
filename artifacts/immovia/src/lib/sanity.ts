@@ -1,4 +1,4 @@
-import { createClient, type SanityClient } from "@sanity/client";
+import { createClient } from "@sanity/client";
 import imageUrlBuilder from "@sanity/image-url";
 
 export type SanityImageRef = {
@@ -18,24 +18,21 @@ const API_VERSION = (import.meta.env.VITE_SANITY_API_VERSION as string | undefin
 
 export const isSanityConfigured = Boolean(PROJECT_ID);
 
-let _client: SanityClient | null = null;
+// Client used ONLY for building image URLs (no API calls made).
+let _imageBuilder: ReturnType<typeof imageUrlBuilder> | null = null;
 
-function getClient(): SanityClient {
-  if (!_client) {
-    if (!PROJECT_ID) throw new Error("VITE_SANITY_PROJECT_ID is not set");
-    _client = createClient({
-      projectId: PROJECT_ID,
-      dataset: DATASET,
-      apiVersion: API_VERSION,
-      useCdn: true,
-    });
+function getImageBuilder() {
+  if (!_imageBuilder && PROJECT_ID) {
+    const client = createClient({ projectId: PROJECT_ID, dataset: DATASET, apiVersion: API_VERSION, useCdn: true });
+    _imageBuilder = imageUrlBuilder(client);
   }
-  return _client;
+  return _imageBuilder;
 }
 
 export function urlFor(source: SanityImageRef) {
-  const client = getClient();
-  return imageUrlBuilder(client).image(source);
+  const builder = getImageBuilder();
+  if (!builder) throw new Error("Sanity project ID not configured");
+  return builder.image(source);
 }
 
 export interface BlogPostSummary {
@@ -52,35 +49,16 @@ export interface BlogPostFull extends BlogPostSummary {
   body?: PortableTextBlock[];
 }
 
-export const BLOG_LIST_QUERY = `
-  *[_type == "blogPost" && status == "published"] | order(publishedAt desc) {
-    _id,
-    title,
-    slug,
-    excerpt,
-    mainImage,
-    category,
-    publishedAt
-  }
-`;
-
-export const BLOG_POST_QUERY = `
-  *[_type == "blogPost" && slug.current == $slug && status == "published"][0] {
-    _id,
-    title,
-    slug,
-    excerpt,
-    mainImage,
-    category,
-    publishedAt,
-    body
-  }
-`;
-
+// All data fetching goes through the Express API proxy — no CORS issues.
 export async function fetchBlogList(): Promise<BlogPostSummary[]> {
-  return getClient().fetch<BlogPostSummary[]>(BLOG_LIST_QUERY);
+  const res = await fetch("/api/blog");
+  if (!res.ok) throw new Error("Failed to fetch blog posts");
+  return res.json() as Promise<BlogPostSummary[]>;
 }
 
 export async function fetchBlogPost(slug: string): Promise<BlogPostFull | null> {
-  return getClient().fetch<BlogPostFull | null>(BLOG_POST_QUERY, { slug });
+  const res = await fetch(`/api/blog/${encodeURIComponent(slug)}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Failed to fetch blog post");
+  return res.json() as Promise<BlogPostFull>;
 }

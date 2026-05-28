@@ -175,6 +175,9 @@ importers:
       '@google-cloud/storage':
         specifier: ^7.19.0
         version: 7.19.0
+      '@sanity/client':
+        specifier: ^7.22.0
+        version: 7.22.0
       '@workspace/api-zod':
         specifier: workspace:*
         version: link:../../lib/api-zod

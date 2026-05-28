@@ -22,6 +22,7 @@ import adminCategoriesRouter from "./admin-categories";
 import adminReportsRouter from "./admin-reports";
 import adminSettingsRouter from "./admin-settings";
 import searchRouter from "./search";
+import blogRouter from "./blog";
 
 const router: IRouter = Router();
 
@@ -48,5 +49,6 @@ router.use(adminCategoriesRouter);
 router.use(adminReportsRouter);
 router.use(adminSettingsRouter);
 router.use(searchRouter);
+router.use(blogRouter);
 
 export default router;
