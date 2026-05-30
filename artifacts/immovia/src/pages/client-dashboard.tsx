@@ -20,8 +20,23 @@ import {
   MapPin, Calendar, ArrowRight, Flame, ShieldCheck,
   Archive, CheckCircle2, Eye, Trash2, Building2,
   BarChart3, Scale, Pencil,
+  Hammer, Paintbrush, Zap, Wrench, ChefHat, SquareStack, Sofa, Leaf, HelpCircle,
 } from "lucide-react";
 import { format } from "date-fns";
+import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+
+// ── Category icon map ─────────────────────────────────────────────────────────
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  renovation:      Hammer,
+  painting:        Paintbrush,
+  electrical:      Zap,
+  plumbing:        Wrench,
+  kitchen:         ChefHat,
+  flooring:        SquareStack,
+  interior_design: Sofa,
+  cleaning:        Leaf,
+  other:           HelpCircle,
+};
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -381,41 +396,51 @@ export default function ClientDashboard() {
             )}
 
             {/* ── PROJEKT ERSTELLEN ── */}
-            {activeSection === "erstellen" && (
-              <div>
-                <h2 className="text-xl font-serif font-bold mb-6">{l.navCreate}</h2>
-                <Card className="p-8 text-center">
-                  <PlusCircle className="w-12 h-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    {language === "de" ? "Neues Projekt erstellen" : language === "fr" ? "Créer un nouveau projet" : language === "sq" ? "Krijo Projekt të Ri" : "Create New Project"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">{l.publishHelper}</p>
-                  <Link href="/submit-project">
-                    <Button size="lg" data-testid="button-go-create">
-                      <PlusCircle className="w-4 h-4 mr-2" />{l.noProjectCta}
-                    </Button>
-                  </Link>
-                </Card>
-
-                {/* Quick links */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                  {[
-                    { key: "cat_renovation", icon: Briefcase },
-                    { key: "cat_construction", icon: Building2 },
-                    { key: "cat_electrical", icon: ShieldCheck },
-                    { key: "cat_plumbing", icon: Settings },
-                  ].map(({ key, icon: Icon }) => (
-                    <Link href={`/submit-project?type=${key}`} key={key}>
-                      <Card className="p-4 hover:border-primary/40 cursor-pointer transition-colors flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-primary" />
-                        <span className="text-sm font-medium">{(l as Record<string, string>)[key] ?? key}</span>
-                        <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
-                      </Card>
-                    </Link>
-                  ))}
+            {activeSection === "erstellen" && (() => {
+              const requestQuoteLabel =
+                language === "de" ? "Angebot anfordern" :
+                language === "fr" ? "Demander un devis" :
+                language === "sq" ? "Kërko Ofertë" :
+                "Request a Quote";
+              return (
+                <div>
+                  <div className="mb-6">
+                    <h2 className="text-xl font-serif font-bold">{l.navCreate}</h2>
+                    <p className="text-sm text-muted-foreground mt-1">{l.publishHelper}</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {CATEGORIES.map(cat => {
+                      const Icon = CATEGORY_ICONS[cat.key] ?? HelpCircle;
+                      return (
+                        <div key={cat.key} className="bg-white rounded-2xl border border-border p-5 flex flex-col gap-3 hover:border-primary/30 hover:shadow-sm transition-all duration-200">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-5 h-5 text-primary" />
+                            </div>
+                            <span className="font-semibold text-sm leading-tight">{getCategoryLabel(cat, language as Lang)}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {cat.tags.map(tag => (
+                              <span key={tag.key} className="text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded-full">
+                                {getTagLabel(tag, language as Lang)}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="mt-auto pt-1">
+                            <Link href={`/submit-project?type=${cat.key}`}>
+                              <Button size="sm" variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40" data-testid={`button-category-${cat.key}`}>
+                                {requestQuoteLabel}
+                                <ArrowRight className="w-3.5 h-3.5 ml-2" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* ── MEINE PROJEKTE ── */}
             {activeSection === "projekte" && (
