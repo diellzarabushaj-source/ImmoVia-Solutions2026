@@ -12,7 +12,9 @@ import {
   UpdateCompanyResponse,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/requireAdmin";
-import { sendNewCompanyNotification } from "../lib/email";
+import { sendNewCompanyNotification, sendProviderApprovedNotification, sendProviderSuspendedNotification } from "../lib/email";
+import { createNotification } from "../lib/notify";
+import { usersTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -129,6 +131,50 @@ router.patch("/companies/:id", requireAdmin, async (req, res): Promise<void> => 
   if (!company) {
     res.status(404).json({ error: "Company not found" });
     return;
+  }
+
+  // Notify service provider when admin changes company status
+  if (parsed.data.status) {
+    void (async () => {
+      try {
+        const [providerUser] = await db
+          .select({ id: usersTable.id, email: usersTable.email, fullName: usersTable.fullName })
+          .from(usersTable)
+          .where(eq(usersTable.email, company.email))
+          .limit(1);
+        if (!providerUser) return;
+        const newStatus = parsed.data.status!;
+        if (newStatus === "approved") {
+          await createNotification({
+            recipientUserId: providerUser.id,
+            type: "provider_approved",
+            title: "Ihr Profil wurde freigegeben",
+            message: `Ihr Unternehmensprofil (${company.companyName}) ist jetzt aktiv und für Kunden sichtbar.`,
+            relatedCompanyId: company.id,
+          });
+          await sendProviderApprovedNotification({
+            providerEmail: providerUser.email,
+            providerName: providerUser.fullName,
+            companyName: company.companyName,
+          });
+        } else if (newStatus === "suspended" || newStatus === "rejected") {
+          await createNotification({
+            recipientUserId: providerUser.id,
+            type: "provider_suspended",
+            title: "Ihr Profil wurde deaktiviert",
+            message: `Ihr Profil (${company.companyName}) wurde vorübergehend deaktiviert.`,
+            relatedCompanyId: company.id,
+          });
+          await sendProviderSuspendedNotification({
+            providerEmail: providerUser.email,
+            providerName: providerUser.fullName,
+            companyName: company.companyName,
+          });
+        }
+      } catch (err) {
+        req.log.error({ err }, "Failed to send company status notification");
+      }
+    })();
   }
 
   res.json(UpdateCompanyResponse.parse(company));

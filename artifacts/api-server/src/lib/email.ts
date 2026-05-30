@@ -417,6 +417,125 @@ export async function sendOfferAcceptedNotification(data: {
   else logger.info({ to: data.providerEmail, type: "offer_accepted", lang }, "Offer accepted notification sent");
 }
 
+// ── sendProjectPublishedNotification ─────────────────────────────────────────
+export async function sendProjectPublishedNotification(data: {
+  clientEmail: string;
+  clientName: string;
+  projectType: string;
+  city: string;
+  projectId: number;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.clientEmail) return;
+  const url = appUrl();
+  const { error } = await client.emails.send({
+    from: "ImmoVia <onboarding@resend.dev>",
+    to: data.clientEmail,
+    subject: `Ihr Projekt wurde veröffentlicht — ImmoVia`,
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Projekt veröffentlicht</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">Guten Tag <strong>${data.clientName}</strong>,</p>
+          <p style="margin:0 0 20px">Ihr Projekt <strong>${data.projectType}</strong> in <strong>${data.city}</strong> wurde geprüft und ist jetzt auf der Plattform veröffentlicht. Fachbetriebe können Ihr Projekt nun einsehen und Angebote einreichen.</p>
+          <div style="margin-top:24px"><a href="${url}/dashboard" style="${BTN_STYLE}">Mein Dashboard</a></div>
+        </div>
+        ${footer("de")}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send project published notification");
+  else logger.info({ to: data.clientEmail, type: "project_published" }, "Project published notification sent");
+}
+
+// ── sendProjectRejectedNotification ──────────────────────────────────────────
+export async function sendProjectRejectedNotification(data: {
+  clientEmail: string;
+  clientName: string;
+  projectType: string;
+  city: string;
+  reason?: string | null;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.clientEmail) return;
+  const url = appUrl();
+  const { error } = await client.emails.send({
+    from: "ImmoVia <onboarding@resend.dev>",
+    to: data.clientEmail,
+    subject: `Ihr Projekt konnte nicht veröffentlicht werden — ImmoVia`,
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Projektstatus</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">Guten Tag <strong>${data.clientName}</strong>,</p>
+          <p style="margin:0 0 20px">Ihr Projekt <strong>${data.projectType}</strong> in <strong>${data.city}</strong> konnte leider nicht veröffentlicht werden.${data.reason ? ` <strong>Grund:</strong> ${data.reason}` : ""}</p>
+          <p style="margin:0 0 20px;font-size:13px;color:#64748b">Sie können eine neue Anfrage einreichen oder unser Team kontaktieren.</p>
+          <div style="margin-top:24px"><a href="${url}/dashboard" style="${BTN_STYLE}">Mein Dashboard</a></div>
+        </div>
+        ${footer("de")}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send project rejected notification");
+  else logger.info({ to: data.clientEmail, type: "project_rejected" }, "Project rejected notification sent");
+}
+
+// ── sendProviderApprovedNotification ─────────────────────────────────────────
+export async function sendProviderApprovedNotification(data: {
+  providerEmail: string;
+  providerName: string;
+  companyName: string;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.providerEmail) return;
+  const url = appUrl();
+  const { error } = await client.emails.send({
+    from: "ImmoVia <onboarding@resend.dev>",
+    to: data.providerEmail,
+    subject: `Ihr Profil wurde freigegeben — ImmoVia`,
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Profil freigegeben</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">Guten Tag <strong>${data.providerName}</strong>,</p>
+          <p style="margin:0 0 20px">Ihr Unternehmensprofil <strong>${data.companyName}</strong> wurde geprüft und ist jetzt aktiv. Sie können nun Projekte einsehen und Angebote einreichen.</p>
+          <div style="margin-top:24px"><a href="${url}/provider" style="${BTN_STYLE}">Zum Dashboard</a></div>
+        </div>
+        ${footer("de")}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send provider approved notification");
+  else logger.info({ to: data.providerEmail, type: "provider_approved" }, "Provider approved notification sent");
+}
+
+// ── sendProviderSuspendedNotification ─────────────────────────────────────────
+export async function sendProviderSuspendedNotification(data: {
+  providerEmail: string;
+  providerName: string;
+  companyName: string;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.providerEmail) return;
+  const { error } = await client.emails.send({
+    from: "ImmoVia <onboarding@resend.dev>",
+    to: data.providerEmail,
+    subject: `Ihr Profil wurde deaktiviert — ImmoVia`,
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Profilestatus</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">Guten Tag <strong>${data.providerName}</strong>,</p>
+          <p style="margin:0 0 20px">Ihr Profil <strong>${data.companyName}</strong> wurde vorübergehend deaktiviert. Bitte kontaktieren Sie unser Team für weitere Informationen.</p>
+        </div>
+        ${footer("de")}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send provider suspended notification");
+  else logger.info({ to: data.providerEmail, type: "provider_suspended" }, "Provider suspended notification sent");
+}
+
 // ── sendNewMessageNotification ────────────────────────────────────────────────
 export async function sendNewMessageNotification(data: {
   recipientEmail: string;

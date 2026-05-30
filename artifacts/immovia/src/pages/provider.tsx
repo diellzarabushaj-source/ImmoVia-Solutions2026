@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
+import NotificationBell from "@/components/NotificationBell";
 import { CATEGORIES, getCategoryLabel, resolveTagLabel, resolveCategoryLabel, type Lang } from "@/lib/categories";
 import {
   billingApi,
@@ -671,6 +672,10 @@ export default function ProviderDashboard() {
           {success}
         </div>
       )}
+
+      <div className="flex justify-end mb-2">
+        <NotificationBell />
+      </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}

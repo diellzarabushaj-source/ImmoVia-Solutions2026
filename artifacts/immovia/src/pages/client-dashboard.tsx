@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth, isProjectPoster, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
+import NotificationBell from "@/components/NotificationBell";
 import {
   billingApi,
   type ProviderProject,
@@ -249,6 +250,9 @@ export default function ClientDashboard() {
   return (
     <div className="min-h-screen bg-muted/20">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="flex justify-end mb-2">
+          <NotificationBell />
+        </div>
         <div className="flex gap-6">
 
           {/* Sidebar */}

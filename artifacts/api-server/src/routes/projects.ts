@@ -13,7 +13,8 @@ import {
   UpdateProjectResponse,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/requireAdmin";
-import { sendNewProjectNotification, sendProjectConfirmationToClient } from "../lib/email";
+import { sendNewProjectNotification, sendProjectConfirmationToClient, sendProjectPublishedNotification, sendProjectRejectedNotification } from "../lib/email";
+import { createNotification, getUserEmail } from "../lib/notify";
 
 const router: IRouter = Router();
 
@@ -152,6 +153,51 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
   if (!project) {
     res.status(404).json({ error: "Project not found" });
     return;
+  }
+
+  // Notify client when admin changes project status
+  if (parsed.data.status && project.ownerUserId) {
+    void (async () => {
+      try {
+        const clientUser = await getUserEmail(project.ownerUserId!);
+        if (!clientUser) return;
+        const newStatus = parsed.data.status!;
+        const isPublished = newStatus === "open";
+        const isRejected = newStatus === "cancelled" || newStatus === "archived";
+        if (isPublished) {
+          await createNotification({
+            recipientUserId: project.ownerUserId!,
+            type: "project_published",
+            title: "Ihr Projekt wurde veröffentlicht",
+            message: `Ihr Projekt (${project.projectType} in ${project.city}) ist jetzt aktiv. Dienstleister können nun Angebote einreichen.`,
+            relatedProjectId: project.id,
+          });
+          await sendProjectPublishedNotification({
+            clientEmail: clientUser.email,
+            clientName: clientUser.fullName,
+            projectType: project.projectType,
+            city: project.city,
+            projectId: project.id,
+          });
+        } else if (isRejected) {
+          await createNotification({
+            recipientUserId: project.ownerUserId!,
+            type: "project_rejected",
+            title: "Projektanfrage abgelehnt",
+            message: `Ihr Projekt (${project.projectType} in ${project.city}) konnte leider nicht veröffentlicht werden.`,
+            relatedProjectId: project.id,
+          });
+          await sendProjectRejectedNotification({
+            clientEmail: clientUser.email,
+            clientName: clientUser.fullName,
+            projectType: project.projectType,
+            city: project.city,
+          });
+        }
+      } catch (err) {
+        req.log.error({ err }, "Failed to send project status notification");
+      }
+    })();
   }
 
   res.json(UpdateProjectResponse.parse(project));

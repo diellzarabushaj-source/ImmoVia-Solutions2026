@@ -1,0 +1,206 @@
+Please do not redesign or visually change the dashboards.
+
+Keep the current dashboard layout as it is.
+
+I only want to add logical system connections, status updates, notifications, and emails between Admin, Client/Project Poster, and Service Provider.
+
+Main goal:
+When one user action changes something important in the system, the related users should be notified and the status/progress should update logically.
+
+Please do not change the UI design unless absolutely necessary. Only add the missing logic.
+
+---
+
+1. Project status/progress for Client
+
+When a Client/Project Poster creates a project, the project should have a clear status/progress.
+
+Example statuses:
+
+* Draft
+* Submitted
+* Under Review
+* Published
+* Open for Service Providers
+* Provider Interested
+* Provider Contacted / Application Received
+* Accepted
+* In Progress
+* Completed
+* Archived / Rejected
+
+The Client dashboard should show the current status of each project.
+
+Example:
+If admin approves/publishes the project, the Client should see:
+“Your project is now published.”
+
+If a Service Provider contacts/unlocks/applies to the project, the Client should see:
+“A service provider is interested in your project.”
+
+---
+
+2. Admin actions should notify related users
+
+When Admin changes something important, notify the correct user.
+
+Examples:
+
+Admin approves a project:
+
+* Update project status to Published/Open.
+* Notify the Client in the dashboard.
+* Send email to the Client.
+
+Admin rejects/archives a project:
+
+* Update project status.
+* Notify the Client.
+* Send email to the Client with a short reason if available.
+
+Admin approves a Service Provider:
+
+* Update provider status to Approved/Active.
+* Notify the Service Provider.
+* Send email to the Service Provider.
+
+Admin suspends/rejects a Service Provider:
+
+* Update provider status.
+* Notify the Service Provider.
+* Send email if needed.
+
+Admin changes credits or membership:
+
+* Notify the Service Provider.
+* Update credit balance/membership status.
+* Send email if needed.
+
+---
+
+3. Service Provider actions should notify Client
+
+When a Service Provider interacts with a project, the Client should know.
+
+Examples:
+
+Service Provider unlocks/contact a project:
+
+* Create a project interaction record.
+* Notify the Client.
+* Send email to the Client.
+* Update project progress to “Provider Interested” or “Application Received”.
+
+Service Provider sends a message/application:
+
+* Link it to the correct project.
+* Notify the Client.
+* Send email to the Client.
+
+Service Provider withdraws/cancels interest:
+
+* Update interaction status.
+* Notify the Client if needed.
+
+---
+
+4. Client actions should notify Service Provider
+
+When the Client reacts to a provider, the Service Provider should know.
+
+Examples:
+
+Client accepts/selects a Service Provider:
+
+* Update interaction status to Accepted.
+* Notify the selected Service Provider.
+* Send email to the selected Service Provider.
+* Update project status to Accepted or In Progress.
+
+Client rejects a Service Provider:
+
+* Update interaction status to Rejected.
+* Notify the Service Provider if needed.
+
+Client replies to a message:
+
+* Notify the Service Provider.
+* Send email if email notifications are enabled.
+
+Client marks project as completed:
+
+* Update project status to Completed.
+* Notify connected Service Provider.
+* Notify Admin if needed.
+
+---
+
+5. Admin should see full project connection
+
+Admin should be able to understand the full logic:
+
+Project → Client who posted it
+Project → Service Providers who contacted/unlocked/applied
+Project → Current status/progress
+Project → Notifications/events history if possible
+Service Provider → Projects contacted
+Client → Projects posted
+
+Do not create disconnected records.
+
+---
+
+6. Notification system
+
+Please create a simple notification system if it does not already exist.
+
+Each notification should include:
+
+* notificationId
+* recipientUserId
+* type
+* title
+* message
+* relatedProjectId if relevant
+* relatedProviderId if relevant
+* read/unread status
+* createdAt
+
+Show notifications inside the correct dashboard if possible, without redesigning the dashboard.
+
+---
+
+7. Email notifications
+
+Please use the existing email system/RESEND_API_KEY if available.
+
+Send emails for important actions only:
+
+* Project approved/published
+* Project rejected/archived
+* Provider interested/contacted project
+* Client accepts provider
+* Admin approves/rejects provider
+* Credit/membership important changes
+
+German must be the default email language.
+
+Keep emails simple, professional, and short.
+
+---
+
+8. Important rules
+
+Do not redesign dashboards.
+Do not create new complicated pages.
+Do not change existing layout unless necessary.
+Do not rename everything again.
+Do not duplicate systems.
+
+Only add logical connections:
+Admin action → status update → notify user → send email
+Provider action → project interaction → notify Client → update progress
+Client action → provider notified → project progress updated
+
+Goal:
+The existing dashboards should stay visually almost the same, but the system should behave logically and professionally.

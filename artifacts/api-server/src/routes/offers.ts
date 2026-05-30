@@ -11,6 +11,7 @@ import {
   rollSubscriptionCycle,
 } from "../lib/credits";
 import { sendNewOfferNotification, sendOfferAcceptedNotification } from "../lib/email";
+import { createNotification } from "../lib/notify";
 
 const router: IRouter = Router();
 
@@ -197,6 +198,14 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
         .where(eq(usersTable.id, userId))
         .limit(1);
       if (clientUser && providerUser) {
+        const senderLabel = providerUser.companyName ?? providerUser.fullName;
+        await createNotification({
+          recipientUserId: project.ownerUserId!,
+          type: "offer_received",
+          title: `Neues Angebot erhalten — ${senderLabel}`,
+          message: `${senderLabel} hat ein Angebot für Ihr Projekt (${project.projectType} in ${project.city}) eingereicht.`,
+          relatedProjectId: projectId,
+        });
         await sendNewOfferNotification({
           clientEmail: clientUser.email,
           clientName: clientUser.fullName,
@@ -258,6 +267,13 @@ router.post("/offers/:id/accept", requireAuth, async (req, res): Promise<void> =
         .where(eq(usersTable.id, userId))
         .limit(1);
       if (providerUser && clientUser) {
+        await createNotification({
+          recipientUserId: offer.providerUserId,
+          type: "offer_accepted",
+          title: "Ihr Angebot wurde angenommen",
+          message: `${clientUser.fullName} hat Ihr Angebot für das Projekt (${project.projectType} in ${project.city}) angenommen.`,
+          relatedProjectId: project.id,
+        });
         await sendOfferAcceptedNotification({
           providerEmail: providerUser.email,
           providerName: providerUser.fullName,

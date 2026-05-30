@@ -751,6 +751,7 @@ export const translations = {
       haveProject: 'Ke një projekt për këtë Ofrues Shërbimi?',
       sendProject: 'Dërgo Projekt',
       reviewCount: 'vlerësime',
+      noReviews: 'Asnjë vlerësim ende.',
     },
     portfolio: {
       title: 'Portofolio',
@@ -1806,6 +1807,7 @@ export const translations = {
       haveProject: 'Have a project for this service provider?',
       sendProject: 'Submit Project',
       reviewCount: 'reviews',
+      noReviews: 'No reviews yet.',
     },
     portfolio: {
       title: 'Portfolio',
@@ -2861,6 +2863,7 @@ export const translations = {
       haveProject: 'Haben Sie ein Projekt für diesen Profi?',
       sendProject: 'Projekt einreichen',
       reviewCount: 'Bewertungen',
+      noReviews: 'Noch keine Bewertungen.',
     },
     portfolio: {
       title: 'Portfolio',
@@ -3916,6 +3919,7 @@ export const translations = {
       haveProject: 'Vous avez un projet pour ce prestataire ?',
       sendProject: 'Soumettre un projet',
       reviewCount: 'avis',
+      noReviews: "Pas encore d'avis.",
     },
     portfolio: {
       title: 'Portfolio',

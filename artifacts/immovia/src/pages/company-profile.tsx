@@ -45,12 +45,6 @@ interface Company {
   status: string;
 }
 
-const MOCK_REVIEWS = [
-  { id: 1, author: "Thomas B.", rating: 5, date: "März 2025", text: "Hervorragende Arbeit! Absolut zu empfehlen." },
-  { id: 2, author: "Markus K.", rating: 4, date: "Februar 2025", text: "Sehr professionell und pünktlich mit den vereinbarten Terminen." },
-  { id: 3, author: "Sandra M.", rating: 5, date: "Januar 2025", text: "Ausgezeichnetes Ergebnis, sehr zufrieden mit der Qualität." },
-];
-
 const GALLERY_PLACEHOLDERS = [
   "/gallery-1.jpg",
   "/gallery-2.jpg",
@@ -157,8 +151,6 @@ export default function CompanyProfile() {
   }
 
   const isIndividual = company.workerType === "individual";
-  const avgRating = 4.8;
-  const reviewCount = MOCK_REVIEWS.length;
   const validGallery = GALLERY_PLACEHOLDERS.filter((_, i) => !galleryErrors.has(i));
 
   return (
@@ -208,13 +200,6 @@ export default function CompanyProfile() {
                     <BadgeCheck className="w-3 h-3" />
                     {t.publicProfile.verified}
                   </span>
-                </div>
-
-                {/* Rating */}
-                <div className="flex items-center gap-2 mb-3">
-                  <StarRating value={avgRating} />
-                  <span className="text-sm font-bold text-foreground">{avgRating}</span>
-                  <span className="text-sm text-muted-foreground">({reviewCount} {t.publicProfile.reviewCount})</span>
                 </div>
 
                 {/* Meta row */}
@@ -361,30 +346,12 @@ export default function CompanyProfile() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                  <Star className="w-5 h-5 text-primary" />
-                  {t.publicProfile.reviews}
-                </h2>
-                <div className="flex items-center gap-2">
-                  <StarRating value={avgRating} />
-                  <span className="text-sm font-bold">{avgRating}</span>
-                  <span className="text-xs text-muted-foreground">({reviewCount})</span>
-                </div>
-              </div>
-              <div className="space-y-4">
-                {MOCK_REVIEWS.map(r => (
-                  <div key={r.id} className="border border-border rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-semibold text-sm">{r.author}</p>
-                        <p className="text-xs text-muted-foreground">{r.date}</p>
-                      </div>
-                      <StarRating value={r.rating} />
-                    </div>
-                    <p className="text-sm text-foreground/80 italic">"{r.text}"</p>
-                  </div>
-                ))}
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mb-4">
+                <Star className="w-5 h-5 text-primary" />
+                {t.publicProfile.reviews}
+              </h2>
+              <div className="rounded-xl bg-muted/40 border-2 border-dashed border-border p-10 text-center text-muted-foreground text-sm">
+                {t.publicProfile.noReviews}
               </div>
             </motion.div>
           </div>
