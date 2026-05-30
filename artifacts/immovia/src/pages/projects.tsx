@@ -50,6 +50,7 @@ function getPostedLabel(createdAt: string, listings: { today: string; yesterday:
 
 type Project = {
   id: number;
+  title?: string | null;
   projectType: string;
   description: string;
   city: string;
@@ -70,26 +71,39 @@ function ProjectCard({ project, t }: {
   const sizeColor = SIZE_COLORS[sz] ?? SIZE_COLORS.medium;
   const typeLabel = (t.offers as Record<string, string>)[project.projectType] ?? project.projectType;
   const postedLabel = getPostedLabel(project.createdAt, t.listings);
+  const cardTitle = project.title ?? typeLabel;
 
   return (
     <Link href={`/projects/${project.id}`}>
       <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden h-full cursor-pointer group">
-        <div className="px-5 pt-5 pb-4 border-b border-border/50 flex gap-3 items-start">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+
+        {/* Header */}
+        <div className="px-5 pt-5 pb-4 flex gap-3 items-start">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
             <Icon className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-foreground text-sm capitalize leading-tight group-hover:text-primary transition-colors">{typeLabel}</h3>
-            <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
-              <MapPin className="h-3 w-3 flex-shrink-0" />
-              <span>{project.city}</span>
+            <h3 className="font-bold text-foreground text-base leading-snug group-hover:text-primary transition-colors line-clamp-2">
+              {cardTitle}
+            </h3>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary/8 text-primary px-2 py-0.5 rounded-full">
+                <Icon className="w-3 h-3" />
+                {typeLabel}
+              </span>
+              <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                <MapPin className="h-3 w-3 flex-shrink-0" />
+                {project.city}
+              </span>
             </div>
           </div>
           <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${sizeColor}`}>{sizeLabel}</span>
         </div>
-        <div className="px-5 py-4 flex-1 flex flex-col gap-3">
-          <p className="text-sm text-foreground/75 leading-relaxed line-clamp-2">{project.description}</p>
-          <div className="flex items-center justify-between mt-auto">
+
+        {/* Body */}
+        <div className="px-5 pb-5 flex-1 flex flex-col gap-3 border-t border-border/40 pt-3">
+          <p className="text-sm text-foreground/70 leading-relaxed line-clamp-2">{project.description}</p>
+          <div className="flex items-center justify-between mt-auto pt-1">
             {project.budget ? (
               <div className="flex items-center gap-1.5 text-primary font-bold text-sm">
                 <FileText className="h-3.5 w-3.5" />

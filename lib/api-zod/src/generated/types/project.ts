@@ -11,6 +11,11 @@ export interface Project {
   fullName: string;
   email: string;
   phone: string;
+  /**
+     * Human-readable project title
+     * @nullable
+     */
+  title?: string | null;
   /** renovation | construction | interior | exterior | other */
   projectType: string;
   description: string;

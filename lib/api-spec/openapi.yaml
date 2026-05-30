@@ -727,6 +727,9 @@ components:
           type: string
         phone:
           type: string
+        title:
+          type: ["string", "null"]
+          description: "Human-readable project title"
         projectType:
           type: string
           description: "renovation | construction | interior | exterior | other"

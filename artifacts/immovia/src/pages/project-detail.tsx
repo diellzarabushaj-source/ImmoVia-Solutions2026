@@ -28,6 +28,7 @@ import { motion } from "framer-motion";
 
 interface Project {
   id: number;
+  title?: string | null;
   fullName: string;
   email: string;
   phone: string;
@@ -172,10 +173,14 @@ export default function ProjectDetail() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-start gap-2 mb-2">
-                  <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight capitalize">
-                    {typeLabel}
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight w-full">
+                    {project.title ?? typeLabel}
                   </h1>
-                  <span className={`inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full border ${statusColor} mt-1`}>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                    <Icon className="w-3 h-3" />
+                    {typeLabel}
+                  </span>
+                  <span className={`inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full border ${statusColor}`}>
                     <CheckCircle2 className="w-3 h-3 mr-1" />
                     {statusLabel}
                   </span>
