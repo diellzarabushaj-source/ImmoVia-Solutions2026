@@ -16,8 +16,13 @@ export interface Project {
      * @nullable
      */
   title?: string | null;
-  /** renovation | construction | interior | exterior | other */
+  /** Category key (renovation | painting | electrical | plumbing | kitchen | flooring | interior_design | cleaning | other) */
   projectType: string;
+  /**
+     * Sub-category tag key from the selected category's tag list
+     * @nullable
+     */
+  subcategory?: string | null;
   description: string;
   city: string;
   /** @nullable */

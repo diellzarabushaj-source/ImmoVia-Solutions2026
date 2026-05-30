@@ -27,7 +27,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Hammer, Building2, Sofa, TreePine, Wrench, CheckCircle2, Home as HomeIcon, Crown, Sparkles, Layers, Zap, Paintbrush, FlameKindling, ChefHat, Leaf, Star, SquareStack, HelpCircle } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
+import { CATEGORIES, getCategoryLabel, getTagLabel, resolveCategoryLabel, resolveTagLabel, type Lang } from "@/lib/categories";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function SubmitProject() {
@@ -55,6 +55,7 @@ export default function SubmitProject() {
     email: z.string().email({ message: "Invalid email address" }),
     phone: z.string().min(5, { message: "Phone number is required" }),
     projectType: z.string().min(1, { message: "Project type is required" }),
+    subcategory: z.string().optional(),
     size: z.enum(["small", "medium", "large", "premium"]),
     description: z.string().min(10, { message: "Description must be at least 10 characters" }),
     city: z.string().min(2, { message: "City is required" }),
@@ -69,6 +70,7 @@ export default function SubmitProject() {
       email: user?.email ?? "",
       phone: user?.phone ?? "",
       projectType: "",
+      subcategory: "",
       size: "medium",
       description: "",
       city: user?.city ?? "",
@@ -129,6 +131,7 @@ export default function SubmitProject() {
     icon: SUBMIT_ICONS[cat.key] ?? HelpCircle,
     label: getCategoryLabel(cat, language as Lang),
   }));
+  const selectedCategoryData = CATEGORIES.find(c => c.key === form.watch("projectType"));
 
   if (!authLoading && !user) {
     return (
@@ -354,7 +357,7 @@ export default function SubmitProject() {
                                   ? "border-primary bg-secondary/50 text-foreground"
                                   : "border-border bg-card text-muted-foreground hover:border-primary/50"
                               }`}
-                              onClick={() => field.onChange(type.id)}
+                              onClick={() => { field.onChange(type.id); form.setValue("subcategory", ""); }}
                             >
                               <type.icon className={`w-8 h-8 ${field.value === type.id ? "text-primary" : ""}`} />
                               <span className="font-medium text-sm text-center">{type.label}</span>
@@ -365,6 +368,35 @@ export default function SubmitProject() {
                       </FormItem>
                     )}
                   />
+                  {selectedCategoryData && (
+                    <div className="pt-4 border-t border-border">
+                      <p className="text-sm font-medium text-muted-foreground mb-3">
+                        {language === "de" ? "Genauere Leistung (optional)" :
+                         language === "sq" ? "Shërbim specifik (opsional)" :
+                         language === "fr" ? "Service précis (optionnel)" :
+                         "More specific service (optional)"}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCategoryData.tags.map(tag => {
+                          const isSelected = form.watch("subcategory") === tag.key;
+                          return (
+                            <button
+                              key={tag.key}
+                              type="button"
+                              onClick={() => form.setValue("subcategory", isSelected ? "" : tag.key)}
+                              className={`px-3 py-1.5 text-sm rounded-full border transition-all ${
+                                isSelected
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                              }`}
+                            >
+                              {getTagLabel(tag, language as Lang)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -538,7 +570,10 @@ export default function SubmitProject() {
                     </div>
                     <div className="md:col-span-2 mt-2">
                       <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Project Details</h4>
-                      <p className="font-medium capitalize">{form.getValues().projectType}</p>
+                      <p className="font-medium">{resolveCategoryLabel(form.getValues().projectType, language as Lang)}</p>
+                      {form.getValues().subcategory && (
+                        <p className="text-sm text-primary/80 mt-0.5">{resolveTagLabel(form.getValues().subcategory!, language as Lang)}</p>
+                      )}
                       <p className="text-sm mt-1 bg-background p-3 rounded border border-border">
                         {form.getValues().description}
                       </p>

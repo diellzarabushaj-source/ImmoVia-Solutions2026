@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
-import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
+import { CATEGORIES, getCategoryLabel, resolveTagLabel, resolveCategoryLabel, type Lang } from "@/lib/categories";
 import {
   billingApi,
   offerCostFor,

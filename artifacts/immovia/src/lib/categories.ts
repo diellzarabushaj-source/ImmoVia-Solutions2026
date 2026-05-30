@@ -161,3 +161,17 @@ export function resolveCategoryLabel(key: string, lang: Lang): string {
   const cat = getCategoryByKey(key);
   return cat ? getCategoryLabel(cat, lang) : key;
 }
+
+export function resolveTagLabel(tagKey: string, lang: Lang): string {
+  for (const cat of CATEGORIES) {
+    const tag = cat.tags.find(t => t.key === tagKey);
+    if (tag) return getTagLabel(tag, lang);
+  }
+  return tagKey;
+}
+
+export function resolveAnyLabel(key: string, lang: Lang): string {
+  const cat = getCategoryByKey(key);
+  if (cat) return getCategoryLabel(cat, lang);
+  return resolveTagLabel(key, lang);
+}

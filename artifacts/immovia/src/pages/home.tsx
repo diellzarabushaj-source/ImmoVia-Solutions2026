@@ -503,9 +503,12 @@ export default function Home() {
                     className="h-11 rounded-xl border border-border bg-muted/30 px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 sm:w-44"
                   >
                     <option value="">{t.search.categoryAll}</option>
-                    {SEARCH_CATEGORIES.map(cat => (
-                      <option key={cat} value={cat}>{(t.offers as Record<string,string>)[cat] ?? cat}</option>
-                    ))}
+                    {SEARCH_CATEGORIES.map(cat => {
+                      const catObj = CATEGORIES.find(c => c.key === cat);
+                      return (
+                        <option key={cat} value={cat}>{catObj ? getCategoryLabel(catObj, language as Lang) : cat}</option>
+                      );
+                    })}
                   </select>
                   <div className="relative sm:w-44">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />

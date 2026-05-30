@@ -15,7 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
+import { CATEGORIES, getCategoryLabel, getTagLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
 
 const SERVICE_OPTIONS = CATEGORIES.map(c => c.key);
 

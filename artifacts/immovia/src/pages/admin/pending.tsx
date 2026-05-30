@@ -10,9 +10,12 @@ import {
 } from "@/components/ui/table";
 import { CheckCircle2, XCircle, Loader2, Building2, FolderOpen } from "lucide-react";
 import { format } from "date-fns";
+import { useLanguage } from "@/lib/language-context";
+import { resolveCategoryLabel, resolveTagLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
 
 export function AdminPending() {
   const qc = useQueryClient();
+  const { language } = useLanguage();
 
   const { data: projects, isLoading: projectsLoading } = useListProjects({ status: "pending" });
   const { data: companies, isLoading: companiesLoading } = useListCompanies({ status: "pending" });
@@ -70,7 +73,10 @@ export function AdminPending() {
                       <div className="text-xs text-gray-500 truncate max-w-[120px]">{p.email}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm capitalize">{p.projectType}</div>
+                      <div className="text-sm font-medium">{resolveCategoryLabel(p.projectType, language as Lang)}</div>
+                      {(p as {subcategory?: string | null}).subcategory && (
+                        <div className="text-xs text-primary/70">{resolveTagLabel((p as {subcategory?: string | null}).subcategory!, language as Lang)}</div>
+                      )}
                       <div className="text-xs text-gray-500">{p.city}</div>
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">{p.budget ?? "—"}</TableCell>

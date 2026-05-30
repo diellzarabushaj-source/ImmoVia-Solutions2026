@@ -12,6 +12,8 @@ export interface ProjectInput {
   email: string;
   phone: string;
   projectType: string;
+  /** Sub-category tag key (optional) */
+  subcategory?: string;
   /** @minLength 10 */
   description: string;
   city: string;

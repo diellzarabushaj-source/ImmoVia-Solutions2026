@@ -20,7 +20,7 @@ import {
   FormDescription
 } from "@/components/ui/form";
 import { CheckCircle2, User, Building2 } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
+import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function RegisterCompany() {
@@ -292,40 +292,72 @@ export default function RegisterCompany() {
               name="serviceTypes"
               render={() => (
                 <FormItem>
-                  <div className="mb-4">
+                  <div className="mb-3">
                     <FormLabel className="text-base">{t.companyForm.services}</FormLabel>
+                    <FormDescription className="text-xs mt-1">
+                      {language === "de" ? "Wählen Sie Hauptkategorien und optional Spezialgebiete" :
+                       language === "sq" ? "Zgjidhni kategoritë kryesore dhe opsionalisht nënkategoritë" :
+                       language === "fr" ? "Sélectionnez les catégories principales et optionnellement les sous-catégories" :
+                       "Select main categories and optionally sub-categories"}
+                    </FormDescription>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    {servicesList.map((item) => (
+                  <div className="space-y-2">
+                    {CATEGORIES.map((cat) => (
                       <FormField
-                        key={item.id}
+                        key={cat.key}
                         control={form.control}
                         name="serviceTypes"
                         render={({ field }) => {
+                          const isChecked = field.value?.includes(cat.key);
                           return (
-                            <FormItem
-                              key={item.id}
-                              className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(item.id)}
-                                  onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...field.value, item.id])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item.id
-                                          )
-                                        )
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal cursor-pointer w-full">
-                                {item.label}
-                              </FormLabel>
-                            </FormItem>
-                          )
+                            <div className={`rounded-lg border transition-all ${isChecked ? "border-primary/40 bg-primary/3" : "border-border"}`}>
+                              <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-3">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={isChecked}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        field.onChange([...field.value, cat.key]);
+                                      } else {
+                                        const tagKeys = cat.tags.map(t => t.key);
+                                        field.onChange(field.value?.filter(v => v !== cat.key && !tagKeys.includes(v)));
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium cursor-pointer w-full">
+                                  {getCategoryLabel(cat, language as Lang)}
+                                </FormLabel>
+                              </FormItem>
+                              {isChecked && (
+                                <div className="px-3 pb-3 flex flex-wrap gap-1.5">
+                                  {cat.tags.map(tag => {
+                                    const isTagSelected = field.value?.includes(tag.key);
+                                    return (
+                                      <button
+                                        key={tag.key}
+                                        type="button"
+                                        onClick={() => {
+                                          if (isTagSelected) {
+                                            field.onChange(field.value.filter(v => v !== tag.key));
+                                          } else {
+                                            field.onChange([...field.value, tag.key]);
+                                          }
+                                        }}
+                                        className={`px-2.5 py-1 text-xs rounded-full border transition-all ${
+                                          isTagSelected
+                                            ? "bg-primary/10 border-primary text-primary font-medium"
+                                            : "border-border text-muted-foreground hover:border-primary/40"
+                                        }`}
+                                      >
+                                        {getTagLabel(tag, language as Lang)}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
                         }}
                       />
                     ))}

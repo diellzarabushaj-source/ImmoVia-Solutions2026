@@ -732,7 +732,10 @@ components:
           description: "Human-readable project title"
         projectType:
           type: string
-          description: "renovation | construction | interior | exterior | other"
+          description: "Category key (renovation | painting | electrical | plumbing | kitchen | flooring | interior_design | cleaning | other)"
+        subcategory:
+          type: ["string", "null"]
+          description: "Sub-category tag key from the selected category's tag list"
         description:
           type: string
         city:
@@ -770,6 +773,9 @@ components:
           type: string
         projectType:
           type: string
+        subcategory:
+          type: string
+          description: "Sub-category tag key (optional)"
         description:
           type: string
           minLength: 10
