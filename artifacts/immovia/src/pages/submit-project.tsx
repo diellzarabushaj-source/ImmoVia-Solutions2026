@@ -549,8 +549,8 @@ export default function SubmitProject() {
                   />
                   {/* Project photos */}
                   <PhotoUploader
-                    label="Project Photos (optional)"
-                    hint="Add photos to help professionals understand your project — JPG/PNG, max 10MB each"
+                    label={t.projectForm.projectPhotos}
+                    hint={t.projectForm.projectPhotosHint}
                     multiple={true}
                     value={projectPhotos}
                     onChange={setProjectPhotos}

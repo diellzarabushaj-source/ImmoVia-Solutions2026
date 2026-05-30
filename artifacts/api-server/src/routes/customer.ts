@@ -21,13 +21,31 @@ router.patch("/customer/projects/:id", requireAuth, async (req, res): Promise<vo
     res.status(403).json({ error: "Forbidden" }); return;
   }
 
-  const { title, description, status } = req.body as Record<string, unknown>;
-  const allowed = ["archived", "completed", "pending"];
+  const body = req.body as Record<string, unknown>;
+  const {
+    title, description, status, projectType, subcategory,
+    subcategoryOtherText, city, budget, timeline, size, photos,
+  } = body;
+  const allowedStatus = ["archived", "completed", "pending"];
+  const allowedSize = ["small", "medium", "large", "premium"];
 
-  const updateData: Record<string, string> = {};
-  if (typeof title === "string" && title.trim()) updateData.title = title.trim();
+  const updateData: Record<string, unknown> = {};
+  if (typeof title === "string") updateData.title = title.trim() || null;
   if (typeof description === "string" && description.trim()) updateData.description = description.trim();
-  if (typeof status === "string" && allowed.includes(status)) updateData.status = status;
+  if (typeof status === "string" && allowedStatus.includes(status)) updateData.status = status;
+  if (typeof projectType === "string" && projectType.trim()) updateData.projectType = projectType.trim();
+  if (typeof subcategory === "string") updateData.subcategory = subcategory.trim() || null;
+  if (typeof subcategoryOtherText === "string") {
+    updateData.subcategoryOtherText =
+      subcategoryOtherText.trim().replace(/\s+/g, " ").slice(0, 40) || null;
+  }
+  if (typeof city === "string" && city.trim()) updateData.city = city.trim();
+  if (typeof budget === "string") updateData.budget = budget.trim() || null;
+  if (typeof timeline === "string") updateData.timeline = timeline.trim() || null;
+  if (typeof size === "string" && allowedSize.includes(size)) updateData.size = size;
+  if (Array.isArray(photos) && photos.every((p) => typeof p === "string")) {
+    updateData.photos = photos as string[];
+  }
 
   if (Object.keys(updateData).length === 0) {
     res.status(400).json({ error: "No valid fields to update" }); return;

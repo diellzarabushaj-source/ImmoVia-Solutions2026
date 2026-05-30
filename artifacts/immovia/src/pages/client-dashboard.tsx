@@ -8,6 +8,7 @@ import {
   type OfferWithProvider,
 } from "@/lib/billing-api";
 import { MessagingSystem } from "@/components/MessagingSystem";
+import { ProjectEditDialog } from "@/components/project-edit-dialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,7 @@ import {
   Search, Heart, File, Award, Settings, Briefcase,
   MapPin, Calendar, ArrowRight, Flame, ShieldCheck,
   Archive, CheckCircle2, Eye, Trash2, Building2,
-  BarChart3, Scale,
+  BarChart3, Scale, Pencil,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -123,6 +124,7 @@ export default function ClientDashboard() {
   const [openThreads, setOpenThreads] = useState<Set<number>>(new Set());
   const [reviewModal, setReviewModal] = useState<{ offerId: number; projectId: number; providerName: string } | null>(null);
   const [archiving, setArchiving] = useState<number | null>(null);
+  const [editingProject, setEditingProject] = useState<ProviderProject | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [selectedForCompare, setSelectedForCompare] = useState<number[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -448,6 +450,11 @@ export default function ClientDashboard() {
                             <Button size="sm" variant="outline" onClick={() => setActiveSection("nachrichten")}>
                               <MessageSquare className="w-3.5 h-3.5 mr-1.5" />{l.openMessages}
                             </Button>
+                            {p.status !== "archived" && p.status !== "completed" && (
+                              <Button size="sm" variant="outline" onClick={() => setEditingProject(p)}>
+                                <Pencil className="w-3.5 h-3.5 mr-1.5" />{l.editProject}
+                              </Button>
+                            )}
                             {p.status !== "archived" && p.status !== "completed" && (
                               <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => onArchive(p.id)} disabled={isArchiving}>
                                 {isArchiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5 mr-1.5" />}
@@ -809,6 +816,16 @@ export default function ClientDashboard() {
           providerName={reviewModal.providerName}
           onClose={() => setReviewModal(null)}
           onDone={(id) => setReviewedOfferIds(prev => new Set([...prev, id]))}
+        />
+      )}
+
+      {/* Edit Project Dialog */}
+      {editingProject && (
+        <ProjectEditDialog
+          project={editingProject}
+          open={editingProject !== null}
+          onOpenChange={(o) => { if (!o) setEditingProject(null); }}
+          onSaved={() => { void loadData(); }}
         />
       )}
     </div>

@@ -60,6 +60,7 @@ export interface ProviderProject {
   title: string | null;
   projectType: string;
   subcategory: string | null;
+  subcategoryOtherText: string | null;
   description: string;
   city: string;
   address: string | null;
