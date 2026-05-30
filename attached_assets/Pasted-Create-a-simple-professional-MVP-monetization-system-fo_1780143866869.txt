@@ -1,0 +1,322 @@
+Create a simple, professional MVP monetization system for ImmoVia365, a Swiss marketplace that connects project owners with handymen, renovation companies, construction companies and service providers.
+
+Important:
+This is only for the MVP version. Do not include pay-per-lead, lead credits, complex bidding fees or success commissions yet. Keep the system simple, easy to understand and easy to build.
+
+Main business logic:
+
+* Project owners can post projects for free.
+* Service providers can register and create profiles.
+* ImmoVia365 earns money mainly from service provider subscriptions.
+* The MVP should focus on simple monthly plans, contact visibility and provider visibility.
+* Use CHF only.
+* Use German language for all visible text.
+* Keep everything clean, professional and suitable for the Swiss market.
+
+Customer side:
+
+Plan name:
+Projekt kostenlos veröffentlichen
+
+Price:
+CHF 0
+
+Customer features:
+
+* Create a project for free
+* Select main category and subcategory
+* Add project title
+* Add description
+* Add city
+* Add budget range
+* Add timeline
+* Add photos
+* Receive provider applications or inquiries
+* Compare provider profiles
+* Choose a suitable provider
+
+German text:
+“Veröffentlichen Sie Ihr Projekt kostenlos und erhalten Sie Angebote von passenden Service Providern in Ihrer Region.”
+
+CTA:
+Projekt kostenlos starten
+
+Service provider pricing:
+
+Create 4 simple plans:
+
+1. Free
+
+Price:
+CHF 0 / Monat
+
+Purpose:
+For new providers who want to test the platform.
+
+Features:
+
+* Basic public provider profile
+* Company or individual provider name
+* City
+* Service categories
+* Short description
+* Up to 3 portfolio images
+* Can view projects
+* Can apply to 2 projects per month
+* Customers can send inquiries through the platform form
+
+Limitations:
+
+* Phone number is not publicly visible
+* Email address is not publicly visible
+* Website is not publicly visible
+* No direct call button
+* No verified badge
+* No priority ranking
+* No featured placement
+
+German text:
+“Kostenlos starten und Ihr Anbieterprofil auf ImmoVia365 erstellen. Ideal, um die Plattform kennenzulernen und erste Projektanfragen zu entdecken.”
+
+CTA:
+Kostenlos starten
+
+2. Starter
+
+Price:
+CHF 49 / Monat
+
+Target:
+Individual providers and small companies.
+
+Features:
+
+* Professional provider profile
+* Phone number visible
+* Email address visible
+* Website visible
+* Direct contact buttons
+* 10 project applications per month
+* Up to 10 portfolio images
+* Customer inquiries through platform
+* Basic reviews visible
+* Project notifications
+
+Badge:
+Aktiver Anbieter
+
+German text:
+“Für Einzelanbieter und kleine Betriebe, die regelmässig neue Projektanfragen erhalten und direkt von Kunden kontaktiert werden möchten.”
+
+CTA:
+Starter wählen
+
+3. Professional
+
+Price:
+CHF 99 / Monat
+
+Target:
+Active service providers and companies.
+
+Features:
+
+* Everything from Starter
+* 30 project applications per month
+* Up to 30 portfolio images
+* Reviews highlighted
+* Better visibility in city and category
+* Verified provider badge
+* Priority in provider listings
+* More detailed company profile
+
+Badge:
+Verifizierter Anbieter
+
+German text:
+“Für aktive Handwerker und Dienstleister, die mehr Sichtbarkeit, mehr Bewerbungen und ein professionelles Anbieterprofil benötigen.”
+
+CTA:
+Professional wählen
+
+4. Premium
+
+Price:
+CHF 199 / Monat
+
+Target:
+Companies that want maximum visibility in their region.
+
+Features:
+
+* Everything from Professional
+* 100 project applications per month
+* Unlimited portfolio images
+* Top placement in selected city
+* Top placement in selected category
+* Featured provider profile
+* Multiple team members
+* Priority support
+
+Badge:
+Top Anbieter
+
+German text:
+“Für Unternehmen, die regelmässig neue Kunden gewinnen und in ihrer Region besonders sichtbar sein möchten.”
+
+CTA:
+Premium wählen
+
+MVP contact visibility logic:
+
+For Free providers:
+
+* Phone number hidden
+* Email hidden
+* Website hidden
+* Show button: “Anfrage senden”
+* Show upgrade message: “Kontaktdaten freischalten mit Starter”
+
+For paid providers:
+
+* Phone number visible
+* Email visible
+* Website visible
+* Show buttons:
+
+  * Jetzt anrufen
+  * Nachricht senden
+  * Website besuchen
+
+Important:
+Do not show service provider contact details for free, because this reduces the platform’s value.
+Customers can still contact Free providers through the platform inquiry form.
+
+Provider profile page requirements:
+
+Each provider profile should show:
+
+* Company or provider name
+* Type: Unternehmen or Einzelanbieter
+* City
+* Service categories
+* Short description
+* Portfolio images
+* Reviews
+* Badge according to plan
+* Contact buttons depending on plan
+* CTA for customers: Anfrage senden
+
+Project application limits:
+
+Free:
+2 applications per month
+
+Starter:
+10 applications per month
+
+Professional:
+30 applications per month
+
+Premium:
+100 applications per month
+
+When a provider reaches the limit, show:
+“Sie haben Ihr monatliches Bewerbungslimit erreicht. Wechseln Sie auf einen höheren Plan, um sich auf weitere Projekte zu bewerben.”
+
+Admin dashboard MVP requirements:
+
+The admin should be able to manage:
+
+* Users
+* Customers
+* Service providers
+* Projects
+* Categories and subcategories
+* Provider plans
+* Subscription status
+* Contact visibility status
+* Application limits
+* Featured providers
+* Verified badges
+* Reviews
+* Reported profiles or projects
+
+Provider dashboard MVP requirements:
+
+Providers should be able to:
+
+* Create and edit profile
+* Add services
+* Add city and service areas
+* Upload portfolio images
+* See current plan
+* Upgrade plan
+* See remaining applications
+* Apply to projects
+* See sent applications
+* Manage contact details
+* Manage billing status
+
+Customer dashboard MVP requirements:
+
+Customers should be able to:
+
+* Create projects
+* Edit projects
+* Add photos
+* View applications from providers
+* View provider profiles
+* Send inquiry
+* Close or mark project as completed
+
+Launch strategy:
+
+For the first 3 months, create a simple launch offer:
+
+Plan name:
+Founding Provider
+
+Price:
+CHF 19 / Monat für die ersten 3 Monate
+
+Features:
+
+* Professional provider profile
+* Visible contact information
+* 10 project applications per month
+* 10 portfolio images
+* Early provider badge
+
+German text:
+“Startangebot für die ersten Anbieter: Sichern Sie sich Ihr professionelles Anbieterprofil für CHF 19 / Monat während der Launch-Phase.”
+
+After the launch phase, switch to standard plans:
+
+* Free: CHF 0 / Monat
+* Starter: CHF 49 / Monat
+* Professional: CHF 99 / Monat
+* Premium: CHF 199 / Monat
+
+Do not include these features in the MVP:
+
+* Pay-per-lead
+* Lead credits
+* Commission per completed project
+* Escrow payment
+* Complex bidding fees
+* Advanced AI matching
+* Multi-step verification workflow
+* Complicated ranking algorithm
+
+MVP goal:
+
+The MVP should be simple:
+
+* Customers post projects for free.
+* Providers create profiles.
+* Providers can apply to projects.
+* Free providers are limited.
+* Paid providers get visible contacts, more applications and better visibility.
+* ImmoVia365 earns recurring revenue through subscriptions.
+* The system is easy to understand, easy to build and easy to sell.

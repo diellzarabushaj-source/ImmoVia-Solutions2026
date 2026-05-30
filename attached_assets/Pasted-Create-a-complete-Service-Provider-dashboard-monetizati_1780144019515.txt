@@ -1,0 +1,447 @@
+Create a complete Service Provider dashboard monetization system for ImmoVia365.
+
+ImmoVia365 is a Swiss marketplace that connects project owners with handymen, renovation companies, construction companies and service providers.
+
+Important:
+This monetization system must be visible only to users with the role “Service Provider”.
+Do not show pricing plans, upgrade options, contact visibility controls or application limits to normal customers / project posters.
+Customers should only see project creation, their own projects, applications and provider profiles.
+Only Service Providers should see subscription plans, upgrade buttons, application limits, contact visibility status, billing and provider visibility features.
+
+User roles:
+
+1. Customer / Project Poster
+   This user can:
+
+* Create projects
+* Edit projects
+* Upload project photos
+* View provider applications
+* Compare provider profiles
+* Send inquiries
+* Close projects
+
+This user must NOT see:
+
+* Provider pricing plans
+* Upgrade plan buttons
+* Contact visibility settings
+* Application limits
+* Provider badges management
+* Billing for provider plans
+* Featured provider options
+
+2. Service Provider / Anbieter
+   This user can:
+
+* Create and manage provider profile
+* Add company or individual provider information
+* Add services and categories
+* Upload portfolio images
+* View available projects
+* Apply to projects
+* Manage applications
+* See monthly application limit
+* See current subscription plan
+* Upgrade subscription plan
+* Manage contact visibility
+* Manage billing
+* See provider badge
+* See visibility status
+
+Dashboard behavior:
+When a logged-in user has role “Service Provider”, show a dedicated Provider Dashboard with monetization sections.
+When a logged-in user has role “Customer”, hide all monetization sections completely.
+
+Service Provider Dashboard navigation should include:
+
+1. Übersicht
+2. Mein Anbieterprofil
+3. Projekte finden
+4. Meine Bewerbungen
+5. Mein Plan
+6. Sichtbarkeit
+7. Bewertungen
+8. Rechnungen
+9. Einstellungen
+
+The “Mein Plan” section should be visible only for Service Providers.
+
+Create the following provider plan system:
+
+Plan 1: Free
+
+Price:
+CHF 0 / Monat
+
+Purpose:
+For new providers who want to test the platform.
+
+Features:
+
+* Basic provider profile
+* Company or individual provider name
+* City
+* Service categories
+* Short description
+* Up to 3 portfolio images
+* Can view available projects
+* 2 project applications per month
+* Customers can send inquiries through the platform form
+
+Limitations:
+
+* Phone number is hidden
+* Email address is hidden
+* Website is hidden
+* No direct call button
+* No verified badge
+* No priority ranking
+* No featured placement
+
+Badge:
+Basic Anbieter
+
+CTA:
+Kostenlos starten
+
+Plan text in German:
+“Erstellen Sie Ihr Anbieterprofil kostenlos und entdecken Sie erste Projektanfragen auf ImmoVia365.”
+
+Plan 2: Starter
+
+Price:
+CHF 49 / Monat
+
+Target:
+Individual service providers and small local companies.
+
+Features:
+
+* Professional provider profile
+* Phone number visible
+* Email address visible
+* Website visible
+* Direct contact buttons
+* 10 project applications per month
+* Up to 10 portfolio images
+* Customer inquiries through platform
+* Basic reviews visible
+* Project notifications
+
+Badge:
+Aktiver Anbieter
+
+CTA:
+Starter wählen
+
+Plan text in German:
+“Für Einzelanbieter und kleine Betriebe, die regelmässig neue Projektanfragen erhalten und direkt von Kunden kontaktiert werden möchten.”
+
+Plan 3: Professional
+
+Price:
+CHF 99 / Monat
+
+Target:
+Active service providers and professional companies.
+
+Features:
+
+* Everything from Starter
+* 30 project applications per month
+* Up to 30 portfolio images
+* Reviews highlighted
+* Better visibility in city and category
+* Verified provider badge
+* Priority in provider listings
+* More detailed company profile
+
+Badge:
+Verifizierter Anbieter
+
+CTA:
+Professional wählen
+
+Plan text in German:
+“Für aktive Handwerker und Dienstleister, die mehr Sichtbarkeit, mehr Bewerbungen und ein professionelles Anbieterprofil benötigen.”
+
+Plan 4: Premium
+
+Price:
+CHF 199 / Monat
+
+Target:
+Companies that want maximum visibility in their region.
+
+Features:
+
+* Everything from Professional
+* 100 project applications per month
+* Unlimited portfolio images
+* Top placement in selected city
+* Top placement in selected category
+* Featured provider profile
+* Multiple team members
+* Priority support
+
+Badge:
+Top Anbieter
+
+CTA:
+Premium wählen
+
+Plan text in German:
+“Für Unternehmen, die regelmässig neue Kunden gewinnen und in ihrer Region besonders sichtbar sein möchten.”
+
+Service Provider Dashboard: “Mein Plan” section
+
+This section should show:
+
+* Current active plan
+* Monthly price
+* Application limit
+* Remaining applications this month
+* Contact visibility status
+* Portfolio image limit
+* Badge status
+* Upgrade button
+* Billing status
+
+Example display:
+
+Aktueller Plan:
+Free
+
+Bewerbungen:
+1 von 2 verwendet
+
+Kontaktdaten:
+Nicht öffentlich sichtbar
+
+Portfolio:
+2 von 3 Bildern verwendet
+
+Badge:
+Basic Anbieter
+
+CTA:
+Plan upgraden
+
+Contact visibility logic:
+
+For Free providers:
+
+* Phone number should be stored in the system but not shown publicly.
+* Email should be stored in the system but not shown publicly.
+* Website should be stored in the system but not shown publicly.
+* Public profile should show:
+
+  * Telefon: Nicht freigeschaltet
+  * E-Mail: Nicht freigeschaltet
+  * Website: Nicht freigeschaltet
+* Show CTA:
+  “Kontaktdaten mit Starter freischalten”
+
+For paid providers:
+
+* Phone number visible
+* Email visible
+* Website visible
+* Show buttons:
+
+  * Jetzt anrufen
+  * Nachricht senden
+  * Website besuchen
+
+Application limit logic:
+
+Free:
+2 applications per month
+
+Starter:
+10 applications per month
+
+Professional:
+30 applications per month
+
+Premium:
+100 applications per month
+
+When the provider reaches the monthly application limit, block new applications and show this message:
+
+“Sie haben Ihr monatliches Bewerbungslimit erreicht. Wechseln Sie auf einen höheren Plan, um sich auf weitere Projekte zu bewerben.”
+
+CTA:
+Plan upgraden
+
+Provider project application behavior:
+
+When a Service Provider applies to a project:
+
+* Check provider plan
+* Check remaining monthly applications
+* If applications are available, allow application
+* Reduce remaining monthly application count by 1
+* Save application in “Meine Bewerbungen”
+* Notify the customer / project poster
+
+If the provider has reached the monthly limit:
+
+* Do not allow application
+* Show upgrade prompt
+
+Upgrade prompt:
+“Mehr Projekte erreichen? Wechseln Sie auf einen höheren Plan und bewerben Sie sich auf mehr passende Projekte.”
+
+Provider public profile behavior:
+
+Every Service Provider can have a public profile, but visibility depends on plan.
+
+Free profile:
+
+* Name visible
+* City visible
+* Categories visible
+* Short description visible
+* Up to 3 portfolio images
+* Contact details hidden
+* Inquiry button visible
+
+Paid profile:
+
+* Name visible
+* City visible
+* Categories visible
+* Full description visible
+* More portfolio images depending on plan
+* Contact details visible
+* Direct call button visible
+* Website button visible
+* Badge visible
+
+Provider Dashboard “Sichtbarkeit” section:
+
+Only visible for Service Providers.
+
+Show:
+
+* Profile visibility status
+* Contact visibility status
+* Badge status
+* Ranking status
+* Featured status
+
+For Free:
+Profil sichtbar: Ja
+Kontaktdaten sichtbar: Nein
+Ranking: Standard
+Badge: Basic Anbieter
+
+For Starter:
+Profil sichtbar: Ja
+Kontaktdaten sichtbar: Ja
+Ranking: Standard
+Badge: Aktiver Anbieter
+
+For Professional:
+Profil sichtbar: Ja
+Kontaktdaten sichtbar: Ja
+Ranking: Erhöht
+Badge: Verifizierter Anbieter
+
+For Premium:
+Profil sichtbar: Ja
+Kontaktdaten sichtbar: Ja
+Ranking: Top-Platzierung
+Badge: Top Anbieter
+
+Provider Dashboard “Rechnungen” section:
+
+Only visible for Service Providers.
+
+Show:
+
+* Current plan
+* Monthly price
+* Next billing date
+* Payment status
+* Invoice history
+* Upgrade / downgrade options
+* Cancel subscription option
+
+German labels:
+
+* Aktueller Plan
+* Monatlicher Preis
+* Nächste Abrechnung
+* Zahlungsstatus
+* Rechnungen
+* Plan ändern
+* Abo kündigen
+
+Launch offer:
+
+Create a temporary launch plan for early providers.
+
+Plan name:
+Founding Provider
+
+Price:
+CHF 19 / Monat für die ersten 3 Monate
+
+Features:
+
+* Professional provider profile
+* Visible phone number
+* Visible email
+* Visible website
+* 10 applications per month
+* 10 portfolio images
+* Early provider badge
+
+Badge:
+Founding Anbieter
+
+German text:
+“Startangebot für die ersten Anbieter: Sichern Sie sich Ihr professionelles Anbieterprofil für CHF 19 / Monat während der Launch-Phase.”
+
+This offer should appear only to Service Providers during the launch phase.
+
+Do not include in MVP:
+
+* Pay-per-lead
+* Lead credits
+* Commission per completed project
+* Escrow payments
+* Complex bidding fees
+* Advanced AI matching
+* Complex ranking algorithm
+
+MVP goal:
+Keep the system simple, clean and easy to build.
+
+The MVP monetization logic is:
+
+* Customers post projects for free.
+* Service Providers can register for free.
+* Free Service Providers are limited.
+* Paid Service Providers get visible contact details, more applications, more portfolio space and better visibility.
+* Pricing and upgrade options are shown only inside the Service Provider Dashboard.
+* Customer users never see provider pricing or subscription management.
+
+Important UI rule:
+If user.role === “service_provider”, show:
+
+* Provider Dashboard
+* Mein Plan
+* Plan upgraden
+* Bewerbungslimit
+* Kontaktdaten sichtbar
+* Rechnungen
+
+If user.role === “customer”, hide all these sections completely.
+
+Use German language for all visible frontend text.
+Use CHF for all pricing.
+Design should be clean, professional, Swiss, trustworthy and easy to understand.

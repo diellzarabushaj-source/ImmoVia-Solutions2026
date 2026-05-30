@@ -1,0 +1,337 @@
+Po, atëherë homepage duhet me qenë **më marketplace-style**, jo vetëm 6 cards. Më e mira për ImmoVia365:
+
+**Homepage = Hauptkategorien + nënkategori të dukshme + “Andere / Sonstiges”**
+
+Kështu user-i e kupton menjëherë çka mundet me kërku.
+
+---
+
+# Struktura profesionale për Homepage
+
+## Titel kryesor
+
+**Finden Sie passende Handwerker & Service Provider in der Schweiz**
+
+## Subtitle
+
+**Erstellen Sie Ihr Projekt, wählen Sie die passende Kategorie und erhalten Sie Angebote von qualifizierten Profis.**
+
+---
+
+# Homepage Categories
+
+## 1. Renovierung & Umbau
+
+**Beschreibung:**
+Renovationen, Umbauten und Sanierungen für Wohnungen, Häuser und Gewerberäume.
+
+**Preislabel:**
+Projektbudget ab CHF 3’000
+
+**Nënkategori që shfaqen në card:**
+Wohnungsrenovierung · Hausrenovierung · Komplettsanierung · Trockenbau · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 2. Neubau & Bauarbeiten
+
+**Beschreibung:**
+Neubau, Anbau und Bauarbeiten für private und gewerbliche Projekte.
+
+**Preislabel:**
+Projektbudget ab CHF 50’000
+
+**Nënkategori:**
+Einfamilienhaus · Anbau · Rohbau · Betonarbeiten · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 3. Innenarchitektur & Innenausbau
+
+**Beschreibung:**
+Raumkonzepte, Innenausbau und hochwertige Gestaltung für moderne Wohnräume.
+
+**Preislabel:**
+Richtpreis ab CHF 90 / Std.
+
+**Nënkategori:**
+Raumkonzept · Möbel nach Mass · Einbauschränke · Home Staging · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 4. Fassadenarbeiten
+
+**Beschreibung:**
+Fassaden, Aussenarbeiten und Wärmedämmung professionell umsetzen lassen.
+
+**Preislabel:**
+Projektbudget ab CHF 5’000
+
+**Nënkategori:**
+Fassade streichen · Fassadensanierung · Wärmedämmung · Aussenputz · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 5. Sanitär & Badezimmer
+
+**Beschreibung:**
+Badrenovierungen, Sanitärinstallationen und Reparaturen rund ums Badezimmer.
+
+**Preislabel:**
+Richtpreis ab CHF 100 / Std.
+
+**Nënkategori:**
+Bad renovieren · Dusche einbauen · WC ersetzen · Wasserleitungen · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 6. Elektroinstallation & Smart Home
+
+**Beschreibung:**
+Elektroinstallationen, Beleuchtung, Sicherungskästen und moderne Smart-Home-Lösungen.
+
+**Preislabel:**
+Richtpreis ab CHF 120 / Std.
+
+**Nënkategori:**
+Steckdosen · LED-Beleuchtung · Sicherungskasten · Smart Home · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 7. Maler & Gipser
+
+**Beschreibung:**
+Professionelle Maler-, Gipser- und Verputzarbeiten für Innen- und Aussenbereiche.
+
+**Preislabel:**
+Richtpreis ab CHF 75 / Std.
+
+**Nënkategori:**
+Innenmalerei · Aussenmalerei · Decken streichen · Gipserarbeiten · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 8. Boden & Platten
+
+**Beschreibung:**
+Bodenbeläge, Parkett, Platten und Naturstein sauber verlegen lassen.
+
+**Preislabel:**
+Richtpreis ab CHF 85 / Std.
+
+**Nënkategori:**
+Parkett · Laminat · Vinyl · Platten verlegen · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 9. Heizung, Klima & Energie
+
+**Beschreibung:**
+Heizungs-, Klima- und Energielösungen für moderne und effiziente Gebäude.
+
+**Preislabel:**
+Richtpreis ab CHF 110 / Std.
+
+**Nënkategori:**
+Heizung ersetzen · Wärmepumpe · Bodenheizung · Solaranlage · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 10. Küche & Schreinerarbeiten
+
+**Beschreibung:**
+Küchen, Möbel nach Mass und hochwertige Schreinerarbeiten für Ihr Zuhause.
+
+**Preislabel:**
+Richtpreis ab CHF 90 / Std.
+
+**Nënkategori:**
+Küche renovieren · Küchenmontage · Arbeitsplatte · Möbel nach Mass · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 11. Garten & Aussenbereich
+
+**Beschreibung:**
+Gartenbau, Terrassen, Sitzplätze und Aussenbereiche professionell gestalten lassen.
+
+**Preislabel:**
+Richtpreis ab CHF 70 / Std.
+
+**Nënkategori:**
+Gartengestaltung · Terrasse · Rasen · Zaun · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 12. Reinigung & Umzug
+
+**Beschreibung:**
+Reinigung, Baureinigung, Endreinigung und Umzugshilfe für private und gewerbliche Kunden.
+
+**Preislabel:**
+Richtpreis ab CHF 45 / Std.
+
+**Nënkategori:**
+Endreinigung · Baureinigung · Fensterreinigung · Umzug · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 13. Dach & Spenglerei
+
+**Beschreibung:**
+Dacharbeiten, Reparaturen, Abdichtungen und Spenglerarbeiten für Gebäude.
+
+**Preislabel:**
+Richtpreis ab CHF 100 / Std.
+
+**Nënkategori:**
+Dachreparatur · Dachsanierung · Flachdach · Regenrinne · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 14. Immobilienservice
+
+**Beschreibung:**
+Dienstleistungen rund um Immobilien, Unterhalt, Verkaufsvorbereitung und kleine Reparaturen.
+
+**Preislabel:**
+Richtpreis ab CHF 80 / Std.
+
+**Nënkategori:**
+Hauswartung · Kleinreparaturen · Home Staging · Wohnungsübergabe · Sonstiges
+
+**Button:**
+Projekt starten
+
+---
+
+## 15. Andere Dienstleistungen
+
+**Beschreibung:**
+Für spezielle Projekte, individuelle Aufträge oder Arbeiten, die nicht in eine Kategorie passen.
+
+**Preislabel:**
+Preis nach Anfrage
+
+**Nënkategori:**
+Handwerkerarbeiten · Montagearbeiten · Reparaturen · Beratung · Spezialauftrag
+
+**Button:**
+Projekt beschreiben
+
+---
+
+# Si duhet me u duk në card
+
+Për çdo card përdore këtë strukturë:
+
+**Icon**
+**Kategorie title**
+**Short description**
+**Subcategory chips**
+**Price badge**
+**Button**
+
+Shembull:
+
+## Renovierung & Umbau
+
+Renovationen, Umbauten und Sanierungen für Wohnungen, Häuser und Gewerberäume.
+
+**Wohnungsrenovierung** **Hausrenovierung** **Trockenbau** **Sonstiges**
+
+**Projektbudget ab CHF 3’000**
+
+**Projekt starten →**
+
+---
+
+# Rregulli më i mirë për homepage
+
+Mos i shfaq nënkategoritë si listë shumë e gjatë. Shfaq vetëm **4 nënkategori + Sonstiges**.
+
+Pra:
+
+**Wohnungsrenovierung · Hausrenovierung · Komplettsanierung · Sonstiges**
+
+Pastaj kur user klikon kategori, aty hapen të gjitha nënkategoritë.
+
+---
+
+# Tekst për butonin kryesor
+
+Në vend të **Angebot Anfragen**, unë do përdorja:
+
+**Projekt starten**
+ose
+**Angebote erhalten**
+
+Më profesionalja për ImmoVia365:
+
+**Projekt starten →**
+
+Për “Andere Dienstleistungen”:
+
+**Projekt beschreiben →**
+
+---
+
+# Version final për homepage
+
+Unë do ta bëja homepage me **15 cards**, jo vetëm 6, por me dizajn të pastër:
+
+**Rreshti 1:**
+Renovierung & Umbau · Neubau & Bauarbeiten · Innenarchitektur & Innenausbau
+
+**Rreshti 2:**
+Fassadenarbeiten · Sanitär & Badezimmer · Elektroinstallation & Smart Home
+
+**Rreshti 3:**
+Maler & Gipser · Boden & Platten · Heizung, Klima & Energie
+
+**Rreshti 4:**
+Küche & Schreinerarbeiten · Garten & Aussenbereich · Reinigung & Umzug
+
+**Rreshti 5:**
+Dach & Spenglerei · Immobilienservice · Andere Dienstleistungen
+
+Kjo duket shumë më profesionale dhe më komplet për marketplace.
