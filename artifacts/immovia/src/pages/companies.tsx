@@ -40,6 +40,7 @@ const SORT_OPTIONS = [
 ];
 
 function CompanyAvatar({ name, profilePhoto, workerType, size = "md" }: { name: string; profilePhoto?: string | null; workerType?: string; size?: "sm" | "md" | "lg" }) {
+  const [imgError, setImgError] = useState(false);
   const colors = [
     "from-blue-600 to-blue-800",
     "from-indigo-600 to-indigo-800",
@@ -48,16 +49,24 @@ function CompanyAvatar({ name, profilePhoto, workerType, size = "md" }: { name: 
     "from-slate-600 to-slate-800",
   ];
   const color = colors[name.charCodeAt(0) % colors.length];
-  const sizeClass = size === "lg" ? "w-16 h-16 text-xl" : size === "sm" ? "w-8 h-8 text-xs" : "w-12 h-12 text-sm";
+  const sizeClass = size === "lg" ? "w-16 h-16" : size === "sm" ? "w-8 h-8" : "w-12 h-12";
   const iconSize = size === "lg" ? "h-7 w-7" : size === "sm" ? "h-3.5 w-3.5" : "h-5 w-5";
-  if (profilePhoto) {
+  const isIndividual = workerType === "individual";
+
+  if (profilePhoto && !imgError) {
+    const src = profilePhoto.startsWith("/api") ? profilePhoto : `/api/storage${profilePhoto}`;
     return (
       <div className={`${sizeClass} rounded-xl overflow-hidden flex-shrink-0 border border-border`}>
-        <img src={`/api/storage${profilePhoto}`} alt={name} className="w-full h-full object-cover" />
+        <img
+          src={src}
+          alt={name}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
       </div>
     );
   }
-  const isIndividual = workerType === "individual";
+
   return (
     <div className={`${sizeClass} rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white flex-shrink-0`}>
       {isIndividual
