@@ -186,7 +186,7 @@ const L: Record<string, Record<string, string>> = {
     settingsComingSoon: "Settings coming soon",
     profileComingSoon: "Profile editing coming soon",
     profileViewPublic: "View public profile",
-    overviewWelcome: "Your provider dashboard",
+    overviewWelcome: "Your Service Provider dashboard",
     applications: "Applications",
     currentPlan: "Current plan",
     upgradeBtn: "Upgrade plan",
@@ -228,7 +228,7 @@ const L: Record<string, Record<string, string>> = {
   },
   de: {
     navOverview: "Übersicht",
-    navProfile: "Mein Anbieterprofil",
+    navProfile: "Mein Dienstleisterprofil",
     navProfilbild: "Profilbild & Logo",
     navGalerie: "Galerie & Portfolio",
     navLeistungen: "Leistungen & Kategorien",
@@ -254,12 +254,12 @@ const L: Record<string, Record<string, string>> = {
     settingsComingSoon: "Einstellungen folgen bald",
     profileComingSoon: "Profilbearbeitung folgt bald",
     profileViewPublic: "Öffentliches Profil ansehen",
-    overviewWelcome: "Ihr Anbieter-Dashboard",
+    overviewWelcome: "Ihr Dienstleister-Dashboard",
     applications: "Bewerbungen",
     currentPlan: "Aktueller Plan",
     upgradeBtn: "Plan wechseln",
     visRowContacts: "Kontaktdaten (Telefon, E-Mail, Website)",
-    visRowBadge: "Anbieterabzeichen",
+    visRowBadge: "Dienstleisterabzeichen",
     visRowRanking: "Platzierung in der Liste",
     visRowPortfolio: "Portfolio-Fotos",
     visValueFree: "Verborgen",
@@ -640,11 +640,11 @@ export default function ProviderDashboard() {
     },
     {
       row: l.visRowBadge,
-      free: "Basic Anbieter",
-      starter: "Aktiver Anbieter",
-      professional: "Verifizierter Anbieter",
-      premium: "Top Anbieter",
-      founding: "Founding Anbieter",
+      free: "Basic Dienstleister",
+      starter: "Aktiver Dienstleister",
+      professional: "Verifizierter Dienstleister",
+      premium: "Top Dienstleister",
+      founding: "Founding Dienstleister",
     },
     {
       row: l.visRowRanking,
@@ -755,12 +755,12 @@ export default function ProviderDashboard() {
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   {language === "de"
-                    ? "Willkommen in Ihrem Anbieter-Dashboard. Verwalten Sie Ihr Profil, präsentieren Sie Ihre Arbeiten und finden Sie passende Projekte in Ihrer Region."
+                    ? "Willkommen in Ihrem Dienstleister-Dashboard. Verwalten Sie Ihr Profil, präsentieren Sie Ihre Arbeiten und finden Sie passende Projekte in Ihrer Region."
                     : language === "fr"
                     ? "Bienvenue dans votre tableau de bord. Gérez votre profil, présentez vos réalisations et trouvez des projets correspondants."
                     : language === "sq"
                     ? "Mirësevini në panelin tuaj. Menaxhoni profilin, paraqisni punët tuaja dhe gjeni projekte të përshtatshme."
-                    : "Welcome to your provider dashboard. Manage your profile, showcase your work and find matching projects in your region."}
+                    : "Welcome to your Service Provider dashboard. Manage your profile, showcase your work and find matching projects in your region."}
                 </p>
               </div>
 
@@ -769,7 +769,7 @@ export default function ProviderDashboard() {
                 <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("plan")}>
                   <div className="text-xs text-muted-foreground mb-1">{l.currentPlan}</div>
                   <div className="text-lg font-bold">{appStats?.planName ?? "Free"}</div>
-                  <div className="text-xs text-primary mt-1 font-medium">{appStats?.badge ?? "Basic Anbieter"}</div>
+                  <div className="text-xs text-primary mt-1 font-medium">{appStats?.badge ?? "Basic Dienstleister"}</div>
                 </Card>
                 <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("profil")}>
                   <div className="text-xs text-muted-foreground mb-1">
