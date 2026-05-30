@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, CheckCircle2, RefreshCw } from "lucide-react";
+import { useLanguage } from "@/lib/language-context";
 
 interface Setting {
   id: number;
@@ -12,21 +13,21 @@ interface Setting {
   updatedAt: string;
 }
 
-const SETTING_GROUPS: { label: string; keys: string[] }[] = [
+const SETTING_GROUPS: { labelKey: "grpPlatform" | "grpProjects" | "grpCompanies" | "grpContact"; keys: string[] }[] = [
   {
-    label: "Platform",
+    labelKey: "grpPlatform",
     keys: ["platform.name", "platform.tagline", "platform.maintenance"],
   },
   {
-    label: "Projects",
+    labelKey: "grpProjects",
     keys: ["projects.auto_approve"],
   },
   {
-    label: "Companies",
+    labelKey: "grpCompanies",
     keys: ["companies.require_license"],
   },
   {
-    label: "Contact",
+    labelKey: "grpContact",
     keys: ["contact.support_email", "contact.support_phone"],
   },
 ];
@@ -43,6 +44,7 @@ function isBoolKey(key: string): boolean {
 }
 
 export function AdminSettings() {
+  const { t } = useLanguage();
   const [settings, setSettings] = useState<Setting[]>([]);
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -73,12 +75,12 @@ export function AdminSettings() {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify(values),
       });
-      if (!res.ok) { setError("Failed to save settings."); return; }
+      if (!res.ok) { setError(t.admin.settingsSaveFailed); return; }
       const data: Setting[] = await res.json();
       setSettings(data);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch { setError("Connection error."); } finally { setSaving(false); }
+    } catch { setError(t.admin.connectionErrorShort); } finally { setSaving(false); }
   };
 
   const allKeys = new Set(settings.map((s) => s.key));
@@ -86,31 +88,31 @@ export function AdminSettings() {
     (k) => !SETTING_GROUPS.flatMap((g) => g.keys).includes(k),
   );
 
-  const groups = [
-    ...SETTING_GROUPS,
-    ...(ungroupedKeys.length ? [{ label: "Other", keys: ungroupedKeys }] : []),
+  const groups: { label: string; keys: string[] }[] = [
+    ...SETTING_GROUPS.map((g) => ({ label: t.admin[g.labelKey], keys: g.keys })),
+    ...(ungroupedKeys.length ? [{ label: t.admin.grpOther, keys: ungroupedKeys }] : []),
   ];
 
   return (
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Platform Settings</h1>
-          <p className="text-sm text-gray-500 mt-1">Global configuration values for ImmoVia</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.admin.settingsTitle}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t.admin.settingsSubtitle}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`h-4 w-4 mr-1.5 ${loading ? "animate-spin" : ""}`} /> {t.admin.refresh}
           </Button>
           <Button size="sm" className="bg-[#1a3a6e] hover:bg-[#0f2044]" onClick={handleSave} disabled={saving || loading}>
-            {saving ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />Saving…</> : <><Save className="h-4 w-4 mr-1.5" />Save Changes</>}
+            {saving ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />{t.admin.saving}</> : <><Save className="h-4 w-4 mr-1.5" />{t.admin.saveChanges}</>}
           </Button>
         </div>
       </div>
 
       {saved && (
         <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4" /> Settings saved successfully.
+          <CheckCircle2 className="h-4 w-4" /> {t.admin.settingsSaved}
         </div>
       )}
       {error && (
@@ -145,7 +147,7 @@ export function AdminSettings() {
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${values[key] === "true" ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
-                          <span className="text-sm text-gray-700">{values[key] === "true" ? "Enabled" : "Disabled"}</span>
+                          <span className="text-sm text-gray-700">{values[key] === "true" ? t.admin.enabled : t.admin.disabled}</span>
                         </div>
                       ) : (
                         <Input

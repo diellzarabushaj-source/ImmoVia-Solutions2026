@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useLanguage } from "@/lib/language-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,41 +55,44 @@ type NavGroup = {
   items: NavItem[];
 };
 
-const NAV_GROUPS: NavGroup[] = [
-  {
-    group: "",
-    items: [
-      { path: "/admin", label: "Overview", sublabel: "Stats & quick actions", icon: LayoutDashboard, exact: true },
-      { path: "/admin/pending", label: "Pending Review", sublabel: "Approve or reject", icon: Clock, badge: true },
-    ],
-  },
-  {
-    group: "Marketplace",
-    items: [
-      { path: "/admin/projects", label: "Projects", sublabel: "Renovation requests", icon: Hammer },
-      { path: "/admin/companies", label: "Companies", sublabel: "Service provider profiles", icon: Building2 },
-    ],
-  },
-  {
-    group: "Accounts",
-    items: [
-      { path: "/admin/users", label: "Users", sublabel: "Registered accounts", icon: Users },
-      { path: "/admin/applications", label: "Applications", sublabel: "Sign-up submissions", icon: FileText },
-    ],
-  },
-  {
-    group: "System",
-    items: [
-      { path: "/admin/categories", label: "Categories", sublabel: "Service types", icon: Tag },
-      { path: "/admin/reports", label: "Reports", sublabel: "User flags", icon: Flag, badge: true },
-      { path: "/admin/settings", label: "Settings", sublabel: "Admin configuration", icon: Settings },
-    ],
-  },
-];
+function buildNavGroups(t: ReturnType<typeof useLanguage>["t"]): NavGroup[] {
+  return [
+    {
+      group: "",
+      items: [
+        { path: "/admin", label: t.admin.navOverview, sublabel: t.admin.navOverviewSub, icon: LayoutDashboard, exact: true },
+        { path: "/admin/pending", label: t.admin.navPending, sublabel: t.admin.navPendingSub, icon: Clock, badge: true },
+      ],
+    },
+    {
+      group: t.admin.groupMarketplace,
+      items: [
+        { path: "/admin/projects", label: t.admin.navProjects, sublabel: t.admin.navProjectsSub, icon: Hammer },
+        { path: "/admin/companies", label: t.admin.navCompanies, sublabel: t.admin.navCompaniesSub, icon: Building2 },
+      ],
+    },
+    {
+      group: t.admin.groupAccounts,
+      items: [
+        { path: "/admin/users", label: t.admin.navUsers, sublabel: t.admin.navUsersSub, icon: Users },
+        { path: "/admin/applications", label: t.admin.navApplications, sublabel: t.admin.navApplicationsSub, icon: FileText },
+      ],
+    },
+    {
+      group: t.admin.groupSystem,
+      items: [
+        { path: "/admin/categories", label: t.admin.navCategories, sublabel: t.admin.navCategoriesSub, icon: Tag },
+        { path: "/admin/reports", label: t.admin.navReports, sublabel: t.admin.navReportsSub, icon: Flag, badge: true },
+        { path: "/admin/settings", label: t.admin.navSettings, sublabel: t.admin.navSettingsSub, icon: Settings },
+      ],
+    },
+  ];
+}
 
 // ─── Login Form ───────────────────────────────────────────────────────────────
 
 function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
+  const { t } = useLanguage();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -110,10 +114,10 @@ function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
         onSuccess();
       } else {
         const data = await res.json().catch(() => ({}));
-        setError((data as { error?: string }).error ?? "Invalid credentials.");
+        setError((data as { error?: string }).error ?? t.admin.invalidCredentials);
       }
     } catch {
-      setError("Connection error. Please try again.");
+      setError(t.admin.connectionError);
     } finally {
       setLoading(false);
     }
@@ -126,26 +130,26 @@ function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1a3a6e]">
             <Shield className="h-7 w-7 text-white" />
           </div>
-          <CardTitle className="text-xl font-bold tracking-tight">ImmoVia Admin</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">Restricted access</p>
+          <CardTitle className="text-xl font-bold tracking-tight">{t.admin.loginTitle}</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">{t.admin.loginRestricted}</p>
         </CardHeader>
         <CardContent className="pb-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{t.admin.username}</Label>
               <Input
                 id="username"
                 type="text"
                 autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
+                placeholder={t.admin.enterUsername}
                 required
                 disabled={loading}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t.admin.password}</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -153,7 +157,7 @@ function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
+                  placeholder={t.admin.enterPassword}
                   required
                   disabled={loading}
                   className="pr-10"
@@ -179,8 +183,8 @@ function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
               disabled={loading}
             >
               {loading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in…</>
-              ) : "Sign in"}
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.admin.signingIn}</>
+              ) : t.admin.signIn}
             </Button>
           </form>
         </CardContent>
@@ -220,8 +224,10 @@ function usePendingCounts() {
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 function AdminSidebar({ onLogout }: { onLogout: () => void }) {
+  const { t } = useLanguage();
   const [location] = useLocation();
   const { pendingTotal, openReports } = usePendingCounts();
+  const navGroups = buildNavGroups(t);
 
   const getBadgeCount = (path: string) => {
     if (path === "/admin/pending") return pendingTotal;
@@ -242,14 +248,14 @@ function AdminSidebar({ onLogout }: { onLogout: () => void }) {
           <Shield className="h-5 w-5 text-white" />
         </div>
         <div>
-          <div className="text-white font-bold text-sm leading-tight">ImmoVia</div>
-          <div className="text-white/50 text-xs">Admin Console</div>
+          <div className="text-white font-bold text-sm leading-tight">{t.admin.brand}</div>
+          <div className="text-white/50 text-xs">{t.admin.console}</div>
         </div>
       </div>
 
       {/* Nav grouped */}
       <nav className="flex-1 py-3 px-2 space-y-4 overflow-y-auto">
-        {NAV_GROUPS.map((group) => (
+        {navGroups.map((group) => (
           <div key={group.group}>
             {group.group && (
               <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-white/30">
@@ -294,7 +300,7 @@ function AdminSidebar({ onLogout }: { onLogout: () => void }) {
       {/* Link to public site */}
       <div className="px-2 py-2">
         <Link href="/" className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors cursor-pointer">
-          <Eye className="h-3.5 w-3.5" /> View public site
+          <Eye className="h-3.5 w-3.5" /> {t.admin.viewPublicSite}
         </Link>
       </div>
 
@@ -305,7 +311,7 @@ function AdminSidebar({ onLogout }: { onLogout: () => void }) {
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors"
         >
           <LogOut className="h-4 w-4" />
-          Sign out
+          {t.admin.signOut}
         </button>
       </div>
     </aside>

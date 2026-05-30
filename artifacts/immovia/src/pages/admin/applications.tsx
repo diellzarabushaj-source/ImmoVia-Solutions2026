@@ -21,6 +21,7 @@ import { Loader2, MoreHorizontal, CheckCircle2, XCircle, Clock, Plus, Trash2, Se
 import { format } from "date-fns";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { useLanguage } from "@/lib/language-context";
 
 interface ApplicationItem {
   id: number;
@@ -35,6 +36,7 @@ interface ApplicationItem {
 }
 
 function AddApplicationDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [projectId, setProjectId] = useState("");
@@ -57,25 +59,25 @@ function AddApplicationDialog({ open, onClose, onCreated }: { open: boolean; onC
         method: "POST", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify(body),
       });
-      if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? "Failed."); return; }
+      if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? t.admin.connectionErrorShort); return; }
       onCreated(); onClose(); reset();
-    } catch { setError("Connection error."); } finally { setLoading(false); }
+    } catch { setError(t.admin.connectionErrorShort); } finally { setLoading(false); }
   };
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { onClose(); reset(); } }}>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>Create Application</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{t.admin.appsCreate}</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3 py-2">
-          <div className="space-y-1.5"><Label>Project ID</Label><Input value={projectId} onChange={(e) => setProjectId(e.target.value)} type="number" placeholder="Leave blank if N/A" disabled={loading} /></div>
-          <div className="space-y-1.5"><Label>Applicant User ID</Label><Input value={applicantUserId} onChange={(e) => setApplicantUserId(e.target.value)} type="number" placeholder="Leave blank if N/A" disabled={loading} /></div>
-          <div className="space-y-1.5"><Label>Proposed Price</Label><Input value={proposedPrice} onChange={(e) => setProposedPrice(e.target.value)} placeholder="e.g. €5,000" disabled={loading} /></div>
-          <div className="space-y-1.5"><Label>Message</Label><Textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={3} disabled={loading} placeholder="Optional note…" /></div>
+          <div className="space-y-1.5"><Label>{t.admin.fProjectId}</Label><Input value={projectId} onChange={(e) => setProjectId(e.target.value)} type="number" placeholder={t.admin.phLeaveBlank} disabled={loading} /></div>
+          <div className="space-y-1.5"><Label>{t.admin.fApplicantUserId}</Label><Input value={applicantUserId} onChange={(e) => setApplicantUserId(e.target.value)} type="number" placeholder={t.admin.phLeaveBlank} disabled={loading} /></div>
+          <div className="space-y-1.5"><Label>{t.admin.fProposedPrice}</Label><Input value={proposedPrice} onChange={(e) => setProposedPrice(e.target.value)} placeholder={t.admin.phPriceExample} disabled={loading} /></div>
+          <div className="space-y-1.5"><Label>{t.admin.fMessage}</Label><Textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={3} disabled={loading} placeholder={t.admin.phOptionalNote} /></div>
           {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => { onClose(); reset(); }} disabled={loading}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => { onClose(); reset(); }} disabled={loading}>{t.admin.cancel}</Button>
             <Button type="submit" className="bg-[#1a3a6e] hover:bg-[#0f2044]" disabled={loading}>
-              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : "Create"}
+              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.admin.saving}</> : t.admin.create}
             </Button>
           </DialogFooter>
         </form>
@@ -85,6 +87,7 @@ function AddApplicationDialog({ open, onClose, onCreated }: { open: boolean; onC
 }
 
 export function AdminApplications() {
+  const { t } = useLanguage();
   const [apps, setApps] = useState<ApplicationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -132,26 +135,26 @@ export function AdminApplications() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Applications</h1>
-          <p className="text-sm text-gray-500 mt-1">Service provider applications to projects — {apps.length} total</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.admin.appsTitle}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t.admin.appsSubtitle} — {apps.length} {t.admin.total}</p>
         </div>
         <Button size="sm" className="bg-[#1a3a6e] hover:bg-[#0f2044]" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4 mr-1.5" /> Create
+          <Plus className="h-4 w-4 mr-1.5" /> {t.admin.create}
         </Button>
       </div>
 
       <div className="flex gap-3 mb-4">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input className="pl-9" placeholder="Search project, applicant…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input className="pl-9" placeholder={t.admin.searchApplications} value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="accepted">Accepted</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
+            <SelectItem value="all">{t.admin.allStatuses}</SelectItem>
+            <SelectItem value="pending">{t.admin.stPendingReview}</SelectItem>
+            <SelectItem value="accepted">{t.admin.stAccepted}</SelectItem>
+            <SelectItem value="rejected">{t.admin.stRejected}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -160,13 +163,13 @@ export function AdminApplications() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
-              <TableHead className="text-xs font-semibold text-gray-600">Project</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Applicant</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Proposed Price</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Message</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Date</TableHead>
-              <TableHead className="text-right text-xs font-semibold text-gray-600">Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colProject}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colApplicant}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colProposedPrice}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colMessage}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.date}</TableHead>
+              <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -201,19 +204,19 @@ export function AdminApplications() {
                       <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => updateStatus(a.id, "accepted")}><CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> Accept</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateStatus(a.id, "pending")}><Clock className="mr-2 h-4 w-4 text-yellow-500" /> Set Pending</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateStatus(a.id, "rejected")}><XCircle className="mr-2 h-4 w-4 text-red-500" /> Reject</DropdownMenuItem>
+                      <DropdownMenuLabel>{t.admin.actions}</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => updateStatus(a.id, "accepted")}><CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> {t.admin.accept}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => updateStatus(a.id, "pending")}><Clock className="mr-2 h-4 w-4 text-yellow-500" /> {t.admin.setPending}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => updateStatus(a.id, "rejected")}><XCircle className="mr-2 h-4 w-4 text-red-500" /> {t.admin.reject}</DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(a.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(a.id)}><Trash2 className="mr-2 h-4 w-4" /> {t.admin.delete}</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
             {!loading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="h-24 text-center text-gray-400">No applications found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="h-24 text-center text-gray-400">{t.admin.noApplicationsFound}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -224,9 +227,9 @@ export function AdminApplications() {
       {deleteTarget !== null && (
         <ConfirmDialog
           open={true}
-          title="Delete Application"
-          description="Permanently delete this application? This cannot be undone."
-          confirmLabel="Delete"
+          title={t.admin.appsDelete}
+          description={t.admin.confirmDeleteApplication}
+          confirmLabel={t.admin.delete}
           variant="destructive"
           onConfirm={deleteApp}
           onCancel={() => setDeleteTarget(null)}

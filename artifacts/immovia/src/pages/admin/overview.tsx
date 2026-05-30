@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { useLanguage } from "@/lib/language-context";
 
 interface PendingProject {
   id: number;
@@ -58,6 +59,7 @@ function StatCard({
 }
 
 function SectionHeader({ title, subtitle, href }: { title: string; subtitle?: string; href?: string }) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center justify-between mb-4">
       <div>
@@ -67,7 +69,7 @@ function SectionHeader({ title, subtitle, href }: { title: string; subtitle?: st
       {href && (
         <Link href={href}>
           <button className="flex items-center gap-1 text-xs text-primary hover:underline font-medium">
-            View all <ArrowRight className="h-3 w-3" />
+            {t.admin.viewAll} <ArrowRight className="h-3 w-3" />
           </button>
         </Link>
       )}
@@ -76,6 +78,7 @@ function SectionHeader({ title, subtitle, href }: { title: string; subtitle?: st
 }
 
 export function AdminOverview() {
+  const { t } = useLanguage();
   const { data: stats, isLoading, refetch: refetchStats } = useGetAdminStats();
   const [pendingProjects, setPendingProjects] = useState<PendingProject[]>([]);
   const [pendingCompanies, setPendingCompanies] = useState<PendingCompany[]>([]);
@@ -126,12 +129,12 @@ export function AdminOverview() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Shield className="h-6 w-6 text-[#1a3a6e]" />
-            Admin Overview
+            {t.admin.ovTitle}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">All platform activity at a glance</p>
+          <p className="text-sm text-gray-400 mt-1">{t.admin.ovSubtitle}</p>
         </div>
         <div className="text-right text-xs text-gray-400">
-          <p>Today</p>
+          <p>{t.admin.ovToday}</p>
           <p className="font-medium text-gray-600">{format(new Date(), "MMM d, yyyy")}</p>
         </div>
       </div>
@@ -142,13 +145,13 @@ export function AdminOverview() {
           <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
           <div className="flex-1 text-sm">
             <span className="font-semibold text-amber-800">
-              {totalPending} item{totalPending !== 1 ? "s" : ""} waiting for your review
+              {totalPending} {t.admin.ovItems} {t.admin.ovWaitingReview}
             </span>
-            <span className="text-amber-600"> — approve or reject below</span>
+            <span className="text-amber-600"> — {t.admin.ovApproveRejectBelow}</span>
           </div>
           <Link href="/admin/pending">
             <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white h-8 text-xs">
-              Go to Pending <ArrowRight className="ml-1 h-3 w-3" />
+              {t.admin.ovGoToPending} <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           </Link>
         </div>
@@ -156,23 +159,23 @@ export function AdminOverview() {
 
       {/* ── SECTION 1: Users ── */}
       <div>
-        <SectionHeader title="Users" subtitle="Registered accounts by type" href="/admin/users" />
+        <SectionHeader title={t.admin.ovUsers} subtitle={t.admin.ovUsersSub} href="/admin/users" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Total Users" value={isLoading ? "…" : (s?.totalUsers ?? 0)} icon={Users} color="text-blue-600" bg="bg-blue-50" />
-          <StatCard label="Project Posters" value={isLoading ? "…" : (s?.projectPosters ?? 0)} icon={Briefcase} color="text-indigo-600" bg="bg-indigo-50" note={`${s?.individualProjectPosters ?? 0} ind. · ${s?.companyProjectPosters ?? 0} co.`} />
-          <StatCard label="Service Providers" value={isLoading ? "…" : (s?.serviceProviders ?? 0)} icon={UserCheck} color="text-purple-600" bg="bg-purple-50" note={`${s?.individualServiceProviders ?? 0} ind. · ${s?.companyServiceProviders ?? 0} co.`} />
-          <StatCard label="Approved Profiles" value={isLoading ? "…" : (s?.approvedCompanies ?? 0)} icon={CheckCircle2} color="text-green-600" bg="bg-green-50" />
+          <StatCard label={t.admin.ovTotalUsers} value={isLoading ? "…" : (s?.totalUsers ?? 0)} icon={Users} color="text-blue-600" bg="bg-blue-50" />
+          <StatCard label={t.admin.ovProjectPosters} value={isLoading ? "…" : (s?.projectPosters ?? 0)} icon={Briefcase} color="text-indigo-600" bg="bg-indigo-50" note={`${s?.individualProjectPosters ?? 0} ${t.admin.abbrIndividual} · ${s?.companyProjectPosters ?? 0} ${t.admin.abbrCompany}`} />
+          <StatCard label={t.admin.ovServiceProviders} value={isLoading ? "…" : (s?.serviceProviders ?? 0)} icon={UserCheck} color="text-purple-600" bg="bg-purple-50" note={`${s?.individualServiceProviders ?? 0} ${t.admin.abbrIndividual} · ${s?.companyServiceProviders ?? 0} ${t.admin.abbrCompany}`} />
+          <StatCard label={t.admin.ovApprovedProfiles} value={isLoading ? "…" : (s?.approvedCompanies ?? 0)} icon={CheckCircle2} color="text-green-600" bg="bg-green-50" />
         </div>
       </div>
 
       {/* ── SECTION 2: Projects ── */}
       <div>
-        <SectionHeader title="Projects" subtitle="All submitted renovation & construction requests" href="/admin/projects" />
+        <SectionHeader title={t.admin.ovProjects} subtitle={t.admin.ovProjectsSub} href="/admin/projects" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Total Projects" value={isLoading ? "…" : (s?.totalProjects ?? 0)} icon={Hammer} color="text-blue-600" bg="bg-blue-50" />
-          <StatCard label="Open (Public)" value={isLoading ? "…" : (s?.openProjects ?? 0)} icon={Globe} color="text-emerald-600" bg="bg-emerald-50" note="Visible on /projects" />
-          <StatCard label="Pending Review" value={isLoading ? "…" : (s?.pendingProjects ?? 0)} icon={Clock} color="text-amber-600" bg="bg-amber-50" note="Need your approval" />
-          <StatCard label="Companies" value={isLoading ? "…" : (s?.totalCompanies ?? 0)} icon={Building2} color="text-violet-600" bg="bg-violet-50" />
+          <StatCard label={t.admin.ovTotalProjects} value={isLoading ? "…" : (s?.totalProjects ?? 0)} icon={Hammer} color="text-blue-600" bg="bg-blue-50" />
+          <StatCard label={t.admin.ovOpenPublic} value={isLoading ? "…" : (s?.openProjects ?? 0)} icon={Globe} color="text-emerald-600" bg="bg-emerald-50" note={t.admin.ovVisibleOnProjects} />
+          <StatCard label={t.admin.navPending} value={isLoading ? "…" : (s?.pendingProjects ?? 0)} icon={Clock} color="text-amber-600" bg="bg-amber-50" note={t.admin.ovNeedApproval} />
+          <StatCard label={t.admin.navCompanies} value={isLoading ? "…" : (s?.totalCompanies ?? 0)} icon={Building2} color="text-violet-600" bg="bg-violet-50" />
         </div>
       </div>
 
@@ -182,16 +185,16 @@ export function AdminOverview() {
         {/* Pending Projects */}
         <div>
           <SectionHeader
-            title={`Pending Projects ${pendingProjects.length > 0 ? `(${pendingProjects.length})` : ""}`}
-            subtitle='Approve → makes project "open" and visible to contractors'
+            title={`${t.admin.ovPendingProjects} ${pendingProjects.length > 0 ? `(${pendingProjects.length})` : ""}`}
+            subtitle={t.admin.ovPendingProjectsHint}
             href="/admin/projects"
           />
           <Card className="border border-gray-200 shadow-sm overflow-hidden">
             {pendingProjects.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 gap-2 text-gray-400">
                 <CheckCircle2 className="h-8 w-8 text-green-300" />
-                <p className="text-sm font-medium">No pending projects</p>
-                <p className="text-xs">All caught up</p>
+                <p className="text-sm font-medium">{t.admin.ovNoPendingProjects}</p>
+                <p className="text-xs">{t.admin.ovAllCaughtUp}</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
@@ -214,7 +217,7 @@ export function AdminOverview() {
                       </div>
                       {done ? (
                         <span className={`text-xs font-medium px-2 py-1 rounded-full flex-shrink-0 ${done === "approved" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
-                          {done === "approved" ? "Approved" : "Rejected"}
+                          {done === "approved" ? t.admin.approved : t.admin.rejected}
                         </span>
                       ) : (
                         <div className="flex flex-col gap-1.5 flex-shrink-0">
@@ -224,7 +227,7 @@ export function AdminOverview() {
                             disabled={actionLoading !== null}
                             onClick={() => action(approveKey, `/api/projects/${p.id}`, { status: "open" }, "approved")}
                           >
-                            {actionLoading === approveKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <><CheckCircle2 className="h-3 w-3 mr-1" />Approve</>}
+                            {actionLoading === approveKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <><CheckCircle2 className="h-3 w-3 mr-1" />{t.admin.approve}</>}
                           </Button>
                           <Button
                             size="sm"
@@ -233,7 +236,7 @@ export function AdminOverview() {
                             disabled={actionLoading !== null}
                             onClick={() => action(rejectKey, `/api/projects/${p.id}`, { status: "cancelled" }, "rejected")}
                           >
-                            {actionLoading === rejectKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <><XCircle className="h-3 w-3 mr-1" />Reject</>}
+                            {actionLoading === rejectKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <><XCircle className="h-3 w-3 mr-1" />{t.admin.reject}</>}
                           </Button>
                         </div>
                       )}
@@ -248,16 +251,16 @@ export function AdminOverview() {
         {/* Pending Companies */}
         <div>
           <SectionHeader
-            title={`Pending Companies ${pendingCompanies.length > 0 ? `(${pendingCompanies.length})` : ""}`}
-            subtitle="Approve → company becomes visible in the public directory"
+            title={`${t.admin.ovPendingCompanies} ${pendingCompanies.length > 0 ? `(${pendingCompanies.length})` : ""}`}
+            subtitle={t.admin.ovPendingCompaniesHint}
             href="/admin/companies"
           />
           <Card className="border border-gray-200 shadow-sm overflow-hidden">
             {pendingCompanies.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 gap-2 text-gray-400">
                 <CheckCircle2 className="h-8 w-8 text-green-300" />
-                <p className="text-sm font-medium">No pending companies</p>
-                <p className="text-xs">All caught up</p>
+                <p className="text-sm font-medium">{t.admin.ovNoPendingCompanies}</p>
+                <p className="text-xs">{t.admin.ovAllCaughtUp}</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
@@ -277,7 +280,7 @@ export function AdminOverview() {
                       </div>
                       {done ? (
                         <span className={`text-xs font-medium px-2 py-1 rounded-full flex-shrink-0 ${done === "approved" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
-                          {done === "approved" ? "Approved" : "Rejected"}
+                          {done === "approved" ? t.admin.approved : t.admin.rejected}
                         </span>
                       ) : (
                         <div className="flex flex-col gap-1.5 flex-shrink-0">
@@ -287,7 +290,7 @@ export function AdminOverview() {
                             disabled={actionLoading !== null}
                             onClick={() => action(approveKey, `/api/companies/${c.id}`, { status: "approved" }, "approved")}
                           >
-                            {actionLoading === approveKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <><CheckCircle2 className="h-3 w-3 mr-1" />Approve</>}
+                            {actionLoading === approveKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <><CheckCircle2 className="h-3 w-3 mr-1" />{t.admin.approve}</>}
                           </Button>
                           <Button
                             size="sm"
@@ -296,7 +299,7 @@ export function AdminOverview() {
                             disabled={actionLoading !== null}
                             onClick={() => action(rejectKey, `/api/companies/${c.id}`, { status: "rejected" }, "rejected")}
                           >
-                            {actionLoading === rejectKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <><XCircle className="h-3 w-3 mr-1" />Reject</>}
+                            {actionLoading === rejectKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <><XCircle className="h-3 w-3 mr-1" />{t.admin.reject}</>}
                           </Button>
                         </div>
                       )}
@@ -314,11 +317,11 @@ export function AdminOverview() {
 
         {/* Projects by status */}
         <div>
-          <SectionHeader title="Projects by Status" subtitle="Distribution of all submitted projects" />
+          <SectionHeader title={t.admin.ovProjectsByStatus} subtitle={t.admin.ovProjectsByStatusSub} />
           <Card className="border border-gray-200 shadow-sm">
             <CardContent className="pt-5 pb-4 space-y-3">
               {(s?.projectsByStatus ?? []).length === 0 && (
-                <p className="text-sm text-gray-400 py-4 text-center">No data yet</p>
+                <p className="text-sm text-gray-400 py-4 text-center">{t.admin.ovNoData}</p>
               )}
               {(s?.projectsByStatus ?? []).map((item) => {
                 const total = s?.totalProjects ?? 1;
@@ -330,12 +333,20 @@ export function AdminOverview() {
                   matched: "bg-purple-500",
                   cancelled: "bg-red-400",
                 };
+                const statusLabelMap: Record<string, string> = {
+                  open: t.admin.stOpen,
+                  pending: t.admin.stPendingReview,
+                  pending_review: t.admin.stPendingReview,
+                  reviewing: t.admin.stReviewing,
+                  matched: t.admin.stMatched,
+                  cancelled: t.admin.stCancelled,
+                };
                 return (
                   <div key={item.label}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${colorMap[item.label] ?? "bg-gray-300"}`} />
-                        <span className="text-sm capitalize text-gray-700 font-medium">{item.label}</span>
+                        <span className="text-sm capitalize text-gray-700 font-medium">{statusLabelMap[item.label] ?? item.label}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-400">{pct}%</span>
@@ -354,11 +365,11 @@ export function AdminOverview() {
 
         {/* Recent activity */}
         <div>
-          <SectionHeader title="Recent Activity" subtitle="Last submissions across the platform" />
+          <SectionHeader title={t.admin.ovRecentActivity} subtitle={t.admin.ovRecentActivitySub} />
           <Card className="border border-gray-200 shadow-sm">
             <CardContent className="pt-4 pb-2">
               {(s?.recentActivity ?? []).length === 0 && (
-                <p className="text-sm text-gray-400 py-6 text-center">No activity yet</p>
+                <p className="text-sm text-gray-400 py-6 text-center">{t.admin.ovNoActivity}</p>
               )}
               <div className="divide-y divide-gray-50">
                 {(s?.recentActivity ?? []).map((item) => (
@@ -384,14 +395,14 @@ export function AdminOverview() {
 
       {/* ── SECTION 5: Quick nav ── */}
       <div>
-        <SectionHeader title="Quick Navigation" subtitle="Jump to any section" />
+        <SectionHeader title={t.admin.ovQuickNav} subtitle={t.admin.ovQuickNavSub} />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
-            { href: "/admin/projects", label: "All Projects", icon: Hammer, color: "text-blue-600", bg: "bg-blue-50" },
-            { href: "/admin/companies", label: "Companies", icon: Building2, color: "text-orange-600", bg: "bg-orange-50" },
-            { href: "/admin/pending", label: "Pending Review", icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-            { href: "/admin/users", label: "Users", icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
-            { href: "/admin/applications", label: "Applications", icon: FileText, color: "text-indigo-600", bg: "bg-indigo-50" },
+            { href: "/admin/projects", label: t.admin.ovAllProjects, icon: Hammer, color: "text-blue-600", bg: "bg-blue-50" },
+            { href: "/admin/companies", label: t.admin.navCompanies, icon: Building2, color: "text-orange-600", bg: "bg-orange-50" },
+            { href: "/admin/pending", label: t.admin.navPending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
+            { href: "/admin/users", label: t.admin.navUsers, icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
+            { href: "/admin/applications", label: t.admin.navApplications, icon: FileText, color: "text-indigo-600", bg: "bg-indigo-50" },
           ].map((nav) => (
             <Link key={nav.href} href={nav.href}>
               <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 bg-white hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer group">

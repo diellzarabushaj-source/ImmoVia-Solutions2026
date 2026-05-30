@@ -15,7 +15,7 @@ import { resolveCategoryLabel, resolveTagLabel, resolveAnyLabel, type Lang } fro
 
 export function AdminPending() {
   const qc = useQueryClient();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const { data: projects, isLoading: projectsLoading } = useListProjects({ status: "pending" });
   const { data: companies, isLoading: companiesLoading } = useListCompanies({ status: "pending" });
@@ -35,9 +35,9 @@ export function AdminPending() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Pending Review</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t.admin.pendTitle}</h1>
         <p className="text-sm text-gray-500 mt-1">
-          {pendingProjectCount} project{pendingProjectCount !== 1 ? "s" : ""} and {pendingCompanyCount} compan{pendingCompanyCount !== 1 ? "ies" : "y"} awaiting approval
+          {t.admin.pendSubtitle.replace("{projects}", String(pendingProjectCount)).replace("{companies}", String(pendingCompanyCount))}
         </p>
       </div>
 
@@ -46,7 +46,7 @@ export function AdminPending() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <FolderOpen className="h-4 w-4 text-[#1a3a6e]" />
-            <h2 className="text-sm font-semibold text-gray-700">Pending Projects</h2>
+            <h2 className="text-sm font-semibold text-gray-700">{t.admin.pendProjects}</h2>
             {pendingProjectCount > 0 && (
               <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">{pendingProjectCount}</span>
             )}
@@ -55,11 +55,11 @@ export function AdminPending() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead className="text-xs font-semibold text-gray-600">Client</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-600">Type / City</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-600">Budget</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-600">Submitted</TableHead>
-                  <TableHead className="text-right text-xs font-semibold text-gray-600">Decision</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colClient}</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colTypeCity}</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colBudget}</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colSubmitted}</TableHead>
+                  <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.colDecision}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -92,11 +92,11 @@ export function AdminPending() {
                       <div className="flex items-center justify-end gap-1.5">
                         <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 h-7 px-2.5 text-xs"
                           onClick={() => updateProject.mutate({ id: p.id, data: { status: "open" } }, { onSuccess: invalidateAll })}>
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> open
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> {t.admin.stOpen}
                         </Button>
                         <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 h-7 px-2.5 text-xs"
                           onClick={() => updateProject.mutate({ id: p.id, data: { status: "cancelled" } }, { onSuccess: invalidateAll })}>
-                          <XCircle className="h-3.5 w-3.5 mr-1" /> cancelled
+                          <XCircle className="h-3.5 w-3.5 mr-1" /> {t.admin.stCancelled}
                         </Button>
                       </div>
                     </TableCell>
@@ -106,7 +106,7 @@ export function AdminPending() {
                   <TableRow><TableCell colSpan={5} className="h-20 text-center text-gray-400 text-sm">
                     <div className="flex flex-col items-center gap-1.5">
                       <CheckCircle2 className="h-6 w-6 text-green-400" />
-                      <span>No pending projects</span>
+                      <span>{t.admin.ovNoPendingProjects}</span>
                     </div>
                   </TableCell></TableRow>
                 )}
@@ -119,7 +119,7 @@ export function AdminPending() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Building2 className="h-4 w-4 text-[#1a3a6e]" />
-            <h2 className="text-sm font-semibold text-gray-700">Pending Companies</h2>
+            <h2 className="text-sm font-semibold text-gray-700">{t.admin.pendCompanies}</h2>
             {pendingCompanyCount > 0 && (
               <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">{pendingCompanyCount}</span>
             )}
@@ -128,11 +128,11 @@ export function AdminPending() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead className="text-xs font-semibold text-gray-600">Company</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-600">Services</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-600">City</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-600">Submitted</TableHead>
-                  <TableHead className="text-right text-xs font-semibold text-gray-600">Decision</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colCompany}</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colServices}</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colCity}</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colSubmitted}</TableHead>
+                  <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.colDecision}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -157,7 +157,7 @@ export function AdminPending() {
                         const text = pipeIdx >= 0 ? tag.slice(pipeIdx + 1) : tag;
                         return (
                           <span key={tag} className="inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                            <span className="opacity-60">Custom:</span> {text}
+                            <span className="opacity-60">{t.admin.custom}</span> {text}
                           </span>
                         );
                       })}
@@ -168,11 +168,11 @@ export function AdminPending() {
                       <div className="flex items-center justify-end gap-1.5">
                         <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 h-7 px-2.5 text-xs"
                           onClick={() => updateCompany.mutate({ id: c.id, data: { status: "approved" } }, { onSuccess: invalidateAll })}>
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> approved
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> {t.admin.stApproved}
                         </Button>
                         <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 h-7 px-2.5 text-xs"
                           onClick={() => updateCompany.mutate({ id: c.id, data: { status: "rejected" } }, { onSuccess: invalidateAll })}>
-                          <XCircle className="h-3.5 w-3.5 mr-1" /> rejected
+                          <XCircle className="h-3.5 w-3.5 mr-1" /> {t.admin.stRejected}
                         </Button>
                       </div>
                     </TableCell>
@@ -182,7 +182,7 @@ export function AdminPending() {
                   <TableRow><TableCell colSpan={5} className="h-20 text-center text-gray-400 text-sm">
                     <div className="flex flex-col items-center gap-1.5">
                       <CheckCircle2 className="h-6 w-6 text-green-400" />
-                      <span>No pending companies</span>
+                      <span>{t.admin.ovNoPendingCompanies}</span>
                     </div>
                   </TableCell></TableRow>
                 )}

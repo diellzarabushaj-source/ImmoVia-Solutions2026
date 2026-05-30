@@ -2,3 +2,4 @@
 - [Clerk auth integration pattern](clerk-auth-pattern.md) — JIT provisioning, role selection flow, Tailwind v4 layer ordering, and key pitfalls.
 - [Canonical role terminology](role-terminology.md) — Type1=Client, Type2=Service Provider (per-language); entity "company" axis & internal account_type keys stay separate.
 - [OpenAPI field add — persistence not automatic](openapi-field-persistence.md) — new request-schema field validates but is dropped unless POST AND PATCH handlers map it into the DB payload.
+- [i18n locale-bypass traps](i18n-locale-bypass.md) — wiring JSX labels isn't enough; hardcoded "en" helper args, raw enum values, and API status labels still leak English.

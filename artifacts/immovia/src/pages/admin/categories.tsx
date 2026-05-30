@@ -15,6 +15,7 @@ import {
 import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { useLanguage } from "@/lib/language-context";
 
 interface Category {
   id: number;
@@ -51,6 +52,7 @@ function CategoryDialog({
   onSaved: () => void;
   initial?: Category | null;
 }) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [name, setName] = useState(initial?.name ?? "");
@@ -70,7 +72,7 @@ function CategoryDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !slug.trim()) { setError("Name and slug are required."); return; }
+    if (!name.trim() || !slug.trim()) { setError(t.admin.nameSlugRequired); return; }
     setError(""); setLoading(true);
     try {
       const url = initial ? `/api/admin/categories/${initial.id}` : "/api/admin/categories";
@@ -79,31 +81,31 @@ function CategoryDialog({
         method, headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify({ name, slug, type, active }),
       });
-      if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? "Failed."); return; }
+      if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? t.admin.failed); return; }
       onSaved(); onClose();
-    } catch { setError("Connection error."); } finally { setLoading(false); }
+    } catch { setError(t.admin.connectionErrorShort); } finally { setLoading(false); }
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>{initial ? "Edit Category" : "Add Category"}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{initial ? t.admin.catEdit : t.admin.catAdd}</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3 py-2">
           <div className="space-y-1.5">
-            <Label>Name *</Label>
-            <Input value={name} onChange={(e) => { setName(e.target.value); if (!initial) setSlug(slugify(e.target.value)); }} required disabled={loading} placeholder="e.g. Renovation" />
+            <Label>{t.admin.fName}</Label>
+            <Input value={name} onChange={(e) => { setName(e.target.value); if (!initial) setSlug(slugify(e.target.value)); }} required disabled={loading} placeholder={t.admin.phNameExample} />
           </div>
           <div className="space-y-1.5">
-            <Label>Slug *</Label>
-            <Input value={slug} onChange={(e) => setSlug(e.target.value)} required disabled={loading} placeholder="e.g. renovation" />
+            <Label>{t.admin.fSlug}</Label>
+            <Input value={slug} onChange={(e) => setSlug(e.target.value)} required disabled={loading} placeholder={t.admin.phSlugExample} />
           </div>
           <div className="space-y-1.5">
-            <Label>Type</Label>
+            <Label>{t.admin.type}</Label>
             <Select value={type} onValueChange={setType} disabled={loading}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="service">Service</SelectItem>
-                <SelectItem value="project">Project</SelectItem>
+                <SelectItem value="service">{t.admin.optService}</SelectItem>
+                <SelectItem value="project">{t.admin.optProject}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -115,13 +117,13 @@ function CategoryDialog({
             >
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${active ? "translate-x-6" : "translate-x-1"}`} />
             </button>
-            <Label className="cursor-pointer" onClick={() => setActive((v) => !v)}>{active ? "Active" : "Inactive"}</Label>
+            <Label className="cursor-pointer" onClick={() => setActive((v) => !v)}>{active ? t.admin.active : t.admin.inactive}</Label>
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>{t.admin.cancel}</Button>
             <Button type="submit" className="bg-[#1a3a6e] hover:bg-[#0f2044]" disabled={loading}>
-              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : "Save"}
+              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.admin.saving}</> : t.admin.save}
             </Button>
           </DialogFooter>
         </form>
@@ -131,6 +133,7 @@ function CategoryDialog({
 }
 
 export function AdminCategories() {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -190,17 +193,17 @@ export function AdminCategories() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Service Categories</h1>
-          <p className="text-sm text-gray-500 mt-1">{categories.length} categories — {categories.filter((c) => c.active).length} active</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.admin.catTitle}</h1>
+          <p className="text-sm text-gray-500 mt-1">{categories.length} {t.admin.navCategories.toLowerCase()} — {categories.filter((c) => c.active).length} {t.admin.active.toLowerCase()}</p>
         </div>
         <div className="flex gap-2">
           {categories.length === 0 && (
             <Button variant="outline" size="sm" onClick={seedDefaults} disabled={seeding}>
-              {seeding ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />Seeding…</> : <><Tag className="h-4 w-4 mr-1.5" />Seed Defaults</>}
+              {seeding ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />{t.admin.saving}</> : <><Tag className="h-4 w-4 mr-1.5" />{t.admin.seedDefaults}</>}
             </Button>
           )}
           <Button size="sm" className="bg-[#1a3a6e] hover:bg-[#0f2044]" onClick={() => { setEditing(null); setDialogOpen(true); }}>
-            <Plus className="h-4 w-4 mr-1.5" /> Add Category
+            <Plus className="h-4 w-4 mr-1.5" /> {t.admin.catAdd}
           </Button>
         </div>
       </div>
@@ -208,14 +211,14 @@ export function AdminCategories() {
       <div className="flex gap-3 mb-4">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input className="pl-9" placeholder="Search categories…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input className="pl-9" placeholder={t.admin.searchCategories} value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={activeFilter} onValueChange={setActiveFilter}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="all">{t.admin.optAll}</SelectItem>
+            <SelectItem value="active">{t.admin.active}</SelectItem>
+            <SelectItem value="inactive">{t.admin.inactive}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -224,12 +227,12 @@ export function AdminCategories() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
-              <TableHead className="text-xs font-semibold text-gray-600">Name</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Slug</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Type</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Created</TableHead>
-              <TableHead className="text-right text-xs font-semibold text-gray-600">Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colName}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colSlug}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.type}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colCreated}</TableHead>
+              <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -243,13 +246,13 @@ export function AdminCategories() {
                 <TableCell className="text-sm capitalize text-gray-600">{cat.type}</TableCell>
                 <TableCell>
                   {cat.active
-                    ? <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />Active</span>
-                    : <span className="inline-flex items-center gap-1 text-xs text-gray-400"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block" />Inactive</span>}
+                    ? <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />{t.admin.active}</span>
+                    : <span className="inline-flex items-center gap-1 text-xs text-gray-400"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block" />{t.admin.inactive}</span>}
                 </TableCell>
                 <TableCell className="text-xs text-gray-500">{format(new Date(cat.createdAt), "MMM d, yyyy")}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-[#1a3a6e]" title={cat.active ? "Deactivate" : "Activate"} onClick={() => toggleActive(cat)}>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-[#1a3a6e]" title={cat.active ? t.admin.deactivate : t.admin.activate} onClick={() => toggleActive(cat)}>
                       <Power className="h-3.5 w-3.5" />
                     </Button>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => { setEditing(cat); setDialogOpen(true); }}>
@@ -263,7 +266,7 @@ export function AdminCategories() {
               </TableRow>
             ))}
             {!loading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">{categories.length === 0 ? 'No categories yet. Use "Seed Defaults" to add standard service types.' : "No categories match your search."}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">{categories.length === 0 ? t.admin.noCategoriesYet : t.admin.noCategoriesMatch}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -279,9 +282,9 @@ export function AdminCategories() {
       {deleteTarget && (
         <ConfirmDialog
           open={true}
-          title="Delete Category"
-          description={`Permanently delete "${deleteTarget.name}"? This cannot be undone.`}
-          confirmLabel="Delete"
+          title={t.admin.catDelete}
+          description={t.admin.confirmDeleteCategory}
+          confirmLabel={t.admin.delete}
           variant="destructive"
           onConfirm={deleteCategory}
           onCancel={() => setDeleteTarget(null)}

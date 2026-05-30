@@ -32,9 +32,11 @@ import { format } from "date-fns";
 
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-import { CATEGORIES, getCategoryLabel } from "@/lib/categories";
+import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
+import { useLanguage } from "@/lib/language-context";
 
 function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
@@ -61,49 +63,49 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
         method: "POST", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify(body),
       });
-      if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? "Failed."); return; }
+      if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? t.admin.failed); return; }
       onCreated(); onClose();
       setForm({ fullName: "", email: "", phone: "", projectType: "renovation", title: "", description: "", city: "", budget: "", timeline: "" });
-    } catch { setError("Connection error."); } finally { setLoading(false); }
+    } catch { setError(t.admin.connectionErrorShort); } finally { setLoading(false); }
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Hammer className="h-4 w-4" /> Add Project</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><Hammer className="h-4 w-4" /> {t.admin.projAdd}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3 py-2">
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label>Full Name *</Label><Input value={form.fullName} onChange={set("fullName")} required disabled={loading} /></div>
-            <div className="space-y-1.5"><Label>Email *</Label><Input type="email" value={form.email} onChange={set("email")} required disabled={loading} /></div>
+            <div className="space-y-1.5"><Label>{t.admin.fFullName}</Label><Input value={form.fullName} onChange={set("fullName")} required disabled={loading} /></div>
+            <div className="space-y-1.5"><Label>{t.admin.fEmail}</Label><Input type="email" value={form.email} onChange={set("email")} required disabled={loading} /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label>Phone *</Label><Input value={form.phone} onChange={set("phone")} required disabled={loading} /></div>
-            <div className="space-y-1.5"><Label>City *</Label><Input value={form.city} onChange={set("city")} required disabled={loading} /></div>
+            <div className="space-y-1.5"><Label>{t.admin.fPhone}</Label><Input value={form.phone} onChange={set("phone")} required disabled={loading} /></div>
+            <div className="space-y-1.5"><Label>{t.admin.fCity}</Label><Input value={form.city} onChange={set("city")} required disabled={loading} /></div>
           </div>
           <div className="space-y-1.5">
-            <Label>Project Type *</Label>
+            <Label>{t.admin.fProjectType}</Label>
             <Select value={form.projectType} onValueChange={(v) => setForm((f) => ({ ...f, projectType: v }))}>
               <SelectTrigger disabled={loading}><SelectValue /></SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.key} value={cat.key}>{getCategoryLabel(cat, "en")}</SelectItem>
+                  <SelectItem key={cat.key} value={cat.key}>{getCategoryLabel(cat, language as Lang)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5"><Label>Title</Label><Input value={form.title} onChange={set("title")} disabled={loading} placeholder="e.g. Badezimmer komplett modernisieren" /></div>
-          <div className="space-y-1.5"><Label>Description *</Label><Textarea value={form.description} onChange={set("description")} required disabled={loading} rows={3} /></div>
+          <div className="space-y-1.5"><Label>{t.admin.fTitle}</Label><Input value={form.title} onChange={set("title")} disabled={loading} placeholder={t.admin.phTitleExample} /></div>
+          <div className="space-y-1.5"><Label>{t.admin.fDescription}</Label><Textarea value={form.description} onChange={set("description")} required disabled={loading} rows={3} /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label>Budget</Label><Input value={form.budget} onChange={set("budget")} disabled={loading} placeholder="e.g. 10000 EUR" /></div>
-            <div className="space-y-1.5"><Label>Timeline</Label><Input value={form.timeline} onChange={set("timeline")} disabled={loading} placeholder="e.g. 3 months" /></div>
+            <div className="space-y-1.5"><Label>{t.admin.fBudget}</Label><Input value={form.budget} onChange={set("budget")} disabled={loading} placeholder={t.admin.phBudgetExample} /></div>
+            <div className="space-y-1.5"><Label>{t.admin.fTimeline}</Label><Input value={form.timeline} onChange={set("timeline")} disabled={loading} placeholder={t.admin.phTimelineExample} /></div>
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>{t.admin.cancel}</Button>
             <Button type="submit" className="bg-[#1a3a6e] hover:bg-[#0f2044]" disabled={loading}>
-              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : "Add Project"}
+              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.admin.saving}</> : t.admin.projAdd}
             </Button>
           </DialogFooter>
         </form>
@@ -113,6 +115,7 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
 }
 
 export function AdminProjects() {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -149,28 +152,28 @@ export function AdminProjects() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-          <p className="text-sm text-gray-500 mt-1">{projects?.length ?? 0} total project requests</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.admin.projTitle}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t.admin.totalProjectRequests.replace("{n}", String(projects?.length ?? 0))}</p>
         </div>
         <Button size="sm" className="bg-[#1a3a6e] hover:bg-[#0f2044]" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4 mr-1.5" /> Add Project
+          <Plus className="h-4 w-4 mr-1.5" /> {t.admin.projAdd}
         </Button>
       </div>
 
       <div className="flex gap-3 mb-4">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input className="pl-9" placeholder="Search projects…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input className="pl-9" placeholder={t.admin.searchProjects} value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="pending">pending</SelectItem>
-            <SelectItem value="reviewing">reviewing</SelectItem>
-            <SelectItem value="open">open</SelectItem>
-            <SelectItem value="matched">matched</SelectItem>
-            <SelectItem value="cancelled">cancelled</SelectItem>
+            <SelectItem value="all">{t.admin.allStatuses}</SelectItem>
+            <SelectItem value="pending">{t.admin.stPendingReview}</SelectItem>
+            <SelectItem value="reviewing">{t.admin.stReviewing}</SelectItem>
+            <SelectItem value="open">{t.admin.stOpen}</SelectItem>
+            <SelectItem value="matched">{t.admin.stMatched}</SelectItem>
+            <SelectItem value="cancelled">{t.admin.stCancelled}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -179,14 +182,14 @@ export function AdminProjects() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
-              <TableHead className="text-xs font-semibold text-gray-600">Title / Project</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Client</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Location</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Budget</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Size</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Date</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
-              <TableHead className="text-right text-xs font-semibold text-gray-600">Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colTitleProject}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colClient}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colLocation}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colBudget}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colSize}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.date}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
+              <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -197,7 +200,7 @@ export function AdminProjects() {
               <TableRow key={project.id} className="hover:bg-gray-50">
                 <TableCell className="max-w-[220px]">
                   <div className="font-semibold text-sm text-gray-900 truncate">
-                    {(project as { title?: string | null }).title ?? <span className="text-gray-400 font-normal italic">No title</span>}
+                    {(project as { title?: string | null }).title ?? <span className="text-gray-400 font-normal italic">{t.admin.noTitle}</span>}
                   </div>
                   <div className="text-xs text-gray-500 capitalize mt-0.5">{project.projectType}</div>
                 </TableCell>
@@ -220,14 +223,14 @@ export function AdminProjects() {
                         onClick={() => updateProject.mutate(
                           { id: project.id, data: { status: "open" } },
                           {
-                            onSuccess: () => { invalidate(); toast.success("Project published — now visible on the website."); },
-                            onError: () => toast.error("Failed to publish project. Please try again."),
+                            onSuccess: () => { invalidate(); toast.success(t.admin.toastProjectPublished); },
+                            onError: () => toast.error(t.admin.toastProjectPublishFailed),
                           }
                         )}
-                        title="Publish to website"
+                        title={t.admin.publishToWebsite}
                       >
                         <Globe className="h-3.5 w-3.5" />
-                        Publish
+                        {t.admin.publish}
                       </Button>
                     )}
                   <DropdownMenu>
@@ -235,32 +238,32 @@ export function AdminProjects() {
                       <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuLabel>{t.admin.actions}</DropdownMenuLabel>
                       <DropdownMenuItem asChild>
                         <a href={`/projects/${project.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer">
-                          <Eye className="mr-2 h-4 w-4" /> View project page
+                          <Eye className="mr-2 h-4 w-4" /> {t.admin.viewProjectPage}
                         </a>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuLabel className="text-xs text-gray-400 font-normal">Set status →</DropdownMenuLabel>
+                      <DropdownMenuLabel className="text-xs text-gray-400 font-normal">{t.admin.setStatus}</DropdownMenuLabel>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "open" } }, { onSuccess: invalidate })}>
-                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> open
+                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> {t.admin.stOpen}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "reviewing" } }, { onSuccess: invalidate })}>
-                        <Eye className="mr-2 h-4 w-4 text-blue-500" /> reviewing
+                        <Eye className="mr-2 h-4 w-4 text-blue-500" /> {t.admin.stReviewing}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "matched" } }, { onSuccess: invalidate })}>
-                        <CheckCircle2 className="mr-2 h-4 w-4 text-purple-500" /> matched
+                        <CheckCircle2 className="mr-2 h-4 w-4 text-purple-500" /> {t.admin.stMatched}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "pending" } }, { onSuccess: invalidate })}>
-                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> pending
+                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> {t.admin.stPendingReview}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "cancelled" } }, { onSuccess: invalidate })}>
-                        <XCircle className="mr-2 h-4 w-4 text-red-500" /> cancelled
+                        <XCircle className="mr-2 h-4 w-4 text-red-500" /> {t.admin.stCancelled}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(project.id)}>
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        <Trash2 className="mr-2 h-4 w-4" /> {t.admin.delete}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -269,7 +272,7 @@ export function AdminProjects() {
               </TableRow>
             ))}
             {!isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={8} className="h-24 text-center text-gray-400">No projects found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="h-24 text-center text-gray-400">{t.admin.noProjectsFound}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -280,9 +283,9 @@ export function AdminProjects() {
       {deleteTarget !== null && (
         <ConfirmDialog
           open={true}
-          title="Delete Project"
-          description="Permanently delete this project request? This cannot be undone."
-          confirmLabel="Delete"
+          title={t.admin.projDelete}
+          description={t.admin.confirmDeleteProject}
+          confirmLabel={t.admin.delete}
           variant="destructive"
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
