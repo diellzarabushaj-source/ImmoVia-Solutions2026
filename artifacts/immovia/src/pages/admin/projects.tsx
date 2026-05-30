@@ -32,6 +32,7 @@ import { format } from "date-fns";
 
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { CATEGORIES, getCategoryLabel } from "@/lib/categories";
 
 function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
   const [loading, setLoading] = useState(false);
@@ -86,12 +87,9 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
             <Select value={form.projectType} onValueChange={(v) => setForm((f) => ({ ...f, projectType: v }))}>
               <SelectTrigger disabled={loading}><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="renovation">Renovation</SelectItem>
-                <SelectItem value="construction">Construction</SelectItem>
-                <SelectItem value="interior">Interior</SelectItem>
-                <SelectItem value="exterior">Exterior</SelectItem>
-                <SelectItem value="electric">Electric</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat.key} value={cat.key}>{getCategoryLabel(cat, "en")}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

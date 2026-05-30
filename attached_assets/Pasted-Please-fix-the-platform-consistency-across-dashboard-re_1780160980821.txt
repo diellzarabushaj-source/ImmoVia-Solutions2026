@@ -1,0 +1,107 @@
+Please fix the platform consistency across dashboard, registration forms, project creation forms, edit forms, admin panel, and frontend views.
+
+The main issue is that the website is not coherent. The same information/feature appears in one place but is missing or named differently in another place.
+
+Example:
+If a project has a “Project Title”, then “Project Title” must exist and be shown consistently in:
+
+* Project creation form
+* Edit project form
+* Project poster dashboard
+* Service provider dashboard/view
+* Project cards
+* Project detail page
+* Admin panel
+* Search/filter results
+* Messages or applications connected to that project
+* Translation files
+
+Please do a full consistency audit and fix all disconnected fields.
+
+Important rules:
+
+1. Same field = same name everywhere
+   Do not use different names for the same thing.
+   Example:
+
+* Use “Project Title” everywhere, not sometimes “Title”, sometimes “Project Name”, sometimes missing.
+
+2. Project creation form must contain all important project fields
+   Please check that the project creation form includes all required logical fields:
+
+* Project title
+* Project type/category
+* Specific service/sub-service
+* Project description
+* Location/city
+* Photos
+* Budget
+* Timeline
+* Contact/message logic
+* Status if needed
+
+3. Dashboard must show the same project information
+   When a user creates a project, the dashboard should show the same important information:
+
+* Project title
+* Category
+* Specific service
+* Location
+* Status
+* Budget/timeline if available
+* Photos if uploaded
+* Edit/delete buttons
+* Messages/applications if connected
+
+4. Edit project form must match creation form
+   The edit project form should have the same important fields as the creation form. A user should be able to update the same information they entered when creating the project.
+
+5. Registration forms must match user roles
+   Please check registration/onboarding for:
+
+* Project Poster
+* Service Provider
+* Admin
+
+Each role should have the correct fields and the dashboard should match that role logically.
+
+6. Service provider flow must match project logic
+   If a project has a category and specific service, service providers should see matching projects correctly. The provider dashboard/profile should use the same category and service names.
+
+7. Admin panel must control the same data
+   Admin should see and manage the same fields that exist in the frontend:
+
+* Users
+* Projects
+* Project titles
+* Categories
+* Sub-services
+* Providers
+* Services
+* Blog/Sanity content
+* Tags
+* Statuses
+
+If admin changes something, it should update correctly on the website.
+
+8. Translation consistency
+   German must be the default language.
+   All labels, fields, buttons, placeholders, error messages, dashboard texts, and form texts must have German translation.
+   No hardcoded English text should appear if translations are used.
+   If another language is missing, fallback to German.
+
+9. Remove duplicates and old names
+   Please scan the codebase for old names, duplicate labels, missing labels, unused fields, and inconsistent terminology.
+
+10. Create one source of truth
+    Please make the platform use one consistent structure/source of truth for:
+
+* Categories
+* Sub-services
+* Project fields
+* User roles
+* Dashboard labels
+* Translation keys
+
+Goal:
+The platform should feel connected and professional. Every feature, field, category, and name should be logical and consistent across the entire website.

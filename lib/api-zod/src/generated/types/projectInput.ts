@@ -11,6 +11,8 @@ export interface ProjectInput {
   fullName: string;
   email: string;
   phone: string;
+  /** Human-readable project title (optional) */
+  title?: string;
   projectType: string;
   /** Sub-category tag key (optional) */
   subcategory?: string;

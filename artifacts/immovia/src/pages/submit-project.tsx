@@ -56,6 +56,7 @@ export default function SubmitProject() {
     fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
     email: z.string().email({ message: "Invalid email address" }),
     phone: z.string().min(5, { message: "Phone number is required" }),
+    title: z.string().trim().min(3, { message: "Project title is required" }).max(120),
     projectType: z.string().min(1, { message: "Project type is required" }),
     subcategory: z.string().optional(),
     subcategoryOtherText: z.string().max(40).optional(),
@@ -72,6 +73,7 @@ export default function SubmitProject() {
       fullName: user?.fullName ?? "",
       email: user?.email ?? "",
       phone: user?.phone ?? "",
+      title: "",
       projectType: "",
       subcategory: "",
       subcategoryOtherText: "",
@@ -116,7 +118,7 @@ export default function SubmitProject() {
     } else if (step === 3) {
       isValid = await form.trigger(["size"]);
     } else if (step === 4) {
-      isValid = await form.trigger(["description", "city"]);
+      isValid = await form.trigger(["title", "description", "city"]);
     }
 
     if (isValid) {
@@ -502,6 +504,19 @@ export default function SubmitProject() {
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-4"
                 >
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t.projectForm.projectTitle}</FormLabel>
+                        <FormControl>
+                          <Input placeholder={t.projectForm.projectTitlePlaceholder} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="city"

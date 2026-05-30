@@ -67,6 +67,7 @@ router.post("/projects", async (req, res): Promise<void> => {
     fullName: parsed.data.fullName,
     email: parsed.data.email,
     phone: parsed.data.phone,
+    title: parsed.data.title?.trim() || null,
     projectType: parsed.data.projectType,
     subcategory: parsed.data.subcategory ?? null,
     subcategoryOtherText: parsed.data.subcategoryOtherText
@@ -137,9 +138,10 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
     return;
   }
 
-  const updateData: Record<string, string> = {};
+  const updateData: Record<string, string | null> = {};
   if (parsed.data.status != null) updateData.status = parsed.data.status;
   if (parsed.data.description != null) updateData.description = parsed.data.description;
+  if (parsed.data.title != null) updateData.title = parsed.data.title.trim() || null;
 
   const [project] = await db
     .update(projectsTable)

@@ -1,2 +1,3 @@
 - [LanguageProvider must not return null](language-provider-null.md) — returning null before isMounted causes HMR crashes; always render children with default 'en'.
 - [Clerk auth integration pattern](clerk-auth-pattern.md) — JIT provisioning, role selection flow, Tailwind v4 layer ordering, and key pitfalls.
+- [OpenAPI field add — persistence not automatic](openapi-field-persistence.md) — new request-schema field validates but is dropped unless POST AND PATCH handlers map it into the DB payload.

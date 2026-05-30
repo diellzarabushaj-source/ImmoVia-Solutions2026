@@ -8,5 +8,6 @@
 
 export interface ProjectUpdate {
   status?: string;
+  title?: string;
   description?: string;
 }

@@ -775,6 +775,9 @@ components:
           format: email
         phone:
           type: string
+        title:
+          type: string
+          description: "Human-readable project title (optional)"
         projectType:
           type: string
         subcategory:
@@ -803,6 +806,8 @@ components:
       type: object
       properties:
         status:
+          type: string
+        title:
           type: string
         description:
           type: string

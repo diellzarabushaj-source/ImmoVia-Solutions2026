@@ -66,6 +66,7 @@ export const CreateProjectBody = zod.object({
   "fullName": zod.string().min(createProjectBodyFullNameMin),
   "email": zod.string().email(),
   "phone": zod.string(),
+  "title": zod.string().optional().describe('Human-readable project title (optional)'),
   "projectType": zod.string(),
   "subcategory": zod.string().optional().describe('Sub-category tag key (optional)'),
   "subcategoryOtherText": zod.string().max(createProjectBodySubcategoryOtherTextMax).optional().describe('Custom text when subcategory is \'other\' (max 40 chars)'),
@@ -117,6 +118,7 @@ export const UpdateProjectParams = zod.object({
 
 export const UpdateProjectBody = zod.object({
   "status": zod.string().optional(),
+  "title": zod.string().optional(),
   "description": zod.string().optional()
 })
 
