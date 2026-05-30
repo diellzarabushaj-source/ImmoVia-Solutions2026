@@ -87,7 +87,7 @@ function ProjectCard({ project, t }: {
               {cardTitle}
             </h3>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary/8 text-primary px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold border border-primary/30 text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                 <Icon className="w-3 h-3" />
                 {typeLabel}
               </span>
