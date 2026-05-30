@@ -23,7 +23,11 @@ export async function requireProvider(req: Request, res: Response, next: NextFun
     return;
   }
 
-  if (user.accountType !== "service_provider") {
+  const isProvider =
+    user.accountType === "service_provider" ||
+    user.role === "contractor" ||
+    user.role === "service_provider";
+  if (!isProvider) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
