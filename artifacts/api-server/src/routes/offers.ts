@@ -308,7 +308,7 @@ router.get("/provider/projects", requireProvider, async (_req, res): Promise<voi
   const rows = await db
     .select()
     .from(projectsTable)
-    .where(eq(projectsTable.status, "pending"))
+    .where(eq(projectsTable.status, "open"))
     .orderBy(desc(projectsTable.id))
     .limit(100);
   res.json(rows);
