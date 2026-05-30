@@ -151,16 +151,87 @@ export default function SubmitProject() {
   }
 
   if (isSubmitted) {
+    const nextSteps: Record<string, string[]> = {
+      de: [
+        "Unser Team prüft Ihre Anfrage innerhalb von 24 Stunden.",
+        "Passende Fachbetriebe werden benachrichtigt und können Angebote einreichen.",
+        "Sie erhalten Angebote per E-Mail und können diese direkt vergleichen.",
+      ],
+      en: [
+        "Our team will review your request within 24 hours.",
+        "Matching professionals will be notified and can submit offers.",
+        "You will receive offers by email and can compare them directly.",
+      ],
+      sq: [
+        "Ekipi ynë do ta shqyrtojë kërkesën tuaj brenda 24 orëve.",
+        "Profesionistët përkatës do të njoftohen dhe mund të dërgojnë oferta.",
+        "Do të merrni oferta me email dhe mund t'i krahasoni drejtpërdrejt.",
+      ],
+      fr: [
+        "Notre équipe examinera votre demande dans les 24 heures.",
+        "Les professionnels correspondants seront notifiés et pourront soumettre des offres.",
+        "Vous recevrez des offres par e-mail et pourrez les comparer directement.",
+      ],
+    };
+    const lang = (typeof localStorage !== "undefined" && localStorage.getItem("lang")) ?? "de";
+    const steps = nextSteps[lang] ?? nextSteps.de;
+
     return (
-      <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
-          <CheckCircle2 className="w-10 h-10" />
-        </div>
-        <h2 className="text-3xl font-serif font-bold mb-4">{t.projectForm.success}</h2>
-        <p className="text-muted-foreground mb-8 text-center max-w-md">
-          {t.steps.step2Desc}
-        </p>
-        <Button onClick={() => setLocation("/")}>{t.nav.home}</Button>
+      <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 16 }}
+          className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 shadow-sm"
+        >
+          <CheckCircle2 className="w-12 h-12" />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="text-center max-w-lg"
+        >
+          <h2 className="text-3xl font-serif font-bold mb-3">{t.projectForm.success}</h2>
+          <p className="text-muted-foreground text-sm mb-10">
+            {lang === "de" && "Eine Bestätigungsmail wurde an Ihre E-Mail-Adresse gesendet."}
+            {lang === "en" && "A confirmation email has been sent to your address."}
+            {lang === "sq" && "Një email konfirmimi u dërgua në adresën tuaj."}
+            {lang === "fr" && "Un email de confirmation a été envoyé à votre adresse."}
+          </p>
+
+          <div className="bg-card border border-border rounded-xl p-6 mb-8 text-left">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+              {lang === "de" && "Nächste Schritte"}
+              {lang === "en" && "Next Steps"}
+              {lang === "sq" && "Hapat e Ardhshëm"}
+              {lang === "fr" && "Prochaines étapes"}
+            </h3>
+            <div className="space-y-3">
+              {steps.map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    {i + 1}
+                  </div>
+                  <p className="text-sm text-foreground leading-relaxed">{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Button variant="outline" onClick={() => setLocation("/companies")}>
+              {lang === "de" && "Firmen entdecken"}
+              {lang === "en" && "Browse Companies"}
+              {lang === "sq" && "Shiko Firmat"}
+              {lang === "fr" && "Découvrir les entreprises"}
+            </Button>
+            <Button onClick={() => setLocation("/")}>
+              {t.nav.home}
+            </Button>
+          </div>
+        </motion.div>
       </div>
     );
   }

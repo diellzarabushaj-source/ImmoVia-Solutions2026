@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Link, useSearch, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
@@ -136,6 +136,8 @@ export default function Projects() {
   const [sizeFilter, setSizeFilter] = useState(() => new URLSearchParams(search).get("size") ?? "");
   const [budgetFilter, setBudgetFilter] = useState(() => new URLSearchParams(search).get("budget") ?? "");
   const [sortBy, setSortBy] = useState(() => new URLSearchParams(search).get("sort") ?? "newest");
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
 
   const searchRef = useRef(search);
   searchRef.current = search;
@@ -201,10 +203,21 @@ export default function Projects() {
     setSizeFilter("");
     setBudgetFilter("");
     setSortBy("newest");
+    setPage(1);
   };
 
-  const visibleProjects = user ? displayList : displayList.slice(0, 6);
+  // Reset to page 1 when filters or sort changes
+  useEffect(() => { setPage(1); }, [searchTerm, typeFilter, cityFilter, sizeFilter, budgetFilter, sortBy]);
+
+  const totalPages = user ? Math.ceil(displayList.length / ITEMS_PER_PAGE) : 1;
+  const paginatedList = user ? displayList.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE) : displayList.slice(0, 6);
+  const visibleProjects = paginatedList;
   const gatedProjects = !user && displayList.length > 6 ? displayList.slice(6, 9) : [];
+
+  const goToPage = useCallback((p: number) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
 
   return (
@@ -440,6 +453,39 @@ export default function Projects() {
                 ))}
               </AnimatePresence>
             </motion.div>
+
+            {/* Pagination — logged-in users only */}
+            {user && totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-10">
+                <button
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page === 1}
+                  className="h-9 px-4 rounded-lg border border-border text-sm font-medium transition-all hover:bg-muted disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  ← {t.listings.sortOldest ? "Zurück" : "Prev"}
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => goToPage(p)}
+                    className={`h-9 w-9 rounded-lg border text-sm font-medium transition-all ${
+                      p === page
+                        ? "bg-primary text-white border-primary shadow-sm"
+                        : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page === totalPages}
+                  className="h-9 px-4 rounded-lg border border-border text-sm font-medium transition-all hover:bg-muted disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  Weiter →
+                </button>
+              </div>
+            )}
 
             {/* Gate for non-logged-in users */}
             {!user && displayList.length > 6 && (

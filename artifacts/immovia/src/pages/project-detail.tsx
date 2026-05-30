@@ -338,8 +338,16 @@ export default function ProjectDetail() {
               </div>
             </motion.div>
 
+            {/* Find companies */}
+            <Link href="/companies">
+              <Button variant="outline" className="w-full text-sm border-primary/30 text-primary hover:bg-primary/5">
+                <Building2 className="w-4 h-4 mr-2" />
+                {t.nav.companies}
+              </Button>
+            </Link>
+
             {/* Back to all projects */}
-            <Link href="/">
+            <Link href="/projects">
               <Button variant="outline" className="w-full text-sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {t.projectDetail.viewAllProjects}

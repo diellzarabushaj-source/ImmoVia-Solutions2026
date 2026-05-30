@@ -207,6 +207,64 @@ export async function sendNewProjectNotification(project: {
   }
 }
 
+// ── sendProjectConfirmationToClient ──────────────────────────────────────────
+export async function sendProjectConfirmationToClient(project: {
+  fullName: string;
+  email: string;
+  projectType: string;
+  city: string;
+  budget?: string | null;
+  timeline?: string | null;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !project.email) {
+    logger.warn("Email not configured — skipping client project confirmation");
+    return;
+  }
+
+  const { error } = await client.emails.send({
+    from: "ImmoVia <onboarding@resend.dev>",
+    to: project.email,
+    subject: `Ihre Anfrage wurde erfolgreich eingereicht — ImmoVia`,
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}">
+          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Anfrage bestätigt</h1>
+        </div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">Guten Tag <strong>${project.fullName}</strong>,</p>
+          <p style="margin:0 0 20px">Ihre Anfrage für <strong>${project.projectType}</strong> in <strong>${project.city}</strong> wurde erfolgreich eingereicht. Unser Team ist bereits informiert.</p>
+
+          <div style="background:#e8f0fd;border-left:4px solid #1a3a6e;border-radius:6px;padding:20px;margin:0 0 24px">
+            <p style="margin:0 0 14px;font-weight:600;color:#0f2044;font-size:14px">Was passiert als nächstes?</p>
+            <table style="width:100%;border-collapse:collapse">
+              <tr><td style="padding:5px 0;vertical-align:top;width:28px;color:#1a3a6e;font-weight:700;font-size:14px">1.</td><td style="padding:5px 0;font-size:14px">Unser Team prüft Ihre Anfrage innerhalb von 24 Stunden.</td></tr>
+              <tr><td style="padding:5px 0;vertical-align:top;color:#1a3a6e;font-weight:700;font-size:14px">2.</td><td style="padding:5px 0;font-size:14px">Passende Fachbetriebe werden benachrichtigt und können Angebote einreichen.</td></tr>
+              <tr><td style="padding:5px 0;vertical-align:top;color:#1a3a6e;font-weight:700;font-size:14px">3.</td><td style="padding:5px 0;font-size:14px">Sie erhalten Angebote direkt per E-Mail und können vergleichen.</td></tr>
+            </table>
+          </div>
+
+          ${project.budget ? `<p style="font-size:13px;color:#64748b;margin:0 0 6px">Budget: <strong>${project.budget}</strong></p>` : ""}
+          ${project.timeline ? `<p style="font-size:13px;color:#64748b;margin:0 0 20px">Zeitrahmen: <strong>${project.timeline}</strong></p>` : ""}
+
+          <p style="margin:0 0 20px;font-size:13px;color:#64748b">Sie können auch direkt Firmen in unserem Verzeichnis durchsuchen und Kontakt aufnehmen.</p>
+
+          <div style="margin-top:8px">
+            <a href="${appUrl()}/companies" style="${BTN_STYLE}">Firmen entdecken</a>
+          </div>
+        </div>
+        ${footer("de")}
+      </div>
+    `,
+  });
+
+  if (error) {
+    logger.error({ error }, "Failed to send project confirmation to client");
+  } else {
+    logger.info({ to: project.email, type: "project_confirmation" }, "Project confirmation sent to client");
+  }
+}
+
 // ── sendNewCompanyNotification ────────────────────────────────────────────────
 export async function sendNewCompanyNotification(company: {
   companyName: string;
