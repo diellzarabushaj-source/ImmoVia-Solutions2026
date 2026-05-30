@@ -8,20 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search, MapPin, Clock, FileText, X, ArrowUpDown,
-  ChevronDown, Lock, Hammer, Building2, Sofa, TreePine,
-  Wrench, Plug, Briefcase,
+  ChevronDown, Lock, Hammer, Paintbrush, Zap, Wrench,
+  ChefHat, Layers, Sofa, Leaf, HelpCircle, Briefcase,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
+import { CATEGORIES, getCategoryLabel, resolveCategoryLabel, type Lang } from "@/lib/categories";
 
-const SERVICE_ICONS: Record<string, React.ElementType> = {
-  renovation: Hammer,
-  construction: Building2,
-  interior: Sofa,
-  exterior: TreePine,
-  plumbing: Wrench,
-  electric: Plug,
-  other: Briefcase,
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  renovation:      Hammer,
+  painting:        Paintbrush,
+  electrical:      Zap,
+  plumbing:        Wrench,
+  kitchen:         ChefHat,
+  flooring:        Layers,
+  interior_design: Sofa,
+  cleaning:        Leaf,
+  other:           HelpCircle,
 };
 
 const SIZE_COLORS: Record<string, string> = {
@@ -30,10 +33,6 @@ const SIZE_COLORS: Record<string, string> = {
   large: "bg-indigo-50 text-indigo-700",
   premium: "bg-primary/10 text-primary",
 };
-
-const SERVICE_OPTIONS = [
-  "renovation", "construction", "interior", "exterior", "plumbing", "electric",
-];
 
 const SORT_OPTIONS = [
   { value: "newest", labelKey: "sortNewest" },
@@ -60,16 +59,17 @@ type Project = {
   status: string;
 };
 
-function ProjectCard({ project, t }: {
+function ProjectCard({ project, t, language }: {
   project: Project;
   t: ReturnType<typeof useLanguage>["t"];
+  language: string;
 }) {
-  const Icon = SERVICE_ICONS[project.projectType] ?? Briefcase;
+  const Icon = CATEGORY_ICONS[project.projectType] ?? Briefcase;
   const sz = project.size ?? "medium";
   const sizeKey = ({ small: "sizeSm", medium: "sizeMd", large: "sizeLg", premium: "sizePremium" } as Record<string, keyof typeof t.listings>)[sz] ?? "sizeMd";
   const sizeLabel = t.listings[sizeKey] as string;
   const sizeColor = SIZE_COLORS[sz] ?? SIZE_COLORS.medium;
-  const typeLabel = (t.offers as Record<string, string>)[project.projectType] ?? project.projectType;
+  const typeLabel = resolveCategoryLabel(project.projectType, language as Lang);
   const postedLabel = getPostedLabel(project.createdAt, t.listings);
   const cardTitle = project.title ?? typeLabel;
 
@@ -124,7 +124,7 @@ function ProjectCard({ project, t }: {
 }
 
 export default function Projects() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   usePageMeta({ title: `${t.listings.title ?? "Browse Projects"} — ImmoVia`, description: t.listings.subtitle ?? undefined });
   const search = useSearch();
@@ -262,17 +262,17 @@ export default function Projects() {
             >
               {t.companies.all ?? "All"}
             </button>
-            {SERVICE_OPTIONS.map(svc => (
+            {CATEGORIES.filter(cat => cat.key !== "other").map(cat => (
               <button
-                key={svc}
-                onClick={() => setTypeFilter(prev => prev === svc ? "" : svc)}
+                key={cat.key}
+                onClick={() => setTypeFilter(prev => prev === cat.key ? "" : cat.key)}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                  typeFilter === svc
+                  typeFilter === cat.key
                     ? "bg-primary text-white border-primary shadow-md"
                     : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
                 }`}
               >
-                {(t.offers as Record<string, string>)[svc] ?? svc}
+                {getCategoryLabel(cat, language as Lang)}
               </button>
             ))}
           </div>
@@ -375,7 +375,7 @@ export default function Projects() {
         {!isLoading && !isError && (
           <p className="text-sm text-muted-foreground mb-6">
             {displayList.length} {displayList.length === 1 ? (t.listings.result ?? "result") : (t.listings.results ?? "results")}
-            {typeFilter && <> · <span className="text-primary font-medium">{(t.offers as Record<string, string>)[typeFilter] ?? typeFilter}</span></>}
+            {typeFilter && <> · <span className="text-primary font-medium">{resolveCategoryLabel(typeFilter, language as Lang)}</span></>}
           </p>
         )}
 
@@ -448,7 +448,7 @@ export default function Projects() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <ProjectCard project={project} t={t} />
+                    <ProjectCard project={project} t={t} language={language} />
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -494,7 +494,7 @@ export default function Projects() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
                   {gatedProjects.map((project) => (
                     <div key={`ghost-${project.id}`}>
-                      <ProjectCard project={project} t={t} />
+                      <ProjectCard project={project} t={t} language={language} />
                     </div>
                   ))}
                 </div>
