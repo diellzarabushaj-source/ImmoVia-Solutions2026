@@ -75,6 +75,7 @@ import {
   Tag,
   CircleDollarSign,
   Send,
+  LogOut,
 } from "lucide-react";
 import MessageThread from "@/components/MessageThread";
 import { MessagingSystem } from "@/components/MessagingSystem";
@@ -135,6 +136,18 @@ const L: Record<string, Record<string, string>> = {
     visValuePriority: "Prioritare",
     visValueStandard: "Standarde",
     settingsSoon: "Cilësimet e llogarisë vijnë së shpejti.",
+    settingsAccount: "Llogaria",
+    settingsName: "Emri",
+    settingsEmail: "Email",
+    settingsRole: "Lloji i llogarisë",
+    settingsRoleProvider: "Ofrues Shërbimi",
+    settingsSubIndividual: "Individ",
+    settingsSubCompany: "Kompani",
+    settingsLanguage: "Gjuha",
+    settingsLanguageHint: "Zgjidhni gjuhën e panelit tuaj",
+    settingsSession: "Sesioni",
+    settingsLogout: "Dil nga llogaria",
+    settingsLogoutHint: "Dilni nga llogaria juaj në mënyrë të sigurt",
     profileSoon: "Redaktimi i detajuar i profilit vjen së shpejti.",
     planAppsPerMonth: "aplikime / muaj",
     navMessages: "Mesazhet",
@@ -203,6 +216,18 @@ const L: Record<string, Record<string, string>> = {
     visValuePriority: "Priority",
     visValueStandard: "Standard",
     settingsSoon: "Account settings coming soon.",
+    settingsAccount: "Account",
+    settingsName: "Name",
+    settingsEmail: "Email",
+    settingsRole: "Account type",
+    settingsRoleProvider: "Service Provider",
+    settingsSubIndividual: "Individual",
+    settingsSubCompany: "Company",
+    settingsLanguage: "Language",
+    settingsLanguageHint: "Choose your dashboard language",
+    settingsSession: "Session",
+    settingsLogout: "Log out",
+    settingsLogoutHint: "Sign out of your account securely",
     profileSoon: "Detailed profile editing coming soon.",
     planAppsPerMonth: "applications / month",
     navMessages: "Messages",
@@ -271,6 +296,18 @@ const L: Record<string, Record<string, string>> = {
     visValuePriority: "Priorität",
     visValueStandard: "Standard",
     settingsSoon: "Kontoeinstellungen folgen bald.",
+    settingsAccount: "Konto",
+    settingsName: "Name",
+    settingsEmail: "E-Mail",
+    settingsRole: "Kontotyp",
+    settingsRoleProvider: "Dienstleister",
+    settingsSubIndividual: "Einzelperson",
+    settingsSubCompany: "Unternehmen",
+    settingsLanguage: "Sprache",
+    settingsLanguageHint: "Wählen Sie die Sprache Ihres Dashboards",
+    settingsSession: "Sitzung",
+    settingsLogout: "Abmelden",
+    settingsLogoutHint: "Melden Sie sich sicher von Ihrem Konto ab",
     profileSoon: "Detaillierte Profilbearbeitung folgt bald.",
     planAppsPerMonth: "Bewerbungen / Monat",
     navMessages: "Nachrichten",
@@ -339,6 +376,18 @@ const L: Record<string, Record<string, string>> = {
     visValuePriority: "Prioritaire",
     visValueStandard: "Standard",
     settingsSoon: "Paramètres du compte bientôt disponibles.",
+    settingsAccount: "Compte",
+    settingsName: "Nom",
+    settingsEmail: "E-mail",
+    settingsRole: "Type de compte",
+    settingsRoleProvider: "Prestataire",
+    settingsSubIndividual: "Particulier",
+    settingsSubCompany: "Entreprise",
+    settingsLanguage: "Langue",
+    settingsLanguageHint: "Choisissez la langue de votre tableau de bord",
+    settingsSession: "Session",
+    settingsLogout: "Se déconnecter",
+    settingsLogoutHint: "Déconnectez-vous de votre compte en toute sécurité",
     profileSoon: "Modification détaillée du profil bientôt disponible.",
     planAppsPerMonth: "candidatures / mois",
     navMessages: "Messages",
@@ -383,8 +432,8 @@ type Section =
   | "einstellungen";
 
 export default function ProviderDashboard() {
-  const { user, loading } = useAuth();
-  const { t, language } = useLanguage();
+  const { user, loading, logout } = useAuth();
+  const { t, language, setLanguage } = useLanguage();
   const [, setLocation] = useLocation();
 
   const l = L[language] ?? L.de;
@@ -1675,10 +1724,90 @@ export default function ProviderDashboard() {
           {activeSection === "einstellungen" && (
             <div>
               <h2 className="text-xl font-serif font-bold mb-6">{l.navSettings}</h2>
-              <Card className="p-8 text-center text-muted-foreground">
-                <Settings className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
-                <p>{l.settingsSoon}</p>
-              </Card>
+              <div className="space-y-5 max-w-2xl">
+                {/* Account */}
+                <Card className="p-6">
+                  <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                    <User className="w-4 h-4 text-primary" />
+                    {l.settingsAccount}
+                  </h3>
+                  <div className="grid gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="settings-name" className="text-xs mb-1 block">{l.settingsName}</Label>
+                        <Input id="settings-name" value={user.fullName} readOnly className="bg-muted/40" />
+                      </div>
+                      <div>
+                        <Label htmlFor="settings-email" className="text-xs mb-1 block">{l.settingsEmail}</Label>
+                        <Input id="settings-email" value={user.email} readOnly className="bg-muted/40" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">{l.settingsRole}</Label>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-primary/10 text-primary border-primary/20 gap-1 hover:bg-primary/10">
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          {l.settingsRoleProvider}
+                        </Badge>
+                        {user.accountSubtype && (
+                          <Badge variant="outline">
+                            {user.accountSubtype === "company" ? l.settingsSubCompany : l.settingsSubIndividual}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Language */}
+                <Card className="p-6">
+                  <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-primary" />
+                    {l.settingsLanguage}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mb-4">{l.settingsLanguageHint}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {([
+                      { code: "de", label: "Deutsch" },
+                      { code: "en", label: "English" },
+                      { code: "fr", label: "Français" },
+                      { code: "sq", label: "Shqip" },
+                    ] as const).map((opt) => (
+                      <button
+                        key={opt.code}
+                        onClick={() => setLanguage(opt.code)}
+                        aria-pressed={language === opt.code}
+                        className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                          language === opt.code
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}
+                        data-testid={`settings-language-${opt.code}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+
+                {/* Session / Logout */}
+                <Card className="p-6">
+                  <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-primary" />
+                    {l.settingsSession}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mb-4">{l.settingsLogoutHint}</p>
+                  <Button
+                    variant="outline"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => void logout()}
+                    data-testid="settings-logout"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {l.settingsLogout}
+                  </Button>
+                </Card>
+              </div>
             </div>
           )}
 
