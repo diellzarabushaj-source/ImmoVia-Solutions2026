@@ -6,17 +6,27 @@ import { Badge } from "@/components/ui/badge";
 import { isSanityConfigured, urlFor, fetchBlogList } from "@/lib/sanity";
 import type { BlogPostSummary, SanityImageRef } from "@/lib/sanity";
 import { useLanguage } from "@/lib/language-context";
+import { resolveCategoryLabel, type Lang } from "@/lib/categories";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Renovation: "bg-blue-100 text-blue-700",
-  Construction: "bg-indigo-100 text-indigo-700",
-  "Interior Design": "bg-purple-100 text-purple-700",
-  Exterior: "bg-sky-100 text-sky-700",
-  "Tips & Advice": "bg-emerald-100 text-emerald-700",
-  "Company News": "bg-orange-100 text-orange-700",
+  renovation:      "bg-blue-100 text-blue-700",
+  painting:        "bg-sky-100 text-sky-700",
+  electrical:      "bg-yellow-100 text-yellow-700",
+  plumbing:        "bg-cyan-100 text-cyan-700",
+  kitchen:         "bg-orange-100 text-orange-700",
+  flooring:        "bg-stone-100 text-stone-700",
+  interior_design: "bg-purple-100 text-purple-700",
+  cleaning:        "bg-emerald-100 text-emerald-700",
+  tips:            "bg-teal-100 text-teal-700",
+  news:            "bg-indigo-100 text-indigo-700",
 };
 
-function PostCard({ post }: { post: BlogPostSummary }) {
+const CATEGORY_LABEL_FALLBACK: Record<string, string> = {
+  tips: "Tips & Advice",
+  news: "Company News",
+};
+
+function PostCard({ post, language }: { post: BlogPostSummary; language: string }) {
   const imageUrl = post.mainImage
     ? urlFor(post.mainImage).width(640).height(360).fit("crop").url()
     : null;
@@ -43,7 +53,7 @@ function PostCard({ post }: { post: BlogPostSummary }) {
           <div className="flex items-center gap-2 flex-wrap">
             {post.category && (
               <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${CATEGORY_COLORS[post.category] ?? "bg-primary/10 text-primary"}`}>
-                {post.category}
+                {CATEGORY_LABEL_FALLBACK[post.category] ?? resolveCategoryLabel(post.category, language as Lang)}
               </span>
             )}
             {post.publishedAt && (
@@ -91,7 +101,7 @@ function SkeletonCard() {
 }
 
 export default function Blog() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -165,7 +175,7 @@ export default function Blog() {
                     : "bg-white text-foreground/70 border-border hover:border-primary/40 hover:text-primary"
                 }`}
               >
-                {cat === "all" ? "All" : cat}
+                {cat === "all" ? "All" : (CATEGORY_LABEL_FALLBACK[cat] ?? resolveCategoryLabel(cat, language as Lang))}
               </button>
             ))}
           </div>
@@ -184,7 +194,7 @@ export default function Blog() {
           </div>
         ) : !error ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((post) => <PostCard key={post._id} post={post} />)}
+            {filtered.map((post) => <PostCard key={post._id} post={post} language={language} />)}
           </div>
         ) : null}
       </div>
