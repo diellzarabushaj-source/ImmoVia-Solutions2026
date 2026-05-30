@@ -42,7 +42,7 @@ import {
   LocateFixed,
   Loader2,
 } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { CATEGORIES, getCategoryLabel, getTagLabel, resolveCategoryLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
   animate: { opacity: 1, y: 0 },
@@ -53,7 +53,7 @@ const stagger = {
   animate: { transition: { staggerChildren: 0.1 } },
 };
 
-function CompanyPreviewCard({ company, t }: { company: { id: number; companyName: string; profilePhoto?: string | null; workerType?: string | null; city: string; yearsExperience?: number | null; hourlyRate?: number | null; serviceTypes: string[]; description?: string | null }; t: ReturnType<typeof useLanguage>["t"] }) {
+function CompanyPreviewCard({ company, t, language }: { company: { id: number; companyName: string; profilePhoto?: string | null; workerType?: string | null; city: string; yearsExperience?: number | null; hourlyRate?: number | null; serviceTypes: string[]; description?: string | null }; t: ReturnType<typeof useLanguage>["t"]; language: string }) {
   const isIndividual = company.workerType === "individual";
   const colors = ["from-blue-600 to-blue-800", "from-indigo-600 to-indigo-800", "from-primary to-blue-700", "from-sky-600 to-sky-800", "from-slate-600 to-slate-800"];
   const color = colors[company.companyName.charCodeAt(0) % colors.length];
@@ -101,8 +101,8 @@ function CompanyPreviewCard({ company, t }: { company: { id: number; companyName
           )}
           <div className="flex flex-wrap gap-1">
             {company.serviceTypes.slice(0, 3).map((svc: string) => (
-              <span key={svc} className="px-2 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium capitalize">
-                {(t.offers as Record<string, string>)[svc] ?? svc}
+              <span key={svc} className="px-2 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium">
+                {resolveAnyLabel(svc, language as Lang)}
               </span>
             ))}
             {company.serviceTypes.length > 3 && (
@@ -146,16 +146,17 @@ function getPostedLabel(createdAt: string, listings: { today: string; yesterday:
   return `${diffDays} ${listings.daysAgo}`;
 }
 
-function ProjectPreviewCard({ project, t }: {
+function ProjectPreviewCard({ project, t, language }: {
   project: { id: number; title?: string | null; projectType: string; description: string; city: string; budget?: string | null; size?: string | null; createdAt: string };
   t: ReturnType<typeof useLanguage>["t"];
+  language: string;
 }) {
   const Icon = SERVICE_ICONS[project.projectType] ?? Briefcase;
   const sz = project.size ?? "medium";
   const sizeKey = ({ small: "sizeSm", medium: "sizeMd", large: "sizeLg", premium: "sizePremium" } as Record<string, keyof typeof t.listings>)[sz] ?? "sizeMd";
   const sizeLabel = t.listings[sizeKey] as string;
   const sizeColor = SIZE_COLORS[sz] ?? SIZE_COLORS.medium;
-  const typeLabel = (t.offers as Record<string, string>)[project.projectType] ?? project.projectType;
+  const typeLabel = resolveCategoryLabel(project.projectType, language as Lang);
   const cardTitle = project.title ?? typeLabel;
   const postedLabel = getPostedLabel(project.createdAt, t.listings);
 
@@ -928,7 +929,7 @@ export default function Home() {
               >
                 {previewProjects.map((project, idx) => (
                   <motion.div key={project.id} variants={fadeUp}>
-                    <ProjectPreviewCard project={project} t={t} />
+                    <ProjectPreviewCard project={project} t={t} language={language} />
                   </motion.div>
                 ))}
               </motion.div>
@@ -939,7 +940,7 @@ export default function Home() {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
                     {previewProjects.slice(0, 3).map((project, idx) => (
                       <div key={`ghost-${idx}`}>
-                        <ProjectPreviewCard project={project} t={t} />
+                        <ProjectPreviewCard project={project} t={t} language={language} />
                       </div>
                     ))}
                   </div>
