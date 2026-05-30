@@ -69,10 +69,18 @@ import {
   ShieldCheck,
   ShieldOff,
   Award,
+  Camera,
+  Tag,
+  CircleDollarSign,
+  Send,
 } from "lucide-react";
 import MessageThread from "@/components/MessageThread";
 import { MessagingSystem } from "@/components/MessagingSystem";
 import { PhotoUploader } from "@/components/photo-uploader";
+import ProfilbildSection from "@/components/provider/ProfilbildSection";
+import GalerieSection from "@/components/provider/GalerieSection";
+import LeistungenSection from "@/components/provider/LeistungenSection";
+import PreiseSection from "@/components/provider/PreiseSection";
 import { format } from "date-fns";
 
 function formatCHF(cents: number): string {
@@ -84,8 +92,13 @@ const L: Record<string, Record<string, string>> = {
   sq: {
     navOverview: "Gjithëpamje",
     navProfile: "Profili im",
+    navProfilbild: "Foto & Logo",
+    navGalerie: "Galeria",
+    navLeistungen: "Shërbime",
+    navPreise: "Çmimet",
     navProjects: "Gjej Projekte",
     navApplications: "Aplikimet e mia",
+    navAngebote: "Ofertat",
     navPlan: "Plani im",
     navVisibility: "Dukshmëria",
     navReviews: "Vlerësimet",
@@ -147,8 +160,13 @@ const L: Record<string, Record<string, string>> = {
   en: {
     navOverview: "Overview",
     navProfile: "My Profile",
+    navProfilbild: "Photos & Logo",
+    navGalerie: "Gallery",
+    navLeistungen: "Services",
+    navPreise: "Pricing",
     navProjects: "Find Projects",
     navApplications: "My Applications",
+    navAngebote: "Offers",
     navPlan: "My Plan",
     navVisibility: "Visibility",
     navReviews: "Reviews",
@@ -210,8 +228,13 @@ const L: Record<string, Record<string, string>> = {
   de: {
     navOverview: "Übersicht",
     navProfile: "Mein Anbieterprofil",
+    navProfilbild: "Profilbild & Logo",
+    navGalerie: "Galerie & Portfolio",
+    navLeistungen: "Leistungen & Kategorien",
+    navPreise: "Preise & Richtwerte",
     navProjects: "Projekte finden",
     navApplications: "Meine Bewerbungen",
+    navAngebote: "Angebote",
     navPlan: "Mein Plan",
     navVisibility: "Sichtbarkeit",
     navReviews: "Bewertungen",
@@ -273,8 +296,13 @@ const L: Record<string, Record<string, string>> = {
   fr: {
     navOverview: "Vue d'ensemble",
     navProfile: "Mon profil",
+    navProfilbild: "Photo & Logo",
+    navGalerie: "Galerie & Portfolio",
+    navLeistungen: "Services & Catégories",
+    navPreise: "Prix & Tarifs",
     navProjects: "Trouver des projets",
     navApplications: "Mes candidatures",
+    navAngebote: "Offres",
     navPlan: "Mon plan",
     navVisibility: "Visibilité",
     navReviews: "Avis",
@@ -338,9 +366,14 @@ const L: Record<string, Record<string, string>> = {
 type Section =
   | "uebersicht"
   | "profil"
-  | "nachrichten"
+  | "profilbild"
+  | "galerie"
+  | "leistungen"
+  | "preise"
   | "projekte"
   | "bewerbungen"
+  | "angebote"
+  | "nachrichten"
   | "plan"
   | "sichtbarkeit"
   | "bewertungen"
@@ -571,9 +604,14 @@ export default function ProviderDashboard() {
   const navItems: Array<{ id: Section; label: string; icon: React.ReactNode; badge?: number }> = [
     { id: "uebersicht", label: l.navOverview, icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: "profil", label: l.navProfile, icon: <User className="w-4 h-4" /> },
-    { id: "nachrichten", label: l.navMessages, icon: <MessageSquare className="w-4 h-4" /> },
+    { id: "profilbild", label: l.navProfilbild, icon: <Camera className="w-4 h-4" /> },
+    { id: "galerie", label: l.navGalerie, icon: <Images className="w-4 h-4" /> },
+    { id: "leistungen", label: l.navLeistungen, icon: <Tag className="w-4 h-4" /> },
+    { id: "preise", label: l.navPreise, icon: <CircleDollarSign className="w-4 h-4" /> },
     { id: "projekte", label: l.navProjects, icon: <Search className="w-4 h-4" />, badge: projects.length || undefined },
     { id: "bewerbungen", label: l.navApplications, icon: <FileText className="w-4 h-4" />, badge: offers.length || undefined },
+    { id: "nachrichten", label: l.navMessages, icon: <MessageSquare className="w-4 h-4" /> },
+    { id: "angebote", label: l.navAngebote, icon: <Send className="w-4 h-4" /> },
     { id: "plan", label: l.navPlan, icon: <CreditCard className="w-4 h-4" /> },
     { id: "sichtbarkeit", label: l.navVisibility, icon: <Eye className="w-4 h-4" /> },
     { id: "bewertungen", label: l.navReviews, icon: <Star className="w-4 h-4" /> },
@@ -709,57 +747,106 @@ export default function ProviderDashboard() {
           {/* ── ÜBERSICHT ── */}
           {activeSection === "uebersicht" && (
             <div>
-              <div className="mb-6">
-                <h1 className="text-2xl font-serif font-bold" data-testid="provider-heading">
-                  {l.overviewWelcome}
-                </h1>
-                <p className="text-sm text-muted-foreground mt-0.5">
+              {/* Welcome header */}
+              <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-primary/8 via-sky-50/60 to-transparent border border-primary/10">
+                <h1 className="text-2xl font-serif font-bold mb-1" data-testid="provider-heading">
                   {t.provider.welcome}, {user.fullName.split(" ")[0]}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {language === "de"
+                    ? "Willkommen in Ihrem Anbieter-Dashboard. Verwalten Sie Ihr Profil, präsentieren Sie Ihre Arbeiten und finden Sie passende Projekte in Ihrer Region."
+                    : language === "fr"
+                    ? "Bienvenue dans votre tableau de bord. Gérez votre profil, présentez vos réalisations et trouvez des projets correspondants."
+                    : language === "sq"
+                    ? "Mirësevini në panelin tuaj. Menaxhoni profilin, paraqisni punët tuaja dhe gjeni projekte të përshtatshme."
+                    : "Welcome to your provider dashboard. Manage your profile, showcase your work and find matching projects in your region."}
                 </p>
               </div>
 
-              {/* Stats cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <Card className="p-4">
-                  <div className="text-xs text-muted-foreground mb-1">{l.appsThisMonth}</div>
-                  <div className="text-2xl font-bold">
-                    {appStats?.usedThisMonth ?? 0}
-                    <span className="text-sm font-normal text-muted-foreground">
-                      /{appStats?.appLimit ?? 2}
-                    </span>
-                  </div>
-                  {atLimit && (
-                    <div className="text-xs text-destructive mt-1">{l.limitReached}</div>
-                  )}
-                </Card>
-                <Card className="p-4">
+              {/* 9 stat cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("plan")}>
                   <div className="text-xs text-muted-foreground mb-1">{l.currentPlan}</div>
                   <div className="text-lg font-bold">{appStats?.planName ?? "Free"}</div>
+                  <div className="text-xs text-primary mt-1 font-medium">{appStats?.badge ?? "Basic Anbieter"}</div>
                 </Card>
-                <Card className="p-4">
-                  <div className="text-xs text-muted-foreground mb-1">{l.planBadge}</div>
-                  <div className="text-sm font-semibold">{appStats?.badge ?? "Basic Anbieter"}</div>
-                </Card>
-                <Card className={`p-4 ${appStats?.contactVisible ? "bg-green-50 border-green-200" : "bg-muted/40"}`}>
+                <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("profil")}>
                   <div className="text-xs text-muted-foreground mb-1">
-                    {appStats?.contactVisible ? l.contactVisible : l.contactHidden}
+                    {language === "de" ? "Profilstatus" : language === "fr" ? "Statut du profil" : language === "sq" ? "Statusi profilit" : "Profile status"}
                   </div>
+                  <div className="text-lg font-bold text-primary">
+                    {profileLoaded
+                      ? `${Math.min(100, Math.round(([profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website].filter(Boolean).length / 5) * 100))}%`
+                      : "—"}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {language === "de" ? "vollständig" : language === "fr" ? "complet" : language === "sq" ? "i plotë" : "complete"}
+                  </div>
+                </Card>
+                <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("bewerbungen")}>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {language === "de" ? "Verbleibende Bewerbungen" : language === "fr" ? "Candidatures restantes" : language === "sq" ? "Aplikime të mbetura" : "Applications remaining"}
+                  </div>
+                  <div className="text-lg font-bold">
+                    {appStats ? Math.max(0, appStats.appLimit - appStats.usedThisMonth) : "—"}
+                    <span className="text-sm font-normal text-muted-foreground"> / {appStats?.appLimit ?? 2}</span>
+                  </div>
+                  {atLimit && <div className="text-xs text-destructive mt-1">{l.limitReached}</div>}
+                </Card>
+                <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("nachrichten")}>
+                  <div className="text-xs text-muted-foreground mb-1">{l.navMessages}</div>
+                  <div className="text-lg font-bold">—</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {language === "de" ? "Neue Nachrichten" : language === "fr" ? "Nouveaux messages" : language === "sq" ? "Mesazhe të reja" : "New messages"}
+                  </div>
+                </Card>
+                <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("bewerbungen")}>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {language === "de" ? "Offene Bewerbungen" : language === "fr" ? "Candidatures ouvertes" : language === "sq" ? "Aplikime të hapura" : "Open applications"}
+                  </div>
+                  <div className="text-lg font-bold">{offers.filter(o => o.status === "pending" || o.status === "accepted").length}</div>
+                </Card>
+                <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("angebote")}>
+                  <div className="text-xs text-muted-foreground mb-1">{l.navAngebote}</div>
+                  <div className="text-lg font-bold">{offers.length}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {language === "de" ? "gesendete Angebote" : language === "fr" ? "offres envoyées" : language === "sq" ? "ofertat e dërguara" : "offers sent"}
+                  </div>
+                </Card>
+                <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("galerie")}>
+                  <div className="text-xs text-muted-foreground mb-1">{l.navGalerie}</div>
+                  <div className="text-lg font-bold">{portfolioItems.length}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {language === "de" ? "Portfolio-Bilder" : language === "fr" ? "photos de portfolio" : language === "sq" ? "foto portofoli" : "portfolio photos"}
+                  </div>
+                </Card>
+                <Card className={`p-4 hover:border-primary/30 cursor-pointer transition-colors ${appStats?.contactVisible ? "bg-green-50/60 border-green-200" : "bg-muted/30"}`} onClick={() => setActiveSection("sichtbarkeit")}>
+                  <div className="text-xs text-muted-foreground mb-1">{l.visibility}</div>
                   <div className="flex items-center gap-1.5 mt-1">
                     {appStats?.contactVisible ? (
                       <ShieldCheck className="w-5 h-5 text-green-600" />
                     ) : (
                       <ShieldOff className="w-5 h-5 text-muted-foreground" />
                     )}
-                    <span className="text-sm font-medium">
-                      {appStats?.contactVisible ? "OK" : "Free"}
+                    <span className="text-sm font-semibold">
+                      {appStats?.contactVisible ? (language === "de" ? "Sichtbar" : "Visible") : "Standard"}
+                    </span>
+                  </div>
+                </Card>
+                <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("bewertungen")}>
+                  <div className="text-xs text-muted-foreground mb-1">{l.navReviews}</div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Star className="w-4 h-4 text-muted-foreground/40" />
+                    <span className="text-sm text-muted-foreground">
+                      {language === "de" ? "Noch keine Bewertungen" : language === "fr" ? "Pas encore d'avis" : language === "sq" ? "Ende asnjë vlerësim" : "No reviews yet"}
                     </span>
                   </div>
                 </Card>
               </div>
 
-              {/* Progress bar */}
+              {/* Application usage bar */}
               {appStats && (
-                <Card className="p-4 mb-6">
+                <Card className="p-4 mb-5">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">{l.appsThisMonth}</span>
                     <span className="text-sm text-muted-foreground">
@@ -781,6 +868,14 @@ export default function ProviderDashboard() {
                   <Search className="w-4 h-4 mr-2" />
                   {l.navProjects}
                 </Button>
+                <Button variant="outline" onClick={() => setActiveSection("profil")}>
+                  <User className="w-4 h-4 mr-2" />
+                  {l.navProfile}
+                </Button>
+                <Button variant="outline" onClick={() => setActiveSection("galerie")}>
+                  <Images className="w-4 h-4 mr-2" />
+                  {l.navGalerie}
+                </Button>
                 {!appStats?.contactVisible && (
                   <Link href="/pricing">
                     <Button variant="outline">
@@ -789,10 +884,6 @@ export default function ProviderDashboard() {
                     </Button>
                   </Link>
                 )}
-                <Button variant="ghost" onClick={() => setActiveSection("sichtbarkeit")}>
-                  <Eye className="w-4 h-4 mr-2" />
-                  {l.navVisibility}
-                </Button>
               </div>
             </div>
           )}
@@ -942,6 +1033,26 @@ export default function ProviderDashboard() {
             </div>
             );
           })()}
+
+          {/* ── PROFILBILD & LOGO ── */}
+          {activeSection === "profilbild" && (
+            <ProfilbildSection language={language} />
+          )}
+
+          {/* ── GALERIE & PORTFOLIO ── */}
+          {activeSection === "galerie" && (
+            <GalerieSection language={language} />
+          )}
+
+          {/* ── LEISTUNGEN & KATEGORIEN ── */}
+          {activeSection === "leistungen" && (
+            <LeistungenSection language={language} />
+          )}
+
+          {/* ── PREISE & RICHTWERTE ── */}
+          {activeSection === "preise" && (
+            <PreiseSection language={language} />
+          )}
 
           {/* ── PROJEKTE FINDEN ── */}
           {activeSection === "projekte" && (
@@ -1212,6 +1323,51 @@ export default function ProviderDashboard() {
                   </TableBody>
                 </Table>
               </Card>
+            </div>
+          )}
+
+          {/* ── ANGEBOTE ── */}
+          {activeSection === "angebote" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-4">{l.navAngebote}</h2>
+              {offers.length === 0 ? (
+                <Card className="p-10 text-center">
+                  <Send className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">{t.provider.noOffers}</p>
+                  <Button className="mt-4" onClick={() => setActiveSection("projekte")}>
+                    <Search className="w-4 h-4 mr-2" />
+                    {l.navProjects}
+                  </Button>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {offers.map(o => (
+                    <Card key={o.id} className="p-5">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <p className="font-semibold text-sm line-clamp-1">{o.projectFullName}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-3 h-3" />{o.projectCity}
+                          </p>
+                        </div>
+                        {typeBadge(o.type)}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-xs">{o.status}</Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(o.createdAt), "dd.MM.yyyy")}
+                        </span>
+                      </div>
+                      {o.status === "accepted" && (
+                        <Button size="sm" variant="outline" className="mt-3 w-full" onClick={() => { setActiveSection("nachrichten"); }}>
+                          <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
+                          {t.messaging.open}
+                        </Button>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

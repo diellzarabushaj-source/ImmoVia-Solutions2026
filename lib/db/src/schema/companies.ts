@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, numeric, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -17,8 +17,23 @@ export const companiesTable = pgTable("companies", {
   workerType: text("worker_type").notNull().default("company"),
   hourlyRate: integer("hourly_rate"),
   profilePhoto: text("profile_photo"),
+  galleryPhotos: text("gallery_photos").array(),
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  // Extended provider profile fields
+  serviceArea: text("service_area"),
+  shortDescription: text("short_description"),
+  teamSize: integer("team_size"),
+  languages: text("languages").array(),
+  availability: text("availability"),
+  specializations: text("specializations").array(),
+  priceType: text("price_type"),
+  priceFromChf: numeric("price_from_chf", { precision: 10, scale: 2 }),
+  priceUnit: text("price_unit"),
+  priceNote: text("price_note"),
+  priceIsPublic: boolean("price_is_public").default(false),
+  coverImageUrl: text("cover_image_url"),
+  logoUrl: text("logo_url"),
 });
 
 export const insertCompanySchema = createInsertSchema(companiesTable).omit({
