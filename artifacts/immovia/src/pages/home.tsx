@@ -1233,7 +1233,7 @@ export default function Home() {
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Project Poster</div>
+                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">{t.hero.persona1Label}</div>
                 <h3 className="text-xl font-bold text-white mb-1">{t.cta.button}</h3>
                 <p className="text-white/70 text-sm leading-relaxed">{t.cta.subtitle}</p>
               </div>
@@ -1255,7 +1255,7 @@ export default function Home() {
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <div>
-                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Service Provider</div>
+                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">{t.hero.persona2Label}</div>
                 <h3 className="text-xl font-bold text-white mb-1">{t.cta.companyTitle}</h3>
                 <p className="text-white/65 text-sm leading-relaxed">{t.cta.companySubtitle}</p>
               </div>

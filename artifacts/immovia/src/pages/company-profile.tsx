@@ -46,9 +46,9 @@ interface Company {
 }
 
 const MOCK_REVIEWS = [
-  { id: 1, author: "Besnik H.", rating: 5, date: "Mars 2025", text: "Punë shumë cilësore! E rekomandoj pa hezitim." },
-  { id: 2, author: "Liridon K.", rating: 4, date: "Shkurt 2025", text: "Profesionalizëm i lartë dhe afate të respektuara." },
-  { id: 3, author: "Arjeta M.", rating: 5, date: "Janar 2025", text: "Rezultat i shkëlqyeshëm, klienti ishte shumë i kënaqur." },
+  { id: 1, author: "Thomas B.", rating: 5, date: "März 2025", text: "Hervorragende Arbeit! Absolut zu empfehlen." },
+  { id: 2, author: "Markus K.", rating: 4, date: "Februar 2025", text: "Sehr professionell und pünktlich mit den vereinbarten Terminen." },
+  { id: 3, author: "Sandra M.", rating: 5, date: "Januar 2025", text: "Ausgezeichnetes Ergebnis, sehr zufrieden mit der Qualität." },
 ];
 
 const GALLERY_PLACEHOLDERS = [
@@ -214,7 +214,7 @@ export default function CompanyProfile() {
                 <div className="flex items-center gap-2 mb-3">
                   <StarRating value={avgRating} />
                   <span className="text-sm font-bold text-foreground">{avgRating}</span>
-                  <span className="text-sm text-muted-foreground">({reviewCount} vlerësime)</span>
+                  <span className="text-sm text-muted-foreground">({reviewCount} {t.publicProfile.reviewCount})</span>
                 </div>
 
                 {/* Meta row */}
@@ -313,7 +313,7 @@ export default function CompanyProfile() {
               >
                 <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
                   <MessageSquare className="w-5 h-5 text-primary" />
-                  Rreth
+                  {t.publicProfile.about}
                 </h2>
                 <p className="text-sm text-foreground/80 leading-relaxed">{company.description}</p>
               </motion.div>
@@ -328,7 +328,7 @@ export default function CompanyProfile() {
             >
               <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                 <Image className="w-5 h-5 text-primary" />
-                Galeria e Punëve
+                {t.publicProfile.gallery}
               </h2>
               {validGallery.length === 0 ? (
                 <div className="rounded-xl bg-muted/40 border-2 border-dashed border-border p-10 text-center text-muted-foreground text-sm">
@@ -364,7 +364,7 @@ export default function CompanyProfile() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <Star className="w-5 h-5 text-primary" />
-                  Vlerësimet
+                  {t.publicProfile.reviews}
                 </h2>
                 <div className="flex items-center gap-2">
                   <StarRating value={avgRating} />
@@ -397,7 +397,7 @@ export default function CompanyProfile() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <h3 className="font-bold text-foreground mb-4">Informacionet e Kontaktit</h3>
+              <h3 className="font-bold text-foreground mb-4">{t.publicProfile.contactInfo}</h3>
               <div className="space-y-3 mb-5">
                 <div className="flex items-start gap-3 text-sm">
                   <Mail className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
@@ -447,10 +447,10 @@ export default function CompanyProfile() {
               )}
 
               <div className="border-t border-border pt-4">
-                <p className="text-xs text-muted-foreground mb-3">Ke një projekt për këtë profesionist?</p>
+                <p className="text-xs text-muted-foreground mb-3">{t.publicProfile.haveProject}</p>
                 <Button asChild variant="outline" className="w-full border-primary/30 text-primary hover:bg-primary/8">
                   <Link href="/submit-project">
-                    Dërgo Projekt
+                    {t.publicProfile.sendProject}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>

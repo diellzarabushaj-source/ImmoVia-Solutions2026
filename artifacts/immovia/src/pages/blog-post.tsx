@@ -7,14 +7,25 @@ import type { PortableTextReactComponents } from "@portabletext/react";
 import { Badge } from "@/components/ui/badge";
 import { isSanityConfigured, urlFor, fetchBlogPost } from "@/lib/sanity";
 import type { BlogPostFull, SanityImageRef } from "@/lib/sanity";
+import { useLanguage } from "@/lib/language-context";
+import { resolveCategoryLabel, type Lang } from "@/lib/categories";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Renovation: "bg-blue-100 text-blue-700",
-  Construction: "bg-indigo-100 text-indigo-700",
-  "Interior Design": "bg-purple-100 text-purple-700",
-  Exterior: "bg-sky-100 text-sky-700",
-  "Tips & Advice": "bg-emerald-100 text-emerald-700",
-  "Company News": "bg-orange-100 text-orange-700",
+  renovation:      "bg-blue-100 text-blue-700",
+  painting:        "bg-sky-100 text-sky-700",
+  electrical:      "bg-yellow-100 text-yellow-700",
+  plumbing:        "bg-cyan-100 text-cyan-700",
+  kitchen:         "bg-orange-100 text-orange-700",
+  flooring:        "bg-stone-100 text-stone-700",
+  interior_design: "bg-purple-100 text-purple-700",
+  cleaning:        "bg-emerald-100 text-emerald-700",
+  tips:            "bg-teal-100 text-teal-700",
+  news:            "bg-indigo-100 text-indigo-700",
+};
+
+const CATEGORY_LABEL_FALLBACK: Record<string, string> = {
+  tips: "Tips & Advice",
+  news: "Company News",
 };
 
 const portableComponents: Partial<PortableTextReactComponents> = {
@@ -79,6 +90,7 @@ const portableComponents: Partial<PortableTextReactComponents> = {
 export default function BlogPost() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
+  const { t, language } = useLanguage();
 
   const [post, setPost] = useState<BlogPostFull | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,7 +121,7 @@ export default function BlogPost() {
       <div className="container mx-auto px-4 pt-6 max-w-3xl">
         <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors group">
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
-          Back to Blog
+          {t.blog.backToBlog}
         </Link>
       </div>
 
@@ -122,17 +134,17 @@ export default function BlogPost() {
       {!loading && error === "not-found" && (
         <div className="container mx-auto px-4 py-24 max-w-3xl text-center">
           <BookOpen className="h-14 w-14 text-primary/20 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">Post not found</h1>
-          <p className="text-muted-foreground mb-6">This post may have been removed or is not published.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t.blog.notFound}</h1>
+          <p className="text-muted-foreground mb-6">{t.blog.notFoundDesc}</p>
           <Link href="/blog">
-            <span className="text-primary font-semibold hover:underline">Browse all posts →</span>
+            <span className="text-primary font-semibold hover:underline">{t.blog.browseAll}</span>
           </Link>
         </div>
       )}
 
       {!loading && (error === "config" || error === "fetch") && (
         <div className="container mx-auto px-4 py-24 max-w-3xl text-center">
-          <p className="text-muted-foreground">{error === "config" ? "Sanity is not configured." : "Could not load this post."}</p>
+          <p className="text-muted-foreground">{error === "config" ? t.blog.postError : t.blog.postLoadError}</p>
         </div>
       )}
 
@@ -143,7 +155,7 @@ export default function BlogPost() {
             <div className="flex items-center gap-2 flex-wrap mb-4">
               {post.category && (
                 <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${CATEGORY_COLORS[post.category] ?? "bg-primary/10 text-primary"}`}>
-                  {post.category}
+                  {CATEGORY_LABEL_FALLBACK[post.category] ?? resolveCategoryLabel(post.category, language as Lang)}
                 </span>
               )}
               {post.publishedAt && (

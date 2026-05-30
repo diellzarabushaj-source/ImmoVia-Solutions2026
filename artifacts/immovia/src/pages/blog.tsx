@@ -26,7 +26,7 @@ const CATEGORY_LABEL_FALLBACK: Record<string, string> = {
   news: "Company News",
 };
 
-function PostCard({ post, language }: { post: BlogPostSummary; language: string }) {
+function PostCard({ post, language, t }: { post: BlogPostSummary; language: string; t: ReturnType<typeof useLanguage>['t'] }) {
   const imageUrl = post.mainImage
     ? urlFor(post.mainImage).width(640).height(360).fit("crop").url()
     : null;
@@ -75,7 +75,7 @@ function PostCard({ post, language }: { post: BlogPostSummary; language: string 
           )}
 
           <div className="flex items-center gap-1 text-sm font-semibold text-primary mt-auto pt-2">
-            Read more <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+            {t.blog.readMore} <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>
       </article>
@@ -137,7 +137,7 @@ export default function Blog() {
             ImmoVia Insights
           </h1>
           <p className="text-lg text-white/70 max-w-xl mx-auto">
-            Renovation tips, construction guides, and industry news from the ImmoVia team.
+            {t.blog.subtitle}
           </p>
         </div>
       </section>
@@ -146,7 +146,7 @@ export default function Blog() {
         {/* Config error */}
         {error === "config" && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center mb-8">
-            <p className="text-amber-800 font-semibold mb-1">Sanity not configured yet</p>
+            <p className="text-amber-800 font-semibold mb-1">{t.blog.configError}</p>
             <p className="text-amber-700 text-sm">
               Set <code className="bg-amber-100 px-1.5 py-0.5 rounded text-xs font-mono">VITE_SANITY_PROJECT_ID</code> and{" "}
               <code className="bg-amber-100 px-1.5 py-0.5 rounded text-xs font-mono">VITE_SANITY_DATASET</code> to connect your Sanity project.
@@ -157,8 +157,8 @@ export default function Blog() {
         {/* Fetch error */}
         {error === "fetch" && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mb-8">
-            <p className="text-red-700 font-semibold">Could not load posts</p>
-            <p className="text-red-600 text-sm mt-1">Please check your Sanity connection and try again.</p>
+            <p className="text-red-700 font-semibold">{t.blog.loadError}</p>
+            <p className="text-red-600 text-sm mt-1">{t.blog.loadErrorDesc}</p>
           </div>
         )}
 
@@ -175,7 +175,7 @@ export default function Blog() {
                     : "bg-white text-foreground/70 border-border hover:border-primary/40 hover:text-primary"
                 }`}
               >
-                {cat === "all" ? "All" : (CATEGORY_LABEL_FALLBACK[cat] ?? resolveCategoryLabel(cat, language as Lang))}
+                {cat === "all" ? t.blog.allCategories : (CATEGORY_LABEL_FALLBACK[cat] ?? resolveCategoryLabel(cat, language as Lang))}
               </button>
             ))}
           </div>
@@ -189,12 +189,12 @@ export default function Blog() {
         ) : !error && filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-muted-foreground">
             <BookOpen className="h-14 w-14 text-primary/20" />
-            <p className="text-lg font-semibold text-foreground">No posts yet</p>
-            <p className="text-sm">Check back soon for articles and guides.</p>
+            <p className="text-lg font-semibold text-foreground">{t.blog.noPostsTitle}</p>
+            <p className="text-sm">{t.blog.noPostsDesc}</p>
           </div>
         ) : !error ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((post) => <PostCard key={post._id} post={post} language={language} />)}
+            {filtered.map((post) => <PostCard key={post._id} post={post} language={language} t={t} />)}
           </div>
         ) : null}
       </div>
