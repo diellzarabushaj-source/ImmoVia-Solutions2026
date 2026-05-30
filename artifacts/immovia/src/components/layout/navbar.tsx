@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/contexts/AuthContext";
@@ -70,6 +70,28 @@ export function Navbar() {
     fab?.click();
   };
 
+  const scrollToHash = (hash: string) => {
+    const el = document.getElementById(hash);
+    if (el) {
+      const navHeight = window.innerWidth >= 768 ? 96 : 80;
+      const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    if (!href.includes("#")) return;
+    e.preventDefault();
+    const [path, hash] = href.split("#");
+    const targetPath = path || "/";
+    if (location === targetPath || (targetPath === "/" && location === "/")) {
+      scrollToHash(hash);
+    } else {
+      setLocation(targetPath);
+      setTimeout(() => scrollToHash(hash), 120);
+    }
+  };
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-white/98 backdrop-blur supports-[backdrop-filter]:bg-white/90 shadow-sm">
       <div className="container mx-auto px-4 h-20 md:h-24 flex items-center justify-between">
@@ -88,6 +110,7 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
+              onClick={(e) => handleNavClick(e, link.href)}
               className={`text-sm font-medium px-3 py-2 rounded-md transition-colors hover:text-primary hover:bg-secondary/50 whitespace-nowrap ${
                 location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70"
               }`}
@@ -234,7 +257,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={(e) => { handleNavClick(e, link.href); setMobileOpen(false); }}
                   className={`text-base font-medium px-3 py-3 rounded-md transition-colors ${
                     location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70 hover:text-primary hover:bg-secondary/30"
                   }`}
