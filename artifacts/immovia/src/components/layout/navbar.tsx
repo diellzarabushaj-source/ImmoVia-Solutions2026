@@ -258,7 +258,7 @@ export function Navbar() {
                       className="flex items-center gap-2 text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30 text-left"
                     >
                       <MessageSquare className="w-4 h-4" />
-                      {t.nav.messages ?? "Messages"}
+                      {"Messages"}
                       {unreadCount > 0 && (
                         <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                           {unreadCount > 9 ? "9+" : unreadCount}

@@ -117,6 +117,35 @@ router.post("/conversations", requireAuth, async (req, res): Promise<void> => {
   res.status(201).json({ conversationId: convId });
 });
 
+router.get("/conversations/unread-count", requireAuth, async (req, res): Promise<void> => {
+  const userId = req.userId!;
+  const companyId = await getProviderCompanyId(userId);
+
+  const conditions = companyId
+    ? or(eq(conversationsTable.customerUserId, userId), eq(conversationsTable.companyId, companyId))
+    : eq(conversationsTable.customerUserId, userId);
+
+  const rows = await db
+    .select({
+      unreadCountCustomer: conversationsTable.unreadCountCustomer,
+      unreadCountProvider: conversationsTable.unreadCountProvider,
+      cid: conversationsTable.companyId,
+    })
+    .from(conversationsTable)
+    .where(conditions!);
+
+  let total = 0;
+  for (const row of rows) {
+    if (companyId && row.cid === companyId) {
+      total += row.unreadCountProvider;
+    } else {
+      total += row.unreadCountCustomer;
+    }
+  }
+
+  res.json({ total });
+});
+
 router.get("/conversations/:id", requireAuth, async (req, res): Promise<void> => {
   const userId = req.userId!;
   const convId = Number(req.params.id);
@@ -172,35 +201,6 @@ router.get("/conversations/:id", requireAuth, async (req, res): Promise<void> =>
   }
 
   res.json({ conversation: conv, messages, myRole: access.role });
-});
-
-router.get("/conversations/unread-count", requireAuth, async (req, res): Promise<void> => {
-  const userId = req.userId!;
-  const companyId = await getProviderCompanyId(userId);
-
-  const conditions = companyId
-    ? or(eq(conversationsTable.customerUserId, userId), eq(conversationsTable.companyId, companyId))
-    : eq(conversationsTable.customerUserId, userId);
-
-  const rows = await db
-    .select({
-      unreadCountCustomer: conversationsTable.unreadCountCustomer,
-      unreadCountProvider: conversationsTable.unreadCountProvider,
-      cid: conversationsTable.companyId,
-    })
-    .from(conversationsTable)
-    .where(conditions!);
-
-  let total = 0;
-  for (const row of rows) {
-    if (companyId && row.cid === companyId) {
-      total += row.unreadCountProvider;
-    } else {
-      total += row.unreadCountCustomer;
-    }
-  }
-
-  res.json({ total });
 });
 
 router.post("/conversations/:id/messages", requireAuth, async (req, res): Promise<void> => {
