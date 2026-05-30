@@ -235,3 +235,10 @@ html.chatbase-open {
   overflow: auto !important;
   position: static !important;
 }
+
+/* Move Chatbase bubble to bottom-LEFT so it doesn't overlap our chat widget */
+iframe[id="sCAJBcXM9vHhwBn_Wxh19"],
+div[style*="z-index: 2147483647"]:has(> iframe[src*="chatbase"]) {
+  left: 20px !important;
+  right: auto !important;
+}
