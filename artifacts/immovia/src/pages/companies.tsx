@@ -15,7 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { CATEGORIES, getCategoryLabel, getTagLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
+import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
 
 const SERVICE_OPTIONS = CATEGORIES.map(c => c.key);
 
@@ -223,6 +223,8 @@ export default function Companies() {
 
   const activeFiltersCount = [activeServices.length > 0, !!workerTypeFilter, !!cityFilter].filter(Boolean).length;
 
+  const activeMainCat = CATEGORIES.find(c => activeServices.includes(c.key)) ?? null;
+
   const clearFilters = () => {
     setActiveServices([]);
     setWorkerTypeFilter("");
@@ -299,6 +301,26 @@ export default function Companies() {
               </button>
             ))}
           </div>
+          {/* Sub-category chips — shown when a main category is active */}
+          {activeMainCat && (
+            <div className="mt-2 flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4">
+              {activeMainCat.tags.map(tag => (
+                <button
+                  key={tag.key}
+                  onClick={() => setActiveServices(prev =>
+                    prev.includes(tag.key) ? prev.filter(s => s !== tag.key) : [...prev, tag.key]
+                  )}
+                  className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all border ${
+                    activeServices.includes(tag.key)
+                      ? "bg-white text-primary border-white shadow-md"
+                      : "bg-white/10 text-white/70 border-white/20 hover:bg-white/20"
+                  }`}
+                >
+                  {getTagLabel(tag, language as Lang)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

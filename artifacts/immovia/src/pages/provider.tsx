@@ -1182,7 +1182,12 @@ export default function ProviderDashboard() {
                           {filtered.map(p => (
                             <TableRow key={p.id}>
                               <TableCell className="font-medium">{p.fullName}</TableCell>
-                              <TableCell>{getCategoryLabel(CATEGORIES.find(c => c.key === p.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}</TableCell>
+                              <TableCell>
+                                <div>{getCategoryLabel(CATEGORIES.find(c => c.key === p.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}</div>
+                                {(p as {subcategory?: string | null}).subcategory && (
+                                  <div className="text-xs text-primary/70">{resolveTagLabel((p as {subcategory?: string | null}).subcategory!, language as Lang)}</div>
+                                )}
+                              </TableCell>
                               <TableCell>{p.city}</TableCell>
                               <TableCell className="capitalize">{p.size}</TableCell>
                               <TableCell className="text-right">
@@ -1216,10 +1221,15 @@ export default function ProviderDashboard() {
                             ) : (
                               <div className="text-primary/30"><Images className="w-12 h-12" /></div>
                             )}
-                            <div className="absolute top-2.5 left-2.5">
+                            <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
                               <Badge className="capitalize bg-white/90 text-primary border-primary/20 backdrop-blur-sm text-xs shadow-sm">
                                 {getCategoryLabel(CATEGORIES.find(c => c.key === p.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}
                               </Badge>
+                              {(p as {subcategory?: string | null}).subcategory && (
+                                <Badge className="bg-primary/10 text-primary border-primary/20 backdrop-blur-sm text-xs shadow-sm">
+                                  {resolveTagLabel((p as {subcategory?: string | null}).subcategory!, language as Lang)}
+                                </Badge>
+                              )}
                             </div>
                             {hasPhotos && p.photos.length > 1 && (
                               <button
@@ -1700,6 +1710,9 @@ export default function ProviderDashboard() {
               <div className="bg-muted/40 rounded-lg p-3">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.colType}</p>
                 <p className="font-medium">{detailProject?.projectType ? getCategoryLabel(CATEGORIES.find(c => c.key === detailProject.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang) : ""}</p>
+                {(detailProject as {subcategory?: string | null} | null)?.subcategory && (
+                  <p className="text-xs text-primary/70 mt-0.5">{resolveTagLabel((detailProject as {subcategory?: string | null}).subcategory!, language as Lang)}</p>
+                )}
               </div>
               <div className="bg-muted/40 rounded-lg p-3">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.colSize}</p>
