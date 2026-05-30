@@ -1,0 +1,814 @@
+Create a complete MVP Service Provider Dashboard for ImmoVia365.
+
+ImmoVia365 is a Swiss marketplace that connects project owners with handymen, renovation companies, construction companies and service providers in Switzerland.
+
+The dashboard must be designed only for users with the role “Service Provider / Anbieter”.
+
+Customers / Project Posters must not see this dashboard. Customers have their own separate dashboard for creating projects, viewing applications, messages and offers.
+
+The Service Provider Dashboard should be professional, clean, Swiss-style, easy to understand and suitable for an MVP.
+
+Use German as the default language for all visible text.
+
+The platform should also support language switching:
+
+* Deutsch
+* English
+* Shqip
+* Français
+
+Design style:
+
+* Clean Swiss marketplace look
+* White or very light background
+* Dark navy text
+* Bright blue accent color
+* Rounded cards
+* Simple icons
+* Clear dashboard layout
+* Mobile responsive
+* Professional and trustworthy
+
+MAIN PURPOSE OF SERVICE PROVIDER DASHBOARD
+
+The Service Provider Dashboard should allow companies and individual providers to:
+
+* Create and manage their provider profile
+* Add services and categories
+* Add service areas / cities
+* Upload portfolio images
+* Find matching projects
+* Apply to projects
+* Send and receive messages
+* Send offers inside conversations
+* Manage applications
+* See current subscription plan
+* See remaining monthly applications
+* See visibility / ranking status
+* See provider badge
+* Upgrade plan
+* Manage billing
+* Manage reviews
+
+USER ROLE RULE
+
+If user.role === “service_provider”, show this dashboard.
+
+If user.role === “customer”, do not show:
+
+* Provider dashboard
+* Provider pricing
+* Provider upgrade options
+* Application limits
+* Provider visibility settings
+* Provider billing
+* Provider badges management
+
+SERVICE PROVIDER DASHBOARD NAVIGATION
+
+Create the following sidebar or dashboard navigation:
+
+1. Übersicht
+2. Mein Anbieterprofil
+3. Projekte finden
+4. Meine Bewerbungen
+5. Nachrichten
+6. Angebote
+7. Mein Plan
+8. Sichtbarkeit
+9. Bewertungen
+10. Rechnungen
+11. Einstellungen
+
+Each section should be simple and MVP-ready.
+
+SECTION 1: ÜBERSICHT
+
+The overview page should show dashboard summary cards:
+
+Cards:
+
+* Aktueller Plan
+* Verbleibende Bewerbungen
+* Neue Nachrichten
+* Offene Bewerbungen
+* Gesendete Angebote
+* Profilstatus
+* Sichtbarkeit
+* Bewertungen
+
+Example German labels:
+
+* Aktueller Plan: Free
+* Bewerbungen: 1 von 2 verwendet
+* Neue Nachrichten: 3
+* Offene Bewerbungen: 5
+* Gesendete Angebote: 2
+* Profilstatus: 80% vollständig
+* Sichtbarkeit: Standardprofil
+* Bewertungen: Noch keine Bewertungen
+
+Add a welcome message:
+“Willkommen in Ihrem Anbieter-Dashboard. Verwalten Sie Ihr Profil, finden Sie passende Projekte und kommunizieren Sie direkt mit Kunden.”
+
+SECTION 2: MEIN ANBIETERPROFIL
+
+This section allows the provider to create and edit their public profile.
+
+Fields:
+
+* Anbietername / Firmenname
+* Typ: Unternehmen oder Einzelanbieter
+* Kontaktperson
+* E-Mail
+* Telefonnummer
+* Website optional
+* Stadt
+* Servicegebiet
+* Hauptkategorien
+* Unterkategorien
+* Kurzbeschreibung
+* Ausführliche Beschreibung
+* Erfahrung in Jahren
+* Teamgrösse optional
+* Verfügbarkeit
+* Portfolio-Bilder
+* Logo / Profilbild
+
+Buttons:
+
+* Profil speichern
+* Vorschau anzeigen
+* Profil veröffentlichen
+
+Profile completeness indicator:
+“Profil zu 80% vollständig”
+
+Provider public profile card should show:
+
+* Provider name
+* City
+* Service categories
+* Badge
+* Short description
+* Portfolio preview
+* Rating if available
+* Buttons:
+
+  * Profil ansehen
+  * Nachricht senden
+
+SECTION 3: PROJEKTE FINDEN
+
+This section allows providers to browse projects posted by customers.
+
+Project list should show:
+
+* Project title
+* Category
+* Subcategory
+* City
+* Budget range
+* Timeline
+* Size
+* Posted date
+* Short description
+* Project status
+* Button: Projekt ansehen
+* Button: Bewerbung senden
+* Button: Nachricht an Kunden
+
+Filters:
+
+* Kategorie
+* Unterkategorie
+* Stadt
+* Budget
+* Zeitrahmen
+* Projektgrösse
+* Neueste zuerst
+
+Important:
+When provider clicks “Nachricht an Kunden”, open an application/contact modal.
+This should create an application-style conversation, not random chat.
+
+Modal title:
+Kunden kontaktieren
+
+Fields:
+
+* Kurze Nachricht
+* Geschätzter Preis optional
+* Verfügbarkeit optional
+* Dateien anhängen optional
+
+Button:
+Bewerbung senden und Nachricht starten
+
+After sending:
+
+* Create application
+* Create conversation
+* Add first message
+* Notify customer
+* Reduce provider monthly application count by 1
+
+SECTION 4: MEINE BEWERBUNGEN
+
+This section shows all project applications sent by the provider.
+
+Application card should show:
+
+* Project title
+* Customer name or project owner
+* City
+* Category
+* Application date
+* Application status
+* Last message preview
+* Button: Unterhaltung öffnen
+* Button: Projekt ansehen
+
+Application statuses:
+
+* Gesendet
+* In Besprechung
+* Angebot angefordert
+* Angebot gesendet
+* Angenommen
+* Abgelehnt
+* Archiviert
+
+If monthly application limit is reached, show:
+“Sie haben Ihr monatliches Bewerbungslimit erreicht. Wechseln Sie auf einen höheren Plan, um sich auf weitere Projekte zu bewerben.”
+
+Button:
+Plan upgraden
+
+SECTION 5: NACHRICHTEN
+
+Create an Upwork-style project-based messaging system.
+
+This is not a social messenger. Messages must be connected to:
+
+* A project
+* An application
+* A customer inquiry
+* An offer discussion
+
+The provider should see a direct “Nachricht” section in the dashboard.
+
+Message list should show:
+
+* Customer name
+* Project title
+* Project city
+* Last message
+* Last message time
+* Unread count
+* Conversation status
+* Button: Nachricht öffnen
+
+Conversation statuses:
+
+* Neue Anfrage
+* Bewerbung gesendet
+* In Besprechung
+* Angebot gesendet
+* Angebot angenommen
+* Abgelehnt
+* Abgeschlossen
+* Archiviert
+
+Conversation view should show:
+
+* Project title
+* Customer name
+* Project city
+* Project budget
+* Conversation status
+* Message history
+* Attachments
+* Offer cards
+* Message input
+* Attachment button
+* Send button
+* Offer button
+
+Message UI:
+
+* Provider messages aligned left or right consistently
+* Customer messages on the opposite side
+* System messages centered
+* Rounded message bubbles
+* Timestamp under messages
+* Attachment preview inside messages
+* Offer cards inside chat
+
+Input area:
+
+* Nachricht schreiben
+* Datei anhängen
+* Nachricht senden
+* Angebot senden
+
+Allowed file uploads:
+
+* JPG
+* JPEG
+* PNG
+* WEBP
+* PDF
+* DOC
+* DOCX
+* XLS
+* XLSX
+
+Limits:
+
+* Maximum 5 files per message
+* Maximum 10 MB per file
+
+German labels:
+
+* Nachrichten
+* Meine Unterhaltungen
+* Nachricht schreiben
+* Nachricht senden
+* Datei anhängen
+* Foto hochladen
+* PDF hochladen
+* Dokument hochladen
+* Anhang herunterladen
+* Datei entfernen
+* Unterhaltung melden
+
+Security:
+
+* Only the provider connected to the conversation can view it.
+* Users cannot access conversations by guessing IDs.
+* Files must be validated by type and size.
+* Do not allow executable files.
+
+Soft safety note:
+“Hinweis: Für Ihre Sicherheit empfehlen wir, wichtige Absprachen und Angebote über ImmoVia365 festzuhalten.”
+
+SECTION 6: ANGEBOTE
+
+Create an offer management section.
+
+Providers should be able to send offers inside conversations, similar to Upwork.
+
+Button inside conversation:
+Angebot senden
+
+Offer form fields:
+
+* Angebotstitel
+* Beschreibung
+* Geschätzter Preis
+* Preisart
+* Voraussichtlicher Start
+* Voraussichtliche Dauer
+* Anhänge optional
+
+Price type options:
+
+* Fixpreis
+* Stundenbasis
+* Nach Besichtigung
+
+Offer button:
+Angebot senden
+
+After sending:
+
+* Show offer card inside conversation
+* Notify customer
+* Set conversation status to “Angebot gesendet”
+
+Offer card should show:
+
+* Angebotstitel
+* Preis
+* Preisart
+* Dauer
+* Beschreibung
+* Anhänge
+* Provider name
+* Provider badge
+* Sent date
+* Status
+
+Offer statuses:
+
+* Gesendet
+* Angenommen
+* Abgelehnt
+* Archiviert
+
+Important:
+For MVP, accepting an offer does not process payment.
+It only updates the offer status and conversation/project status.
+
+SECTION 7: MEIN PLAN
+
+This section is visible only for Service Providers.
+
+Show:
+
+* Current active plan
+* Monthly price
+* Remaining applications this month
+* Portfolio image limit
+* Badge status
+* Visibility status
+* Ranking status
+* Upgrade button
+* Billing status
+
+Provider plans:
+
+Free:
+Price: CHF 0 / Monat
+Applications: 2 / Monat
+Portfolio: 3 Bilder
+Badge: Basic Anbieter
+Visibility: Standardprofil
+Ranking: Appears after paid providers
+
+Starter:
+Price: CHF 49 / Monat
+Applications: 10 / Monat
+Portfolio: 10 Bilder
+Badge: Aktiver Anbieter
+Visibility: Mehr Sichtbarkeit
+Ranking: Appears above Free providers
+
+Professional:
+Price: CHF 99 / Monat
+Applications: 30 / Monat
+Portfolio: 30 Bilder
+Badge: Verifizierter Anbieter
+Visibility: Erhöhte Sichtbarkeit
+Ranking: Appears above Starter and Free providers
+
+Premium:
+Price: CHF 199 / Monat
+Applications: 100 / Monat
+Portfolio: Unbegrenzt
+Badge: Top Anbieter
+Visibility: Top-Platzierung
+Ranking: Appears highest in relevant city and category results
+
+Example for Free provider:
+Aktueller Plan: Free
+Bewerbungen: 1 von 2 verwendet
+Portfolio: 2 von 3 Bildern verwendet
+Badge: Basic Anbieter
+Sichtbarkeit: Standardprofil
+Hinweis: Ihr Profil ist sichtbar, erscheint jedoch nach aktiven und verifizierten Anbietern.
+CTA: Mehr Sichtbarkeit erhalten
+
+Example for Premium provider:
+Aktueller Plan: Premium
+Bewerbungen: 14 von 100 verwendet
+Portfolio: Unbegrenzt
+Badge: Top Anbieter
+Sichtbarkeit: Top-Platzierung
+Hinweis: Ihr Profil wird in passenden Kategorien und Städten besonders prominent angezeigt.
+CTA: Plan verwalten
+
+SECTION 8: SICHTBARKEIT
+
+This section shows the provider’s ranking and visibility status.
+
+Visibility by plan:
+
+Free:
+Profil sichtbar: Ja
+Ranking: Standardprofil
+Badge: Basic Anbieter
+Description:
+“Ihr Profil ist sichtbar, erscheint jedoch nach aktiven und verifizierten Anbietern.”
+
+Starter:
+Profil sichtbar: Ja
+Ranking: Mehr Sichtbarkeit
+Badge: Aktiver Anbieter
+Description:
+“Ihr Profil wird vor kostenlosen Anbieterprofilen angezeigt.”
+
+Professional:
+Profil sichtbar: Ja
+Ranking: Erhöhte Sichtbarkeit
+Badge: Verifizierter Anbieter
+Description:
+“Ihr Profil erhält eine bessere Platzierung in passenden Kategorien und Städten.”
+
+Premium:
+Profil sichtbar: Ja
+Ranking: Top-Platzierung
+Badge: Top Anbieter
+Description:
+“Ihr Profil wird in passenden Kategorien und Städten besonders prominent angezeigt.”
+
+Ranking logic:
+Free providers are visible but appear lower.
+Paid providers appear higher.
+
+Ranking order after relevance filtering:
+
+1. Premium
+2. Professional
+3. Starter
+4. Free
+
+Important:
+Relevance comes first. Provider must match category and city/service area.
+
+Example:
+If customer searches for “Maler & Gipser” in Zürich:
+
+1. Premium Maler providers in Zürich
+2. Professional Maler providers in Zürich
+3. Starter Maler providers in Zürich
+4. Free Maler providers in Zürich
+5. Nearby relevant providers
+
+SECTION 9: BEWERTUNGEN
+
+This section shows reviews received from customers.
+
+Show:
+
+* Average rating
+* Number of reviews
+* Review list
+* Project connected to review
+* Customer comment
+* Review date
+
+Labels:
+
+* Bewertungen
+* Durchschnittliche Bewertung
+* Noch keine Bewertungen
+* Bewertung ansehen
+
+For MVP, reviews can be simple:
+
+* 1 to 5 stars
+* Short comment
+* Connected project
+
+SECTION 10: RECHNUNGEN
+
+This section is visible only for Service Providers.
+
+Show:
+
+* Current plan
+* Monthly price
+* Next billing date
+* Payment status
+* Invoice history
+* Upgrade plan
+* Downgrade plan
+* Cancel subscription
+
+German labels:
+
+* Aktueller Plan
+* Monatlicher Preis
+* Nächste Abrechnung
+* Zahlungsstatus
+* Rechnungen
+* Plan ändern
+* Abo kündigen
+
+SECTION 11: EINSTELLUNGEN
+
+Provider can manage:
+
+* Account settings
+* Email address
+* Password
+* Notification settings
+* Language settings
+* Privacy settings
+* Delete account request
+
+Language options:
+
+* Deutsch
+* English
+* Shqip
+* Français
+
+NOTIFICATIONS
+
+Create simple notifications for Service Providers:
+
+* Neue Nachricht erhalten
+* Neue Bewerbung / Anfrage erhalten
+* Der Kunde hat auf Ihre Bewerbung geantwortet
+* Neues Angebot angefordert
+* Angebot angenommen
+* Angebot abgelehnt
+* Neuer Anhang erhalten
+* Bewerbungslimit erreicht
+* Profil unvollständig
+* Plan erfolgreich aktualisiert
+
+DATABASE CONCEPTS
+
+Create these core database concepts:
+
+service_provider_profiles:
+
+* id
+* user_id
+* provider_type
+* company_name
+* contact_person
+* email
+* phone
+* website
+* city
+* service_area
+* categories
+* subcategories
+* short_description
+* full_description
+* experience_years
+* team_size
+* availability
+* logo_url
+* profile_status
+* created_at
+* updated_at
+
+provider_plans:
+
+* id
+* provider_id
+* plan_name
+* monthly_price
+* application_limit
+* applications_used
+* portfolio_limit
+* badge
+* visibility_level
+* ranking_priority
+* billing_status
+* current_period_start
+* current_period_end
+
+provider_portfolio:
+
+* id
+* provider_id
+* image_url
+* title
+* description
+* created_at
+
+applications:
+
+* id
+* project_id
+* service_provider_id
+* customer_id
+* message
+* estimated_price
+* availability
+* status
+* created_at
+
+conversations:
+
+* id
+* type
+* project_id
+* customer_id
+* service_provider_id
+* application_id
+* offer_id
+* status
+* last_message_text
+* last_message_at
+* unread_count_customer
+* unread_count_provider
+* language_code
+* created_at
+* updated_at
+
+messages:
+
+* id
+* conversation_id
+* sender_id
+* sender_role
+* body
+* message_type
+* language_code
+* is_read
+* created_at
+
+message_attachments:
+
+* id
+* message_id
+* file_url
+* file_name
+* file_type
+* file_size
+* file_extension
+* created_at
+
+offers:
+
+* id
+* conversation_id
+* project_id
+* service_provider_id
+* customer_id
+* title
+* description
+* estimated_price
+* price_type
+* estimated_start_date
+* estimated_duration
+* status
+* created_at
+* updated_at
+
+reviews:
+
+* id
+* project_id
+* customer_id
+* service_provider_id
+* rating
+* comment
+* created_at
+
+MVP FEATURES TO INCLUDE
+
+Include:
+
+* Service Provider Dashboard
+* Provider profile management
+* Portfolio upload
+* Project browsing
+* Project applications
+* Application limits by plan
+* Upwork-style project messaging
+* Direct “Nachricht senden” options
+* File and photo uploads in messages
+* Offer sending inside conversations
+* Offer accept / decline status
+* Provider plans
+* Badges
+* Ranking visibility
+* Billing page structure
+* Reviews page
+* Multilingual UI labels
+
+DO NOT INCLUDE IN MVP
+
+Do not include:
+
+* Pay-per-lead
+* Lead credits
+* Commission
+* Escrow
+* In-app payments
+* Advanced AI matching
+* Complex ranking algorithm
+* Group chat
+* Voice messages
+* Video calls
+* WhatsApp integration
+* AI auto replies
+* Complex CRM
+
+FINAL SERVICE PROVIDER DASHBOARD FLOW
+
+1. Service Provider registers.
+2. Service Provider creates profile.
+3. Service Provider chooses categories and city/service area.
+4. Service Provider uploads portfolio images.
+5. Service Provider sees current plan and application limit.
+6. Service Provider browses matching projects.
+7. Service Provider sends application or message to customer.
+8. System creates project-based conversation.
+9. Provider and customer communicate inside ImmoVia365.
+10. Provider can send an offer inside conversation.
+11. Customer can accept or decline offer.
+12. Provider can track applications, messages, offers and plan status.
+13. Paid providers receive higher visibility and better badges.
+14. Free providers remain visible but appear lower in relevant listings.
+
+The dashboard should be simple, clear, professional and ready for MVP launch.

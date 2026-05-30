@@ -1,0 +1,697 @@
+Create a complete Upwork-style MVP messaging system for ImmoVia365.
+
+ImmoVia365 is a Swiss marketplace that connects project owners with handymen, renovation companies, construction companies and service providers.
+
+The messaging system must be professional, simple, secure and project-based. It should feel similar to Upwork: users can message directly, but every conversation should stay connected to a project, application, inquiry or offer.
+
+Do not build a random social messenger like WhatsApp or Facebook Messenger.
+
+DEFAULT LANGUAGE
+
+The default platform language is German.
+
+The messaging system must support these languages:
+
+* Deutsch
+* English
+* Shqip
+* Français
+
+All visible UI labels must be translatable. German is the default.
+
+MAIN GOAL
+
+Users should see a direct message option in the right places.
+
+Main German CTA:
+Nachricht senden
+
+English:
+Send message
+
+Albanian:
+Dërgo mesazh
+
+French:
+Envoyer un message
+
+Messaging should allow:
+
+* Text messages
+* Photo uploads
+* PDF uploads
+* Document uploads
+* Offer discussion
+* Application discussion
+* Project-related communication
+
+WHERE THE MESSAGE BUTTON SHOULD APPEAR
+
+1. Provider card
+
+On every Service Provider card, show:
+
+Buttons:
+
+* Profil ansehen
+* Nachricht senden
+
+When a customer clicks “Nachricht senden”:
+
+* Open a message modal.
+* Ask the customer to select an existing project or send a general inquiry.
+* If the customer has no project yet, allow:
+
+  * Neues Projekt erstellen
+  * Allgemeine Anfrage senden
+
+Modal title:
+Nachricht senden
+
+Modal fields:
+
+* Projekt auswählen optional
+* Nachricht
+* Datei anhängen optional
+
+Placeholder:
+Beschreiben Sie kurz, wobei Sie Unterstützung benötigen.
+
+Button:
+Nachricht senden
+
+After sending:
+
+* Create a conversation.
+* Notify the provider.
+* Redirect to the conversation or show success message.
+
+Success message:
+Nachricht erfolgreich gesendet.
+
+2. Provider profile page
+
+On the provider profile page, show a clear primary button:
+
+Nachricht senden
+
+Secondary buttons can be shown depending on provider plan:
+
+* Jetzt anrufen
+* Website besuchen
+
+When the customer clicks “Nachricht senden”:
+
+* Open message modal.
+* Let customer select project or send general inquiry.
+* Allow attachments.
+* Create conversation after first message.
+
+3. Project detail page for Service Provider
+
+When a Service Provider opens a project, show:
+
+Buttons:
+
+* Bewerbung senden
+* Nachricht an Kunden
+
+For MVP, “Nachricht an Kunden” should create an application-style conversation.
+
+When provider clicks “Nachricht an Kunden”:
+
+* Open contact/application modal.
+* Provider writes a short message.
+* Provider can optionally add estimated price, availability and attachments.
+
+Modal title:
+Kunden kontaktieren
+
+Fields:
+
+* Kurze Nachricht
+* Geschätzter Preis optional
+* Verfügbarkeit optional
+* Dateien anhängen optional
+
+Button:
+Bewerbung senden und Nachricht starten
+
+After sending:
+
+* Create application.
+* Create conversation.
+* Add first message.
+* Notify customer.
+* Reduce provider monthly application count by 1.
+
+4. Customer application card
+
+When a customer receives a provider application, show:
+
+Buttons:
+
+* Anbieterprofil ansehen
+* Nachricht senden
+* Angebot anfordern
+
+When customer clicks “Nachricht senden”:
+
+* Open existing conversation.
+* If no conversation exists, create one.
+
+When customer clicks “Angebot anfordern”:
+
+* Send a system message:
+  Der Kunde hat ein Angebot angefordert.
+
+5. Offer card
+
+When an offer exists inside a conversation, show:
+
+Buttons:
+
+* Angebot annehmen
+* Angebot ablehnen
+* Rückfrage stellen
+
+When customer clicks “Rückfrage stellen”:
+
+* Open the conversation.
+* Focus the message input.
+
+USER ROLES
+
+Customer / Project Poster can:
+
+* Send message to provider from provider card
+* Send message to provider from provider profile
+* Reply to applications
+* Ask for offers
+* Upload photos and files
+* View conversations related to their projects and inquiries
+* Archive conversations
+
+Customer cannot:
+
+* Access provider billing
+* Access provider subscription settings
+* Message users without provider/project context except general inquiry
+
+Service Provider can:
+
+* Message customer by applying to a project
+* Reply to customer inquiries
+* Send offers inside conversation
+* Upload photos and files
+* View conversations related to applications, inquiries and offers
+* Archive conversations
+
+Service Provider cannot:
+
+* Message random customers without project/application/inquiry context
+* Access conversations unrelated to them
+
+CONVERSATION TYPES
+
+Create these conversation types:
+
+1. project_application
+   Created when a Service Provider applies to a project.
+
+2. provider_inquiry
+   Created when a customer messages a provider from a provider card or provider profile.
+
+3. offer_discussion
+   Created or continued when a customer asks a question about an offer.
+
+4. general_inquiry
+   Created when a customer messages a provider without selecting a project.
+
+Important:
+General inquiry is allowed, but it should still be structured and connected to a customer-provider relationship.
+
+CONVERSATION STATUSES
+
+Use these statuses:
+
+* Neue Anfrage
+* Bewerbung gesendet
+* In Besprechung
+* Angebot gesendet
+* Angebot angenommen
+* Abgelehnt
+* Abgeschlossen
+* Archiviert
+
+CONVERSATION STRUCTURE
+
+Each conversation should include:
+
+* id
+* type
+* project_id optional
+* customer_id
+* service_provider_id
+* application_id optional
+* offer_id optional
+* status
+* last_message_text
+* last_message_at
+* unread_count_customer
+* unread_count_provider
+* language_code
+* created_at
+* updated_at
+
+MESSAGE STRUCTURE
+
+Each message should include:
+
+* id
+* conversation_id
+* sender_id
+* sender_role
+* body
+* message_type
+* language_code
+* is_read
+* created_at
+
+Message types:
+
+* text
+* image
+* file
+* offer
+* system
+
+FILE AND IMAGE UPLOADS
+
+Users should be able to send attachments inside messages.
+
+Allowed file types:
+
+* JPG
+* JPEG
+* PNG
+* WEBP
+* PDF
+* DOC
+* DOCX
+* XLS
+* XLSX
+
+Limits:
+
+* Maximum 5 files per message
+* Maximum 10 MB per file
+
+Show:
+
+* Image previews for photos
+* File cards for PDFs and documents
+* Download button
+* Remove file option before sending
+
+German labels:
+
+* Datei anhängen
+* Foto hochladen
+* PDF hochladen
+* Dokument hochladen
+* Anhang herunterladen
+* Datei entfernen
+
+Security:
+
+* Validate file type
+* Validate file size
+* Do not allow executable files
+* Store uploaded files securely
+
+UPWORK-STYLE OFFER SYSTEM
+
+Inside a conversation, Service Providers should see:
+
+Button:
+Angebot senden
+
+Offer form fields:
+
+* Angebotstitel
+* Beschreibung
+* Geschätzter Preis
+* Preisart
+* Voraussichtlicher Start
+* Voraussichtliche Dauer
+* Anhänge optional
+
+Price type options:
+
+* Fixpreis
+* Stundenbasis
+* Nach Besichtigung
+
+Placeholder:
+Beschreiben Sie kurz, welche Arbeiten im Angebot enthalten sind.
+
+Button:
+Angebot senden
+
+After sending an offer:
+
+* Show offer card inside the conversation.
+* Notify the customer.
+* Set conversation status to “Angebot gesendet”.
+
+Offer card should show:
+
+* Angebotstitel
+* Preis
+* Preisart
+* Dauer
+* Beschreibung
+* Anhänge
+* Provider name
+* Provider badge
+* Sent date
+
+Customer actions:
+
+* Angebot annehmen
+* Angebot ablehnen
+* Rückfrage stellen
+
+Important for MVP:
+Accepting an offer does not process payment. It only updates the offer status and conversation status.
+
+Accepted offer message:
+Das Angebot wurde angenommen. Bitte klären Sie die weiteren Details direkt mit dem Anbieter.
+
+Declined offer message:
+Das Angebot wurde abgelehnt.
+
+DASHBOARD MESSAGING
+
+Customer Dashboard should include:
+Nachrichten
+
+Customer message list should show:
+
+* Project title
+* Provider name
+* Provider badge
+* Last message
+* Last message time
+* Unread count
+* Conversation status
+
+Service Provider Dashboard should include:
+Nachrichten
+
+Provider message list should show:
+
+* Customer name
+* Project title
+* Project city
+* Last message
+* Last message time
+* Unread count
+* Conversation status
+
+CONVERSATION UI
+
+Desktop layout:
+
+* Left side: conversation list
+* Right side: active conversation
+
+Mobile layout:
+
+* First screen: conversation list
+* Second screen: active conversation
+
+Conversation header should show:
+
+* Project title
+* Other participant name
+* Provider badge if relevant
+* Project city
+* Project budget
+* Status
+
+Message area:
+
+* Customer messages aligned right
+* Provider messages aligned left
+* System messages centered
+* Rounded message bubbles
+* Timestamp under messages
+* Attachment previews inside bubbles
+* Offer cards inside chat
+
+Input area:
+
+* Text field
+* Attachment button
+* Send button
+* Offer button for Service Provider
+
+German labels:
+
+* Nachrichten
+* Meine Unterhaltungen
+* Nachricht schreiben
+* Nachricht senden
+* Datei anhängen
+* Angebot senden
+* Projekt ansehen
+* Anbieterprofil ansehen
+* Bewerbung ansehen
+
+NOTIFICATIONS
+
+Create simple notifications:
+
+* Neue Nachricht erhalten
+* Neue Bewerbung erhalten
+* Neues Angebot erhalten
+* Angebot angenommen
+* Angebot abgelehnt
+* Neuer Anhang erhalten
+
+ACCESS AND SECURITY RULES
+
+* Only participants can view a conversation.
+* Customer can only access conversations where they are the project owner or inquiry sender.
+* Provider can only access conversations where they are the selected provider.
+* Users cannot access conversations by guessing conversation IDs.
+* Every conversation must check permissions before loading.
+* Admin can view reported conversations only for moderation and support.
+
+CONTACT DETAILS RULE
+
+Messaging works inside ImmoVia365.
+
+Do not automatically expose private email addresses or phone numbers through the system.
+
+Provider public contact visibility is controlled separately by the provider plan.
+
+Free providers can message through project/application/inquiry conversations, but they have limited monthly applications and lower visibility.
+
+SOFT SAFETY NOTE
+
+If users share phone numbers or emails inside chat, do not block it in MVP. Show only a soft reminder:
+
+German:
+Hinweis: Für Ihre Sicherheit empfehlen wir, wichtige Absprachen und Angebote über ImmoVia365 festzuhalten.
+
+English:
+Note: For your safety, we recommend keeping important agreements and offers inside ImmoVia365.
+
+Albanian:
+Shënim: Për sigurinë tuaj, ju rekomandojmë që marrëveshjet dhe ofertat e rëndësishme t’i mbani brenda ImmoVia365.
+
+French:
+Remarque : Pour votre sécurité, nous vous recommandons de conserver les accords et offres importants sur ImmoVia365.
+
+REPORTING
+
+Inside every conversation, add:
+
+Button:
+Unterhaltung melden
+
+Report reasons:
+
+* Spam
+* Unangemessene Nachricht
+* Betrugsverdacht
+* Falsche Informationen
+* Sonstiges
+
+Admin can:
+
+* View reported conversations
+* View reported messages
+* Archive abusive conversations
+* Block users if needed
+* Review uploaded attachments if reported
+
+DATABASE TABLES
+
+Create these database concepts:
+
+conversations:
+
+* id
+* type
+* project_id
+* customer_id
+* service_provider_id
+* application_id
+* offer_id
+* status
+* last_message_text
+* last_message_at
+* unread_count_customer
+* unread_count_provider
+* language_code
+* created_at
+* updated_at
+
+messages:
+
+* id
+* conversation_id
+* sender_id
+* sender_role
+* body
+* message_type
+* language_code
+* is_read
+* created_at
+
+message_attachments:
+
+* id
+* message_id
+* file_url
+* file_name
+* file_type
+* file_size
+* file_extension
+* created_at
+
+offers:
+
+* id
+* conversation_id
+* project_id
+* service_provider_id
+* customer_id
+* title
+* description
+* estimated_price
+* price_type
+* estimated_start_date
+* estimated_duration
+* status
+* created_at
+* updated_at
+
+offer_attachments:
+
+* id
+* offer_id
+* file_url
+* file_name
+* file_type
+* file_size
+* created_at
+
+applications:
+
+* id
+* project_id
+* service_provider_id
+* customer_id
+* message
+* estimated_price
+* availability
+* status
+* created_at
+
+MVP FEATURES TO INCLUDE
+
+Include:
+
+* Direct “Nachricht senden” button
+* Message modal
+* Project selection before messaging provider
+* General inquiry option
+* Project-based conversations
+* Application-based conversations
+* Offer discussions
+* Text messages
+* Photo uploads
+* PDF uploads
+* Document uploads
+* Offer cards inside chat
+* Unread counts
+* Basic notifications
+* Multilingual UI labels
+* Report conversation
+* Admin moderation basics
+
+DO NOT INCLUDE IN MVP
+
+Do not include:
+
+* Open random social messaging
+* Group chats
+* Voice messages
+* Video calls
+* WhatsApp integration
+* AI auto replies
+* In-app payments
+* Escrow
+* Complex dispute system
+* Real-time typing indicator
+* Complex CRM
+
+FINAL FLOW
+
+Customer messaging provider:
+
+1. Customer sees provider card.
+2. Customer clicks “Nachricht senden”.
+3. Message modal opens.
+4. Customer selects existing project or chooses general inquiry.
+5. Customer writes message and optionally attaches files.
+6. Conversation is created.
+7. Provider receives notification.
+
+Provider messaging customer:
+
+1. Provider opens project.
+2. Provider clicks “Nachricht an Kunden”.
+3. Application/contact modal opens.
+4. Provider writes short message and optionally adds files.
+5. System creates application and conversation.
+6. Customer receives application and message.
+
+Inside conversation:
+
+1. Customer and provider discuss the project.
+2. Provider can send an offer.
+3. Customer can accept, decline or ask questions.
+4. Both sides can send photos, PDFs and documents.
+5. Conversation remains attached to the project or inquiry.
+
+Design:
+Clean, professional, Swiss marketplace design.
+White background, dark navy text, bright blue accent.
+Mobile responsive.
+Simple and easy to understand.
