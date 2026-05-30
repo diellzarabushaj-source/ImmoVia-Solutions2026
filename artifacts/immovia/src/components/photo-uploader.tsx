@@ -48,7 +48,7 @@ export function PhotoUploader({ label, hint, multiple = false, value, onChange }
       const results: UploadedPhoto[] = [];
       for (const file of toUpload) {
         if (!file.type.startsWith("image/")) { setError("Only image files are allowed."); continue; }
-        if (file.size > 10 * 1024 * 1024) { setError("Max file size is 10MB."); continue; }
+        if (file.size > 8 * 1024 * 1024) { setError("Max file size is 8MB."); continue; }
         results.push(await uploadFile(file));
       }
       const newPreviews = multiple ? [...previews, ...results] : results;

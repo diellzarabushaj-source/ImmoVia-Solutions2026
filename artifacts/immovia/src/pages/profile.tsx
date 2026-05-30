@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function Profile() {
   const { user, loading, updateProfile } = useAuth();
@@ -133,9 +134,22 @@ export default function Profile() {
           </div>
 
           <div>
-            <Label htmlFor="avatarUrl">{t.profile.avatarUrl}</Label>
-            <Input id="avatarUrl" value={form.avatarUrl} onChange={update("avatarUrl")} placeholder="https://..." />
-            <p className="text-xs text-muted-foreground mt-1">{t.profile.avatarHint}</p>
+            <Label>{t.profile.uploadPhoto}</Label>
+            <div className="mt-1.5">
+              <PhotoUploader
+                label=""
+                hint={t.profile.uploadHint}
+                value={[]}
+                onChange={(paths) => {
+                  if (paths[0]) setForm((f) => ({ ...f, avatarUrl: `/api/storage${paths[0]}` }));
+                }}
+              />
+            </div>
+            <div className="mt-3">
+              <Label htmlFor="avatarUrl" className="text-xs text-muted-foreground font-normal">{t.profile.orPasteUrl}</Label>
+              <Input id="avatarUrl" value={form.avatarUrl} onChange={update("avatarUrl")} placeholder="https://..." className="mt-1" />
+              <p className="text-xs text-muted-foreground mt-1">{t.profile.avatarHint}</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
