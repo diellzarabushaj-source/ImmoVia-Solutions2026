@@ -38,7 +38,7 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", projectType: "renovation",
-    description: "", city: "", budget: "", timeline: "",
+    title: "", description: "", city: "", budget: "", timeline: "",
   });
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -53,6 +53,7 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
         fullName: form.fullName, email: form.email, phone: form.phone,
         projectType: form.projectType, description: form.description, city: form.city,
       };
+      if (form.title.trim()) body.title = form.title;
       if (form.budget.trim()) body.budget = form.budget;
       if (form.timeline.trim()) body.timeline = form.timeline;
       const res = await fetch("/api/projects", {
@@ -61,7 +62,7 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
       });
       if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? "Failed."); return; }
       onCreated(); onClose();
-      setForm({ fullName: "", email: "", phone: "", projectType: "renovation", description: "", city: "", budget: "", timeline: "" });
+      setForm({ fullName: "", email: "", phone: "", projectType: "renovation", title: "", description: "", city: "", budget: "", timeline: "" });
     } catch { setError("Connection error."); } finally { setLoading(false); }
   };
 
@@ -89,10 +90,12 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
                 <SelectItem value="construction">Construction</SelectItem>
                 <SelectItem value="interior">Interior</SelectItem>
                 <SelectItem value="exterior">Exterior</SelectItem>
+                <SelectItem value="electric">Electric</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-1.5"><Label>Title</Label><Input value={form.title} onChange={set("title")} disabled={loading} placeholder="e.g. Badezimmer komplett modernisieren" /></div>
           <div className="space-y-1.5"><Label>Description *</Label><Textarea value={form.description} onChange={set("description")} required disabled={loading} rows={3} /></div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label>Budget</Label><Input value={form.budget} onChange={set("budget")} disabled={loading} placeholder="e.g. 10000 EUR" /></div>
@@ -135,10 +138,12 @@ export function AdminProjects() {
   };
 
   const filtered = (projects ?? []).filter((p) => {
+    const q = search.toLowerCase();
     const matchSearch = !search ||
-      p.fullName.toLowerCase().includes(search.toLowerCase()) ||
-      p.city.toLowerCase().includes(search.toLowerCase()) ||
-      p.projectType.toLowerCase().includes(search.toLowerCase());
+      p.fullName.toLowerCase().includes(q) ||
+      p.city.toLowerCase().includes(q) ||
+      p.projectType.toLowerCase().includes(q) ||
+      ((p as { title?: string | null }).title ?? "").toLowerCase().includes(q);
     const matchStatus = statusFilter === "all" || p.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -177,9 +182,8 @@ export function AdminProjects() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
+              <TableHead className="text-xs font-semibold text-gray-600">Title / Project</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Client</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Type</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">Description</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Location</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Budget</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Size</TableHead>
@@ -190,21 +194,19 @@ export function AdminProjects() {
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={9} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
             {!isLoading && filtered.map((project) => (
               <TableRow key={project.id} className="hover:bg-gray-50">
+                <TableCell className="max-w-[220px]">
+                  <div className="font-semibold text-sm text-gray-900 truncate">
+                    {(project as { title?: string | null }).title ?? <span className="text-gray-400 font-normal italic">No title</span>}
+                  </div>
+                  <div className="text-xs text-gray-500 capitalize mt-0.5">{project.projectType}</div>
+                </TableCell>
                 <TableCell>
                   <div className="font-medium text-sm">{project.fullName}</div>
                   <div className="text-xs text-gray-500">{project.email}</div>
-                </TableCell>
-                <TableCell className="capitalize text-sm">{project.projectType}</TableCell>
-                <TableCell className="max-w-[160px]">
-                  {project.description ? (
-                    <span className="text-xs text-gray-500 truncate block">{project.description}</span>
-                  ) : (
-                    <span className="text-xs text-gray-300">—</span>
-                  )}
                 </TableCell>
                 <TableCell className="text-sm">{project.city}</TableCell>
                 <TableCell className="text-sm text-gray-600">{project.budget ?? "—"}</TableCell>
@@ -238,8 +240,8 @@ export function AdminProjects() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem asChild>
-                        <a href={`/projects`} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer">
-                          <Eye className="mr-2 h-4 w-4" /> View on /projects
+                        <a href={`/projects/${project.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer">
+                          <Eye className="mr-2 h-4 w-4" /> View project page
                         </a>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -270,7 +272,7 @@ export function AdminProjects() {
               </TableRow>
             ))}
             {!isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={9} className="h-24 text-center text-gray-400">No projects found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="h-24 text-center text-gray-400">No projects found.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
