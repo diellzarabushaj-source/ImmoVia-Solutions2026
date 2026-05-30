@@ -75,7 +75,6 @@ function buildNavGroups(t: ReturnType<typeof useLanguage>["t"]): NavGroup[] {
       group: t.admin.groupAccounts,
       items: [
         { path: "/admin/users", label: t.admin.navUsers, sublabel: t.admin.navUsersSub, icon: Users },
-        { path: "/admin/applications", label: t.admin.navApplications, sublabel: t.admin.navApplicationsSub, icon: FileText },
       ],
     },
     {
@@ -200,15 +199,10 @@ function usePendingCounts() {
   const [openReports, setOpenReports] = useState(0);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/projects?status=pending", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-      fetch("/api/companies?status=pending", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-    ])
-      .then(([projects, companies]) => {
-        setPendingTotal(
-          (Array.isArray(projects) ? projects.length : 0) +
-          (Array.isArray(companies) ? companies.length : 0)
-        );
+    fetch("/api/projects?status=pending", { credentials: "include" })
+      .then((r) => r.ok ? r.json() : [])
+      .then((projects) => {
+        setPendingTotal(Array.isArray(projects) ? projects.length : 0);
       })
       .catch(() => {});
 

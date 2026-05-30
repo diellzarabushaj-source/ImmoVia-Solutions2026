@@ -127,7 +127,7 @@ router.patch("/provider/profile", requireContractor, async (req, res): Promise<v
         city: (compUpdates.city as string | undefined) ?? user.city ?? "",
         serviceTypes: (compUpdates.serviceTypes as string[] | undefined) ?? (user.serviceTypes as string[] | null) ?? [],
         workerType,
-        status: "pending",
+        status: "approved",
         description: compUpdates.description as string | undefined ?? null,
         shortDescription: compUpdates.shortDescription as string | undefined ?? null,
         website: compUpdates.website as string | undefined ?? null,

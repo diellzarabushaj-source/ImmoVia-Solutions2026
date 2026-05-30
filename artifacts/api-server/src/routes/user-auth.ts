@@ -241,7 +241,7 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
         city: city ?? "",
         serviceTypes: serviceTypes ?? [],
         workerType: accountSubtype === "company" ? "company" : "individual",
-        status: "pending",
+        status: "approved",
         profilePhoto: clerkAvatarUrl ?? null,
       });
     } catch (err) {
