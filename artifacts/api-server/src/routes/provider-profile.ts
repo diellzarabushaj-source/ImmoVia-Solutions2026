@@ -26,7 +26,18 @@ router.patch("/provider/profile", requireContractor, async (req, res): Promise<v
   const userId = req.userId!;
   const body = req.body as Record<string, unknown>;
 
-  const [user] = await db.select({ email: usersTable.email }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  const [user] = await db
+    .select({
+      email: usersTable.email,
+      fullName: usersTable.fullName,
+      phone: usersTable.phone,
+      city: usersTable.city,
+      accountSubtype: usersTable.accountSubtype,
+      serviceTypes: usersTable.serviceTypes,
+    })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
 
   const userUpdates: Record<string, unknown> = {};
@@ -42,6 +53,7 @@ router.patch("/provider/profile", requireContractor, async (req, res): Promise<v
   }
 
   const compUpdates: Record<string, unknown> = {};
+  if (typeof body.companyName === "string") compUpdates.companyName = body.companyName.slice(0, 200);
   if (typeof body.description === "string") compUpdates.description = body.description.slice(0, 2000);
   if (typeof body.shortDescription === "string") compUpdates.shortDescription = body.shortDescription.slice(0, 500);
   if (typeof body.phone === "string") compUpdates.phone = body.phone.slice(0, 50);
@@ -90,7 +102,53 @@ router.patch("/provider/profile", requireContractor, async (req, res): Promise<v
   }
 
   if (Object.keys(compUpdates).length > 0) {
-    await db.update(companiesTable).set(compUpdates).where(eq(companiesTable.email, user.email));
+    const [existingCompany] = await db
+      .select({ id: companiesTable.id })
+      .from(companiesTable)
+      .where(eq(companiesTable.email, user.email))
+      .limit(1);
+
+    if (existingCompany) {
+      await db.update(companiesTable).set(compUpdates).where(eq(companiesTable.email, user.email));
+    } else {
+      // Auto-create company row for first-time profile save.
+      // Required fields fall back to user-record values so the INSERT never fails.
+      const workerType =
+        typeof compUpdates.workerType === "string"
+          ? compUpdates.workerType
+          : user.accountSubtype === "individual"
+          ? "individual"
+          : "company";
+      await db.insert(companiesTable).values({
+        companyName: (compUpdates.companyName as string | undefined) ?? user.fullName ?? "",
+        contactName: (compUpdates.contactName as string | undefined) ?? user.fullName ?? "",
+        email: user.email,
+        phone: (compUpdates.phone as string | undefined) ?? user.phone ?? "",
+        city: (compUpdates.city as string | undefined) ?? user.city ?? "",
+        serviceTypes: (compUpdates.serviceTypes as string[] | undefined) ?? (user.serviceTypes as string[] | null) ?? [],
+        workerType,
+        status: "pending",
+        description: compUpdates.description as string | undefined ?? null,
+        shortDescription: compUpdates.shortDescription as string | undefined ?? null,
+        website: compUpdates.website as string | undefined ?? null,
+        hourlyRate: compUpdates.hourlyRate as number | undefined ?? null,
+        profilePhoto: compUpdates.profilePhoto as string | undefined ?? null,
+        logoUrl: compUpdates.logoUrl as string | undefined ?? null,
+        coverImageUrl: compUpdates.coverImageUrl as string | undefined ?? null,
+        serviceArea: compUpdates.serviceArea as string | undefined ?? null,
+        availability: compUpdates.availability as string | undefined ?? null,
+        teamSize: compUpdates.teamSize as number | undefined ?? null,
+        priceType: compUpdates.priceType as string | undefined ?? null,
+        priceFromChf: compUpdates.priceFromChf as string | undefined ?? null,
+        priceUnit: compUpdates.priceUnit as string | undefined ?? null,
+        priceNote: compUpdates.priceNote as string | undefined ?? null,
+        priceIsPublic: compUpdates.priceIsPublic as boolean | undefined ?? false,
+        galleryPhotos: compUpdates.galleryPhotos as string[] | undefined ?? null,
+        customServiceTags: compUpdates.customServiceTags as string[] | undefined ?? null,
+        specializations: compUpdates.specializations as string[] | undefined ?? null,
+        languages: compUpdates.languages as string[] | undefined ?? null,
+      });
+    }
   }
 
   const [updatedUser] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
