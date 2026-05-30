@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Globe, Menu, X, User, LayoutDashboard, LogOut } from "lucide-react";
+import { Globe, Menu, X, User, LayoutDashboard, LogOut, MessageSquare } from "lucide-react";
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
@@ -20,7 +20,25 @@ export function Navbar() {
   const { signOut } = useClerk();
   const [location, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+  const fetchUnread = useCallback(async () => {
+    if (!user) return;
+    try {
+      const r = await fetch("/api/conversations/unread-count");
+      if (r.ok) {
+        const d = await r.json() as { total: number };
+        setUnreadCount(d.total);
+      }
+    } catch { /* ignore */ }
+  }, [user]);
+
+  useEffect(() => {
+    void fetchUnread();
+    const id = window.setInterval(() => void fetchUnread(), 30_000);
+    return () => clearInterval(id);
+  }, [fetchUnread]);
 
   const navLinks = [
     { href: "/", label: t.nav.home },
@@ -46,6 +64,11 @@ export function Navbar() {
   const initials = user
     ? user.fullName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "";
+
+  const openChatWidget = () => {
+    const fab = document.querySelector<HTMLButtonElement>("[aria-label='Messages']");
+    fab?.click();
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-white/98 backdrop-blur supports-[backdrop-filter]:bg-white/90 shadow-sm">
@@ -122,35 +145,57 @@ export function Navbar() {
           </DropdownMenu>
 
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2 hidden sm:flex" data-testid="button-user-menu">
-                  <span className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
-                    {initials}
-                  </span>
-                  <span className="text-sm font-medium max-w-[120px] truncate">{user.fullName.split(" ")[0]}</span>
+            <>
+              {/* Messages icon with unread badge */}
+              <div className="relative hidden sm:block">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-foreground/70 hover:text-primary"
+                  aria-label="Open messages"
+                  data-testid="nav-messages"
+                  onClick={openChatWidget}
+                >
+                  <MessageSquare className="h-5 w-5" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="cursor-pointer gap-2" data-testid="menu-dashboard">
-                    <LayoutDashboard className="w-4 h-4" />
-                    {t.nav.dashboard}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/profile" className="cursor-pointer gap-2" data-testid="menu-profile">
-                    <User className="w-4 h-4" />
-                    {t.nav.profile}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => void onLogout()} className="cursor-pointer gap-2 text-destructive" data-testid="menu-logout">
-                  <LogOut className="w-4 h-4" />
-                  {t.nav.logout}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 pointer-events-none">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </div>
+
+              {/* User menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2 hidden sm:flex" data-testid="button-user-menu">
+                    <span className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                      {initials}
+                    </span>
+                    <span className="text-sm font-medium max-w-[120px] truncate">{user.fullName.split(" ")[0]}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="cursor-pointer gap-2" data-testid="menu-dashboard">
+                      <LayoutDashboard className="w-4 h-4" />
+                      {t.nav.dashboard}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/profile" className="cursor-pointer gap-2" data-testid="menu-profile">
+                      <User className="w-4 h-4" />
+                      {t.nav.profile}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => void onLogout()} className="cursor-pointer gap-2 text-destructive" data-testid="menu-logout">
+                    <LogOut className="w-4 h-4" />
+                    {t.nav.logout}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <>
               <Link href="/sign-in" className="hidden sm:block">
@@ -207,6 +252,19 @@ export function Navbar() {
               <div className="border-t border-border mt-2 pt-2 flex flex-col gap-1">
                 {user ? (
                   <>
+                    {/* Mobile messages link */}
+                    <button
+                      onClick={() => { setMobileOpen(false); openChatWidget(); }}
+                      className="flex items-center gap-2 text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30 text-left"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      {t.nav.messages ?? "Messages"}
+                      {unreadCount > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </button>
                     <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
                       {t.nav.dashboard}
                     </Link>

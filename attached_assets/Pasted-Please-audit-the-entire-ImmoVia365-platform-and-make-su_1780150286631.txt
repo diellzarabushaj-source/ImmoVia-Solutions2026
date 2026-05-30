@@ -1,0 +1,102 @@
+Please audit the entire ImmoVia365 platform and make sure all dashboards, roles, routes, data, forms, buttons, statuses and actions are fully synchronized and working together.
+
+Do not redesign the platform from zero. Keep the existing structure, design and logic as much as possible. Your task is to connect everything properly, fix broken or incomplete functionality, remove inconsistencies, and make the full platform work smoothly end-to-end.
+
+The platform has three main role experiences:
+1. Admin
+2. Project Poster
+3. Service Provider
+
+Make sure each role dashboard is connected to the same real data and that actions in one area correctly update the other related areas.
+
+For example:
+- When a Project Poster creates or publishes a project, it must appear correctly in their dashboard, in the Admin dashboard, and for matching Service Providers.
+- When a Service Provider sends an offer, it must appear under that provider’s offers, under the related project for the Project Poster, and inside the Admin offer/project management area.
+- When a Project Poster accepts, rejects or shortlists an offer, the status must update everywhere.
+- When Admin verifies, rejects, suspends or edits a Service Provider, that status must update in the provider dashboard and wherever provider information is shown.
+- When Admin edits, deletes, publishes or changes a project/category/blog/user, the update must be reflected everywhere it is used.
+- Notifications, counters, dashboard statistics, badges and activity lists must always match the actual database state.
+
+Please check and fix:
+
+- Role-based access
+- Protected routes
+- Dashboard navigation
+- Admin dashboard
+- Project Poster dashboard
+- Service Provider dashboard
+- Project creation flow
+- Project status updates
+- Offer creation flow
+- Offer status updates
+- Provider matching logic
+- User/profile data
+- Service provider verification status
+- Categories
+- Blog CMS
+- Image/file uploads
+- Messages if already implemented
+- Notifications if already implemented
+- Dashboard counters and statistics
+- Empty states
+- Loading states
+- Error states
+- Success messages
+- Form validation
+- Buttons that currently do nothing
+- Broken links
+- Broken redirects
+- Duplicate or inconsistent logic
+- Mobile responsiveness
+- Any console errors, build errors or runtime errors
+
+Make everything consistent and synchronized.
+
+Use the existing database schema if possible. If something is missing, add only what is necessary. Avoid unnecessary complexity. Keep the code clean, simple and maintainable.
+
+Important:
+All statuses should be centralized and consistent across the app. Do not create different status names for the same thing in different places.
+
+Use clear status logic such as:
+
+Project:
+- draft
+- published
+- receiving_offers
+- offer_selected
+- in_progress
+- completed
+- cancelled
+
+Offer:
+- sent
+- viewed
+- shortlisted
+- accepted
+- rejected
+- withdrawn
+
+Provider:
+- pending_verification
+- verified
+- rejected
+- suspended
+
+User:
+- active
+- inactive
+- blocked
+
+Please make sure every action has a visible result:
+- show success message after successful actions
+- show error message when something fails
+- show loading state while saving or loading
+- redirect users to the correct page after important actions
+- update UI immediately after changes
+
+The final result should feel smooth, synchronized and reliable:
+Project Poster posts a project → matching Service Providers see it → Service Provider sends offer → Project Poster receives and compares offers → Project Poster chooses an offer → Admin can monitor everything.
+
+Please test the full user journey for all three roles and fix anything that prevents the platform from working as one connected system.
+
+The goal is not to add many new features. The goal is to make the existing platform fully functional, connected, synchronized and production-ready.
