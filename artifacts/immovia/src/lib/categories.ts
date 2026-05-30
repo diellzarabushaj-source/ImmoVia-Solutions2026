@@ -157,9 +157,17 @@ export function getCategoryByKey(key: string): Category | undefined {
   return CATEGORIES.find(c => c.key === key);
 }
 
+const LEGACY_KEY_MAP: Record<string, string> = {
+  interior:     "interior_design",
+  exterior:     "painting",
+  electric:     "electrical",
+  construction: "renovation",
+};
+
 export function resolveCategoryLabel(key: string, lang: Lang): string {
-  const cat = getCategoryByKey(key);
-  return cat ? getCategoryLabel(cat, lang) : key;
+  const resolved = LEGACY_KEY_MAP[key] ?? key;
+  const cat = getCategoryByKey(resolved);
+  return cat ? getCategoryLabel(cat, lang) : resolved;
 }
 
 export function resolveTagLabel(tagKey: string, lang: Lang): string {
