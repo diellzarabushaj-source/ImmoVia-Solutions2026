@@ -1,123 +1,9 @@
-import { db, subscriptionPlansTable, immocreditPacksTable, projectsTable } from "@workspace/db";
-import { eq, and, count } from "drizzle-orm";
-import { logger } from "./logger";
+import { Router, type IRouter } from "express";
+import { db, projectsTable } from "@workspace/db";
+import { eq, lt } from "drizzle-orm";
+import { logger } from "../lib/logger";
 
-const PLANS = [
-  {
-    slug: "free",
-    name: "Free",
-    priceCents: 0,
-    monthlyCredits: 3,
-    featured: false,
-    features: ["3 ImmoCredits / month", "Basic profile listing", "Community support"],
-    sortOrder: 1,
-  },
-  {
-    slug: "starter",
-    name: "Starter",
-    priceCents: 1900,
-    monthlyCredits: 20,
-    featured: false,
-    features: [
-      "20 ImmoCredits / month",
-      "Standard profile listing",
-      "Email support",
-      "Offer history",
-    ],
-    sortOrder: 2,
-  },
-  {
-    slug: "pro",
-    name: "Pro",
-    priceCents: 4900,
-    monthlyCredits: 70,
-    featured: true,
-    features: [
-      "70 ImmoCredits / month",
-      "Featured profile placement",
-      "Priority support",
-      "Advanced offer analytics",
-      "Boosted offer discounts",
-    ],
-    sortOrder: 3,
-  },
-  {
-    slug: "business",
-    name: "Business",
-    priceCents: 9900,
-    monthlyCredits: 180,
-    featured: false,
-    features: [
-      "180 ImmoCredits / month",
-      "Top placement on homepage",
-      "Dedicated account manager",
-      "Multi-team support (coming soon)",
-      "Custom branding",
-    ],
-    sortOrder: 4,
-  },
-  {
-    slug: "premium",
-    name: "Premium Partner",
-    priceCents: 19900,
-    monthlyCredits: 450,
-    featured: false,
-    features: [
-      "450 ImmoCredits / month",
-      "Premier homepage placement",
-      "White-glove onboarding",
-      "Custom reporting",
-      "Beta access to new features",
-    ],
-    sortOrder: 5,
-  },
-];
-
-const PACKS = [
-  { slug: "mini", name: "Mini Pack", priceCents: 1200, credits: 10, sortOrder: 1 },
-  { slug: "starter", name: "Starter Pack", priceCents: 2500, credits: 25, sortOrder: 2 },
-  { slug: "growth", name: "Growth Pack", priceCents: 5500, credits: 60, sortOrder: 3 },
-  { slug: "business", name: "Business Pack", priceCents: 12900, credits: 150, sortOrder: 4 },
-  { slug: "pro", name: "Pro Pack", priceCents: 22900, credits: 300, sortOrder: 5 },
-];
-
-export async function seedBilling(): Promise<void> {
-  try {
-    for (const p of PLANS) {
-      await db
-        .insert(subscriptionPlansTable)
-        .values(p)
-        .onConflictDoUpdate({
-          target: subscriptionPlansTable.slug,
-          set: {
-            name: p.name,
-            priceCents: p.priceCents,
-            monthlyCredits: p.monthlyCredits,
-            featured: p.featured,
-            features: p.features,
-            sortOrder: p.sortOrder,
-          },
-        });
-    }
-    for (const p of PACKS) {
-      await db
-        .insert(immocreditPacksTable)
-        .values(p)
-        .onConflictDoUpdate({
-          target: immocreditPacksTable.slug,
-          set: {
-            name: p.name,
-            priceCents: p.priceCents,
-            credits: p.credits,
-            sortOrder: p.sortOrder,
-          },
-        });
-    }
-    logger.info("Billing seed complete");
-  } catch (err) {
-    logger.error({ err }, "Billing seed failed");
-  }
-}
+const router: IRouter = Router();
 
 const DEMO_PROJECTS = [
   { fullName: "ImmoVia Demo", email: "demo@immovia365.ch", phone: "+41 44 000 00 01", projectType: "exterior", description: "Für ein Einfamilienhaus in Zürich werden professionelle Fassadenarbeiten gesucht. Die Fassade soll geprüft, gereinigt, ausgebessert und neu gestrichen werden.", city: "Zürich", budget: "Bis CHF 10'000", timeline: "1–3 Monate", title: "Fassade eines Einfamilienhauses sanieren", size: "small" },
@@ -137,24 +23,29 @@ const DEMO_PROJECTS = [
   { fullName: "ImmoVia Demo", email: "demo@immovia365.ch", phone: "+41 44 000 00 15", projectType: "other", description: "Eine Wohnung soll vor dem Verkauf professionell vorbereitet werden. Gesucht werden kleinere Reparaturen, Reinigung, Home-Staging und optische Aufwertung.", city: "Zürich", budget: "CHF 2'000 – 6'000", timeline: "1–2 Wochen", title: "Wohnung für Verkauf vorbereiten", size: "small" },
 ];
 
-export async function seedDemoProjects(): Promise<void> {
-  try {
-    const [{ value: existing }] = await db
-      .select({ value: count() })
-      .from(projectsTable)
-      .where(and(eq(projectsTable.email, "demo@immovia365.ch"), eq(projectsTable.status, "open")));
-
-    if (existing >= 15) {
-      logger.info("Demo projects already seeded — skipping");
-      return;
-    }
-
-    await db.delete(projectsTable).where(eq(projectsTable.email, "demo@immovia365.ch"));
-    await db.insert(projectsTable).values(
-      DEMO_PROJECTS.map(p => ({ ...p, status: "open" as const, photos: [] }))
-    );
-    logger.info({ inserted: DEMO_PROJECTS.length }, "Demo projects seeded");
-  } catch (err) {
-    logger.error({ err }, "Demo project seed failed");
+router.post("/seed-demo-projects", async (req, res): Promise<void> => {
+  const secret = process.env["CHATBOT_IDENTITY_SECRET"];
+  const auth = req.headers["authorization"];
+  if (!secret || auth !== `Bearer ${secret}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
   }
-}
+
+  try {
+    const deleted = await db.delete(projectsTable)
+      .where(eq(projectsTable.email, "demo@immovia365.ch"))
+      .returning({ id: projectsTable.id });
+
+    const inserted = await db.insert(projectsTable)
+      .values(DEMO_PROJECTS.map(p => ({ ...p, status: "open" as const, photos: [] })))
+      .returning({ id: projectsTable.id });
+
+    logger.info({ deleted: deleted.length, inserted: inserted.length }, "Demo seed complete");
+    res.json({ ok: true, deleted: deleted.length, inserted: inserted.length });
+  } catch (err) {
+    logger.error({ err }, "Demo seed failed");
+    res.status(500).json({ error: "Seed failed" });
+  }
+});
+
+export default router;

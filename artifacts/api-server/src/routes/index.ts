@@ -23,9 +23,11 @@ import adminReportsRouter from "./admin-reports";
 import adminSettingsRouter from "./admin-settings";
 import searchRouter from "./search";
 import blogRouter from "./blog";
+import seedDemoRouter from "./seed-demo";
 
 const router: IRouter = Router();
 
+router.use(seedDemoRouter);
 router.use(healthRouter);
 router.use(projectsRouter);
 router.use(companiesRouter);
