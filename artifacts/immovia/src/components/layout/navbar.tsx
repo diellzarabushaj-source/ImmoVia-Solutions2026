@@ -65,7 +65,7 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium px-3 py-2 rounded-md transition-colors hover:text-primary hover:bg-secondary/50 ${
+              className={`text-sm font-medium px-3 py-2 rounded-md transition-colors hover:text-primary hover:bg-secondary/50 whitespace-nowrap ${
                 location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70"
               }`}
               data-testid={`nav-${link.href.replace("/", "") || "home"}`}
