@@ -9,7 +9,7 @@ type LanguageContextType = {
 };
 
 const defaultContext: LanguageContextType = {
-  language: 'en',
+  language: 'de',
   setLanguage: () => {},
   t: translations.en,
 };
@@ -17,7 +17,7 @@ const defaultContext: LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType>(defaultContext);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>('de');
 
   useEffect(() => {
     const saved = localStorage.getItem('immovia-language') as Language;
