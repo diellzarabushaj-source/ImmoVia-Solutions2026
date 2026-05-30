@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
 import { useCreateCompany } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import { CheckCircle2, User, Building2 } from "lucide-react";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function RegisterCompany() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [, setLocation] = useLocation();
   const [isSubmitted, setIsSubmitted] = useState(false);
   
@@ -84,16 +85,92 @@ export default function RegisterCompany() {
   ];
 
   if (isSubmitted) {
+    const subtext: Record<string, string> = {
+      sq: "Aplikimi juaj u pranua dhe është duke u shqyrtuar. Do t'ju kontaktojmë së shpejti.",
+      en: "Your application has been received and is under review. We will contact you shortly.",
+      de: "Ihre Bewerbung wurde erhalten und wird geprüft. Wir melden uns in Kürze bei Ihnen.",
+      fr: "Votre candidature a été reçue et est en cours d'examen. Nous vous contacterons prochainement.",
+    };
+    const nextStepsLabel: Record<string, string> = {
+      sq: "Hapat e Ardhshëm",
+      en: "Next Steps",
+      de: "Nächste Schritte",
+      fr: "Prochaines étapes",
+    };
+    const nextSteps: Record<string, string[]> = {
+      sq: [
+        "Ekipi ynë do ta shqyrtojë profilin tuaj brenda 48 orëve.",
+        "Pasi të miratohet, kompania juaj do të jetë e dukshme në drejtori.",
+        "Klientët mund t'ju kontaktojnë dhe mund të dërgoni oferta për projekte.",
+      ],
+      en: [
+        "Our team will review your profile within 48 hours.",
+        "Once approved, your company will be visible in the directory.",
+        "Clients can contact you and you can submit offers on projects.",
+      ],
+      de: [
+        "Unser Team prüft Ihr Profil innerhalb von 48 Stunden.",
+        "Nach Genehmigung wird Ihre Firma im Verzeichnis sichtbar sein.",
+        "Kunden können Sie kontaktieren und Sie können Angebote auf Projekte einreichen.",
+      ],
+      fr: [
+        "Notre équipe examinera votre profil dans les 48 heures.",
+        "Une fois approuvée, votre société sera visible dans l'annuaire.",
+        "Les clients pourront vous contacter et vous pourrez soumettre des offres sur des projets.",
+      ],
+    };
+    const steps = nextSteps[language] ?? nextSteps.de;
+
     return (
-      <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
-          <CheckCircle2 className="w-10 h-10" />
-        </div>
-        <h2 className="text-3xl font-serif font-bold mb-4">{t.companyForm.success}</h2>
-        <p className="text-muted-foreground mb-8 text-center max-w-md">
-          Your application has been received and is under review. We will contact you shortly.
-        </p>
-        <Button onClick={() => setLocation("/")}>{t.nav.home}</Button>
+      <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 16 }}
+          className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 shadow-sm"
+        >
+          <CheckCircle2 className="w-12 h-12" />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="text-center max-w-lg"
+        >
+          <h2 className="text-3xl font-serif font-bold mb-3">{t.companyForm.success}</h2>
+          <p className="text-muted-foreground text-sm mb-10">
+            {subtext[language] ?? subtext.de}
+          </p>
+
+          <div className="bg-card border border-border rounded-xl p-6 mb-8 text-left">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+              {nextStepsLabel[language] ?? nextStepsLabel.de}
+            </h3>
+            <div className="space-y-3">
+              {steps.map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    {i + 1}
+                  </div>
+                  <p className="text-sm text-foreground leading-relaxed">{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Button variant="outline" onClick={() => setLocation("/companies")}>
+              {language === "sq" && "Shiko Firmat"}
+              {language === "en" && "Browse Companies"}
+              {language === "de" && "Firmen entdecken"}
+              {language === "fr" && "Découvrir les entreprises"}
+            </Button>
+            <Button onClick={() => setLocation("/")}>
+              {t.nav.home}
+            </Button>
+          </div>
+        </motion.div>
       </div>
     );
   }
