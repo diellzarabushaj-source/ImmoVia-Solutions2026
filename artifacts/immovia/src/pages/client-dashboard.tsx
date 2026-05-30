@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useAuth, isProjectPoster, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import NotificationBell from "@/components/NotificationBell";
@@ -112,12 +112,27 @@ export default function ClientDashboard() {
   const { user, loading } = useAuth();
   const { t, language } = useLanguage();
   const [, setLocation] = useLocation();
+  const search = useSearch();
 
   const l = t.customer;
 
   // ── State ─────────────────────────────────────────────────────────────────
 
-  const [activeSection, setActiveSection] = useState<Section>("uebersicht");
+  const VALID_POSTER_SECTIONS: Section[] = ["uebersicht","erstellen","projekte","bewerbungen","nachrichten","angebote","finden","favoriten","dateien","bewertungen","einstellungen"];
+  const [activeSection, setActiveSection] = useState<Section>(() => {
+    const tab = new URLSearchParams(search).get("tab") as Section | null;
+    return (tab && VALID_POSTER_SECTIONS.includes(tab)) ? tab : "uebersicht";
+  });
+
+  useEffect(() => {
+    const tab = new URLSearchParams(search).get("tab") as Section | null;
+    if (tab && VALID_POSTER_SECTIONS.includes(tab)) {
+      setActiveSection(tab);
+    } else if (!tab) {
+      setActiveSection("uebersicht");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
   const [projects, setProjects] = useState<ProviderProject[]>([]);
   const [offersByProject, setOffersByProject] = useState<Record<number, OfferWithProvider[]>>({});
   const [favorites, setFavorites] = useState<Favorite[]>([]);

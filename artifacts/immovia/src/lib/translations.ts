@@ -294,6 +294,10 @@ export const translations = {
       companyProfile: 'Profili i Kompanisë',
       plan: 'Plani',
       settings: 'Cilësimet',
+      postProject: 'Posto Projekt',
+      myProjects: 'Projektet e Mia',
+      offers: 'Ofertat',
+      savedProviders: 'Ofruesit e Ruajtur',
     },
     footer: {
       admin: 'Admin',
@@ -1358,6 +1362,10 @@ export const translations = {
       companyProfile: 'Company Profile',
       plan: 'Plan',
       settings: 'Settings',
+      postProject: 'Post Project',
+      myProjects: 'My Projects',
+      offers: 'Offers',
+      savedProviders: 'Saved Providers',
     },
     footer: {
       admin: 'Admin',
@@ -2422,6 +2430,10 @@ export const translations = {
       companyProfile: 'Unternehmensprofil',
       plan: 'Mein Plan',
       settings: 'Einstellungen',
+      postProject: 'Projekt einstellen',
+      myProjects: 'Meine Projekte',
+      offers: 'Angebote',
+      savedProviders: 'Gespeicherte Anbieter',
     },
     footer: {
       admin: 'Admin',
@@ -3486,6 +3498,10 @@ export const translations = {
       companyProfile: "Profil de l'entreprise",
       plan: 'Mon Plan',
       settings: 'Paramètres',
+      postProject: 'Déposer un projet',
+      myProjects: 'Mes Projets',
+      offers: 'Offres',
+      savedProviders: 'Prestataires sauvegardés',
     },
     footer: {
       admin: 'Admin',
