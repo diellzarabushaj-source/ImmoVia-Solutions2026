@@ -160,7 +160,7 @@ overrides:
   esbuild: "0.27.3"
   # Security: uuid <11.1.1 has a buffer bounds-check bug in v3/v5/v6 when buf is provided (GHSA-w5hq-g745-h8pq)
   # Transitive via @google-cloud/storage (both uuid@8.3.2 and uuid@9.0.1)
-  uuid: ">=11.1.1"
+  uuid: "^11.1.1"
   # Security: qs >=6.11.1 <=6.15.1 crashes with TypeError in stringify when encodeValuesOnly is set (GHSA-q8mj-m7cp-5q26)
   # Transitive via express@5
   qs: ">=6.15.2"
