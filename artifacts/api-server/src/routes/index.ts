@@ -24,6 +24,8 @@ import adminSettingsRouter from "./admin-settings";
 import searchRouter from "./search";
 import blogRouter from "./blog";
 import seedDemoRouter from "./seed-demo";
+import providerProfileRouter from "./provider-profile";
+import conversationsRouter from "./conversations";
 
 const router: IRouter = Router();
 
@@ -52,5 +54,7 @@ router.use(adminReportsRouter);
 router.use(adminSettingsRouter);
 router.use(searchRouter);
 router.use(blogRouter);
+router.use(providerProfileRouter);
+router.use(conversationsRouter);
 
 export default router;

@@ -71,6 +71,8 @@ import {
   Award,
 } from "lucide-react";
 import MessageThread from "@/components/MessageThread";
+import { MessagingSystem } from "@/components/MessagingSystem";
+import { PhotoUploader } from "@/components/photo-uploader";
 import { format } from "date-fns";
 
 function formatCHF(cents: number): string {
@@ -120,6 +122,20 @@ const L: Record<string, Record<string, string>> = {
     settingsSoon: "Cilësimet e llogarisë vijnë së shpejti.",
     profileSoon: "Redaktimi i detajuar i profilit vjen së shpejti.",
     planAppsPerMonth: "aplikime / muaj",
+    navMessages: "Mesazhet",
+    profilePhoto: "Foto e profilit",
+    profileBio: "Përshkrim",
+    profilePhone: "Telefon",
+    profileCity: "Qyteti",
+    profileWebsite: "Faqja web",
+    profileHourlyRate: "Tarifa orare (€)",
+    profileSave: "Ruaj ndryshimet",
+    profileSaved: "Profili u ruajt me sukses.",
+    profileError: "Gabim gjatë ruajtjes.",
+    portfolioTitle: "Galeria e portofolit",
+    portfolioAdd: "Shto foto",
+    portfolioHint: "Shto fotografi nga projektet tuaja (max 10 MB · JPG, PNG)",
+    portfolioEmpty: "Ende asnjë foto në portofolio.",
     invoicesTitle: "Rechnungen",
     noPayments: "Asnjë pagesë ende.",
     noInvoices: "Asnjë faturë ende.",
@@ -169,6 +185,20 @@ const L: Record<string, Record<string, string>> = {
     settingsSoon: "Account settings coming soon.",
     profileSoon: "Detailed profile editing coming soon.",
     planAppsPerMonth: "applications / month",
+    navMessages: "Messages",
+    profilePhoto: "Profile photo",
+    profileBio: "Description",
+    profilePhone: "Phone",
+    profileCity: "City",
+    profileWebsite: "Website",
+    profileHourlyRate: "Hourly rate (€)",
+    profileSave: "Save changes",
+    profileSaved: "Profile saved successfully.",
+    profileError: "Error saving profile.",
+    portfolioTitle: "Portfolio gallery",
+    portfolioAdd: "Add photo",
+    portfolioHint: "Add photos from your projects (max 10 MB · JPG, PNG)",
+    portfolioEmpty: "No portfolio photos yet.",
     invoicesTitle: "Invoices",
     noPayments: "No payments yet.",
     noInvoices: "No invoices yet.",
@@ -218,6 +248,20 @@ const L: Record<string, Record<string, string>> = {
     settingsSoon: "Kontoeinstellungen folgen bald.",
     profileSoon: "Detaillierte Profilbearbeitung folgt bald.",
     planAppsPerMonth: "Bewerbungen / Monat",
+    navMessages: "Nachrichten",
+    profilePhoto: "Profilfoto",
+    profileBio: "Beschreibung",
+    profilePhone: "Telefon",
+    profileCity: "Stadt",
+    profileWebsite: "Website",
+    profileHourlyRate: "Stundensatz (€)",
+    profileSave: "Änderungen speichern",
+    profileSaved: "Profil erfolgreich gespeichert.",
+    profileError: "Fehler beim Speichern.",
+    portfolioTitle: "Portfolio-Galerie",
+    portfolioAdd: "Foto hinzufügen",
+    portfolioHint: "Fügen Sie Fotos Ihrer Projekte hinzu (max. 10 MB · JPG, PNG)",
+    portfolioEmpty: "Noch keine Portfolio-Fotos.",
     invoicesTitle: "Rechnungen",
     noPayments: "Noch keine Zahlungen.",
     noInvoices: "Noch keine Rechnungen.",
@@ -267,6 +311,20 @@ const L: Record<string, Record<string, string>> = {
     settingsSoon: "Paramètres du compte bientôt disponibles.",
     profileSoon: "Modification détaillée du profil bientôt disponible.",
     planAppsPerMonth: "candidatures / mois",
+    navMessages: "Messages",
+    profilePhoto: "Photo de profil",
+    profileBio: "Description",
+    profilePhone: "Téléphone",
+    profileCity: "Ville",
+    profileWebsite: "Site web",
+    profileHourlyRate: "Taux horaire (€)",
+    profileSave: "Enregistrer les modifications",
+    profileSaved: "Profil enregistré avec succès.",
+    profileError: "Erreur lors de l'enregistrement.",
+    portfolioTitle: "Galerie portfolio",
+    portfolioAdd: "Ajouter une photo",
+    portfolioHint: "Ajoutez des photos de vos projets (max 10 Mo · JPG, PNG)",
+    portfolioEmpty: "Pas encore de photos de portfolio.",
     invoicesTitle: "Factures",
     noPayments: "Pas encore de paiements.",
     noInvoices: "Pas encore de factures.",
@@ -280,6 +338,7 @@ const L: Record<string, Record<string, string>> = {
 type Section =
   | "uebersicht"
   | "profil"
+  | "nachrichten"
   | "projekte"
   | "bewerbungen"
   | "plan"
@@ -319,6 +378,15 @@ export default function ProviderDashboard() {
   const [galleryProject, setGalleryProject] = useState<ProviderProject | null>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
   const [activeSection, setActiveSection] = useState<Section>("uebersicht");
+
+  // Profile editing state
+  const [profileForm, setProfileForm] = useState({ bio: "", phone: "", city: "", website: "", hourlyRate: "", profilePhoto: "" });
+  const [portfolioItems, setPortfolioItems] = useState<Array<{ id: number; imageUrl: string }>>([]);
+  const [portfolioObjectPaths, setPortfolioObjectPaths] = useState<string[]>([]);
+  const [profilePhotoPath, setProfilePhotoPath] = useState<string>("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const toggleThread = (offerId: number) => {
     setOpenThreads((prev) => {
@@ -361,6 +429,85 @@ export default function ProviderDashboard() {
   useEffect(() => {
     if (user && isServiceProvider(user)) void refreshAll();
   }, [user]);
+
+  const loadProfile = async () => {
+    if (profileLoaded) return;
+    try {
+      const r = await fetch("/api/provider/profile");
+      if (!r.ok) return;
+      const d = await r.json() as {
+        user: { bio?: string | null; phone?: string | null; city?: string | null; website?: string | null; avatarUrl?: string | null };
+        company?: { hourlyRate?: number | null; profilePhoto?: string | null; galleryPhotos?: string[] | null } | null;
+        portfolio: Array<{ id: number; imageUrl: string }>;
+      };
+      setProfileForm({
+        bio: d.user.bio ?? "",
+        phone: d.user.phone ?? "",
+        city: d.user.city ?? "",
+        website: d.user.website ?? "",
+        hourlyRate: d.company?.hourlyRate != null ? String(d.company.hourlyRate) : "",
+        profilePhoto: d.company?.profilePhoto ?? "",
+      });
+      const gallery = d.company?.galleryPhotos ?? [];
+      setPortfolioItems(gallery.map((url, i) => ({ id: i + 1, imageUrl: url })));
+      setProfileLoaded(true);
+    } catch { /* ignore */ }
+  };
+
+  const saveProfile = async () => {
+    setProfileSaving(true);
+    setProfileMsg(null);
+    try {
+      const r = await fetch("/api/provider/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bio: profileForm.bio,
+          phone: profileForm.phone,
+          city: profileForm.city,
+          website: profileForm.website,
+          hourlyRate: profileForm.hourlyRate ? Number(profileForm.hourlyRate) : undefined,
+          profilePhoto: profileForm.profilePhoto || undefined,
+          description: profileForm.bio,
+        }),
+      });
+      if (!r.ok) throw new Error();
+      setProfileMsg({ type: "ok", text: l.profileSaved });
+      setProfileLoaded(false);
+    } catch {
+      setProfileMsg({ type: "err", text: l.profileError });
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handlePortfolioChange = async (paths: string[]) => {
+    const newPaths = paths.filter(p => !portfolioObjectPaths.includes(p));
+    setPortfolioObjectPaths(paths);
+    if (newPaths.length === 0) return;
+    const newItems = newPaths.map((p, i) => ({ id: Date.now() + i, imageUrl: `/api/storage${p}` }));
+    const next = [...portfolioItems, ...newItems];
+    setPortfolioItems(next);
+    try {
+      await fetch("/api/provider/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ galleryPhotos: next.map(p => p.imageUrl) }),
+      });
+    } catch { /* ignore */ }
+  };
+
+  const removePortfolioPhoto = async (id: number) => {
+    const next = portfolioItems.filter(p => p.id !== id);
+    setPortfolioItems(next);
+    try {
+      await fetch("/api/provider/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ galleryPhotos: next.map(p => p.imageUrl) }),
+      });
+    } catch { /* ignore */ }
+  };
 
   if (loading || !user || !isServiceProvider(user)) {
     return (
@@ -424,6 +571,7 @@ export default function ProviderDashboard() {
   const navItems: Array<{ id: Section; label: string; icon: React.ReactNode; badge?: number }> = [
     { id: "uebersicht", label: l.navOverview, icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: "profil", label: l.navProfile, icon: <User className="w-4 h-4" /> },
+    { id: "nachrichten", label: l.navMessages, icon: <MessageSquare className="w-4 h-4" /> },
     { id: "projekte", label: l.navProjects, icon: <Search className="w-4 h-4" />, badge: projects.length || undefined },
     { id: "bewerbungen", label: l.navApplications, icon: <FileText className="w-4 h-4" />, badge: offers.length || undefined },
     { id: "plan", label: l.navPlan, icon: <CreditCard className="w-4 h-4" /> },
@@ -650,17 +798,150 @@ export default function ProviderDashboard() {
           )}
 
           {/* ── MEIN ANBIETERPROFIL ── */}
-          {activeSection === "profil" && (
+          {activeSection === "profil" && (() => {
+            if (!profileLoaded) { void loadProfile(); }
+            return (
             <div>
               <h2 className="text-xl font-serif font-bold mb-6">{l.navProfile}</h2>
-              <Card className="p-8 text-center text-muted-foreground">
-                <User className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
-                <p className="font-medium mb-1">{user.fullName}</p>
-                <p className="text-sm mb-4">{user.email}</p>
-                <p className="text-sm">{l.profileSoon}</p>
+
+              {/* Profile photo */}
+              <Card className="p-6 mb-4">
+                <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                  <User className="w-4 h-4 text-primary" />
+                  {l.profilePhoto}
+                </h3>
+                <div className="flex items-start gap-5">
+                  <div className="w-24 h-24 rounded-2xl bg-muted border border-border overflow-hidden flex-shrink-0 flex items-center justify-center">
+                    {profileForm.profilePhoto ? (
+                      <img src={profileForm.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-10 h-10 text-muted-foreground/40" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <PhotoUploader
+                      label=""
+                      hint={l.portfolioHint}
+                      value={profilePhotoPath ? [profilePhotoPath] : []}
+                      onChange={(paths) => {
+                        if (paths[0]) {
+                          setProfilePhotoPath(paths[0]);
+                          setProfileForm(prev => ({ ...prev, profilePhoto: `/api/storage${paths[0]}` }));
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Basic info form */}
+              <Card className="p-6 mb-4">
+                <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  {l.navProfile}
+                </h3>
+                <div className="grid gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs mb-1 block">{l.profileCity}</Label>
+                      <Input
+                        value={profileForm.city}
+                        onChange={e => setProfileForm(prev => ({ ...prev, city: e.target.value }))}
+                        placeholder="Zürich"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1 block">{l.profilePhone}</Label>
+                      <Input
+                        value={profileForm.phone}
+                        onChange={e => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="+41 79 000 00 00"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs mb-1 block">{l.profileWebsite}</Label>
+                      <Input
+                        value={profileForm.website}
+                        onChange={e => setProfileForm(prev => ({ ...prev, website: e.target.value }))}
+                        placeholder="https://meine-firma.de"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1 block">{l.profileHourlyRate}</Label>
+                      <Input
+                        type="number"
+                        value={profileForm.hourlyRate}
+                        onChange={e => setProfileForm(prev => ({ ...prev, hourlyRate: e.target.value }))}
+                        placeholder="75"
+                        min={0}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs mb-1 block">{l.profileBio}</Label>
+                    <Textarea
+                      value={profileForm.bio}
+                      onChange={e => setProfileForm(prev => ({ ...prev, bio: e.target.value }))}
+                      rows={4}
+                      placeholder={t.provider.offerMessagePlaceholder}
+                      maxLength={1000}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1 text-right">{profileForm.bio.length}/1000</p>
+                  </div>
+                </div>
+                {profileMsg && (
+                  <div className={`mt-3 p-2.5 rounded-lg text-sm ${profileMsg.type === "ok" ? "bg-green-50 text-green-800 border border-green-200" : "bg-destructive/10 text-destructive"}`}>
+                    {profileMsg.text}
+                  </div>
+                )}
+                <div className="mt-4 flex justify-end">
+                  <Button onClick={saveProfile} disabled={profileSaving}>
+                    {profileSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    {l.profileSave}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Portfolio gallery */}
+              <Card className="p-6">
+                <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">
+                  <Images className="w-4 h-4 text-primary" />
+                  {l.portfolioTitle}
+                </h3>
+                <p className="text-xs text-muted-foreground mb-4">{l.portfolioHint}</p>
+                {portfolioItems.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                    {portfolioItems.map(item => (
+                      <div key={item.id} className="relative group aspect-video rounded-xl overflow-hidden border border-border">
+                        <img src={item.imageUrl} alt="Portfolio" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => removePortfolioPhoto(item.id)}
+                          className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {portfolioItems.length === 0 && (
+                  <div className="text-sm text-muted-foreground text-center py-6 bg-muted/30 rounded-xl mb-4">
+                    {l.portfolioEmpty}
+                  </div>
+                )}
+                <PhotoUploader
+                  label={l.portfolioAdd}
+                  hint=""
+                  multiple
+                  value={portfolioObjectPaths}
+                  onChange={handlePortfolioChange}
+                />
               </Card>
             </div>
-          )}
+            );
+          })()}
 
           {/* ── PROJEKTE FINDEN ── */}
           {activeSection === "projekte" && (
@@ -1207,6 +1488,14 @@ export default function ProviderDashboard() {
                   </TableBody>
                 </Table>
               </Card>
+            </div>
+          )}
+
+          {/* ── NACHRICHTEN ── */}
+          {activeSection === "nachrichten" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-6">{l.navMessages}</h2>
+              <MessagingSystem myUserId={user.id} />
             </div>
           )}
 

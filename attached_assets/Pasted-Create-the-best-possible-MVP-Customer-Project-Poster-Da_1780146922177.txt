@@ -1,0 +1,1002 @@
+Create the best possible MVP Customer / Project Poster Dashboard for ImmoVia365.
+
+ImmoVia365 is a Swiss marketplace that connects people who need renovation, construction, home improvement or property services with professional Service Providers in Switzerland.
+
+This dashboard is ONLY for users with the role “Customer” or “Project Poster”.
+
+Service Providers must have a completely separate dashboard. Customers must never see provider pricing plans, provider subscription options, provider billing, provider upgrade buttons, provider ranking controls or provider application limits.
+
+The dashboard must be simple, professional, trustworthy and very easy to use.
+
+Default language:
+German
+
+Supported languages:
+Deutsch
+English
+Shqip
+Français
+
+All visible UI text must be translatable. German is the default language.
+
+Design style:
+Clean Swiss marketplace design.
+White or very light background.
+Dark navy typography.
+Bright blue accent color.
+Rounded cards.
+Clear buttons.
+Simple icons.
+Mobile responsive.
+Professional but not complicated.
+
+MAIN GOAL
+
+The Customer Dashboard should help a customer do these things easily:
+
+1. Create a project for free.
+2. Upload photos and files.
+3. Receive applications from Service Providers.
+4. Compare providers.
+5. Send messages to Service Providers.
+6. Receive messages from Service Providers.
+7. Reply to provider messages.
+8. Receive photos, PDFs and documents from providers.
+9. Send photos, PDFs and documents to providers.
+10. Receive offers.
+11. Accept or decline offers.
+12. Save favourite providers.
+13. Close or archive projects.
+14. Leave a review after project completion.
+
+The main customer flow should be:
+
+Post project → receive applications → receive messages → reply to providers → compare offers → choose provider.
+
+CUSTOMER DASHBOARD NAVIGATION
+
+Use this navigation:
+
+1. Übersicht
+2. Projekt erstellen
+3. Meine Projekte
+4. Bewerbungen
+5. Nachrichten
+6. Angebote
+7. Anbieter finden
+8. Favoriten
+9. Dateien
+10. Bewertungen
+11. Einstellungen
+
+Keep the navigation clean and not overloaded.
+
+SECTION 1: ÜBERSICHT
+
+The overview should feel like a simple control center.
+
+Show summary cards:
+
+- Aktive Projekte
+- Neue Bewerbungen
+- Neue Nachrichten
+- Erhaltene Angebote
+- Abgeschlossene Projekte
+- Favorisierte Anbieter
+
+Example:
+
+Aktive Projekte: 3
+Neue Bewerbungen: 7
+Neue Nachrichten: 2
+Erhaltene Angebote: 4
+Abgeschlossene Projekte: 1
+Favoriten: 5
+
+Show a welcome text:
+
+“Willkommen in Ihrem Projekt-Dashboard. Erstellen Sie Projekte, vergleichen Sie Anbieter und verwalten Sie Ihre Anfragen an einem Ort.”
+
+Primary button:
+Neues Projekt erstellen
+
+Secondary button:
+Anbieter finden
+
+Also show a small “Next step” card.
+
+If the customer has no project:
+
+“Starten Sie Ihr erstes Projekt und erhalten Sie passende Angebote von Service Providern.”
+
+Button:
+Projekt kostenlos starten
+
+If the customer has active projects:
+
+“Sie haben neue Bewerbungen und Nachrichten zu Ihren Projekten.”
+
+Button:
+Bewerbungen ansehen
+
+If the customer has unread messages:
+
+“Sie haben neue Nachrichten von Service Providern.”
+
+Button:
+Nachrichten öffnen
+
+SECTION 2: PROJEKT ERSTELLEN
+
+The project creation form must be very simple and user-friendly.
+
+Use a step-by-step form, not one huge form.
+
+Step 1: Was möchten Sie erledigen lassen?
+
+Fields:
+- Hauptkategorie
+- Unterkategorie
+- Sonstiges option
+
+Main categories:
+
+Renovierung & Umbau
+Neubau & Bauarbeiten
+Innenarchitektur & Innenausbau
+Fassadenarbeiten
+Sanitär & Badezimmer
+Elektroinstallation & Smart Home
+Maler & Gipser
+Boden & Platten
+Heizung, Klima & Energie
+Küche & Schreinerarbeiten
+Garten & Aussenbereich
+Reinigung & Umzug
+Dach & Spenglerei
+Immobilienservice
+Andere Dienstleistungen
+
+Every category must include:
+Sonstiges
+
+Step 2: Projektdetails
+
+Fields:
+- Projekttitel
+- Beschreibung
+- Stadt
+- Adresse optional
+- Projektgrösse
+
+Project size options:
+Klein
+Mittel
+Gross
+Noch unsicher
+
+Step 3: Budget & Zeitrahmen
+
+Budget options:
+Unter CHF 2’000
+CHF 2’000 – 5’000
+CHF 5’000 – 10’000
+CHF 10’000 – 25’000
+CHF 25’000 – 50’000
+CHF 50’000 – 100’000
+Über CHF 100’000
+Noch offen
+
+Timeline options:
+So schnell wie möglich
+Innerhalb von 1–2 Wochen
+Innerhalb von 1 Monat
+1–3 Monate
+3–6 Monate
+Flexibel
+
+Step 4: Fotos & Dateien
+
+Allow uploads:
+JPG
+JPEG
+PNG
+WEBP
+PDF
+DOC
+DOCX
+XLS
+XLSX
+
+Labels:
+Fotos hochladen
+Datei anhängen
+PDF hochladen
+Dokument hochladen
+
+Limit:
+Maximum 10 files per project
+Maximum 10 MB per file
+
+Step 5: Überprüfen & veröffentlichen
+
+Show project preview before publishing.
+
+Button:
+Projekt kostenlos veröffentlichen
+
+Helper text:
+“Veröffentlichen Sie Ihr Projekt kostenlos und erhalten Sie Bewerbungen und Angebote von passenden Service Providern.”
+
+Success message:
+“Ihr Projekt wurde erfolgreich veröffentlicht.”
+
+After publishing:
+Redirect to project detail page.
+
+SECTION 3: MEINE PROJEKTE
+
+Show all projects created by the customer.
+
+Each project card should show:
+
+- Project title
+- Category
+- Subcategory
+- City
+- Budget range
+- Timeline
+- Project size
+- Project status
+- Posted date
+- Number of applications
+- Number of offers
+- Number of unread messages
+- Last activity
+
+Buttons:
+Projekt ansehen
+Projekt bearbeiten
+Bewerbungen ansehen
+Nachrichten öffnen
+Projekt archivieren
+
+Project statuses:
+Entwurf
+Offen
+In Besprechung
+Angebot erhalten
+Anbieter ausgewählt
+Abgeschlossen
+Archiviert
+
+The project detail page should show:
+
+- Project title
+- Category
+- Subcategory
+- City
+- Budget
+- Timeline
+- Project size
+- Description
+- Photos and files
+- Status
+- Applications received
+- Offers received
+- Conversations linked to the project
+
+Buttons:
+Projekt bearbeiten
+Bewerbungen ansehen
+Nachrichten öffnen
+Projekt abschliessen
+Projekt archivieren
+
+SECTION 4: BEWERBUNGEN
+
+This section shows all applications received from Service Providers.
+
+Application card should show:
+
+- Provider name
+- Provider profile picture or logo
+- Provider badge
+- Provider city
+- Provider category
+- Short provider message
+- Estimated price if included
+- Availability if included
+- Attachments if included
+- Application date
+- Application status
+- Rating if available
+- Portfolio preview
+
+Provider badges:
+Basic Anbieter
+Aktiver Anbieter
+Verifizierter Anbieter
+Top Anbieter
+Founding Anbieter
+
+Buttons:
+Anbieterprofil ansehen
+Nachricht senden
+Angebot anfordern
+Bewerbung ablehnen
+
+Application statuses:
+Neu
+Gelesen
+In Besprechung
+Angebot angefordert
+Angebot erhalten
+Angenommen
+Abgelehnt
+Archiviert
+
+Important:
+The customer should be able to compare applications easily.
+
+Add a comparison view.
+
+Button:
+Vergleichen
+
+Comparison table should show:
+
+- Provider
+- Badge
+- Rating
+- City
+- Estimated price
+- Availability
+- Portfolio
+- Status
+- Message button
+
+SECTION 5: NACHRICHTEN
+
+Create an Upwork-style project-based messaging system.
+
+This is not a social messenger.
+
+Messages must be connected to:
+
+- A project
+- A provider application
+- A customer inquiry
+- An offer discussion
+
+Customers / Project Posters must be able to both receive messages and send messages.
+
+The customer should be able to:
+
+- Receive messages from Service Providers
+- Send messages to Service Providers
+- Reply to applications
+- Start a message from a provider profile
+- Start a message from a provider card
+- Start a message from an application card
+- Start a message from an offer card
+- Send photos and files inside messages
+- Receive photos and files from Service Providers
+- View all conversations in the “Nachrichten” section
+
+CUSTOMER MESSAGE OPTIONS
+
+Show “Nachricht senden” directly on:
+
+1. Provider card
+2. Provider profile page
+3. Application card
+4. Offer card
+5. Project detail page
+6. Conversation page
+
+The customer can send a message by clicking:
+
+Nachricht senden
+
+When the customer clicks “Nachricht senden”, open a message modal.
+
+Message modal fields:
+- Projekt auswählen optional
+- Nachricht
+- Datei anhängen optional
+
+Placeholder:
+“Beschreiben Sie kurz, wobei Sie Unterstützung benötigen.”
+
+Button:
+Nachricht senden
+
+Success message:
+“Nachricht erfolgreich gesendet.”
+
+CUSTOMER RECEIVING MESSAGES
+
+Customers should receive messages from Service Providers when:
+
+1. A Service Provider applies to their project.
+2. A Service Provider replies in an existing conversation.
+3. A Service Provider sends an offer.
+4. A Service Provider sends a file or photo.
+5. A Service Provider answers a customer inquiry.
+
+When a new message arrives, show a notification:
+
+Neue Nachricht erhalten
+
+Also show unread message count in:
+
+- Dashboard overview
+- Nachrichten section
+- Project card
+- Conversation list
+
+CUSTOMER SENDING MESSAGES
+
+Customers can send messages to Service Providers in these cases:
+
+1. From provider profile:
+Customer clicks “Nachricht senden” and sends an inquiry.
+
+2. From provider card:
+Customer clicks “Nachricht senden”, selects a project or sends general inquiry.
+
+3. From application card:
+Customer clicks “Nachricht senden” to reply to a provider application.
+
+4. From offer card:
+Customer clicks “Rückfrage stellen” to ask questions about the offer.
+
+5. From project conversation:
+Customer continues discussion with the provider.
+
+MESSAGE LIST FOR CUSTOMER
+
+In the Customer Dashboard, the “Nachrichten” section should show all conversations.
+
+Each conversation item should show:
+
+- Project title
+- Provider name
+- Provider badge
+- Last message preview
+- Last message time
+- Unread count
+- Conversation status
+
+Button:
+Nachricht öffnen
+
+Conversation statuses:
+Neue Anfrage
+Bewerbung gesendet
+In Besprechung
+Angebot gesendet
+Angebot angenommen
+Abgelehnt
+Abgeschlossen
+Archiviert
+
+CONVERSATION VIEW FOR CUSTOMER
+
+The customer conversation page should show:
+
+- Project title
+- Provider name
+- Provider badge
+- Provider city
+- Project budget
+- Conversation status
+- Message history
+- Received messages
+- Sent messages
+- Attachments
+- Offer cards
+- Message input
+
+Message input should include:
+
+- Nachricht schreiben
+- Datei anhängen
+- Nachricht senden
+
+Allowed attachments:
+JPG
+JPEG
+PNG
+WEBP
+PDF
+DOC
+DOCX
+XLS
+XLSX
+
+Limits:
+Maximum 5 files per message
+Maximum 10 MB per file
+
+German labels:
+Nachrichten
+Nachricht öffnen
+Nachricht schreiben
+Nachricht senden
+Nachricht erhalten
+Datei anhängen
+Foto hochladen
+PDF hochladen
+Dokument hochladen
+Anhang herunterladen
+Datei entfernen
+Unterhaltung melden
+
+Soft safety note:
+“Hinweis: Für Ihre Sicherheit empfehlen wir, wichtige Absprachen und Angebote über ImmoVia365 festzuhalten.”
+
+SECTION 6: ANGEBOTE
+
+This section shows offers received from Service Providers.
+
+Offer card should show:
+
+- Offer title
+- Provider name
+- Provider badge
+- Project title
+- Estimated price
+- Price type
+- Estimated start date
+- Estimated duration
+- Description
+- Attachments
+- Offer status
+- Sent date
+
+Price type options:
+Fixpreis
+Stundenbasis
+Nach Besichtigung
+
+Offer statuses:
+Neu
+In Prüfung
+Angenommen
+Abgelehnt
+Archiviert
+
+Customer actions:
+Angebot ansehen
+Anbieterprofil ansehen
+Rückfrage stellen
+Angebot annehmen
+Angebot ablehnen
+
+Important:
+For MVP, accepting an offer does not process payment.
+It only updates the offer status and project/conversation status.
+
+Accepted offer message:
+“Das Angebot wurde angenommen. Bitte klären Sie die weiteren Details direkt mit dem Anbieter.”
+
+Declined offer message:
+“Das Angebot wurde abgelehnt.”
+
+SECTION 7: ANBIETER FINDEN
+
+Customers can browse Service Provider profiles.
+
+Provider card should show:
+
+- Profile picture or logo
+- Provider name
+- Type: Unternehmen or Einzelanbieter
+- City
+- Service categories
+- Badge
+- Short description
+- Portfolio preview
+- Rating if available
+
+Buttons:
+Profil ansehen
+Nachricht senden
+Favorit speichern
+
+Filters:
+Kategorie
+Unterkategorie
+Stadt
+Bewertung
+Anbieter-Typ
+Neueste
+Top Anbieter
+
+Ranking logic:
+First filter by category and city/service area.
+
+After relevance filtering, show providers by visibility:
+
+1. Premium / Top Anbieter
+2. Professional / Verifizierter Anbieter
+3. Starter / Aktiver Anbieter
+4. Free / Basic Anbieter
+
+Important:
+Free providers are visible but appear lower than paid providers.
+Do not show irrelevant providers higher just because they have a paid plan.
+
+SECTION 8: FAVORITEN
+
+Customers can save providers as favourites.
+
+Favourite provider card should show:
+
+- Provider name
+- Badge
+- City
+- Category
+- Rating
+
+Buttons:
+Profil ansehen
+Nachricht senden
+Entfernen
+
+Labels:
+Favoriten
+Gespeicherte Anbieter
+Aus Favoriten entfernen
+
+SECTION 9: DATEIEN
+
+This section shows all files uploaded by the customer across projects and conversations.
+
+File list should show:
+
+- File name
+- File type
+- Related project
+- Uploaded date
+- Download button
+- Delete option if allowed
+
+Labels:
+Dateien
+Hochgeladene Dateien
+Anhang herunterladen
+Datei löschen
+
+SECTION 10: BEWERTUNGEN
+
+Customers can leave a review after a project is completed.
+
+Review form:
+
+- Provider auswählen
+- Projekt auswählen
+- Bewertung 1–5 Sterne
+- Kommentar
+
+Button:
+Bewertung absenden
+
+Labels:
+Bewertung schreiben
+Anbieter bewerten
+Kommentar
+Bewertung absenden
+
+Review should be connected to:
+
+- Customer
+- Provider
+- Project
+
+SECTION 11: EINSTELLUNGEN
+
+Customer can manage:
+
+- Account settings
+- Name
+- Email address
+- Password
+- Language settings
+- Notification settings
+- Privacy settings
+- Delete account request
+
+Language options:
+Deutsch
+English
+Shqip
+Français
+
+DIRECT MESSAGE BUTTON
+
+Show “Nachricht senden” directly on:
+
+- Provider card
+- Provider profile page
+- Application card
+- Offer card
+- Project detail page
+- Dashboard message section
+
+When clicked:
+
+- Open message modal
+- Ask user to select an existing project or send general inquiry
+- Allow text, photos and files
+- Create conversation
+- Notify the provider
+
+Message modal fields:
+
+- Projekt auswählen optional
+- Nachricht
+- Datei anhängen optional
+
+Placeholder:
+
+“Beschreiben Sie kurz, wobei Sie Unterstützung benötigen.”
+
+Button:
+
+Nachricht senden
+
+Success message:
+
+“Nachricht erfolgreich gesendet.”
+
+PUBLIC PROVIDER PROFILE VIEW FOR CUSTOMERS
+
+When customer opens a provider profile, show:
+
+- Cover image
+- Profile picture or logo
+- Provider name
+- Type: Unternehmen or Einzelanbieter
+- Badge
+- City
+- Service area
+- Categories
+- Subcategories
+- Short description
+- Full description
+- Services
+- Portfolio gallery
+- Price guidance if enabled
+- Reviews
+- Availability
+- Languages
+
+Buttons:
+
+Nachricht senden
+Anfrage senden
+Favorit speichern
+Profil teilen
+
+NOTIFICATIONS
+
+Create simple notifications for customers:
+
+Neue Bewerbung erhalten
+Neue Nachricht erhalten
+Anbieter hat Ihnen geschrieben
+Anbieter hat auf Ihre Nachricht geantwortet
+Neues Angebot erhalten
+Angebot wurde aktualisiert
+Projekt wurde erfolgreich veröffentlicht
+Projekt wurde abgeschlossen
+Neuer Anhang erhalten
+Bewerbung mit Nachricht erhalten
+
+ACCESS AND SECURITY RULES
+
+- Customer can only view their own projects.
+- Customer can only view conversations where they are a participant.
+- Customer can only view offers connected to their own projects.
+- Users cannot access projects, conversations or offers by guessing IDs.
+- Files must be validated by type and size.
+- Do not allow executable files.
+- Admin can view reported conversations only for support and moderation.
+- The messaging system should not expose private phone numbers or emails automatically.
+- Communication should stay inside ImmoVia365 unless the user chooses otherwise.
+
+DATABASE CONCEPTS
+
+Create these database concepts:
+
+customer_profiles:
+- id
+- user_id
+- full_name
+- email
+- phone optional
+- city optional
+- preferred_language
+- created_at
+- updated_at
+
+projects:
+- id
+- customer_id
+- title
+- main_category
+- subcategory
+- city
+- address_optional
+- budget_range
+- timeline
+- project_size
+- description
+- status
+- created_at
+- updated_at
+
+project_files:
+- id
+- project_id
+- file_url
+- file_name
+- file_type
+- file_size
+- created_at
+
+applications:
+- id
+- project_id
+- service_provider_id
+- customer_id
+- message
+- estimated_price
+- availability
+- status
+- created_at
+
+conversations:
+- id
+- type
+- project_id
+- customer_id
+- service_provider_id
+- application_id
+- offer_id
+- status
+- last_message_text
+- last_message_at
+- unread_count_customer
+- unread_count_provider
+- language_code
+- created_at
+- updated_at
+
+messages:
+- id
+- conversation_id
+- sender_id
+- sender_role
+- body
+- message_type
+- language_code
+- is_read
+- created_at
+
+message_attachments:
+- id
+- message_id
+- file_url
+- file_name
+- file_type
+- file_size
+- file_extension
+- created_at
+
+offers:
+- id
+- conversation_id
+- project_id
+- service_provider_id
+- customer_id
+- title
+- description
+- estimated_price
+- price_type
+- estimated_start_date
+- estimated_duration
+- status
+- created_at
+- updated_at
+
+favourite_providers:
+- id
+- customer_id
+- service_provider_id
+- created_at
+
+reviews:
+- id
+- project_id
+- customer_id
+- service_provider_id
+- rating
+- comment
+- created_at
+
+MVP FEATURES TO INCLUDE
+
+Include:
+
+- Customer Dashboard
+- Free project creation
+- Step-by-step project form
+- Project editing
+- Project photos and file uploads
+- My projects section
+- Applications received
+- Provider comparison
+- Customer can receive messages
+- Customer can send messages
+- Customer can reply to providers
+- Customer can send and receive photos/files
+- Offer management
+- Upwork-style messaging
+- Direct “Nachricht senden” button
+- Provider browsing
+- Provider profile view
+- Save favourite providers
+- Reviews after completed projects
+- Files section
+- Notifications
+- Multilingual UI labels
+
+DO NOT INCLUDE IN MVP
+
+Do not include:
+
+- Customer paid plans
+- Customer subscription
+- In-app payments
+- Escrow
+- Commission system
+- Advanced AI matching
+- Complex CRM
+- Group chat
+- Voice messages
+- Video calls
+- WhatsApp integration
+- AI auto replies
+
+FINAL CUSTOMER FLOW
+
+1. Customer registers.
+2. Customer enters Customer Dashboard.
+3. Customer creates a project for free using a step-by-step form.
+4. Project becomes visible to matching Service Providers.
+5. Service Providers apply or send messages.
+6. Customer receives applications and messages.
+7. Customer can reply to Service Providers.
+8. Customer can send messages directly from provider cards, provider profiles, applications, offers or conversations.
+9. Customer can send and receive photos, PDFs and documents.
+10. Customer compares provider profiles, badges, portfolio and reviews.
+11. Customer receives offers.
+12. Customer accepts or declines offers.
+13. Customer closes or archives the project.
+14. Customer can leave a review after project completion.
+
+FINAL GOAL
+
+The Customer Dashboard should feel simple, premium and trustworthy.
+
+The customer should never feel confused.
+
+The main goal is:
+
+Post project → receive applications → receive messages → reply to providers → compare offers → choose provider.
+
+Keep the MVP simple but make it feel like a professional Swiss marketplace.

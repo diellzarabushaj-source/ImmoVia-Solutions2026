@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   Search, MapPin, CalendarDays, Globe, Mail, Phone,
   Clock, FileText, User, Building2, SlidersHorizontal,
-  ArrowUpDown, X, ChevronDown, LocateFixed, Loader2, ArrowRight, Lock,
+  ArrowUpDown, X, ChevronDown, LocateFixed, Loader2, ArrowRight, Lock, MessageSquare,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
@@ -601,6 +601,15 @@ export default function Companies() {
                       >
                         <Phone className="h-3.5 w-3.5" />
                         {t.companies.call ?? "Call"}
+                      </button>
+                    )}
+                    {user && (
+                      <button
+                        onClick={e => { e.stopPropagation(); navigate(`/companies/${company.id}?msg=1`); }}
+                        className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
+                      >
+                        <MessageSquare className="h-3.5 w-3.5" />
+                        {t.publicProfile.sendMessage}
                       </button>
                     )}
                     <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
