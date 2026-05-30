@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { seedBilling, seedDemoProjects } from "./lib/seed";
+import { migrateLegacyKeys } from "./lib/migrate-legacy-keys";
 
 const rawPort = process.env["PORT"];
 
@@ -23,6 +24,7 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  void migrateLegacyKeys();
   void seedBilling();
   void seedDemoProjects();
 });

@@ -86,7 +86,7 @@ export interface Company {
   phone: string;
   serviceTypes: string[];
   /** Custom 'Other' service tags in format 'categoryKey|custom text' */
-  customServiceTags?: string[];
+  customServiceTags?: string[] | null;
   city: string;
   /** @nullable */
   description?: string | null;
@@ -123,7 +123,7 @@ export interface CompanyInput {
   /** @minItems 1 */
   serviceTypes: string[];
   /** Custom 'Other' service tags in format 'categoryKey|custom text' */
-  customServiceTags?: string[];
+  customServiceTags?: string[] | null;
   city: string;
   description?: string;
   website?: string;
