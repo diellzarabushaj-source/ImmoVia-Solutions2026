@@ -60,6 +60,7 @@ export function Navbar() {
     { href: "/projects", label: t.nav.browseProjects },
     { href: "/companies", label: t.nav.browseServiceProviders },
     { href: "/#how-it-works", label: t.nav.howItWorks },
+    { href: "/pricing", label: t.nav.pricing },
     { href: "/blog", label: t.nav.blog },
     { href: "/contact", label: t.nav.contact },
   ];
