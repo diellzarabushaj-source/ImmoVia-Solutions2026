@@ -9,7 +9,7 @@ const router: IRouter = Router();
 // PATCH /customer/projects/:id — customer can update title, description, status (archive)
 router.patch("/customer/projects/:id", requireAuth, async (req, res): Promise<void> => {
   const userId = req.userId!;
-  const projectId = parseInt(req.params.id, 10);
+  const projectId = parseInt(String(req.params.id), 10);
   if (isNaN(projectId)) { res.status(400).json({ error: "Invalid project id" }); return; }
 
   const [project] = await db
@@ -60,7 +60,7 @@ router.get("/customer/favorites", requireAuth, async (req, res): Promise<void> =
 // POST /customer/favorites/:companyId — add favorite
 router.post("/customer/favorites/:companyId", requireAuth, async (req, res): Promise<void> => {
   const userId = req.userId!;
-  const companyId = parseInt(req.params.companyId, 10);
+  const companyId = parseInt(String(req.params.companyId), 10);
   if (isNaN(companyId)) { res.status(400).json({ error: "Invalid company id" }); return; }
 
   const [company] = await db.select({ id: companiesTable.id }).from(companiesTable).where(eq(companiesTable.id, companyId));
@@ -77,7 +77,7 @@ router.post("/customer/favorites/:companyId", requireAuth, async (req, res): Pro
 // DELETE /customer/favorites/:companyId — remove favorite
 router.delete("/customer/favorites/:companyId", requireAuth, async (req, res): Promise<void> => {
   const userId = req.userId!;
-  const companyId = parseInt(req.params.companyId, 10);
+  const companyId = parseInt(String(req.params.companyId), 10);
   if (isNaN(companyId)) { res.status(400).json({ error: "Invalid company id" }); return; }
 
   await db.execute(sql`

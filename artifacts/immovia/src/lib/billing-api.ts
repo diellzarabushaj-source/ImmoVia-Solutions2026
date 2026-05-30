@@ -57,9 +57,12 @@ export interface ProviderProject {
   fullName: string;
   email: string;
   phone: string;
+  title: string | null;
   projectType: string;
+  subcategory: string | null;
   description: string;
   city: string;
+  address: string | null;
   budget: string | null;
   timeline: string | null;
   size: string;
@@ -67,6 +70,7 @@ export interface ProviderProject {
   createdAt: string;
   ownerUserId: number | null;
   photos: string[];
+  files: string[];
 }
 
 export interface OfferWithProvider {

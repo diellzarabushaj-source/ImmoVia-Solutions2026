@@ -26,7 +26,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Hammer, Building2, Sofa, TreePine, Wrench, CheckCircle2, Home as HomeIcon, Crown, Sparkles, Layers } from "lucide-react";
+import { Hammer, Building2, Sofa, TreePine, Wrench, CheckCircle2, Home as HomeIcon, Crown, Sparkles, Layers, Zap, Paintbrush, FlameKindling, ChefHat, Leaf, Star, SquareStack, HelpCircle } from "lucide-react";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function SubmitProject() {
@@ -113,11 +113,21 @@ export default function SubmitProject() {
   };
 
   const projectTypes = [
-    { id: "renovation", icon: Hammer, label: t.offers.renovation },
-    { id: "construction", icon: Building2, label: t.offers.construction },
-    { id: "interior", icon: Sofa, label: t.offers.interior },
-    { id: "exterior", icon: TreePine, label: t.offers.exterior },
-    { id: "other", icon: Wrench, label: t.offers.other },
+    { id: "cat_renovation", icon: Hammer, label: t.customer.cat_renovation },
+    { id: "cat_construction", icon: Building2, label: t.customer.cat_construction },
+    { id: "cat_interior", icon: Sofa, label: t.customer.cat_interior },
+    { id: "cat_facade", icon: Layers, label: t.customer.cat_facade },
+    { id: "cat_plumbing", icon: Wrench, label: t.customer.cat_plumbing },
+    { id: "cat_electrical", icon: Zap, label: t.customer.cat_electrical },
+    { id: "cat_painting", icon: Paintbrush, label: t.customer.cat_painting },
+    { id: "cat_flooring", icon: SquareStack, label: t.customer.cat_flooring },
+    { id: "cat_heating", icon: FlameKindling, label: t.customer.cat_heating },
+    { id: "cat_kitchen", icon: ChefHat, label: t.customer.cat_kitchen },
+    { id: "cat_garden", icon: TreePine, label: t.customer.cat_garden },
+    { id: "cat_cleaning", icon: Sparkles, label: t.customer.cat_cleaning },
+    { id: "cat_roofing", icon: HomeIcon, label: t.customer.cat_roofing },
+    { id: "cat_property", icon: Crown, label: t.customer.cat_property },
+    { id: "cat_other", icon: HelpCircle, label: t.customer.cat_other },
   ];
 
   if (!authLoading && !user) {
@@ -173,7 +183,7 @@ export default function SubmitProject() {
         "Vous recevrez des offres par e-mail et pourrez les comparer directement.",
       ],
     };
-    const lang = (typeof localStorage !== "undefined" && localStorage.getItem("lang")) ?? "de";
+    const lang = (typeof localStorage !== "undefined" ? localStorage.getItem("lang") : null) ?? "de";
     const steps = nextSteps[lang] ?? nextSteps.de;
 
     return (

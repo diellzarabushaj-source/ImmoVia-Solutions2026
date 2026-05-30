@@ -560,7 +560,7 @@ export default function ClientDashboard() {
                                   </div>
                                   {o.status === "accepted" && openThreads.has(o.id) && (
                                     <div className="mt-3 pt-3 border-t">
-                                      <MessagingSystem context={{ offerId: o.id, otherPartyName: o.providerCompany ?? o.providerName ?? undefined }} embedded />
+                                      <MessagingSystem myUserId={user.id} />
                                     </div>
                                   )}
                                 </Card>
@@ -579,7 +579,7 @@ export default function ClientDashboard() {
             {activeSection === "nachrichten" && (
               <div>
                 <h2 className="text-xl font-serif font-bold mb-4">{l.navMessages}</h2>
-                <MessagingSystem />
+                <MessagingSystem myUserId={user.id} />
               </div>
             )}
 
