@@ -975,7 +975,7 @@ export default function Home() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" className="py-14 md:py-24 bg-white">
+      <section id="how-it-works" className="py-14 md:py-24 bg-white scroll-mt-20 md:scroll-mt-24">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-14"
