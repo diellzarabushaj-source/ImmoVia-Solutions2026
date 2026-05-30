@@ -26,6 +26,10 @@ export const ListProjectsQueryParams = zod.object({
   "status": zod.coerce.string().optional().describe('Filter by project status')
 })
 
+export const listProjectsResponseSubcategoryOtherTextMax = 40;
+
+
+
 export const ListProjectsResponseItem = zod.object({
   "id": zod.number(),
   "fullName": zod.string(),
@@ -34,6 +38,7 @@ export const ListProjectsResponseItem = zod.object({
   "title": zod.string().nullish().describe('Human-readable project title'),
   "projectType": zod.string().describe('Category key (renovation | painting | electrical | plumbing | kitchen | flooring | interior_design | cleaning | other)'),
   "subcategory": zod.string().nullish().describe('Sub-category tag key from the selected category\'s tag list'),
+  "subcategoryOtherText": zod.string().max(listProjectsResponseSubcategoryOtherTextMax).nullish().describe('Custom text when subcategory is \'other\' (max 40 chars)'),
   "description": zod.string(),
   "city": zod.string(),
   "budget": zod.string().nullish(),
@@ -51,6 +56,8 @@ export const ListProjectsResponse = zod.array(ListProjectsResponseItem)
  */
 export const createProjectBodyFullNameMin = 2;
 
+export const createProjectBodySubcategoryOtherTextMax = 40;
+
 export const createProjectBodyDescriptionMin = 10;
 
 
@@ -61,6 +68,7 @@ export const CreateProjectBody = zod.object({
   "phone": zod.string(),
   "projectType": zod.string(),
   "subcategory": zod.string().optional().describe('Sub-category tag key (optional)'),
+  "subcategoryOtherText": zod.string().max(createProjectBodySubcategoryOtherTextMax).optional().describe('Custom text when subcategory is \'other\' (max 40 chars)'),
   "description": zod.string().min(createProjectBodyDescriptionMin),
   "city": zod.string(),
   "budget": zod.string().optional(),
@@ -76,6 +84,10 @@ export const GetProjectParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const getProjectResponseSubcategoryOtherTextMax = 40;
+
+
+
 export const GetProjectResponse = zod.object({
   "id": zod.number(),
   "fullName": zod.string(),
@@ -84,6 +96,7 @@ export const GetProjectResponse = zod.object({
   "title": zod.string().nullish().describe('Human-readable project title'),
   "projectType": zod.string().describe('Category key (renovation | painting | electrical | plumbing | kitchen | flooring | interior_design | cleaning | other)'),
   "subcategory": zod.string().nullish().describe('Sub-category tag key from the selected category\'s tag list'),
+  "subcategoryOtherText": zod.string().max(getProjectResponseSubcategoryOtherTextMax).nullish().describe('Custom text when subcategory is \'other\' (max 40 chars)'),
   "description": zod.string(),
   "city": zod.string(),
   "budget": zod.string().nullish(),
@@ -107,6 +120,10 @@ export const UpdateProjectBody = zod.object({
   "description": zod.string().optional()
 })
 
+export const updateProjectResponseSubcategoryOtherTextMax = 40;
+
+
+
 export const UpdateProjectResponse = zod.object({
   "id": zod.number(),
   "fullName": zod.string(),
@@ -115,6 +132,7 @@ export const UpdateProjectResponse = zod.object({
   "title": zod.string().nullish().describe('Human-readable project title'),
   "projectType": zod.string().describe('Category key (renovation | painting | electrical | plumbing | kitchen | flooring | interior_design | cleaning | other)'),
   "subcategory": zod.string().nullish().describe('Sub-category tag key from the selected category\'s tag list'),
+  "subcategoryOtherText": zod.string().max(updateProjectResponseSubcategoryOtherTextMax).nullish().describe('Custom text when subcategory is \'other\' (max 40 chars)'),
   "description": zod.string(),
   "city": zod.string(),
   "budget": zod.string().nullish(),
@@ -151,6 +169,7 @@ export const ListCompaniesResponseItem = zod.object({
   "email": zod.string(),
   "phone": zod.string(),
   "serviceTypes": zod.array(zod.string()),
+  "customServiceTags": zod.array(zod.string()).optional().describe('Custom \'Other\' service tags in format \'categoryKey|custom text\''),
   "city": zod.string(),
   "description": zod.string().nullish(),
   "website": zod.string().nullish(),
@@ -181,6 +200,7 @@ export const CreateCompanyBody = zod.object({
   "email": zod.string().email(),
   "phone": zod.string(),
   "serviceTypes": zod.array(zod.string()).min(1),
+  "customServiceTags": zod.array(zod.string()).optional().describe('Custom \'Other\' service tags in format \'categoryKey|custom text\''),
   "city": zod.string(),
   "description": zod.string().optional(),
   "website": zod.string().optional(),
@@ -206,6 +226,7 @@ export const GetCompanyResponse = zod.object({
   "email": zod.string(),
   "phone": zod.string(),
   "serviceTypes": zod.array(zod.string()),
+  "customServiceTags": zod.array(zod.string()).optional().describe('Custom \'Other\' service tags in format \'categoryKey|custom text\''),
   "city": zod.string(),
   "description": zod.string().nullish(),
   "website": zod.string().nullish(),
@@ -238,6 +259,7 @@ export const UpdateCompanyResponse = zod.object({
   "email": zod.string(),
   "phone": zod.string(),
   "serviceTypes": zod.array(zod.string()),
+  "customServiceTags": zod.array(zod.string()).optional().describe('Custom \'Other\' service tags in format \'categoryKey|custom text\''),
   "city": zod.string(),
   "description": zod.string().nullish(),
   "website": zod.string().nullish(),

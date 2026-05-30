@@ -30,6 +30,12 @@ export interface Project {
      * @nullable
      */
   subcategory?: string | null;
+  /**
+     * Custom text when subcategory is 'other' (max 40 chars)
+     * @maxLength 40
+     * @nullable
+     */
+  subcategoryOtherText?: string | null;
   description: string;
   city: string;
   /** @nullable */
@@ -53,6 +59,11 @@ export interface ProjectInput {
   projectType: string;
   /** Sub-category tag key (optional) */
   subcategory?: string;
+  /**
+     * Custom text when subcategory is 'other' (max 40 chars)
+     * @maxLength 40
+     */
+  subcategoryOtherText?: string;
   /** @minLength 10 */
   description: string;
   city: string;
@@ -74,6 +85,8 @@ export interface Company {
   email: string;
   phone: string;
   serviceTypes: string[];
+  /** Custom 'Other' service tags in format 'categoryKey|custom text' */
+  customServiceTags?: string[];
   city: string;
   /** @nullable */
   description?: string | null;
@@ -109,6 +122,8 @@ export interface CompanyInput {
   phone: string;
   /** @minItems 1 */
   serviceTypes: string[];
+  /** Custom 'Other' service tags in format 'categoryKey|custom text' */
+  customServiceTags?: string[];
   city: string;
   description?: string;
   website?: string;

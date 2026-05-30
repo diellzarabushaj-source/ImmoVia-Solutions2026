@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Hammer, Building2, Sofa, TreePine, Wrench, CheckCircle2, Home as HomeIcon, Crown, Sparkles, Layers, Zap, Paintbrush, FlameKindling, ChefHat, Leaf, Star, SquareStack, HelpCircle } from "lucide-react";
 import { CATEGORIES, getCategoryLabel, getTagLabel, resolveCategoryLabel, resolveTagLabel, type Lang } from "@/lib/categories";
+import { validateOtherTag, otherTagErrorMessage, sanitizeOtherTag } from "@/lib/validateOtherTag";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function SubmitProject() {
@@ -49,6 +50,7 @@ export default function SubmitProject() {
   }, [authLoading, user, t.auth.mustBeClient]);
 
   const [projectPhotos, setProjectPhotos] = useState<string[]>([]);
+  const [otherTagError, setOtherTagError] = useState<string | null>(null);
 
   const formSchema = z.object({
     fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -56,6 +58,7 @@ export default function SubmitProject() {
     phone: z.string().min(5, { message: "Phone number is required" }),
     projectType: z.string().min(1, { message: "Project type is required" }),
     subcategory: z.string().optional(),
+    subcategoryOtherText: z.string().max(40).optional(),
     size: z.enum(["small", "medium", "large", "premium"]),
     description: z.string().min(10, { message: "Description must be at least 10 characters" }),
     city: z.string().min(2, { message: "City is required" }),
@@ -71,6 +74,7 @@ export default function SubmitProject() {
       phone: user?.phone ?? "",
       projectType: "",
       subcategory: "",
+      subcategoryOtherText: "",
       size: "medium",
       description: "",
       city: user?.city ?? "",
@@ -98,6 +102,17 @@ export default function SubmitProject() {
       isValid = await form.trigger(["fullName", "email", "phone"]);
     } else if (step === 2) {
       isValid = await form.trigger(["projectType"]);
+      if (isValid && form.getValues("subcategory") === "other") {
+        const text = form.getValues("subcategoryOtherText") ?? "";
+        const result = validateOtherTag(text);
+        if (!result.ok) {
+          setOtherTagError(otherTagErrorMessage(result.error, language as Lang));
+          isValid = false;
+        } else {
+          form.setValue("subcategoryOtherText", result.clean);
+          setOtherTagError(null);
+        }
+      }
     } else if (step === 3) {
       isValid = await form.trigger(["size"]);
     } else if (step === 4) {
@@ -383,7 +398,14 @@ export default function SubmitProject() {
                             <button
                               key={tag.key}
                               type="button"
-                              onClick={() => form.setValue("subcategory", isSelected ? "" : tag.key)}
+                              onClick={() => {
+                                const newVal = isSelected ? "" : tag.key;
+                                form.setValue("subcategory", newVal);
+                                if (newVal !== "other") {
+                                  form.setValue("subcategoryOtherText", "");
+                                  setOtherTagError(null);
+                                }
+                              }}
                               className={`px-3 py-1.5 text-sm rounded-full border transition-all ${
                                 isSelected
                                   ? "bg-primary text-primary-foreground border-primary"
@@ -395,6 +417,32 @@ export default function SubmitProject() {
                           );
                         })}
                       </div>
+                      {form.watch("subcategory") === "other" && (
+                        <div className="mt-3 space-y-1.5">
+                          <label className="text-xs font-medium text-foreground block">
+                            {t.projectForm.otherTagLabel}
+                          </label>
+                          <input
+                            type="text"
+                            maxLength={40}
+                            placeholder={t.projectForm.otherTagPlaceholder}
+                            value={form.watch("subcategoryOtherText") ?? ""}
+                            onChange={(e) => {
+                              const sanitized = sanitizeOtherTag(e.target.value);
+                              form.setValue("subcategoryOtherText", sanitized);
+                              if (sanitized.length >= 3) {
+                                const result = validateOtherTag(sanitized);
+                                setOtherTagError(result.ok ? null : otherTagErrorMessage(result.error, language as Lang));
+                              } else {
+                                setOtherTagError(null);
+                              }
+                            }}
+                            className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                          <p className="text-xs text-muted-foreground">{t.projectForm.otherTagHint}</p>
+                          {otherTagError && <p className="text-xs text-destructive">{otherTagError}</p>}
+                        </div>
+                      )}
                     </div>
                   )}
                 </motion.div>
@@ -572,7 +620,15 @@ export default function SubmitProject() {
                       <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Project Details</h4>
                       <p className="font-medium">{resolveCategoryLabel(form.getValues().projectType, language as Lang)}</p>
                       {form.getValues().subcategory && (
-                        <p className="text-sm text-primary/80 mt-0.5">{resolveTagLabel(form.getValues().subcategory!, language as Lang)}</p>
+                        <p className="text-sm text-primary/80 mt-0.5">
+                          {resolveTagLabel(form.getValues().subcategory!, language as Lang)}
+                          {form.getValues().subcategory === "other" && form.getValues().subcategoryOtherText && (
+                            <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                              <span className="opacity-60">{t.projectForm.otherCustomBadge}:</span>
+                              {form.getValues().subcategoryOtherText}
+                            </span>
+                          )}
+                        </p>
                       )}
                       <p className="text-sm mt-1 bg-background p-3 rounded border border-border">
                         {form.getValues().description}

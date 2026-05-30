@@ -23,6 +23,12 @@ export interface Project {
      * @nullable
      */
   subcategory?: string | null;
+  /**
+     * Custom text when subcategory is 'other' (max 40 chars)
+     * @maxLength 40
+     * @nullable
+     */
+  subcategoryOtherText?: string | null;
   description: string;
   city: string;
   /** @nullable */

@@ -14,6 +14,11 @@ export interface ProjectInput {
   projectType: string;
   /** Sub-category tag key (optional) */
   subcategory?: string;
+  /**
+     * Custom text when subcategory is 'other' (max 40 chars)
+     * @maxLength 40
+     */
+  subcategoryOtherText?: string;
   /** @minLength 10 */
   description: string;
   city: string;

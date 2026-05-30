@@ -736,6 +736,10 @@ components:
         subcategory:
           type: ["string", "null"]
           description: "Sub-category tag key from the selected category's tag list"
+        subcategoryOtherText:
+          type: ["string", "null"]
+          description: "Custom text when subcategory is 'other' (max 40 chars)"
+          maxLength: 40
         description:
           type: string
         city:
@@ -776,6 +780,10 @@ components:
         subcategory:
           type: string
           description: "Sub-category tag key (optional)"
+        subcategoryOtherText:
+          type: string
+          description: "Custom text when subcategory is 'other' (max 40 chars)"
+          maxLength: 40
         description:
           type: string
           minLength: 10
@@ -817,6 +825,11 @@ components:
           type: array
           items:
             type: string
+        customServiceTags:
+          type: array
+          items:
+            type: string
+          description: "Custom 'Other' service tags in format 'categoryKey|custom text'"
         city:
           type: string
         description:
@@ -863,6 +876,11 @@ components:
           items:
             type: string
           minItems: 1
+        customServiceTags:
+          type: array
+          items:
+            type: string
+          description: "Custom 'Other' service tags in format 'categoryKey|custom text'"
         city:
           type: string
         description:

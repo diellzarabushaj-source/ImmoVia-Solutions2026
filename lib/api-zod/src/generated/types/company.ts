@@ -13,6 +13,8 @@ export interface Company {
   email: string;
   phone: string;
   serviceTypes: string[];
+  /** Custom 'Other' service tags in format 'categoryKey|custom text' */
+  customServiceTags?: string[];
   city: string;
   /** @nullable */
   description?: string | null;

@@ -69,6 +69,9 @@ router.post("/projects", async (req, res): Promise<void> => {
     phone: parsed.data.phone,
     projectType: parsed.data.projectType,
     subcategory: parsed.data.subcategory ?? null,
+    subcategoryOtherText: parsed.data.subcategoryOtherText
+      ? parsed.data.subcategoryOtherText.trim().replace(/\s+/g, " ").slice(0, 40) || null
+      : null,
     description: parsed.data.description,
     city: parsed.data.city,
     budget: parsed.data.budget ?? null,

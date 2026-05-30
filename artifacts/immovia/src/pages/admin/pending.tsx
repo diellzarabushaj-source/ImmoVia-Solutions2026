@@ -75,7 +75,14 @@ export function AdminPending() {
                     <TableCell>
                       <div className="text-sm font-medium">{resolveCategoryLabel(p.projectType, language as Lang)}</div>
                       {(p as {subcategory?: string | null}).subcategory && (
-                        <div className="text-xs text-primary/70">{resolveTagLabel((p as {subcategory?: string | null}).subcategory!, language as Lang)}</div>
+                        <div className="text-xs text-primary/70 flex items-center gap-1">
+                          {resolveTagLabel((p as {subcategory?: string | null}).subcategory!, language as Lang)}
+                          {(p as {subcategory?: string | null}).subcategory === "other" && (p as {subcategoryOtherText?: string | null}).subcategoryOtherText && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                              {(p as {subcategoryOtherText?: string | null}).subcategoryOtherText}
+                            </span>
+                          )}
+                        </div>
                       )}
                       <div className="text-xs text-gray-500">{p.city}</div>
                     </TableCell>
@@ -141,10 +148,19 @@ export function AdminPending() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {(c.serviceTypes ?? []).slice(0, 2).map((s: string) => (
-                          <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 capitalize">{s}</span>
+                          <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 capitalize">{resolveCategoryLabel(s, language as Lang)}</span>
                         ))}
                         {(c.serviceTypes ?? []).length > 2 && <span className="text-xs text-gray-400">+{(c.serviceTypes ?? []).length - 2}</span>}
                       </div>
+                      {((c as {customServiceTags?: string[] | null}).customServiceTags ?? []).map((tag: string) => {
+                        const pipeIdx = tag.indexOf("|");
+                        const text = pipeIdx >= 0 ? tag.slice(pipeIdx + 1) : tag;
+                        return (
+                          <span key={tag} className="inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                            <span className="opacity-60">Custom:</span> {text}
+                          </span>
+                        );
+                      })}
                     </TableCell>
                     <TableCell className="text-sm">{c.city}</TableCell>
                     <TableCell className="text-xs text-gray-500">{format(new Date(c.createdAt), "MMM d")}</TableCell>

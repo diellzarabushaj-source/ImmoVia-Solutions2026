@@ -53,6 +53,9 @@ router.post("/companies", async (req, res): Promise<void> => {
     email: parsed.data.email,
     phone: parsed.data.phone,
     serviceTypes: parsed.data.serviceTypes,
+    customServiceTags: parsed.data.customServiceTags?.map((tag: string) =>
+      tag.trim().slice(0, 100)
+    ).filter((tag: string) => tag.length > 0) ?? null,
     city: parsed.data.city,
     description: parsed.data.description ?? null,
     website: parsed.data.website ?? null,

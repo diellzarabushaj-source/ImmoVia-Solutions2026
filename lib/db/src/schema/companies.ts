@@ -34,6 +34,7 @@ export const companiesTable = pgTable("companies", {
   priceIsPublic: boolean("price_is_public").default(false),
   coverImageUrl: text("cover_image_url"),
   logoUrl: text("logo_url"),
+  customServiceTags: text("custom_service_tags").array(),
 });
 
 export const insertCompanySchema = createInsertSchema(companiesTable).omit({

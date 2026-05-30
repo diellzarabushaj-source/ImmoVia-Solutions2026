@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { CheckCircle2, User, Building2 } from "lucide-react";
 import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { validateOtherTag, otherTagErrorMessage, sanitizeOtherTag, buildCustomServiceTag } from "@/lib/validateOtherTag";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function RegisterCompany() {
@@ -29,6 +30,8 @@ export default function RegisterCompany() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   
   const createCompany = useCreateCompany();
+  const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
+  const [otherTagErrors, setOtherTagErrors] = useState<Record<string, string>>({});
 
   const formSchema = z.object({
     companyName: z.string().min(2, { message: "Company name is required" }),
@@ -68,8 +71,23 @@ export default function RegisterCompany() {
   const workerType = form.watch("workerType");
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const customServiceTags: string[] = [];
+    const errors: Record<string, string> = {};
+    for (const [catKey, text] of Object.entries(otherTexts)) {
+      const result = validateOtherTag(text);
+      if (result.ok) {
+        customServiceTags.push(buildCustomServiceTag(catKey, result.clean));
+      } else {
+        errors[catKey] = otherTagErrorMessage(result.error, language as Lang);
+      }
+    }
+    if (Object.keys(errors).length > 0) {
+      setOtherTagErrors(errors);
+      return;
+    }
+    setOtherTagErrors({});
     createCompany.mutate({
-      data: values
+      data: { ...values, customServiceTags } as never
     }, {
       onSuccess: () => {
         setIsSubmitted(true);
@@ -320,7 +338,9 @@ export default function RegisterCompany() {
                                         field.onChange([...field.value, cat.key]);
                                       } else {
                                         const tagKeys = cat.tags.map(t => t.key);
-                                        field.onChange(field.value?.filter(v => v !== cat.key && !tagKeys.includes(v)));
+                                        field.onChange(field.value?.filter((v: string) => v !== cat.key && !tagKeys.includes(v)));
+                                        setOtherTexts(prev => { const next = { ...prev }; delete next[cat.key]; return next; });
+                                        setOtherTagErrors(prev => { const next = { ...prev }; delete next[cat.key]; return next; });
                                       }
                                     }}
                                   />
@@ -330,30 +350,80 @@ export default function RegisterCompany() {
                                 </FormLabel>
                               </FormItem>
                               {isChecked && (
-                                <div className="px-3 pb-3 flex flex-wrap gap-1.5">
-                                  {cat.tags.map(tag => {
-                                    const isTagSelected = field.value?.includes(tag.key);
-                                    return (
-                                      <button
-                                        key={tag.key}
-                                        type="button"
-                                        onClick={() => {
-                                          if (isTagSelected) {
-                                            field.onChange(field.value.filter(v => v !== tag.key));
+                                <div className="px-3 pb-3 space-y-2">
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {cat.tags.map(tag => {
+                                      const isOtherTag = tag.key === "other";
+                                      const isTagSelected = isOtherTag
+                                        ? cat.key in otherTexts
+                                        : field.value?.includes(tag.key);
+                                      return (
+                                        <button
+                                          key={tag.key}
+                                          type="button"
+                                          onClick={() => {
+                                            if (isOtherTag) {
+                                              if (isTagSelected) {
+                                                setOtherTexts(prev => {
+                                                  const next = { ...prev };
+                                                  delete next[cat.key];
+                                                  return next;
+                                                });
+                                                setOtherTagErrors(prev => {
+                                                  const next = { ...prev };
+                                                  delete next[cat.key];
+                                                  return next;
+                                                });
+                                              } else {
+                                                setOtherTexts(prev => ({ ...prev, [cat.key]: "" }));
+                                              }
+                                            } else {
+                                              if (isTagSelected) {
+                                                field.onChange(field.value.filter((v: string) => v !== tag.key));
+                                              } else {
+                                                field.onChange([...field.value, tag.key]);
+                                              }
+                                            }
+                                          }}
+                                          className={`px-2.5 py-1 text-xs rounded-full border transition-all ${
+                                            isTagSelected
+                                              ? "bg-primary/10 border-primary text-primary font-medium"
+                                              : "border-border text-muted-foreground hover:border-primary/40"
+                                          }`}
+                                        >
+                                          {getTagLabel(tag, language as Lang)}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                  {cat.key in otherTexts && (
+                                    <div className="space-y-1">
+                                      <input
+                                        type="text"
+                                        maxLength={40}
+                                        placeholder={t.projectForm.otherTagPlaceholder}
+                                        value={otherTexts[cat.key]}
+                                        onChange={(e) => {
+                                          const sanitized = sanitizeOtherTag(e.target.value);
+                                          setOtherTexts(prev => ({ ...prev, [cat.key]: sanitized }));
+                                          if (sanitized.length >= 3) {
+                                            const result = validateOtherTag(sanitized);
+                                            setOtherTagErrors(prev => ({
+                                              ...prev,
+                                              [cat.key]: result.ok ? "" : otherTagErrorMessage(result.error, language as Lang),
+                                            }));
                                           } else {
-                                            field.onChange([...field.value, tag.key]);
+                                            setOtherTagErrors(prev => ({ ...prev, [cat.key]: "" }));
                                           }
                                         }}
-                                        className={`px-2.5 py-1 text-xs rounded-full border transition-all ${
-                                          isTagSelected
-                                            ? "bg-primary/10 border-primary text-primary font-medium"
-                                            : "border-border text-muted-foreground hover:border-primary/40"
-                                        }`}
-                                      >
-                                        {getTagLabel(tag, language as Lang)}
-                                      </button>
-                                    );
-                                  })}
+                                        className="w-full px-2.5 py-1.5 text-xs rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                                      />
+                                      <p className="text-xs text-muted-foreground">{t.projectForm.otherTagHint}</p>
+                                      {otherTagErrors[cat.key] && (
+                                        <p className="text-xs text-destructive">{otherTagErrors[cat.key]}</p>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>

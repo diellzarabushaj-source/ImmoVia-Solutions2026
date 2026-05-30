@@ -11,6 +11,7 @@ export const projectsTable = pgTable("projects", {
   title: text("title"),
   projectType: text("project_type").notNull(),
   subcategory: text("subcategory"),
+  subcategoryOtherText: text("subcategory_other_text"),
   description: text("description").notNull(),
   city: text("city").notNull(),
   address: text("address"),
