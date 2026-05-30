@@ -73,6 +73,11 @@ router.patch("/provider/profile", requireContractor, async (req, res): Promise<v
       .filter((u): u is string => typeof u === "string")
       .slice(0, 30);
   }
+  if (Array.isArray(body.customServiceTags)) {
+    compUpdates.customServiceTags = (body.customServiceTags as unknown[])
+      .filter((u): u is string => typeof u === "string" && u.length < 100)
+      .slice(0, 20);
+  }
   if (Array.isArray(body.specializations)) {
     compUpdates.specializations = (body.specializations as unknown[])
       .filter((u): u is string => typeof u === "string")

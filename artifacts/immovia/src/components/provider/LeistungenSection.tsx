@@ -2,33 +2,16 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Tag, MapPin, X } from "lucide-react";
-
-const CATEGORIES = [
-  "Renovierung & Umbau",
-  "Neubau & Bauarbeiten",
-  "Innenarchitektur & Innenausbau",
-  "Fassadenarbeiten",
-  "Sanitär & Badezimmer",
-  "Elektroinstallation & Smart Home",
-  "Maler & Gipser",
-  "Boden & Platten",
-  "Heizung, Klima & Energie",
-  "Küche & Schreinerarbeiten",
-  "Garten & Aussenbereich",
-  "Reinigung & Umzug",
-  "Dach & Spenglerei",
-  "Immobilienservice",
-  "Andere Dienstleistungen",
-];
+import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { validateOtherTag, sanitizeOtherTag, otherTagErrorMessage, buildCustomServiceTag } from "@/lib/validateOtherTag";
 
 const L: Record<string, Record<string, string>> = {
   de: {
     title: "Leistungen & Kategorien",
     mainCat: "Hauptkategorien",
-    mainCatHint: "Wählen Sie alle Kategorien aus, in denen Sie tätig sind.",
+    mainCatHint: "Wählen Sie alle Kategorien und Spezialbereiche aus, in denen Sie tätig sind.",
     serviceArea: "Servicegebiet / Einsatzregion",
     serviceAreaPlaceholder: "z.B. Zürich, Bern, Luzern",
     specializations: "Spezialisierungen",
@@ -37,11 +20,13 @@ const L: Record<string, Record<string, string>> = {
     save: "Leistungen speichern",
     saved: "Leistungen erfolgreich gespeichert.",
     error: "Fehler beim Speichern.",
+    otherPlaceholder: "Dienst beschreiben…",
+    otherHint: "3–40 Zeichen",
   },
   en: {
     title: "Services & Categories",
     mainCat: "Main categories",
-    mainCatHint: "Select all categories you work in.",
+    mainCatHint: "Select all categories and specialties you work in.",
     serviceArea: "Service area / region",
     serviceAreaPlaceholder: "e.g. Zurich, Bern, Lucerne",
     specializations: "Specializations",
@@ -50,11 +35,13 @@ const L: Record<string, Record<string, string>> = {
     save: "Save services",
     saved: "Services saved successfully.",
     error: "Error saving.",
+    otherPlaceholder: "Describe the service…",
+    otherHint: "3–40 characters",
   },
   sq: {
     title: "Shërbime & Kategori",
     mainCat: "Kategoritë kryesore",
-    mainCatHint: "Zgjidhni të gjitha kategoritë ku punoni.",
+    mainCatHint: "Zgjidhni të gjitha kategoritë dhe specialitetet ku punoni.",
     serviceArea: "Zona e shërbimit",
     serviceAreaPlaceholder: "p.sh. Tiranë, Shkodër, Durrës",
     specializations: "Specializime",
@@ -63,11 +50,13 @@ const L: Record<string, Record<string, string>> = {
     save: "Ruaj shërbime",
     saved: "Shërbime u ruajtën me sukses.",
     error: "Gabim gjatë ruajtjes.",
+    otherPlaceholder: "Përshkruani shërbimin…",
+    otherHint: "3–40 karaktere",
   },
   fr: {
     title: "Services & Catégories",
     mainCat: "Catégories principales",
-    mainCatHint: "Sélectionnez toutes les catégories dans lesquelles vous travaillez.",
+    mainCatHint: "Sélectionnez toutes les catégories et spécialités dans lesquelles vous travaillez.",
     serviceArea: "Zone de service / région",
     serviceAreaPlaceholder: "ex. Zurich, Berne, Lucerne",
     specializations: "Spécialisations",
@@ -76,6 +65,8 @@ const L: Record<string, Record<string, string>> = {
     save: "Enregistrer les services",
     saved: "Services enregistrés avec succès.",
     error: "Erreur lors de l'enregistrement.",
+    otherPlaceholder: "Décrivez le service…",
+    otherHint: "3–40 caractères",
   },
 };
 
@@ -85,8 +76,12 @@ interface Props {
 
 export default function LeistungenSection({ language }: Props) {
   const l = L[language] ?? L.de;
+  const lang = (["en", "de", "sq", "fr"].includes(language) ? language : "de") as Lang;
 
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
+  const [otherTagErrors, setOtherTagErrors] = useState<Record<string, string>>({});
   const [serviceArea, setServiceArea] = useState("");
   const [specializations, setSpecializations] = useState<string[]>([]);
   const [specInput, setSpecInput] = useState("");
@@ -98,8 +93,23 @@ export default function LeistungenSection({ language }: Props) {
     if (loaded) return;
     fetch("/api/provider/profile")
       .then(r => r.json())
-      .then((d: { company?: { categories?: string[] | null; serviceArea?: string | null; specializations?: string[] | null } | null }) => {
-        if (d.company?.categories) setSelectedCats(d.company.categories);
+      .then((d: {
+        company?: {
+          serviceTypes?: string[] | null;
+          customServiceTags?: string[] | null;
+          serviceArea?: string | null;
+          specializations?: string[] | null;
+        } | null;
+      }) => {
+        const svcTypes = d.company?.serviceTypes ?? [];
+        setSelectedCats(svcTypes.filter(s => CATEGORIES.some(c => c.key === s)));
+        setSelectedTags(svcTypes.filter(s => s !== "other" && !CATEGORIES.some(c => c.key === s)));
+        const ot: Record<string, string> = {};
+        for (const t of (d.company?.customServiceTags ?? [])) {
+          const idx = t.indexOf("|");
+          if (idx >= 0) ot[t.slice(0, idx)] = t.slice(idx + 1);
+        }
+        setOtherTexts(ot);
         if (d.company?.serviceArea) setServiceArea(d.company.serviceArea);
         if (d.company?.specializations) setSpecializations(d.company.specializations);
         setLoaded(true);
@@ -107,18 +117,39 @@ export default function LeistungenSection({ language }: Props) {
       .catch(() => setLoaded(true));
   }, [loaded]);
 
-  const toggleCat = (cat: string) => {
-    setSelectedCats(prev =>
-      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-    );
+  const toggleCat = (catKey: string) => {
+    if (selectedCats.includes(catKey)) {
+      const cat = CATEGORIES.find(c => c.key === catKey);
+      const tagKeys = cat?.tags.map(t => t.key) ?? [];
+      setSelectedTags(prev => prev.filter(t => !tagKeys.includes(t)));
+      setOtherTexts(prev => { const n = { ...prev }; delete n[catKey]; return n; });
+      setOtherTagErrors(prev => { const n = { ...prev }; delete n[catKey]; return n; });
+      setSelectedCats(prev => prev.filter(c => c !== catKey));
+    } else {
+      setSelectedCats(prev => [...prev, catKey]);
+    }
+  };
+
+  const toggleTag = (catKey: string, tagKey: string) => {
+    if (tagKey === "other") {
+      if (catKey in otherTexts) {
+        setOtherTexts(prev => { const n = { ...prev }; delete n[catKey]; return n; });
+        setOtherTagErrors(prev => { const n = { ...prev }; delete n[catKey]; return n; });
+      } else {
+        setOtherTexts(prev => ({ ...prev, [catKey]: "" }));
+      }
+    } else {
+      setSelectedTags(prev =>
+        prev.includes(tagKey) ? prev.filter(t => t !== tagKey) : [...prev, tagKey]
+      );
+    }
   };
 
   const addSpec = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && specInput.trim()) {
       e.preventDefault();
-      if (!specializations.includes(specInput.trim())) {
+      if (!specializations.includes(specInput.trim()))
         setSpecializations(prev => [...prev, specInput.trim()]);
-      }
       setSpecInput("");
     }
   };
@@ -126,14 +157,30 @@ export default function LeistungenSection({ language }: Props) {
   const removeSpec = (s: string) => setSpecializations(prev => prev.filter(x => x !== s));
 
   const save = async () => {
+    const errors: Record<string, string> = {};
+    for (const [catKey, text] of Object.entries(otherTexts)) {
+      if (text.trim().length < 3) {
+        errors[catKey] = l.otherHint;
+      } else {
+        const result = validateOtherTag(text);
+        if (!result.ok) errors[catKey] = otherTagErrorMessage(result.error, lang);
+      }
+    }
+    if (Object.keys(errors).length > 0) { setOtherTagErrors(errors); return; }
+
     setSaving(true);
     setMsg(null);
     try {
+      const customServiceTags = Object.entries(otherTexts)
+        .filter(([, t]) => t.trim().length >= 3)
+        .map(([catKey, text]) => buildCustomServiceTag(catKey, text));
+
       const r = await fetch("/api/provider/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          categories: selectedCats,
+          categories: [...selectedCats, ...selectedTags],
+          customServiceTags,
           serviceArea,
           specializations,
         }),
@@ -157,30 +204,78 @@ export default function LeistungenSection({ language }: Props) {
           {l.mainCat}
         </h3>
         <p className="text-xs text-muted-foreground mb-4">{l.mainCatHint}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {CATEGORIES.map(cat => (
-            <label key={cat} className="flex items-center gap-2.5 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={selectedCats.includes(cat)}
-                onChange={() => toggleCat(cat)}
-                className="w-4 h-4 rounded border-border accent-primary"
-              />
-              <span className={`text-sm transition-colors ${selectedCats.includes(cat) ? "text-primary font-medium" : "text-foreground group-hover:text-primary"}`}>
-                {cat}
-              </span>
-            </label>
-          ))}
+        <div className="space-y-2">
+          {CATEGORIES.map(cat => {
+            const isChecked = selectedCats.includes(cat.key);
+            return (
+              <div key={cat.key} className="border border-border rounded-lg overflow-hidden">
+                <label className="flex items-center gap-2.5 cursor-pointer group p-3">
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => toggleCat(cat.key)}
+                    className="w-4 h-4 rounded border-border accent-primary shrink-0"
+                  />
+                  <span className={`text-sm transition-colors font-medium ${isChecked ? "text-primary" : "text-foreground group-hover:text-primary"}`}>
+                    {getCategoryLabel(cat, lang)}
+                  </span>
+                </label>
+                {isChecked && (
+                  <div className="px-3 pb-3 space-y-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {cat.tags.map(tag => {
+                        const isOther = tag.key === "other";
+                        const isTagSelected = isOther ? cat.key in otherTexts : selectedTags.includes(tag.key);
+                        return (
+                          <button
+                            key={tag.key}
+                            type="button"
+                            onClick={() => toggleTag(cat.key, tag.key)}
+                            className={`px-2.5 py-1 text-xs rounded-full border transition-all ${
+                              isTagSelected
+                                ? "bg-primary/10 border-primary text-primary font-medium"
+                                : "border-border text-muted-foreground hover:border-primary/40"
+                            }`}
+                          >
+                            {getTagLabel(tag, lang)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {cat.key in otherTexts && (
+                      <div className="space-y-1">
+                        <input
+                          type="text"
+                          maxLength={40}
+                          placeholder={l.otherPlaceholder}
+                          value={otherTexts[cat.key]}
+                          onChange={e => {
+                            const sanitized = sanitizeOtherTag(e.target.value);
+                            setOtherTexts(prev => ({ ...prev, [cat.key]: sanitized }));
+                            if (sanitized.length >= 3) {
+                              const result = validateOtherTag(sanitized);
+                              setOtherTagErrors(prev => ({
+                                ...prev,
+                                [cat.key]: result.ok ? "" : otherTagErrorMessage(result.error, lang),
+                              }));
+                            } else {
+                              setOtherTagErrors(prev => ({ ...prev, [cat.key]: "" }));
+                            }
+                          }}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                        <p className="text-xs text-muted-foreground">{l.otherHint}</p>
+                        {otherTagErrors[cat.key] && (
+                          <p className="text-xs text-destructive">{otherTagErrors[cat.key]}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-        {selectedCats.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {selectedCats.map(cat => (
-              <Badge key={cat} className="bg-primary/10 text-primary border-primary/20 text-xs">
-                {cat}
-              </Badge>
-            ))}
-          </div>
-        )}
       </Card>
 
       <Card className="p-5">

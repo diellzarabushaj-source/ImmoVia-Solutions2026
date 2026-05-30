@@ -33,12 +33,7 @@ import {
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-
-const SERVICE_TYPE_OPTIONS = [
-  "renovation", "construction", "plumbing", "electrical",
-  "painting", "flooring", "roofing", "landscaping",
-  "interior-design", "cleaning", "hvac", "other",
-];
+import { CATEGORIES, getCategoryLabel, resolveCategoryLabel } from "@/lib/categories";
 
 function AddCompanyDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
   const [loading, setLoading] = useState(false);
@@ -106,11 +101,11 @@ function AddCompanyDialog({ open, onClose, onCreated }: { open: boolean; onClose
           </div>
           <div className="space-y-1.5">
             <Label>Services *</Label>
-            <div className="grid grid-cols-3 gap-1.5">
-              {SERVICE_TYPE_OPTIONS.map((s) => (
-                <button key={s} type="button" disabled={loading} onClick={() => toggle(s)}
-                  className={`text-xs rounded px-2 py-1.5 border transition-colors text-left capitalize ${serviceTypes.includes(s) ? "bg-[#1a3a6e] text-white border-[#1a3a6e]" : "bg-white text-gray-500 border-gray-200 hover:border-[#1a3a6e]"}`}>
-                  {s.replace("-", " ")}
+            <div className="grid grid-cols-2 gap-1.5">
+              {CATEGORIES.map((cat) => (
+                <button key={cat.key} type="button" disabled={loading} onClick={() => toggle(cat.key)}
+                  className={`text-xs rounded px-2 py-1.5 border transition-colors text-left ${serviceTypes.includes(cat.key) ? "bg-[#1a3a6e] text-white border-[#1a3a6e]" : "bg-white text-gray-500 border-gray-200 hover:border-[#1a3a6e]"}`}>
+                  {getCategoryLabel(cat, "en")}
                 </button>
               ))}
             </div>
@@ -186,8 +181,8 @@ function CompanyDrawer({ company, onClose, onAction }: { company: Company; onClo
           <div>
             <span className="text-gray-500 block text-xs uppercase tracking-wide mb-1.5">Services</span>
             <div className="flex flex-wrap gap-1.5">
-              {(company.serviceTypes ?? []).map((s) => (
-                <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-2 py-1 capitalize">{s.replace("-", " ")}</span>
+              {(company.serviceTypes ?? []).filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).map((s) => (
+                <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-2 py-1">{resolveCategoryLabel(s, "en")}</span>
               ))}
             </div>
           </div>
@@ -330,11 +325,11 @@ export function AdminCompanies() {
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1 max-w-[120px]">
-                    {(company.serviceTypes ?? []).slice(0, 2).map((s: string) => (
-                      <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 capitalize">{s}</span>
+                    {(company.serviceTypes ?? []).filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).slice(0, 2).map((s: string) => (
+                      <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5">{resolveCategoryLabel(s, "en")}</span>
                     ))}
-                    {(company.serviceTypes ?? []).length > 2 && (
-                      <span className="text-xs bg-gray-100 text-gray-500 rounded px-1.5 py-0.5">+{(company.serviceTypes ?? []).length - 2}</span>
+                    {(company.serviceTypes ?? []).filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).length > 2 && (
+                      <span className="text-xs bg-gray-100 text-gray-500 rounded px-1.5 py-0.5">+{(company.serviceTypes ?? []).filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).length - 2}</span>
                     )}
                   </div>
                 </TableCell>
