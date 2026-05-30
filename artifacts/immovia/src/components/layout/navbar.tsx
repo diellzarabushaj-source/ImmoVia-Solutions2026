@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, isServiceProvider, isProjectPoster } from "@/contexts/AuthContext";
 import { useClerk } from "@clerk/react";
 import {
   DropdownMenu,
@@ -22,6 +22,21 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  // Exactly one role drives the post-sign-in nav, enforcing strict separation.
+  // accountType is authoritative; legacy `role` is only a fallback when it's missing.
+  const accountRole: "provider" | "poster" | null = !user
+    ? null
+    : user.accountType === "service_provider"
+      ? "provider"
+      : user.accountType === "project_poster"
+        ? "poster"
+        : isServiceProvider(user)
+          ? "provider"
+          : isProjectPoster(user)
+            ? "poster"
+            : null;
+  const isProvider = accountRole === "provider";
+  const isPoster = accountRole === "poster";
 
   const fetchUnread = useCallback(async () => {
     if (!user) return;
@@ -120,28 +135,52 @@ export function Navbar() {
             </Link>
           ))}
 
-          <div className="w-px h-5 bg-border mx-2 shrink-0" />
+          {(!user || isProvider || isPoster) && (
+            <div className="w-px h-5 bg-border mx-2 shrink-0" />
+          )}
 
-          <Link href="/signup?account_type=project_poster" data-testid="nav-submit-project">
-            <Button
-              size="sm"
-              className={`text-sm ${location === "/submit-project" ? "opacity-90" : ""}`}
-            >
-              {t.nav.submitProject}
-            </Button>
-          </Link>
+          {/* Guests: both role entry points. Logged-in users see only their role's action. */}
+          {!user && (
+            <>
+              <Link href="/signup?account_type=project_poster" data-testid="nav-submit-project">
+                <Button size="sm" className="text-sm">
+                  {t.nav.submitProject}
+                </Button>
+              </Link>
 
-          <Link href="/signup?account_type=service_provider" data-testid="nav-register-company">
-            <Button
-              variant="outline"
-              size="sm"
-              className={`text-sm border-primary/40 text-primary hover:bg-primary/8 hover:border-primary ${
-                location === "/register-company" ? "bg-primary/8 border-primary" : ""
-              }`}
-            >
-              {t.nav.registerCompany}
-            </Button>
-          </Link>
+              <Link href="/signup?account_type=service_provider" data-testid="nav-register-company">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-sm border-primary/40 text-primary hover:bg-primary/8 hover:border-primary"
+                >
+                  {t.nav.registerCompany}
+                </Button>
+              </Link>
+            </>
+          )}
+
+          {user && isPoster && (
+            <Link href="/submit-project" data-testid="nav-submit-project">
+              <Button
+                size="sm"
+                className={`text-sm ${location === "/submit-project" ? "opacity-90" : ""}`}
+              >
+                {t.nav.submitProject}
+              </Button>
+            </Link>
+          )}
+
+          {user && isProvider && (
+            <Link href="/projects" data-testid="nav-find-projects">
+              <Button
+                size="sm"
+                className={`text-sm ${location === "/projects" ? "opacity-90" : ""}`}
+              >
+                {t.nav.findProjects}
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -266,12 +305,26 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <Link href="/signup?account_type=project_poster" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                {t.nav.submitProject}
-              </Link>
-              <Link href="/signup?account_type=service_provider" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                {t.nav.registerCompany}
-              </Link>
+              {!user && (
+                <>
+                  <Link href="/signup?account_type=project_poster" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                    {t.nav.submitProject}
+                  </Link>
+                  <Link href="/signup?account_type=service_provider" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                    {t.nav.registerCompany}
+                  </Link>
+                </>
+              )}
+              {user && isPoster && (
+                <Link href="/submit-project" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                  {t.nav.submitProject}
+                </Link>
+              )}
+              {user && isProvider && (
+                <Link href="/projects" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                  {t.nav.findProjects}
+                </Link>
+              )}
               <div className="border-t border-border mt-2 pt-2 flex flex-col gap-1">
                 {user ? (
                   <>

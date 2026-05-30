@@ -1,8 +1,8 @@
 - [LanguageProvider must not return null](language-provider-null.md) — returning null before isMounted causes HMR crashes; always render children with default 'en'.
+- [Role terminology](role-terminology.md) — exactly two account_types: Project Poster & Service Provider (user picks ONE at signup, never both); subtype individual/company is a separate axis.
 - [Clerk auth integration pattern](clerk-auth-pattern.md) — JIT provisioning, role selection flow, Tailwind v4 layer ordering, and key pitfalls.
 - [Contact gating dual-auth](contact-gating-dual-auth.md) — PII gated at UI + API; isAuthenticated must check BOTH Clerk getAuth and admin session.
 - [Published status differs by table](published-status-divergence.md) — projects public = status "open"; companies public = status "approved". No shared constant.
-- [Canonical role terminology](role-terminology.md) — Type1=Client, Type2=Service Provider (per-language); entity "company" axis & internal account_type keys stay separate.
 - [OpenAPI field add — persistence not automatic](openapi-field-persistence.md) — new request-schema field validates but is dropped unless POST AND PATCH handlers map it into the DB payload.
 - [i18n locale-bypass traps](i18n-locale-bypass.md) — wiring JSX labels isn't enough; hardcoded "en" helper args, raw enum values, and API status labels still leak English.
 - [Provider middleware role mismatch](provider-middleware-role-mismatch.md) — requireProvider/requireContractor must mirror frontend isServiceProvider() (3 conditions) or legacy users 403 on all API calls.

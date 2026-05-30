@@ -287,6 +287,7 @@ export const translations = {
       howItWorks: 'Si Funksionon',
       browseProjects: 'Shfleto Projektet',
       browseServiceProviders: 'Shfleto Ofruesit',
+      findProjects: 'Gjej Projekte',
       blog: 'Blog',
     },
     footer: {
@@ -1345,6 +1346,7 @@ export const translations = {
       howItWorks: 'How It Works',
       browseProjects: 'Browse Projects',
       browseServiceProviders: 'Browse Service Providers',
+      findProjects: 'Find Projects',
       blog: 'Blog',
     },
     footer: {
@@ -2403,6 +2405,7 @@ export const translations = {
       howItWorks: 'So funktioniert es',
       browseProjects: 'Projekte durchsuchen',
       browseServiceProviders: 'Dienstleister durchsuchen',
+      findProjects: 'Projekte finden',
       blog: 'Blog',
     },
     footer: {
@@ -3461,6 +3464,7 @@ export const translations = {
       howItWorks: 'Comment ça marche',
       browseProjects: 'Parcourir les Projets',
       browseServiceProviders: 'Parcourir les Prestataires',
+      findProjects: 'Trouver des projets',
       blog: 'Blog',
     },
     footer: {

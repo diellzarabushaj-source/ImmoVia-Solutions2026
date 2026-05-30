@@ -7,15 +7,19 @@ description: The one approved user-facing name for each of ImmoVia's two account
 
 ImmoVia has exactly two account types. Use ONE canonical user-facing noun for each, everywhere in UI, nav, dashboards, forms, admin, and `translations.ts`:
 
-- **Type 1 — the party posting a project** → **Client**
-  - en: Client · de: Kunde · fr: Client · sq: Klient
+- **Type 1 — the party posting a project** → **Project Poster**
+  - en: Project Poster · de: Projektersteller · fr: Porteur de projet · sq: Posto Projekt
 - **Type 2 — the party offering services** → **Service Provider**
   - en: Service Provider · de: Dienstleister · fr: Prestataire · sq: Ofrues Shërbimi
 
-**Why:** User decision (explicit). Rejected alternatives and their reasons:
+Each type has two subtypes on a SEPARATE axis (account_subtype): **individual** and **company** → "Individual Project Poster", "Company Project Poster", "Individual Service Provider", "Company Service Provider". Never collapse the two axes into one (no `individual_project_poster` enum value).
+
+**Why:** Latest explicit user decision via the canvas spec supersedes the earlier "Client/Kunde/Klient" naming. The user was emphatic: use ONLY "Project Poster" and "Service Provider" everywhere (public pages, dashboards, admin). Do NOT use client, freelancer, worker, employer, contractor, talent, customer, or job seeker. A user is EXACTLY ONE account_type (chosen at signup) — never both. Rejected alternatives:
+- NOT "Client" anymore (was the prior decision; user reversed it).
 - NOT "Homeowner" — a poster may be a tenant, property manager, company, or real-estate owner.
-- NOT "Contractor" — the platform is not construction-only (cleaning, garden, interior design, moving, real-estate services, etc.).
-- "Professional" is allowed only in soft marketing copy, never as the role name.
+- NOT "Contractor" — platform is not construction-only.
+
+**Migration status:** The terminology rename across `translations.ts`/admin is an in-progress effort the user said to START with the Service Provider post-sign-in experience. The single-role separation of the *navbar* (logged-in users see only their own role's CTA) is done; broader Client→Project Poster string rename may still be partial elsewhere.
 
 **How to apply:**
 - Internal/code/DB identifiers stay as-is: `account_type=project_poster` and `account_type=service_provider`. Only the *display* strings change.

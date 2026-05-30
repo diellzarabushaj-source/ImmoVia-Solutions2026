@@ -1,0 +1,131 @@
+Important user role clarification for ImmoVia365:
+
+The platform must have two clearly separated user types:
+
+1. Service Provider
+2. Project Poster
+
+A user must choose only ONE role during registration or onboarding.
+
+A user cannot be both Service Provider and Project Poster with the same account.
+
+Do not allow switching between both dashboards inside the same account.
+
+After sign in, the experience must be completely different depending on the selected role.
+
+Start first with the Service Provider experience after sign in.
+
+SERVICE PROVIDER FLOW AFTER SIGN IN:
+
+When a Service Provider logs in, they should not see Project Poster features.
+
+They should see a Service Provider Dashboard only.
+
+The Service Provider Dashboard should include:
+
+1. Overview
+- welcome message
+- profile completion status
+- active plan / subscription status
+- number of available projects
+- number of applications sent
+- unread messages
+- quick actions
+
+2. Company Profile
+The service provider can create and edit their public company profile:
+- company name
+- logo
+- cover image
+- description
+- services
+- categories
+- subcategories
+- city / region
+- languages
+- gallery / portfolio images
+- experience
+- certifications optional
+- website optional
+- public profile preview
+
+3. Browse Projects
+The service provider can browse projects posted by clients:
+- list of available projects
+- filter by city
+- filter by service/category
+- filter by budget optional
+- filter by project status
+- open project details
+- save project optional
+
+4. Apply to Project
+The service provider can apply to a project:
+- write message/offer
+- optional estimated price
+- optional availability date
+- submit application
+- see application status
+
+5. My Applications
+The service provider can see all applications they sent:
+- project title
+- client/project poster name if public
+- status: sent, viewed, accepted, rejected
+- date sent
+- messages related to that application
+
+6. Messages
+The service provider can message project posters only when there is a project/application connection.
+The messaging system should be connected to projects and applications.
+Do not create a random social messenger.
+Messages should be project-based.
+
+7. Plan / Subscription
+The service provider can see their plan:
+- Starter
+- Professional
+- Premium
+Show limits clearly, for example:
+Starter: up to 20 project applications/messages
+Professional: up to 60 project applications/messages
+Premium: unlimited
+The exact limits can be adjusted later.
+
+8. Settings
+- account settings
+- notification settings
+- language settings
+- logout
+
+PROJECT POSTER FEATURES MUST NOT APPEAR IN SERVICE PROVIDER DASHBOARD.
+
+Do not show:
+- post new project
+- my posted projects
+- received offers as project owner
+- project owner dashboard
+
+Those belong only to Project Poster accounts.
+
+DATABASE / AUTH LOGIC:
+
+Add a user role field:
+role = "service_provider" OR "project_poster"
+
+After login:
+if role === "service_provider":
+redirect to /dashboard/provider
+
+if role === "project_poster":
+redirect to /dashboard/poster
+
+Do not allow one account to access both dashboards.
+
+If a user tries to open the wrong dashboard route, redirect them to their correct dashboard.
+
+Design goal:
+Make the Service Provider dashboard clean, simple, professional, and focused only on finding projects, applying, managing profile, messages, and plan.
+
+Please implement or refactor the app so the role separation is strict and clear.
+Start with the Service Provider dashboard after sign in.
