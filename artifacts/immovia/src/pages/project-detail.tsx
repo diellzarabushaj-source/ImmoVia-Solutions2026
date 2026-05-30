@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRoute, Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
+import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 import { Button } from "@/components/ui/button";
@@ -70,14 +71,14 @@ function getPostedLabel(createdAt: string, listings: { today: string; yesterday:
 
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:id");
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const id = params?.id;
 
   const [project, setProject] = useState<Project | null>(null);
 
   usePageMeta({
     title: project
-      ? `${t.projectDetail.seoProject} ${t.offers[project.projectType as keyof typeof t.offers] ?? project.projectType} ${t.projectDetail.seoIn} ${project.city} — ImmoVia`
+      ? `${t.projectDetail.seoProject} ${getCategoryLabel(CATEGORIES.find(c => c.key === project.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)} ${t.projectDetail.seoIn} ${project.city} — ImmoVia`
       : null,
     description: project?.description ? project.description.slice(0, 160) : null,
   });

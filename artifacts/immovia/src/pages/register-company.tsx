@@ -20,6 +20,7 @@ import {
   FormDescription
 } from "@/components/ui/form";
 import { CheckCircle2, User, Building2 } from "lucide-react";
+import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function RegisterCompany() {
@@ -76,13 +77,10 @@ export default function RegisterCompany() {
     });
   };
 
-  const servicesList = [
-    { id: "renovation", label: t.offers.renovation },
-    { id: "construction", label: t.offers.construction },
-    { id: "interior", label: t.offers.interior },
-    { id: "exterior", label: t.offers.exterior },
-    { id: "other", label: t.offers.other },
-  ];
+  const servicesList = CATEGORIES.map(cat => ({
+    id: cat.key,
+    label: getCategoryLabel(cat, language as Lang),
+  }));
 
   if (isSubmitted) {
     const subtext: Record<string, string> = {

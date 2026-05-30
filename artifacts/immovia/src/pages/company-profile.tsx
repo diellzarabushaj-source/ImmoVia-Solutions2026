@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRoute, Link, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
+import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -98,7 +99,7 @@ function CompanyAvatar({ name, profilePhoto, workerType, size = "xl" }: { name: 
 
 export default function CompanyProfile() {
   const [, params] = useRoute("/companies/:id");
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const id = params?.id;
@@ -251,7 +252,7 @@ export default function CompanyProfile() {
                 <div className="flex flex-wrap gap-1.5">
                   {company.serviceTypes.map(svc => (
                     <span key={svc} className="px-2.5 py-1 rounded-full bg-primary/8 text-primary text-xs font-medium capitalize">
-                      {t.offers[svc as keyof typeof t.offers] ?? svc}
+                      {getCategoryLabel(CATEGORIES.find(c => c.key === svc) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}
                     </span>
                   ))}
                 </div>

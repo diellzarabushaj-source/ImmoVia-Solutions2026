@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
+import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
 import {
   billingApi,
   offerCostFor,
@@ -1080,8 +1081,8 @@ export default function ProviderDashboard() {
                   className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="">{t.provider.filterAllTypes}</option>
-                  {["renovation","construction","interior","exterior","plumbing","electric"].map(tp => (
-                    <option key={tp} value={tp} className="capitalize">{t.offers[tp as keyof typeof t.offers] ?? tp}</option>
+                  {CATEGORIES.map(cat => (
+                    <option key={cat.key} value={cat.key}>{getCategoryLabel(cat, language as Lang)}</option>
                   ))}
                 </select>
                 <div className="relative">
@@ -1181,7 +1182,7 @@ export default function ProviderDashboard() {
                           {filtered.map(p => (
                             <TableRow key={p.id}>
                               <TableCell className="font-medium">{p.fullName}</TableCell>
-                              <TableCell className="capitalize">{t.offers[p.projectType as keyof typeof t.offers] ?? p.projectType}</TableCell>
+                              <TableCell>{getCategoryLabel(CATEGORIES.find(c => c.key === p.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}</TableCell>
                               <TableCell>{p.city}</TableCell>
                               <TableCell className="capitalize">{p.size}</TableCell>
                               <TableCell className="text-right">
@@ -1217,7 +1218,7 @@ export default function ProviderDashboard() {
                             )}
                             <div className="absolute top-2.5 left-2.5">
                               <Badge className="capitalize bg-white/90 text-primary border-primary/20 backdrop-blur-sm text-xs shadow-sm">
-                                {t.offers[p.projectType as keyof typeof t.offers] ?? p.projectType}
+                                {getCategoryLabel(CATEGORIES.find(c => c.key === p.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}
                               </Badge>
                             </div>
                             {hasPhotos && p.photos.length > 1 && (
@@ -1698,7 +1699,7 @@ export default function ProviderDashboard() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-muted/40 rounded-lg p-3">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.colType}</p>
-                <p className="font-medium capitalize">{t.offers[detailProject?.projectType as keyof typeof t.offers] ?? detailProject?.projectType}</p>
+                <p className="font-medium">{detailProject?.projectType ? getCategoryLabel(CATEGORIES.find(c => c.key === detailProject.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang) : ""}</p>
               </div>
               <div className="bg-muted/40 rounded-lg p-3">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.colSize}</p>

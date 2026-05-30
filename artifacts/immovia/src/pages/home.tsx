@@ -20,6 +20,11 @@ import {
   TreePine,
   Wrench,
   Plug,
+  Paintbrush,
+  ChefHat,
+  SquareStack,
+  Leaf,
+  HelpCircle,
   Star,
   Users,
   Globe,
@@ -37,6 +42,7 @@ import {
   LocateFixed,
   Loader2,
 } from "lucide-react";
+import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
   animate: { opacity: 1, y: 0 },
@@ -110,13 +116,19 @@ function CompanyPreviewCard({ company, t }: { company: { id: number; companyName
 }
 
 const SERVICE_ICONS: Record<string, React.ElementType> = {
-  renovation: Hammer,
-  construction: Building2,
-  interior: Sofa,
-  exterior: TreePine,
-  plumbing: Wrench,
-  electric: Plug,
-  other: Briefcase,
+  renovation:     Hammer,
+  painting:       Paintbrush,
+  electrical:     Zap,
+  plumbing:       Wrench,
+  kitchen:        ChefHat,
+  flooring:       SquareStack,
+  interior_design: Sofa,
+  cleaning:       Leaf,
+  other:          HelpCircle,
+  construction:   Building2,
+  interior:       Sofa,
+  exterior:       TreePine,
+  electric:       Plug,
 };
 
 const SIZE_COLORS: Record<string, string> = {
@@ -191,7 +203,7 @@ function ProjectPreviewCard({ project, t }: {
 }
 
 export default function Home() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   usePageMeta({ title: "ImmoVia", description: t.hero.subtitle });
   const { user } = useAuth();
   const search = useSearch();
@@ -313,7 +325,7 @@ export default function Home() {
     );
   };
 
-  const SEARCH_CATEGORIES = ["renovation", "construction", "interior", "exterior", "plumbing", "electric"] as const;
+  const SEARCH_CATEGORIES = CATEGORIES.map(c => c.key);
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (searchKeyword.trim()) params.set("keyword", searchKeyword.trim());
@@ -323,56 +335,13 @@ export default function Home() {
     navigate(activeTab === "service" ? `/companies${qs ? `?${qs}` : ""}` : `/projects${qs ? `?${qs}` : ""}`);
   };
 
-  const services = [
-    {
-      icon: Hammer,
-      title: t.offers.renovation,
-      desc: t.offers.renovationDesc,
-      price: t.offers.renovationPrice,
-      photo: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&q=80&fit=crop",
-      serviceKey: "renovation",
-    },
-    {
-      icon: Building2,
-      title: t.offers.construction,
-      desc: t.offers.constructionDesc,
-      price: t.offers.constructionPrice,
-      photo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80&fit=crop",
-      serviceKey: "construction",
-    },
-    {
-      icon: Sofa,
-      title: t.offers.interior,
-      desc: t.offers.interiorDesc,
-      price: t.offers.interiorPrice,
-      photo: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&q=80&fit=crop",
-      serviceKey: "interior",
-    },
-    {
-      icon: TreePine,
-      title: t.offers.exterior,
-      desc: t.offers.exteriorDesc,
-      price: t.offers.exteriorPrice,
-      photo: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop",
-      serviceKey: "exterior",
-    },
-    {
-      icon: Wrench,
-      title: t.offers.plumbing,
-      desc: t.offers.plumbingDesc,
-      price: t.offers.plumbingPrice,
-      photo: "https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=600&q=80&fit=crop",
-      serviceKey: "plumbing",
-    },
-    {
-      icon: Plug,
-      title: t.offers.electric,
-      desc: t.offers.electricDesc,
-      price: t.offers.electricPrice,
-      photo: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80&fit=crop",
-      serviceKey: "electric",
-    },
-  ];
+  const services = CATEGORIES.map(cat => ({
+    icon: SERVICE_ICONS[cat.key] ?? Briefcase,
+    title: getCategoryLabel(cat, language as Lang),
+    desc: cat.tags.slice(0, 3).map(tag => getTagLabel(tag, language as Lang)).join(" · "),
+    photo: cat.photo,
+    serviceKey: cat.key,
+  }));
 
   const whyUs = [
     { icon: Shield, title: t.why.verified, desc: t.why.verifiedDesc },
@@ -818,10 +787,7 @@ export default function Home() {
                     <div className="absolute bottom-0 left-0 right-0 p-5">
                       <h3 className="font-bold text-white text-lg leading-tight mb-1">{s.title}</h3>
                       <p className="text-white/75 text-xs leading-relaxed line-clamp-2 mb-3">{s.desc}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold bg-primary/90 text-white px-2.5 py-1 rounded-full">
-                          {s.price}
-                        </span>
+                      <div className="flex items-center justify-end">
                         <span className="flex items-center gap-1 text-xs text-white/80 group-hover:text-white transition-colors font-medium">
                           {t.offers.cta}
                           <ChevronRight className="w-3 h-3" />
@@ -859,8 +825,8 @@ export default function Home() {
               className="h-9 rounded-lg border border-border bg-muted/40 px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="">{t.listings.filterAllTypes ?? "All types"}</option>
-              {["renovation","construction","interior","exterior","plumbing","electric"].map(tp => (
-                <option key={tp} value={tp}>{(t.offers as Record<string,string>)[tp] ?? tp}</option>
+              {CATEGORIES.map(cat => (
+                <option key={cat.key} value={cat.key}>{getCategoryLabel(cat, language as Lang)}</option>
               ))}
             </select>
             <div className="relative">

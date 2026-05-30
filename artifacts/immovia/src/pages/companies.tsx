@@ -15,9 +15,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
-const SERVICE_OPTIONS = [
-  "renovation", "construction", "interior", "exterior", "plumbing", "electric",
-];
+import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
+
+const SERVICE_OPTIONS = CATEGORIES.map(c => c.key);
 
 const KNOWN_CITIES = [
   // Albania
@@ -69,7 +69,7 @@ function CompanyAvatar({ name, profilePhoto, workerType, size = "md" }: { name: 
 }
 
 export default function Companies() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   usePageMeta({ title: `${t.companies.title} — ImmoVia`, description: t.companies.subtitle ?? undefined });
   const search = useSearch();
@@ -295,7 +295,7 @@ export default function Companies() {
                     : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
                 }`}
               >
-                {t.offers[svc as keyof typeof t.offers] ?? svc}
+                {getCategoryLabel(CATEGORIES.find(c => c.key === svc) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}
               </button>
             ))}
           </div>
@@ -447,7 +447,7 @@ export default function Companies() {
         {!isLoading && !isError && (
           <p className="text-sm text-muted-foreground mb-6">
             {filtered.length} {filtered.length === 1 ? (t.companies.result ?? "result") : (t.companies.results ?? "results")}
-            {activeServices.length > 0 && <> · <span className="text-primary font-medium">{activeServices.map(s => t.offers[s as keyof typeof t.offers] ?? s).join(", ")}</span></>}
+            {activeServices.length > 0 && <> · <span className="text-primary font-medium">{activeServices.map(s => getCategoryLabel(CATEGORIES.find(c => c.key === s) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)).join(", ")}</span></>}
             {workerTypeFilter && <> · <span className="text-primary font-medium">{workerTypeFilter === "individual" ? (t.companies.individual ?? "Individual") : (t.companies.company ?? "Company")}</span></>}
           </p>
         )}
@@ -574,7 +574,7 @@ export default function Companies() {
                           onClick={e => { e.stopPropagation(); setActiveServices(prev => prev.includes(svc) ? prev.filter(s => s !== svc) : [...prev, svc]); }}
                           className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium hover:bg-primary/15 transition-colors capitalize"
                         >
-                          {t.offers[svc as keyof typeof t.offers] ?? svc}
+                          {getCategoryLabel(CATEGORIES.find(c => c.key === svc) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}
                         </button>
                       ))}
                       {company.serviceTypes.length > 3 && (
@@ -650,7 +650,7 @@ export default function Companies() {
                         <div className="flex flex-wrap gap-1.5">
                           {company.serviceTypes.slice(0, 3).map(svc => (
                             <span key={svc} className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium capitalize">
-                              {t.offers[svc as keyof typeof t.offers] ?? svc}
+                              {getCategoryLabel(CATEGORIES.find(c => c.key === svc) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}
                             </span>
                           ))}
                         </div>

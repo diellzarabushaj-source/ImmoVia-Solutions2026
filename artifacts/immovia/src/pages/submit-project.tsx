@@ -27,10 +27,11 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Hammer, Building2, Sofa, TreePine, Wrench, CheckCircle2, Home as HomeIcon, Crown, Sparkles, Layers, Zap, Paintbrush, FlameKindling, ChefHat, Leaf, Star, SquareStack, HelpCircle } from "lucide-react";
+import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function SubmitProject() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);
@@ -112,23 +113,22 @@ export default function SubmitProject() {
     window.scrollTo(0, 0);
   };
 
-  const projectTypes = [
-    { id: "cat_renovation", icon: Hammer, label: t.customer.cat_renovation },
-    { id: "cat_construction", icon: Building2, label: t.customer.cat_construction },
-    { id: "cat_interior", icon: Sofa, label: t.customer.cat_interior },
-    { id: "cat_facade", icon: Layers, label: t.customer.cat_facade },
-    { id: "cat_plumbing", icon: Wrench, label: t.customer.cat_plumbing },
-    { id: "cat_electrical", icon: Zap, label: t.customer.cat_electrical },
-    { id: "cat_painting", icon: Paintbrush, label: t.customer.cat_painting },
-    { id: "cat_flooring", icon: SquareStack, label: t.customer.cat_flooring },
-    { id: "cat_heating", icon: FlameKindling, label: t.customer.cat_heating },
-    { id: "cat_kitchen", icon: ChefHat, label: t.customer.cat_kitchen },
-    { id: "cat_garden", icon: TreePine, label: t.customer.cat_garden },
-    { id: "cat_cleaning", icon: Sparkles, label: t.customer.cat_cleaning },
-    { id: "cat_roofing", icon: HomeIcon, label: t.customer.cat_roofing },
-    { id: "cat_property", icon: Crown, label: t.customer.cat_property },
-    { id: "cat_other", icon: HelpCircle, label: t.customer.cat_other },
-  ];
+  const SUBMIT_ICONS: Record<string, React.ElementType> = {
+    renovation:     Hammer,
+    painting:       Paintbrush,
+    electrical:     Zap,
+    plumbing:       Wrench,
+    kitchen:        ChefHat,
+    flooring:       SquareStack,
+    interior_design: Sofa,
+    cleaning:       Leaf,
+    other:          HelpCircle,
+  };
+  const projectTypes = CATEGORIES.map(cat => ({
+    id: cat.key,
+    icon: SUBMIT_ICONS[cat.key] ?? HelpCircle,
+    label: getCategoryLabel(cat, language as Lang),
+  }));
 
   if (!authLoading && !user) {
     return (

@@ -1,0 +1,157 @@
+Please update the “Our Professionals” category system with full multilingual support.
+
+Write and store the base category structure in English, but the platform must support translations for:
+- German (DE) as the default/main language
+- English (EN)
+- Albanian (SQ)
+- French (FR)
+
+Important language logic:
+- German must be the default visible language.
+- If the user selects English, show English labels.
+- If the user selects Albanian, show Albanian labels.
+- If the user selects French, show French labels.
+- If no language is selected, always show German.
+- Do not show all languages at once in the UI.
+- Do not create duplicate categories for each language.
+- Use one category object with translation fields.
+- Replit should generate or map the translations automatically for DE, SQ and FR based on the English base labels.
+
+Recommended data structure:
+label: {
+  en: "...",
+  de: "...",
+  sq: "...",
+  fr: "..."
+}
+
+tags: [
+  {
+    label: {
+      en: "...",
+      de: "...",
+      sq: "...",
+      fr: "..."
+    }
+  }
+]
+
+Important category logic:
+- Use 9 main categories.
+- Every main category must have its own image/photo.
+- The image should be displayed on the category card.
+- Category images must be manageable from Admin.
+- If a category image is missing, show a clean placeholder.
+- Every category must include “Other” as the final tag.
+- Also include “Other” as the 9th main category for requests that do not fit anywhere else.
+- Keep the UI simple, professional and not overloaded.
+
+Use this English base structure:
+
+1. Renovation & Remodeling
+Image idea: modern renovation or construction interior project
+Tags:
+- Apartment renovation
+- House renovation
+- Interior finishing
+- Old building renovation
+- Full renovation
+- Other
+
+2. Painting & Plastering
+Image idea: painter working on a clean interior wall
+Tags:
+- Interior painting
+- Exterior painting
+- Wall design
+- Plastering
+- Facade work
+- Other
+
+3. Electrical & Smart Home
+Image idea: electrician installing lighting or smart home system
+Tags:
+- Electrical installation
+- Lighting
+- Sockets & switches
+- Smart home
+- Security systems
+- Other
+
+4. Plumbing & Bathroom
+Image idea: modern bathroom renovation or plumber working
+Tags:
+- Bathroom renovation
+- Plumbing installation
+- Shower & bathtub
+- Water connections
+- Repairs
+- Other
+
+5. Kitchen & Carpentry
+Image idea: modern kitchen installation or carpenter working with wood
+Tags:
+- Kitchen renovation
+- Kitchen installation
+- Custom furniture
+- Built-in cabinets
+- Doors & woodwork
+- Other
+
+6. Flooring & Tiles
+Image idea: flooring installation, parquet or tiles
+Tags:
+- Parquet
+- Laminate
+- Vinyl flooring
+- Tiles
+- Floor repair
+- Other
+
+7. Interior Design & Home Staging
+Image idea: stylish modern living room or staged property interior
+Tags:
+- Room concept
+- Furnishing
+- Color concept
+- Lighting concept
+- Property styling
+- Other
+
+8. Cleaning, Garden & Property Services
+Image idea: property maintenance, clean home, garden or facility service
+Tags:
+- Move-out cleaning
+- Construction cleaning
+- Garden maintenance
+- Facility maintenance
+- Property services
+- Other
+
+9. Other
+Image idea: general home service, tools or professional service concept
+Tags:
+- General request
+- Not sure yet
+- Custom project
+- Consultation
+- Special service
+- Other
+
+Make sure these categories, tags, images and translations are used consistently across:
+- Our Professionals section
+- Service Provider onboarding
+- Project posting form
+- Provider matching
+- Admin category management
+- Search and filters
+- Any project category dropdowns
+- Any professional category cards
+
+Important:
+- German should be the primary/default language in the user interface.
+- The English base labels are only for clean development structure.
+- Replit should automatically translate or map the labels into German, Albanian and French.
+- Admin should be able to edit category images and multilingual labels.
+- Do not add too many extra categories or tags.
+- Keep the UI clean, modern, professional and easy to understand.
