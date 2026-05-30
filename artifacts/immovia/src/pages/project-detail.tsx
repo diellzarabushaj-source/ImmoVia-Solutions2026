@@ -298,10 +298,10 @@ export default function ProjectDetail() {
                       key={i}
                       type="button"
                       className="aspect-square rounded-xl overflow-hidden border border-border hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary"
-                      onClick={() => setLightboxSrc(src.startsWith("/api") ? src : `/api/storage${src}`)}
+                      onClick={() => setLightboxSrc(src.startsWith("http") ? src : src.startsWith("/api") ? src : `/api/storage${src}`)}
                     >
                       <img
-                        src={src.startsWith("/api") ? src : `/api/storage${src}`}
+                        src={src.startsWith("http") ? src : src.startsWith("/api") ? src : `/api/storage${src}`}
                         alt={`Photo ${i + 1}`}
                         className="w-full h-full object-cover"
                       />
