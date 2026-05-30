@@ -150,24 +150,27 @@ function ProjectPreviewCard({ project, t }: {
   return (
     <Link href={`/projects/${project.id}`}>
     <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden h-full cursor-pointer group">
-      {/* Header strip */}
-      <div className="px-5 pt-5 pb-4 border-b border-border/50 flex gap-3 items-start">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <Icon className="w-5 h-5 text-primary" />
+      {/* Header */}
+      <div className="px-5 pt-5 pb-4">
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 flex-1">{cardTitle}</h3>
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 mt-0.5 ${sizeColor}`}>{sizeLabel}</span>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-foreground text-sm leading-tight">{cardTitle}</h3>
-          <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
-            <MapPin className="h-3 w-3 flex-shrink-0" />
-            <span>{project.city}</span>
-          </div>
+        {/* Category pill */}
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+          <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+          {typeLabel}
+        </span>
+        {/* City */}
+        <div className="flex items-center gap-1 text-muted-foreground text-xs mt-2">
+          <MapPin className="h-3 w-3 flex-shrink-0" />
+          <span>{project.city}</span>
         </div>
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${sizeColor}`}>{sizeLabel}</span>
       </div>
       {/* Body */}
-      <div className="px-5 py-4 flex-1 flex flex-col gap-3">
-        <p className="text-sm text-foreground/75 leading-relaxed line-clamp-2">{project.description}</p>
-        <div className="flex items-center justify-between mt-auto">
+      <div className="px-5 pb-4 flex-1 flex flex-col gap-3 border-t border-border/40 pt-3">
+        <p className="text-sm text-foreground/70 leading-relaxed line-clamp-2">{project.description}</p>
+        <div className="flex items-center justify-between mt-auto pt-1">
           {project.budget ? (
             <div className="flex items-center gap-1.5 text-primary font-bold text-sm">
               <FileText className="h-3.5 w-3.5" />
