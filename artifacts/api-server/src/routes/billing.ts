@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import {
   db,
   subscriptionPlansTable,
@@ -8,6 +8,7 @@ import {
   paymentsTable,
   invoicesTable,
   immocreditTransactionsTable,
+  offersTable,
 } from "@workspace/db";
 import { requireProvider } from "../middlewares/requireProvider";
 import { paymentProvider } from "../payments";
@@ -19,6 +20,30 @@ import {
 } from "../lib/credits";
 
 const router: IRouter = Router();
+
+export const PLAN_APP_LIMITS: Record<string, number> = {
+  free: 2,
+  starter: 10,
+  professional: 30,
+  premium: 100,
+  founding: 10,
+};
+
+export const PLAN_CONTACT_VISIBLE: Record<string, boolean> = {
+  free: false,
+  starter: true,
+  professional: true,
+  premium: true,
+  founding: true,
+};
+
+export const PLAN_BADGES: Record<string, string> = {
+  free: "Basic Anbieter",
+  starter: "Aktiver Anbieter",
+  professional: "Verifizierter Anbieter",
+  premium: "Top Anbieter",
+  founding: "Founding Anbieter",
+};
 
 // Public catalogs
 router.get("/plans", async (_req, res): Promise<void> => {
@@ -76,6 +101,53 @@ router.get("/provider/transactions", requireProvider, async (req, res): Promise<
   res.json(rows);
 });
 
+router.get("/provider/app-stats", requireProvider, async (req, res): Promise<void> => {
+  const userId = req.userId!;
+  await rollSubscriptionCycle(userId);
+
+  const [sub] = await db
+    .select()
+    .from(subscriptionsTable)
+    .where(eq(subscriptionsTable.userId, userId))
+    .orderBy(desc(subscriptionsTable.id))
+    .limit(1);
+
+  let plan = null;
+  if (sub) {
+    const [p] = await db
+      .select()
+      .from(subscriptionPlansTable)
+      .where(eq(subscriptionPlansTable.id, sub.planId));
+    plan = p ?? null;
+  }
+
+  const planSlug = plan?.slug ?? "free";
+  const appLimit = PLAN_APP_LIMITS[planSlug] ?? 2;
+  const contactVisible = PLAN_CONTACT_VISIBLE[planSlug] ?? false;
+  const badge = PLAN_BADGES[planSlug] ?? "Basic Anbieter";
+
+  const periodStart =
+    sub?.currentPeriodStart ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+  const [{ usedThisMonth }] = await db
+    .select({ usedThisMonth: sql<number>`count(*)::int` })
+    .from(offersTable)
+    .where(and(eq(offersTable.providerUserId, userId), gte(offersTable.createdAt, periodStart)));
+
+  res.json({
+    planSlug,
+    planName: plan?.name ?? "Free",
+    priceCents: plan?.priceCents ?? 0,
+    appLimit,
+    usedThisMonth: usedThisMonth ?? 0,
+    contactVisible,
+    badge,
+    periodStart: sub?.currentPeriodStart ?? periodStart,
+    periodEnd: sub?.currentPeriodEnd ?? null,
+    features: plan?.features ?? [],
+  });
+});
+
 router.get("/billing/payments", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;
   const rows = await db
@@ -115,13 +187,11 @@ router.post("/billing/subscribe", requireProvider, async (req, res): Promise<voi
     return;
   }
 
-  // Cancel previous active subs (mocked).
   await db
     .update(subscriptionsTable)
     .set({ status: "canceled" })
     .where(eq(subscriptionsTable.userId, userId));
 
-  // TODO(stripe): replace with real Stripe subscription creation.
   const result = await paymentProvider.createSubscription({
     userId,
     planSlug: plan.slug,
@@ -149,7 +219,7 @@ router.post("/billing/subscribe", requireProvider, async (req, res): Promise<voi
         kind: "subscription",
         refSlug: plan.slug,
         amountCents: plan.priceCents,
-        currency: "EUR",
+        currency: "CHF",
         providerRef: result.providerRef,
         status: "succeeded",
       })
@@ -162,7 +232,6 @@ router.post("/billing/subscribe", requireProvider, async (req, res): Promise<voi
     }
   }
 
-  // Grant monthly credits immediately.
   if (plan.monthlyCredits > 0) {
     await grantMonthlyCredits(
       userId,
@@ -192,7 +261,6 @@ router.post("/billing/buy-pack", requireProvider, async (req, res): Promise<void
     return;
   }
 
-  // TODO(stripe): replace with real Stripe one-time charge.
   const result = await paymentProvider.chargeOnce({
     userId,
     packSlug: pack.slug,
@@ -206,7 +274,7 @@ router.post("/billing/buy-pack", requireProvider, async (req, res): Promise<void
       kind: "pack",
       refSlug: pack.slug,
       amountCents: pack.priceCents,
-      currency: "EUR",
+      currency: "CHF",
       providerRef: result.providerRef,
       status: "succeeded",
     })

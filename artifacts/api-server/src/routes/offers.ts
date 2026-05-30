@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, sql } from "drizzle-orm";
-import { db, offersTable, projectsTable, usersTable } from "@workspace/db";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { db, offersTable, projectsTable, usersTable, subscriptionsTable, subscriptionPlansTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { requireProvider } from "../middlewares/requireProvider";
 import {
@@ -81,6 +81,35 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
   }
 
   await rollSubscriptionCycle(userId);
+
+  // Monthly application limit check
+  const PLAN_APP_LIMITS: Record<string, number> = {
+    free: 2, starter: 10, professional: 30, premium: 100, founding: 10,
+  };
+  const [activeSub] = await db
+    .select()
+    .from(subscriptionsTable)
+    .where(eq(subscriptionsTable.userId, userId))
+    .orderBy(desc(subscriptionsTable.id))
+    .limit(1);
+  const [activePlan] = activeSub
+    ? await db.select().from(subscriptionPlansTable).where(eq(subscriptionPlansTable.id, activeSub.planId))
+    : [null];
+  const planSlug = activePlan?.slug ?? "free";
+  const appLimit = PLAN_APP_LIMITS[planSlug] ?? 2;
+  const periodStart = activeSub?.currentPeriodStart ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const [{ monthlyUsed }] = await db
+    .select({ monthlyUsed: sql<number>`count(*)::int` })
+    .from(offersTable)
+    .where(and(eq(offersTable.providerUserId, userId), gte(offersTable.createdAt, periodStart)));
+  if ((monthlyUsed ?? 0) >= appLimit) {
+    res.status(429).json({
+      error: "Monatliches Bewerbungslimit erreicht. Upgraden Sie Ihren Plan.",
+      code: "APP_LIMIT_REACHED",
+    });
+    return;
+  }
+
   const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, projectId));
   if (!project) {
     res.status(404).json({ error: "Project not found" });

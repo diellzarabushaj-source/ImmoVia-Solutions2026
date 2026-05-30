@@ -9,14 +9,13 @@ import {
   type ImmoTransaction,
   type ProviderOffer,
   type ProviderProject,
-  type SubscriptionPlan,
+  type AppStats,
   type PaymentRow,
   type InvoiceRow,
 } from "@/lib/billing-api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -36,21 +35,268 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Coins, Loader2, ArrowUpRight, Sparkles, Flame, Star, MessageSquare, ChevronDown, ChevronUp, MapPin, CalendarDays, Wallet, Clock, Images, ChevronLeft, ChevronRight, LayoutGrid, List, X } from "lucide-react";
+import {
+  Loader2,
+  ArrowUpRight,
+  Sparkles,
+  Flame,
+  Star,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  CalendarDays,
+  Wallet,
+  Clock,
+  Images,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  List,
+  X,
+  LayoutDashboard,
+  User,
+  Search,
+  FileText,
+  CreditCard,
+  Eye,
+  Receipt,
+  Settings,
+  Check,
+  Phone,
+  Mail,
+  Globe,
+  ShieldCheck,
+  ShieldOff,
+  Award,
+} from "lucide-react";
 import MessageThread from "@/components/MessageThread";
 import { format } from "date-fns";
 
-function formatEUR(cents: number): string {
-  return `€${(cents / 100).toFixed(2)}`;
+function formatCHF(cents: number): string {
+  if (cents === 0) return "CHF 0";
+  return `CHF ${(cents / 100).toFixed(0)}`;
 }
+
+const L: Record<string, Record<string, string>> = {
+  sq: {
+    navOverview: "Gjithëpamje",
+    navProfile: "Profili im",
+    navProjects: "Gjej Projekte",
+    navApplications: "Aplikimet e mia",
+    navPlan: "Plani im",
+    navVisibility: "Dukshmëria",
+    navReviews: "Vlerësimet",
+    navInvoices: "Faturat",
+    navSettings: "Cilësimet",
+    appsThisMonth: "Aplikime këtë muaj",
+    appsLimit: "Kufiri",
+    contactVisible: "Kontaktet të dukshme",
+    contactHidden: "Kontaktet të fshehura",
+    planBadge: "Distinktivi juaj",
+    upgradeNow: "Ndrysho planin",
+    limitReached: "Kufiri mujor arritur",
+    visibility: "Dukshmëria e profilit",
+    includedFeatures: "Çfarë përfshin plani",
+    reviewsComingSoon: "Vlerësimet vijnë së shpejti",
+    settingsComingSoon: "Cilësimet vijnë së shpejti",
+    profileComingSoon: "Redaktimi i profilit vjen së shpejti",
+    profileViewPublic: "Shiko profilin publik",
+    overviewWelcome: "Paneli juaj i ofruesit",
+    applications: "Aplikime",
+    currentPlan: "Plani aktual",
+    upgradeBtn: "Ndrysho planin",
+    visRowContacts: "Kontaktet (telefon, email, website)",
+    visRowBadge: "Distinktivi i ofruesit",
+    visRowRanking: "Renditja në listë",
+    visRowPortfolio: "Fotot e portfolio",
+    visValueFree: "Nuk shfaqet",
+    visValueVisible: "Shfaqet",
+    visValueBasic: "Bazike (3 foto)",
+    visValueFull: "E plotë (10 foto)",
+    visValueUnlimited: "E pakufizuar",
+    visValuePriority: "Prioritare",
+    visValueStandard: "Standarde",
+    settingsSoon: "Cilësimet e llogarisë vijnë së shpejti.",
+    profileSoon: "Redaktimi i detajuar i profilit vjen së shpejti.",
+    planAppsPerMonth: "aplikime / muaj",
+    invoicesTitle: "Rechnungen",
+    noPayments: "Asnjë pagesë ende.",
+    noInvoices: "Asnjë faturë ende.",
+    downloadPdf: "Shkarko",
+    paymentHistory: "Historiku i pagesave",
+    nextBilling: "Faturimi tjetër",
+    periodEnd: "Fundi i periudhës",
+  },
+  en: {
+    navOverview: "Overview",
+    navProfile: "My Profile",
+    navProjects: "Find Projects",
+    navApplications: "My Applications",
+    navPlan: "My Plan",
+    navVisibility: "Visibility",
+    navReviews: "Reviews",
+    navInvoices: "Invoices",
+    navSettings: "Settings",
+    appsThisMonth: "Applications this month",
+    appsLimit: "Limit",
+    contactVisible: "Contact details visible",
+    contactHidden: "Contact details hidden",
+    planBadge: "Your badge",
+    upgradeNow: "Upgrade now",
+    limitReached: "Monthly limit reached",
+    visibility: "Your profile visibility",
+    includedFeatures: "What your plan includes",
+    reviewsComingSoon: "Reviews coming soon",
+    settingsComingSoon: "Settings coming soon",
+    profileComingSoon: "Profile editing coming soon",
+    profileViewPublic: "View public profile",
+    overviewWelcome: "Your provider dashboard",
+    applications: "Applications",
+    currentPlan: "Current plan",
+    upgradeBtn: "Upgrade plan",
+    visRowContacts: "Contacts (phone, email, website)",
+    visRowBadge: "Provider badge",
+    visRowRanking: "Ranking in listings",
+    visRowPortfolio: "Portfolio photos",
+    visValueFree: "Hidden",
+    visValueVisible: "Visible",
+    visValueBasic: "Basic (3 photos)",
+    visValueFull: "Full (10 photos)",
+    visValueUnlimited: "Unlimited",
+    visValuePriority: "Priority",
+    visValueStandard: "Standard",
+    settingsSoon: "Account settings coming soon.",
+    profileSoon: "Detailed profile editing coming soon.",
+    planAppsPerMonth: "applications / month",
+    invoicesTitle: "Invoices",
+    noPayments: "No payments yet.",
+    noInvoices: "No invoices yet.",
+    downloadPdf: "Download",
+    paymentHistory: "Payment history",
+    nextBilling: "Next billing",
+    periodEnd: "Period end",
+  },
+  de: {
+    navOverview: "Übersicht",
+    navProfile: "Mein Anbieterprofil",
+    navProjects: "Projekte finden",
+    navApplications: "Meine Bewerbungen",
+    navPlan: "Mein Plan",
+    navVisibility: "Sichtbarkeit",
+    navReviews: "Bewertungen",
+    navInvoices: "Rechnungen",
+    navSettings: "Einstellungen",
+    appsThisMonth: "Bewerbungen diesen Monat",
+    appsLimit: "Limit",
+    contactVisible: "Kontaktdaten sichtbar",
+    contactHidden: "Kontaktdaten verborgen",
+    planBadge: "Ihr Abzeichen",
+    upgradeNow: "Jetzt upgraden",
+    limitReached: "Monatliches Limit erreicht",
+    visibility: "Ihre Profilsichtbarkeit",
+    includedFeatures: "Was Ihr Plan enthält",
+    reviewsComingSoon: "Bewertungen folgen bald",
+    settingsComingSoon: "Einstellungen folgen bald",
+    profileComingSoon: "Profilbearbeitung folgt bald",
+    profileViewPublic: "Öffentliches Profil ansehen",
+    overviewWelcome: "Ihr Anbieter-Dashboard",
+    applications: "Bewerbungen",
+    currentPlan: "Aktueller Plan",
+    upgradeBtn: "Plan wechseln",
+    visRowContacts: "Kontaktdaten (Telefon, E-Mail, Website)",
+    visRowBadge: "Anbieterabzeichen",
+    visRowRanking: "Platzierung in der Liste",
+    visRowPortfolio: "Portfolio-Fotos",
+    visValueFree: "Verborgen",
+    visValueVisible: "Sichtbar",
+    visValueBasic: "Basis (3 Fotos)",
+    visValueFull: "Vollständig (10 Fotos)",
+    visValueUnlimited: "Unbegrenzt",
+    visValuePriority: "Priorität",
+    visValueStandard: "Standard",
+    settingsSoon: "Kontoeinstellungen folgen bald.",
+    profileSoon: "Detaillierte Profilbearbeitung folgt bald.",
+    planAppsPerMonth: "Bewerbungen / Monat",
+    invoicesTitle: "Rechnungen",
+    noPayments: "Noch keine Zahlungen.",
+    noInvoices: "Noch keine Rechnungen.",
+    downloadPdf: "Herunterladen",
+    paymentHistory: "Zahlungsverlauf",
+    nextBilling: "Nächste Abrechnung",
+    periodEnd: "Periodenende",
+  },
+  fr: {
+    navOverview: "Vue d'ensemble",
+    navProfile: "Mon profil",
+    navProjects: "Trouver des projets",
+    navApplications: "Mes candidatures",
+    navPlan: "Mon plan",
+    navVisibility: "Visibilité",
+    navReviews: "Avis",
+    navInvoices: "Factures",
+    navSettings: "Paramètres",
+    appsThisMonth: "Candidatures ce mois",
+    appsLimit: "Limite",
+    contactVisible: "Coordonnées visibles",
+    contactHidden: "Coordonnées masquées",
+    planBadge: "Votre badge",
+    upgradeNow: "Mettre à niveau",
+    limitReached: "Limite mensuelle atteinte",
+    visibility: "Visibilité de votre profil",
+    includedFeatures: "Ce qu'inclut votre plan",
+    reviewsComingSoon: "Avis bientôt disponibles",
+    settingsComingSoon: "Paramètres bientôt disponibles",
+    profileComingSoon: "Modification du profil bientôt disponible",
+    profileViewPublic: "Voir le profil public",
+    overviewWelcome: "Votre tableau de bord prestataire",
+    applications: "Candidatures",
+    currentPlan: "Plan actuel",
+    upgradeBtn: "Changer de plan",
+    visRowContacts: "Coordonnées (tél., e-mail, site web)",
+    visRowBadge: "Badge prestataire",
+    visRowRanking: "Classement dans les listes",
+    visRowPortfolio: "Photos du portfolio",
+    visValueFree: "Masqué",
+    visValueVisible: "Visible",
+    visValueBasic: "Basique (3 photos)",
+    visValueFull: "Complet (10 photos)",
+    visValueUnlimited: "Illimité",
+    visValuePriority: "Prioritaire",
+    visValueStandard: "Standard",
+    settingsSoon: "Paramètres du compte bientôt disponibles.",
+    profileSoon: "Modification détaillée du profil bientôt disponible.",
+    planAppsPerMonth: "candidatures / mois",
+    invoicesTitle: "Factures",
+    noPayments: "Pas encore de paiements.",
+    noInvoices: "Pas encore de factures.",
+    downloadPdf: "Télécharger",
+    paymentHistory: "Historique des paiements",
+    nextBilling: "Prochaine facturation",
+    periodEnd: "Fin de période",
+  },
+};
+
+type Section =
+  | "uebersicht"
+  | "profil"
+  | "projekte"
+  | "bewerbungen"
+  | "plan"
+  | "sichtbarkeit"
+  | "bewertungen"
+  | "rechnungen"
+  | "einstellungen";
 
 export default function ProviderDashboard() {
   const { user, loading } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [, setLocation] = useLocation();
 
+  const l = L[language] ?? L.de;
+
   const [balance, setBalance] = useState<CreditBalance | null>(null);
-  const [providerMe, setProviderMe] = useState<{ plan: SubscriptionPlan | null } | null>(null);
+  const [appStats, setAppStats] = useState<AppStats | null>(null);
   const [transactions, setTransactions] = useState<ImmoTransaction[]>([]);
   const [projects, setProjects] = useState<ProviderProject[]>([]);
   const [offers, setOffers] = useState<ProviderOffer[]>([]);
@@ -72,6 +318,7 @@ export default function ProviderDashboard() {
   const [browseView, setBrowseView] = useState<"grid" | "list">("grid");
   const [galleryProject, setGalleryProject] = useState<ProviderProject | null>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
+  const [activeSection, setActiveSection] = useState<Section>("uebersicht");
 
   const toggleThread = (offerId: number) => {
     setOpenThreads((prev) => {
@@ -90,9 +337,9 @@ export default function ProviderDashboard() {
 
   const refreshAll = async () => {
     try {
-      const [b, me, txs, pjs, ofs, ps, invs] = await Promise.all([
+      const [b, stats, txs, pjs, ofs, ps, invs] = await Promise.all([
         billingApi.balance(),
-        billingApi.providerMe(),
+        billingApi.appStats(),
         billingApi.transactions(),
         billingApi.providerProjects(),
         billingApi.providerOffers(),
@@ -100,7 +347,7 @@ export default function ProviderDashboard() {
         billingApi.invoices(),
       ]);
       setBalance(b);
-      setProviderMe(me);
+      setAppStats(stats);
       setTransactions(txs);
       setProjects(pjs);
       setOffers(ofs);
@@ -126,6 +373,7 @@ export default function ProviderDashboard() {
   const cost = offerProject ? offerCostFor(offerProject.size, offerType) : 0;
   const afterBalance = balance ? balance.total - cost : 0;
   const canSend = balance ? balance.total >= cost && offerMessage.trim().length >= 5 : false;
+  const atLimit = appStats ? appStats.usedThisMonth >= appStats.appLimit : false;
 
   const openOfferModal = (project: ProviderProject) => {
     setOfferProject(project);
@@ -173,441 +421,810 @@ export default function ProviderDashboard() {
     return <Badge variant="outline">{t.provider.offerTypeNormal}</Badge>;
   };
 
-  return (
-    <div className="container mx-auto px-4 py-10 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-serif font-bold mb-1" data-testid="provider-heading">
-          {t.provider.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t.provider.welcome}, {user.fullName.split(" ")[0]}
-        </p>
-      </div>
+  const navItems: Array<{ id: Section; label: string; icon: React.ReactNode; badge?: number }> = [
+    { id: "uebersicht", label: l.navOverview, icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: "profil", label: l.navProfile, icon: <User className="w-4 h-4" /> },
+    { id: "projekte", label: l.navProjects, icon: <Search className="w-4 h-4" />, badge: projects.length || undefined },
+    { id: "bewerbungen", label: l.navApplications, icon: <FileText className="w-4 h-4" />, badge: offers.length || undefined },
+    { id: "plan", label: l.navPlan, icon: <CreditCard className="w-4 h-4" /> },
+    { id: "sichtbarkeit", label: l.navVisibility, icon: <Eye className="w-4 h-4" /> },
+    { id: "bewertungen", label: l.navReviews, icon: <Star className="w-4 h-4" /> },
+    { id: "rechnungen", label: l.navInvoices, icon: <Receipt className="w-4 h-4" /> },
+    { id: "einstellungen", label: l.navSettings, icon: <Settings className="w-4 h-4" /> },
+  ];
 
+  const planSlug = appStats?.planSlug ?? "free";
+
+  const VISIBILITY_TABLE: Array<{
+    row: string;
+    free: string;
+    starter: string;
+    professional: string;
+    premium: string;
+    founding: string;
+  }> = [
+    {
+      row: l.visRowContacts,
+      free: l.visValueFree,
+      starter: l.visValueVisible,
+      professional: l.visValueVisible,
+      premium: l.visValueVisible,
+      founding: l.visValueVisible,
+    },
+    {
+      row: l.visRowBadge,
+      free: "Basic Anbieter",
+      starter: "Aktiver Anbieter",
+      professional: "Verifizierter Anbieter",
+      premium: "Top Anbieter",
+      founding: "Founding Anbieter",
+    },
+    {
+      row: l.visRowRanking,
+      free: l.visValueStandard,
+      starter: l.visValueStandard,
+      professional: l.visValuePriority,
+      premium: l.visValuePriority,
+      founding: l.visValueStandard,
+    },
+    {
+      row: l.visRowPortfolio,
+      free: l.visValueBasic,
+      starter: l.visValueFull,
+      professional: l.visValueFull,
+      premium: l.visValueUnlimited,
+      founding: l.visValueFull,
+    },
+  ];
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       {success && (
         <div className="mb-4 p-3 rounded bg-green-50 border border-green-200 text-green-800 text-sm">
           {success}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="p-5">
-          <div className="text-xs text-muted-foreground mb-1">{t.provider.balanceTotal}</div>
-          <div className="flex items-center gap-2">
-            <Coins className="w-5 h-5 text-primary" />
-            <span className="text-2xl font-bold" data-testid="balance-total">{balance?.total ?? 0}</span>
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Sidebar */}
+        <aside className="lg:w-56 flex-shrink-0">
+          <div className="mb-4 hidden lg:block">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-2">
+              {t.provider.title}
+            </p>
           </div>
-        </Card>
-        <Card className="p-5">
-          <div className="text-xs text-muted-foreground mb-1">{t.provider.balanceMonthly}</div>
-          <div className="text-2xl font-bold" data-testid="balance-monthly">{balance?.monthly ?? 0}</div>
-        </Card>
-        <Card className="p-5">
-          <div className="text-xs text-muted-foreground mb-1">{t.provider.balancePurchased}</div>
-          <div className="text-2xl font-bold" data-testid="balance-purchased">{balance?.purchased ?? 0}</div>
-        </Card>
-        <Card className="p-5">
-          <div className="text-xs text-muted-foreground mb-1">{t.provider.usedThisMonth}</div>
-          <div className="text-2xl font-bold">{balance?.usedThisMonth ?? 0}</div>
-        </Card>
-      </div>
 
-      <Card className="p-5 mb-8 bg-gradient-to-br from-primary/5 to-transparent border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{t.provider.currentPlan}</div>
-          <div className="text-lg font-bold">{providerMe?.plan?.name ?? "—"}</div>
-          <div className="text-sm text-muted-foreground">
-            {providerMe?.plan?.monthlyCredits ?? 0} {t.pricing.creditsPerMonth}
+          {/* Mobile: scrollable pills */}
+          <div className="flex gap-1 overflow-x-auto pb-2 lg:hidden">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id)}
+                className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex-shrink-0 ${
+                  activeSection === item.id
+                    ? "bg-primary text-white"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {item.icon}
+                {item.label}
+              </button>
+            ))}
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/pricing">
-            <Button variant="outline" data-testid="button-upgrade">
-              {t.provider.upgrade} <ArrowUpRight className="w-4 h-4 ml-1" />
-            </Button>
-          </Link>
-          <Link href="/pricing">
-            <Button data-testid="button-buy-credits">
-              <Coins className="w-4 h-4 mr-1" /> {t.provider.buyCredits}
-            </Button>
-          </Link>
-        </div>
-      </Card>
 
-      <Tabs defaultValue="browse">
-        <TabsList className="mb-4">
-          <TabsTrigger value="browse" data-testid="tab-browse">{t.provider.browseProjects}</TabsTrigger>
-          <TabsTrigger value="offers" data-testid="tab-offers">{t.provider.myOffers}</TabsTrigger>
-          <TabsTrigger value="billing" data-testid="tab-billing">{t.provider.billing}</TabsTrigger>
-          <TabsTrigger value="history" data-testid="tab-history">{t.provider.history}</TabsTrigger>
-        </TabsList>
+          {/* Desktop: vertical nav */}
+          <nav className="hidden lg:flex flex-col gap-0.5">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id)}
+                className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left ${
+                  activeSection === item.id
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <span className="flex items-center gap-2.5">
+                  {item.icon}
+                  {item.label}
+                </span>
+                {item.badge !== undefined && item.badge > 0 && (
+                  <span className="text-xs bg-primary/10 text-primary rounded-full px-1.5 py-0.5 font-semibold leading-none">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
 
-        <TabsContent value="browse">
-          {/* Filter bar */}
-          <div className="flex flex-wrap items-center gap-2 mb-5">
-            <select
-              value={browseTypeFilter}
-              onChange={e => setBrowseTypeFilter(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="">{t.provider.filterAllTypes ?? "All types"}</option>
-              {["renovation","construction","interior","exterior","plumbing","electric"].map(tp => (
-                <option key={tp} value={tp} className="capitalize">{t.offers[tp as keyof typeof t.offers] ?? tp}</option>
-              ))}
-            </select>
-            <div className="relative">
-              <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                value={browseCityFilter}
-                onChange={e => setBrowseCityFilter(e.target.value)}
-                placeholder={t.provider.filterCity ?? "Filter by city"}
-                className="h-9 rounded-lg border border-border bg-white pl-7 pr-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-36"
-              />
-              {browseCityFilter && (
-                <button onClick={() => setBrowseCityFilter("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  <X className="h-3 w-3" />
-                </button>
+          {/* Plan badge on desktop */}
+          {appStats && (
+            <div className="hidden lg:block mt-6 p-3 rounded-xl bg-muted/50 border border-border">
+              <div className="text-xs text-muted-foreground mb-1">{l.currentPlan}</div>
+              <div className="font-semibold text-sm">{appStats.planName}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {appStats.usedThisMonth}/{appStats.appLimit} {l.applications}
+              </div>
+              <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${atLimit ? "bg-destructive" : "bg-primary"}`}
+                  style={{ width: `${Math.min(100, (appStats.usedThisMonth / appStats.appLimit) * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 min-w-0">
+
+          {/* ── ÜBERSICHT ── */}
+          {activeSection === "uebersicht" && (
+            <div>
+              <div className="mb-6">
+                <h1 className="text-2xl font-serif font-bold" data-testid="provider-heading">
+                  {l.overviewWelcome}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {t.provider.welcome}, {user.fullName.split(" ")[0]}
+                </p>
+              </div>
+
+              {/* Stats cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <Card className="p-4">
+                  <div className="text-xs text-muted-foreground mb-1">{l.appsThisMonth}</div>
+                  <div className="text-2xl font-bold">
+                    {appStats?.usedThisMonth ?? 0}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      /{appStats?.appLimit ?? 2}
+                    </span>
+                  </div>
+                  {atLimit && (
+                    <div className="text-xs text-destructive mt-1">{l.limitReached}</div>
+                  )}
+                </Card>
+                <Card className="p-4">
+                  <div className="text-xs text-muted-foreground mb-1">{l.currentPlan}</div>
+                  <div className="text-lg font-bold">{appStats?.planName ?? "Free"}</div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-xs text-muted-foreground mb-1">{l.planBadge}</div>
+                  <div className="text-sm font-semibold">{appStats?.badge ?? "Basic Anbieter"}</div>
+                </Card>
+                <Card className={`p-4 ${appStats?.contactVisible ? "bg-green-50 border-green-200" : "bg-muted/40"}`}>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {appStats?.contactVisible ? l.contactVisible : l.contactHidden}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {appStats?.contactVisible ? (
+                      <ShieldCheck className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <ShieldOff className="w-5 h-5 text-muted-foreground" />
+                    )}
+                    <span className="text-sm font-medium">
+                      {appStats?.contactVisible ? "OK" : "Free"}
+                    </span>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Progress bar */}
+              {appStats && (
+                <Card className="p-4 mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">{l.appsThisMonth}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {appStats.usedThisMonth} / {appStats.appLimit} {l.planAppsPerMonth}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${atLimit ? "bg-destructive" : "bg-primary"}`}
+                      style={{ width: `${Math.min(100, (appStats.usedThisMonth / appStats.appLimit) * 100)}%` }}
+                    />
+                  </div>
+                </Card>
               )}
-            </div>
-            <select
-              value={browseSizeFilter}
-              onChange={e => setBrowseSizeFilter(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="">{t.provider.filterAllSizes ?? "All sizes"}</option>
-              <option value="small">{t.listings.sizeSm}</option>
-              <option value="medium">{t.listings.sizeMd}</option>
-              <option value="large">{t.listings.sizeLg}</option>
-              <option value="premium">{t.listings.sizePremium}</option>
-            </select>
-            <select
-              value={browseBudgetFilter}
-              onChange={e => setBrowseBudgetFilter(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="">{t.provider.filterAllBudgets ?? "All budgets"}</option>
-              <option value="under-10k">{"< 10k"}</option>
-              <option value="10k-50k">{"10k – 50k"}</option>
-              <option value="50k-100k">{"50k – 100k"}</option>
-              <option value="100k-500k">{"100k – 500k"}</option>
-              <option value="over-500k">{"> 500k"}</option>
-            </select>
-            {(browseTypeFilter || browseCityFilter || browseSizeFilter || browseBudgetFilter) && (
-              <button
-                onClick={() => { setBrowseTypeFilter(""); setBrowseCityFilter(""); setBrowseSizeFilter(""); setBrowseBudgetFilter(""); }}
-                className="flex items-center gap-1 text-xs text-primary hover:underline font-medium h-9"
-              >
-                <X className="h-3 w-3" />
-                {t.companies.clearFilters ?? "Clear filters"}
-              </button>
-            )}
-            <div className="ml-auto flex items-center gap-1 border border-border rounded-lg overflow-hidden">
-              <button
-                onClick={() => setBrowseView("grid")}
-                className={`px-2.5 py-1.5 transition-colors ${browseView === "grid" ? "bg-primary text-white" : "bg-white text-muted-foreground hover:text-primary"}`}
-                title={t.provider.browseGrid ?? "Grid"}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setBrowseView("list")}
-                className={`px-2.5 py-1.5 transition-colors ${browseView === "list" ? "bg-primary text-white" : "bg-white text-muted-foreground hover:text-primary"}`}
-                title={t.provider.browseList ?? "List"}
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
 
-          {/* Cards / List */}
-          {(() => {
-            const filtered = projects.filter(p => {
-              const matchType = !browseTypeFilter || p.projectType === browseTypeFilter;
-              const matchCity = !browseCityFilter || p.city.toLowerCase().includes(browseCityFilter.toLowerCase());
-              const matchSize = !browseSizeFilter || p.size === browseSizeFilter;
-              const matchBudget = !browseBudgetFilter || p.budget === browseBudgetFilter;
-              return matchType && matchCity && matchSize && matchBudget;
-            });
+              {/* Quick actions */}
+              <div className="flex flex-wrap gap-3">
+                <Button onClick={() => setActiveSection("projekte")} data-testid="tab-browse">
+                  <Search className="w-4 h-4 mr-2" />
+                  {l.navProjects}
+                </Button>
+                {!appStats?.contactVisible && (
+                  <Link href="/pricing">
+                    <Button variant="outline">
+                      <ArrowUpRight className="w-4 h-4 mr-1" />
+                      {l.upgradeBtn}
+                    </Button>
+                  </Link>
+                )}
+                <Button variant="ghost" onClick={() => setActiveSection("sichtbarkeit")}>
+                  <Eye className="w-4 h-4 mr-2" />
+                  {l.navVisibility}
+                </Button>
+              </div>
+            </div>
+          )}
 
-            if (filtered.length === 0) {
-              return (
-                <div className="text-center py-16 text-muted-foreground text-sm border border-dashed rounded-xl">
-                  {t.provider.noProjects}
+          {/* ── MEIN ANBIETERPROFIL ── */}
+          {activeSection === "profil" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-6">{l.navProfile}</h2>
+              <Card className="p-8 text-center text-muted-foreground">
+                <User className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
+                <p className="font-medium mb-1">{user.fullName}</p>
+                <p className="text-sm mb-4">{user.email}</p>
+                <p className="text-sm">{l.profileSoon}</p>
+              </Card>
+            </div>
+          )}
+
+          {/* ── PROJEKTE FINDEN ── */}
+          {activeSection === "projekte" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-4" data-testid="tab-browse">
+                {l.navProjects}
+              </h2>
+
+              {atLimit && (
+                <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-center justify-between gap-3">
+                  <span>{l.limitReached} — {appStats?.usedThisMonth}/{appStats?.appLimit}</span>
+                  <Link href="/pricing">
+                    <Button size="sm" variant="outline" className="border-amber-400 text-amber-800 hover:bg-amber-100">
+                      {l.upgradeNow}
+                    </Button>
+                  </Link>
                 </div>
-              );
-            }
+              )}
 
-            if (browseView === "list") {
-              return (
-                <Card>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t.provider.colClient}</TableHead>
-                        <TableHead>{t.provider.colType}</TableHead>
-                        <TableHead>{t.provider.colCity}</TableHead>
-                        <TableHead>{t.provider.colSize}</TableHead>
-                        <TableHead>{t.provider.colCost}</TableHead>
-                        <TableHead className="text-right">{t.provider.colAction}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filtered.map(p => (
-                        <TableRow key={p.id}>
-                          <TableCell className="font-medium">{p.fullName}</TableCell>
-                          <TableCell className="capitalize">{t.offers[p.projectType as keyof typeof t.offers] ?? p.projectType}</TableCell>
-                          <TableCell>{p.city}</TableCell>
-                          <TableCell className="capitalize">{p.size}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="gap-1">
-                              <Coins className="w-3 h-3" /> {offerCostFor(p.size, "normal")}+
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button size="sm" variant="outline" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
+              {/* Filter bar */}
+              <div className="flex flex-wrap items-center gap-2 mb-5">
+                <select
+                  value={browseTypeFilter}
+                  onChange={e => setBrowseTypeFilter(e.target.value)}
+                  className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="">{t.provider.filterAllTypes}</option>
+                  {["renovation","construction","interior","exterior","plumbing","electric"].map(tp => (
+                    <option key={tp} value={tp} className="capitalize">{t.offers[tp as keyof typeof t.offers] ?? tp}</option>
+                  ))}
+                </select>
+                <div className="relative">
+                  <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    value={browseCityFilter}
+                    onChange={e => setBrowseCityFilter(e.target.value)}
+                    placeholder={t.provider.filterCity}
+                    className="h-9 rounded-lg border border-border bg-white pl-7 pr-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-36"
+                  />
+                  {browseCityFilter && (
+                    <button onClick={() => setBrowseCityFilter("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+                <select
+                  value={browseSizeFilter}
+                  onChange={e => setBrowseSizeFilter(e.target.value)}
+                  className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="">{t.provider.filterAllSizes}</option>
+                  <option value="small">{t.listings.sizeSm}</option>
+                  <option value="medium">{t.listings.sizeMd}</option>
+                  <option value="large">{t.listings.sizeLg}</option>
+                  <option value="premium">{t.listings.sizePremium}</option>
+                </select>
+                <select
+                  value={browseBudgetFilter}
+                  onChange={e => setBrowseBudgetFilter(e.target.value)}
+                  className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="">{t.provider.filterAllBudgets}</option>
+                  <option value="under-10k">{"< 10k"}</option>
+                  <option value="10k-50k">{"10k – 50k"}</option>
+                  <option value="50k-100k">{"50k – 100k"}</option>
+                  <option value="100k-500k">{"100k – 500k"}</option>
+                  <option value="over-500k">{"> 500k"}</option>
+                </select>
+                {(browseTypeFilter || browseCityFilter || browseSizeFilter || browseBudgetFilter) && (
+                  <button
+                    onClick={() => { setBrowseTypeFilter(""); setBrowseCityFilter(""); setBrowseSizeFilter(""); setBrowseBudgetFilter(""); }}
+                    className="flex items-center gap-1 text-xs text-primary hover:underline font-medium h-9"
+                  >
+                    <X className="h-3 w-3" />
+                    {t.companies.clearFilters ?? "Clear filters"}
+                  </button>
+                )}
+                <div className="ml-auto flex items-center gap-1 border border-border rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setBrowseView("grid")}
+                    className={`px-2.5 py-1.5 transition-colors ${browseView === "grid" ? "bg-primary text-white" : "bg-white text-muted-foreground hover:text-primary"}`}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setBrowseView("list")}
+                    className={`px-2.5 py-1.5 transition-colors ${browseView === "list" ? "bg-primary text-white" : "bg-white text-muted-foreground hover:text-primary"}`}
+                  >
+                    <List className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Projects */}
+              {(() => {
+                const filtered = projects.filter(p => {
+                  const matchType = !browseTypeFilter || p.projectType === browseTypeFilter;
+                  const matchCity = !browseCityFilter || p.city.toLowerCase().includes(browseCityFilter.toLowerCase());
+                  const matchSize = !browseSizeFilter || p.size === browseSizeFilter;
+                  const matchBudget = !browseBudgetFilter || p.budget === browseBudgetFilter;
+                  return matchType && matchCity && matchSize && matchBudget;
+                });
+
+                if (filtered.length === 0) {
+                  return (
+                    <div className="text-center py-16 text-muted-foreground text-sm border border-dashed rounded-xl">
+                      {t.provider.noProjects}
+                    </div>
+                  );
+                }
+
+                if (browseView === "list") {
+                  return (
+                    <Card>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t.provider.colClient}</TableHead>
+                            <TableHead>{t.provider.colType}</TableHead>
+                            <TableHead>{t.provider.colCity}</TableHead>
+                            <TableHead>{t.provider.colSize}</TableHead>
+                            <TableHead className="text-right">{t.provider.colAction}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtered.map(p => (
+                            <TableRow key={p.id}>
+                              <TableCell className="font-medium">{p.fullName}</TableCell>
+                              <TableCell className="capitalize">{t.offers[p.projectType as keyof typeof t.offers] ?? p.projectType}</TableCell>
+                              <TableCell>{p.city}</TableCell>
+                              <TableCell className="capitalize">{p.size}</TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button size="sm" variant="outline" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
+                                    {t.provider.viewDetails}
+                                  </Button>
+                                  <Button size="sm" onClick={() => openOfferModal(p)} disabled={atLimit} data-testid={`button-send-offer-${p.id}`}>
+                                    {t.provider.sendOffer}
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </Card>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filtered.map(p => {
+                      const hasPhotos = p.photos && p.photos.length > 0;
+                      const coverUrl = hasPhotos ? `/api/storage${p.photos[0]}` : null;
+                      return (
+                        <div key={p.id} className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 flex flex-col overflow-hidden">
+                          <div className={`relative h-44 flex-shrink-0 ${!coverUrl ? "bg-gradient-to-br from-primary/10 via-sky-50 to-blue-100 flex items-center justify-center" : ""}`}>
+                            {coverUrl ? (
+                              <img src={coverUrl} alt={p.projectType} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="text-primary/30"><Images className="w-12 h-12" /></div>
+                            )}
+                            <div className="absolute top-2.5 left-2.5">
+                              <Badge className="capitalize bg-white/90 text-primary border-primary/20 backdrop-blur-sm text-xs shadow-sm">
+                                {t.offers[p.projectType as keyof typeof t.offers] ?? p.projectType}
+                              </Badge>
+                            </div>
+                            {hasPhotos && p.photos.length > 1 && (
+                              <button
+                                onClick={() => { setGalleryProject(p); setGalleryIdx(0); }}
+                                className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-1 rounded-full hover:bg-black/80 transition-colors"
+                              >
+                                <Images className="w-3 h-3" />
+                                {p.photos.length} {t.provider.photoCount}
+                              </button>
+                            )}
+                            <div className="absolute top-2.5 right-2.5">
+                              <Badge variant="secondary" className="text-xs capitalize">{p.size}</Badge>
+                            </div>
+                          </div>
+                          <div className="p-4 flex flex-col flex-1 gap-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="font-semibold text-foreground text-base leading-tight truncate">{p.fullName}</h3>
+                            </div>
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{p.city}</span>
+                              {p.budget && <span className="flex items-center gap-1"><Wallet className="w-3 h-3" />{p.budget}</span>}
+                              {p.timeline && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{p.timeline}</span>}
+                              <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" />{format(new Date(p.createdAt), "MMM d")}</span>
+                            </div>
+                            {p.description && (
+                              <p className="text-sm text-foreground/70 line-clamp-2 leading-relaxed">{p.description}</p>
+                            )}
+                            <div className="flex gap-2 mt-auto pt-1">
+                              <Button size="sm" variant="outline" className="flex-1" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
                                 {t.provider.viewDetails}
                               </Button>
-                              <Button size="sm" onClick={() => openOfferModal(p)} data-testid={`button-send-offer-${p.id}`}>
+                              <Button size="sm" className="flex-1" onClick={() => openOfferModal(p)} disabled={atLimit} data-testid={`button-send-offer-${p.id}`}>
                                 {t.provider.sendOffer}
                               </Button>
                             </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* ── MEINE BEWERBUNGEN ── */}
+          {activeSection === "bewerbungen" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-4" data-testid="tab-offers">
+                {l.navApplications}
+              </h2>
+              <Card>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t.provider.colProject}</TableHead>
+                      <TableHead>{t.provider.colType}</TableHead>
+                      <TableHead>{t.provider.colStatus}</TableHead>
+                      <TableHead>{t.provider.colDate}</TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {offers.map((o) => (
+                      <>
+                        <TableRow key={o.id}>
+                          <TableCell>
+                            <div className="font-medium">{o.projectFullName}</div>
+                            <div className="text-xs text-muted-foreground">{o.projectCity}</div>
+                          </TableCell>
+                          <TableCell>{typeBadge(o.type)}</TableCell>
+                          <TableCell><Badge variant="outline">{o.status}</Badge></TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {format(new Date(o.createdAt), "MMM d, yyyy")}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {o.status === "accepted" && (
+                              <Button size="sm" variant="outline" onClick={() => toggleThread(o.id)} data-testid={`button-messages-${o.id}`}>
+                                <MessageSquare className="w-3.5 h-3.5 mr-1" />
+                                {t.messaging.open}
+                                {openThreads.has(o.id) ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </Card>
-              );
-            }
-
-            return (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map(p => {
-                  const hasPhotos = p.photos && p.photos.length > 0;
-                  const coverUrl = hasPhotos ? `/api/storage${p.photos[0]}` : null;
-                  return (
-                    <div key={p.id} className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 flex flex-col overflow-hidden">
-                      {/* Cover photo or gradient placeholder */}
-                      <div
-                        className={`relative h-44 flex-shrink-0 ${!coverUrl ? "bg-gradient-to-br from-primary/10 via-sky-50 to-blue-100 flex items-center justify-center" : ""}`}
-                      >
-                        {coverUrl ? (
-                          <img src={coverUrl} alt={p.projectType} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="text-primary/30">
-                            <Images className="w-12 h-12" />
-                          </div>
+                        {o.status === "accepted" && openThreads.has(o.id) && (
+                          <TableRow key={`thread-${o.id}`}>
+                            <TableCell colSpan={5} className="p-3">
+                              <MessageThread offerId={o.id} otherPartyName={o.projectFullName ?? undefined} />
+                            </TableCell>
+                          </TableRow>
                         )}
-                        {/* Type badge */}
-                        <div className="absolute top-2.5 left-2.5">
-                          <Badge className="capitalize bg-white/90 text-primary border-primary/20 backdrop-blur-sm text-xs shadow-sm">
-                            {t.offers[p.projectType as keyof typeof t.offers] ?? p.projectType}
-                          </Badge>
-                        </div>
-                        {/* Photo count */}
-                        {hasPhotos && p.photos.length > 1 && (
-                          <button
-                            onClick={() => { setGalleryProject(p); setGalleryIdx(0); }}
-                            className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-1 rounded-full hover:bg-black/80 transition-colors"
-                          >
-                            <Images className="w-3 h-3" />
-                            {p.photos.length} {t.provider.photoCount ?? "photos"}
-                          </button>
-                        )}
-                        {/* Size badge */}
-                        <div className="absolute top-2.5 right-2.5">
-                          <Badge variant="secondary" className="text-xs capitalize">
-                            {p.size}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {/* Body */}
-                      <div className="p-4 flex flex-col flex-1 gap-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-semibold text-foreground text-base leading-tight truncate">{p.fullName}</h3>
-                          <Badge variant="outline" className="gap-1 flex-shrink-0 text-xs">
-                            <Coins className="w-3 h-3" /> {offerCostFor(p.size, "normal")}+
-                          </Badge>
-                        </div>
-
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{p.city}</span>
-                          {p.budget && <span className="flex items-center gap-1"><Wallet className="w-3 h-3" />{p.budget}</span>}
-                          {p.timeline && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{p.timeline}</span>}
-                          <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" />{format(new Date(p.createdAt), "MMM d")}</span>
-                        </div>
-
-                        {p.description && (
-                          <p className="text-sm text-foreground/70 line-clamp-2 leading-relaxed">
-                            {p.description}
-                          </p>
-                        )}
-
-                        <div className="flex gap-2 mt-auto pt-1">
-                          <Button size="sm" variant="outline" className="flex-1" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
-                            {t.provider.viewDetails}
-                          </Button>
-                          <Button size="sm" className="flex-1" onClick={() => openOfferModal(p)} data-testid={`button-send-offer-${p.id}`}>
-                            {t.provider.sendOffer}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-        </TabsContent>
-
-        <TabsContent value="offers">
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t.provider.colProject}</TableHead>
-                  <TableHead>{t.provider.colType}</TableHead>
-                  <TableHead>{t.provider.colCost}</TableHead>
-                  <TableHead>{t.provider.colStatus}</TableHead>
-                  <TableHead>{t.provider.colDate}</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {offers.map((o) => (
-                  <>
-                    <TableRow key={o.id}>
-                      <TableCell>
-                        <div className="font-medium">{o.projectFullName}</div>
-                        <div className="text-xs text-muted-foreground">{o.projectCity}</div>
-                      </TableCell>
-                      <TableCell>{typeBadge(o.type)}</TableCell>
-                      <TableCell>{o.creditsSpent}</TableCell>
-                      <TableCell><Badge variant="outline">{o.status}</Badge></TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {format(new Date(o.createdAt), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {o.status === "accepted" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => toggleThread(o.id)}
-                            data-testid={`button-messages-${o.id}`}
-                          >
-                            <MessageSquare className="w-3.5 h-3.5 mr-1" />
-                            {t.messaging.open}
-                            {openThreads.has(o.id) ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                    {o.status === "accepted" && openThreads.has(o.id) && (
-                      <TableRow key={`thread-${o.id}`}>
-                        <TableCell colSpan={6} className="p-3">
-                          <MessageThread
-                            offerId={o.id}
-                            otherPartyName={o.projectFullName ?? undefined}
-                          />
+                      </>
+                    ))}
+                    {offers.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-sm text-muted-foreground h-24">
+                          {t.provider.noOffers}
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
-                ))}
-                {offers.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-sm text-muted-foreground h-24">
-                      {t.provider.noOffers}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
+                  </TableBody>
+                </Table>
+              </Card>
+            </div>
+          )}
 
-        <TabsContent value="billing">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="p-5">
-              <h3 className="font-bold mb-3">{t.provider.paymentHistory}</h3>
-              <div className="space-y-2">
-                {payments.map((p) => (
-                  <div key={p.id} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
-                    <div>
-                      <div className="font-medium capitalize">{p.kind} · {p.refSlug}</div>
-                      <div className="text-xs text-muted-foreground">{format(new Date(p.createdAt), "MMM d, yyyy")}</div>
+          {/* ── MEIN PLAN ── */}
+          {activeSection === "plan" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-6" data-testid="tab-billing">
+                {l.navPlan}
+              </h2>
+              {appStats ? (
+                <div className="space-y-5">
+                  {/* Current plan card */}
+                  <Card className="p-6 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{l.currentPlan}</div>
+                        <div className="text-2xl font-bold mb-1">{appStats.planName}</div>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                          <span>{appStats.usedThisMonth}/{appStats.appLimit} {l.planAppsPerMonth}</span>
+                          {appStats.priceCents > 0 && (
+                            <span className="font-medium text-foreground">{formatCHF(appStats.priceCents)}/Mo.</span>
+                          )}
+                        </div>
+                        {appStats.periodEnd && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {l.periodEnd}: {format(new Date(appStats.periodEnd), "dd.MM.yyyy")}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Link href="/pricing">
+                          <Button data-testid="button-upgrade">
+                            {l.upgradeBtn} <ArrowUpRight className="w-4 h-4 ml-1" />
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-semibold">{formatEUR(p.amountCents)}</div>
-                      <Badge variant="outline" className="text-[10px]">{p.status}</Badge>
-                    </div>
-                  </div>
-                ))}
-                {payments.length === 0 && (
-                  <p className="text-sm text-muted-foreground py-4">{t.provider.noPayments}</p>
-                )}
-              </div>
-            </Card>
-            <Card className="p-5">
-              <h3 className="font-bold mb-3">{t.provider.invoices}</h3>
-              <div className="space-y-2">
-                {invoices.map((inv) => (
-                  <div key={inv.id} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
-                    <div>
-                      <div className="font-medium">{inv.number}</div>
-                      <div className="text-xs text-muted-foreground">{format(new Date(inv.issuedAt), "MMM d, yyyy")}</div>
-                    </div>
-                    <Button size="sm" variant="ghost" disabled>
-                      {t.provider.downloadPdf}
-                    </Button>
-                  </div>
-                ))}
-                {invoices.length === 0 && (
-                  <p className="text-sm text-muted-foreground py-4">{t.provider.noInvoices}</p>
-                )}
-              </div>
-            </Card>
-          </div>
-        </TabsContent>
 
-        <TabsContent value="history">
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t.provider.colDate}</TableHead>
-                  <TableHead>{t.provider.colType}</TableHead>
-                  <TableHead>{t.provider.colAmount}</TableHead>
-                  <TableHead>{t.provider.colBucket}</TableHead>
-                  <TableHead>{t.provider.colNote}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.map((tx) => (
-                  <TableRow key={tx.id}>
-                    <TableCell className="text-xs">{format(new Date(tx.createdAt), "MMM d, HH:mm")}</TableCell>
-                    <TableCell><Badge variant="outline">{tx.type}</Badge></TableCell>
-                    <TableCell className={tx.amount < 0 ? "text-red-600" : "text-green-700"}>
-                      {tx.amount > 0 ? "+" : ""}{tx.amount}
-                    </TableCell>
-                    <TableCell className="text-xs capitalize">{tx.bucket}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{tx.note}</TableCell>
-                  </TableRow>
-                ))}
-                {transactions.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-sm text-muted-foreground h-24">
-                      {t.provider.noTransactions}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                    {/* App usage bar */}
+                    <div className="mt-4">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>{l.appsThisMonth}</span>
+                        <span>{appStats.usedThisMonth}/{appStats.appLimit}</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${atLimit ? "bg-destructive" : "bg-primary"}`}
+                          style={{ width: `${Math.min(100, (appStats.usedThisMonth / appStats.appLimit) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Plan features */}
+                  {appStats.features.length > 0 && (
+                    <Card className="p-5">
+                      <h3 className="font-semibold mb-3">{l.includedFeatures}</h3>
+                      <ul className="space-y-2">
+                        {appStats.features.map((f, i) => (
+                          <li key={i} className="flex items-center gap-2 text-sm">
+                            <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </Card>
+                  )}
+
+                  {/* Badge & contact */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="p-5">
+                      <div className="text-xs text-muted-foreground mb-1">{l.planBadge}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Award className="w-5 h-5 text-primary" />
+                        <span className="font-semibold">{appStats.badge}</span>
+                      </div>
+                    </Card>
+                    <Card className={`p-5 ${appStats.contactVisible ? "bg-green-50/60 border-green-200" : "bg-muted/30"}`}>
+                      <div className="text-xs text-muted-foreground mb-1">
+                        {appStats.contactVisible ? l.contactVisible : l.contactHidden}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {appStats.contactVisible ? (
+                          <>
+                            <Phone className="w-4 h-4 text-green-600" />
+                            <Mail className="w-4 h-4 text-green-600" />
+                            <Globe className="w-4 h-4 text-green-600" />
+                          </>
+                        ) : (
+                          <>
+                            <Phone className="w-4 h-4 text-muted-foreground" />
+                            <Mail className="w-4 h-4 text-muted-foreground" />
+                            <Globe className="w-4 h-4 text-muted-foreground" />
+                          </>
+                        )}
+                      </div>
+                      {!appStats.contactVisible && (
+                        <Link href="/pricing">
+                          <Button size="sm" variant="link" className="mt-1 px-0 text-xs h-auto">
+                            {l.upgradeNow} →
+                          </Button>
+                        </Link>
+                      )}
+                    </Card>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+              )}
+            </div>
+          )}
+
+          {/* ── SICHTBARKEIT ── */}
+          {activeSection === "sichtbarkeit" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-6">{l.visibility}</h2>
+              <Card className="overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/40">
+                        <th className="text-left px-4 py-3 font-semibold text-muted-foreground w-40"></th>
+                        {["free", "starter", "professional", "premium", "founding"].map(slug => (
+                          <th key={slug} className={`px-4 py-3 text-center font-semibold ${slug === planSlug ? "bg-primary/5 text-primary" : "text-muted-foreground"}`}>
+                            <div>{slug === "free" ? "Free" : slug === "starter" ? "Starter" : slug === "professional" ? "Professional" : slug === "premium" ? "Premium" : "Founding"}</div>
+                            {slug === planSlug && (
+                              <div className="text-xs font-normal mt-0.5 bg-primary text-white rounded-full px-1.5 py-0.5 inline-block">
+                                {l.currentPlan}
+                              </div>
+                            )}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {VISIBILITY_TABLE.map((row, i) => (
+                        <tr key={i} className="border-b last:border-0 hover:bg-muted/20">
+                          <td className="px-4 py-3 font-medium text-foreground">{row.row}</td>
+                          {(["free", "starter", "professional", "premium", "founding"] as const).map(slug => {
+                            const val = row[slug];
+                            const isCurrent = slug === planSlug;
+                            const isHidden = val === l.visValueFree;
+                            return (
+                              <td key={slug} className={`px-4 py-3 text-center ${isCurrent ? "bg-primary/5" : ""}`}>
+                                {isHidden ? (
+                                  <span className="text-muted-foreground text-xs">{val}</span>
+                                ) : (
+                                  <span className={`text-xs font-medium ${isCurrent ? "text-primary" : "text-foreground"}`}>
+                                    {val}
+                                  </span>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+
+              {planSlug === "free" && (
+                <Card className="mt-4 p-4 bg-amber-50 border-amber-200">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="text-sm text-amber-800">
+                      <span className="font-semibold">{l.contactHidden}.</span>
+                      {" "}
+                      {language === "de"
+                        ? "Upgraden Sie auf Starter oder höher, um Ihre Kontaktdaten sichtbar zu machen."
+                        : language === "fr"
+                        ? "Passez à Starter ou supérieur pour rendre vos coordonnées visibles."
+                        : language === "sq"
+                        ? "Ndrysho planin te Starter ose më lart për të shfaqur kontaktet."
+                        : "Upgrade to Starter or higher to make your contact details visible."}
+                    </div>
+                    <Link href="/pricing">
+                      <Button size="sm" className="flex-shrink-0">
+                        {l.upgradeNow}
+                      </Button>
+                    </Link>
+                  </div>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* ── BEWERTUNGEN ── */}
+          {activeSection === "bewertungen" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-6">{l.navReviews}</h2>
+              <Card className="p-8 text-center text-muted-foreground">
+                <Star className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
+                <p>{l.reviewsComingSoon}</p>
+              </Card>
+            </div>
+          )}
+
+          {/* ── RECHNUNGEN ── */}
+          {activeSection === "rechnungen" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-6">{l.navInvoices}</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="p-5">
+                  <h3 className="font-bold mb-3">{l.paymentHistory}</h3>
+                  <div className="space-y-2">
+                    {payments.map((p) => (
+                      <div key={p.id} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
+                        <div>
+                          <div className="font-medium capitalize">{p.kind} · {p.refSlug}</div>
+                          <div className="text-xs text-muted-foreground">{format(new Date(p.createdAt), "MMM d, yyyy")}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">{formatCHF(p.amountCents)}</div>
+                          <Badge variant="outline" className="text-[10px]">{p.status}</Badge>
+                        </div>
+                      </div>
+                    ))}
+                    {payments.length === 0 && (
+                      <p className="text-sm text-muted-foreground py-4">{l.noPayments}</p>
+                    )}
+                  </div>
+                </Card>
+                <Card className="p-5">
+                  <h3 className="font-bold mb-3">{l.invoicesTitle}</h3>
+                  <div className="space-y-2">
+                    {invoices.map((inv) => (
+                      <div key={inv.id} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
+                        <div>
+                          <div className="font-medium">{inv.number}</div>
+                          <div className="text-xs text-muted-foreground">{format(new Date(inv.issuedAt), "MMM d, yyyy")}</div>
+                        </div>
+                        <Button size="sm" variant="ghost" disabled>{l.downloadPdf}</Button>
+                      </div>
+                    ))}
+                    {invoices.length === 0 && (
+                      <p className="text-sm text-muted-foreground py-4">{l.noInvoices}</p>
+                    )}
+                  </div>
+                </Card>
+              </div>
+
+              {/* Transaction history */}
+              <Card className="mt-6">
+                <div className="p-4 border-b">
+                  <h3 className="font-bold">{t.provider.history}</h3>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t.provider.colDate}</TableHead>
+                      <TableHead>{t.provider.colType}</TableHead>
+                      <TableHead>{t.provider.colAmount}</TableHead>
+                      <TableHead>{t.provider.colNote}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell className="text-xs">{format(new Date(tx.createdAt), "MMM d, HH:mm")}</TableCell>
+                        <TableCell><Badge variant="outline">{tx.type}</Badge></TableCell>
+                        <TableCell className={tx.amount < 0 ? "text-red-600" : "text-green-700"}>
+                          {tx.amount > 0 ? "+" : ""}{tx.amount}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{tx.note}</TableCell>
+                      </TableRow>
+                    ))}
+                    {transactions.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-sm text-muted-foreground h-24">
+                          {t.provider.noTransactions}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </Card>
+            </div>
+          )}
+
+          {/* ── EINSTELLUNGEN ── */}
+          {activeSection === "einstellungen" && (
+            <div>
+              <h2 className="text-xl font-serif font-bold mb-6">{l.navSettings}</h2>
+              <Card className="p-8 text-center text-muted-foreground">
+                <Settings className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
+                <p>{l.settingsSoon}</p>
+              </Card>
+            </div>
+          )}
+
+        </main>
+      </div>
+
+      {/* ── MODALS ── */}
 
       {/* Project Detail Modal */}
       <Dialog open={!!detailProject} onOpenChange={(o) => !o && setDetailProject(null)}>
@@ -616,13 +1233,9 @@ export default function ProviderDashboard() {
             <DialogTitle>{t.provider.detailTitle}</DialogTitle>
             <DialogDescription>{detailProject?.fullName} · {detailProject?.city}</DialogDescription>
           </DialogHeader>
-
-          {/* Photo gallery */}
           {detailProject?.photos && detailProject.photos.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                {t.provider.detailPhotos ?? "Project Photos"}
-              </p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t.provider.detailPhotos}</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {detailProject.photos.map((path, i) => (
                   <button
@@ -630,17 +1243,12 @@ export default function ProviderDashboard() {
                     onClick={() => { setGalleryProject(detailProject); setGalleryIdx(i); }}
                     className="relative aspect-video rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-colors group"
                   >
-                    <img
-                      src={`/api/storage${path}`}
-                      alt={`Photo ${i + 1}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    />
+                    <img src={`/api/storage${path}`} alt={`Photo ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
                   </button>
                 ))}
               </div>
             </div>
           )}
-
           <div className="space-y-4 text-sm">
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-muted/40 rounded-lg p-3">
@@ -670,7 +1278,7 @@ export default function ProviderDashboard() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDetailProject(null)}>Cancel</Button>
-            <Button onClick={() => { openOfferModal(detailProject!); setDetailProject(null); }}>
+            <Button onClick={() => { openOfferModal(detailProject!); setDetailProject(null); }} disabled={atLimit}>
               {t.provider.sendOffer}
             </Button>
           </DialogFooter>
@@ -682,20 +1290,11 @@ export default function ProviderDashboard() {
         <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black/95 border-0">
           <div className="relative flex items-center justify-center min-h-[60vh]">
             {galleryProject?.photos && galleryProject.photos.length > 0 && (
-              <img
-                src={`/api/storage${galleryProject.photos[galleryIdx]}`}
-                alt={`Photo ${galleryIdx + 1}`}
-                className="max-w-full max-h-[80vh] object-contain"
-              />
+              <img src={`/api/storage${galleryProject.photos[galleryIdx]}`} alt={`Photo ${galleryIdx + 1}`} className="max-w-full max-h-[80vh] object-contain" />
             )}
-            {/* Close */}
-            <button
-              onClick={() => setGalleryProject(null)}
-              className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors"
-            >
+            <button onClick={() => setGalleryProject(null)} className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors">
               <X className="w-5 h-5" />
             </button>
-            {/* Prev */}
             {galleryProject && galleryProject.photos.length > 1 && (
               <>
                 <button
@@ -710,18 +1309,16 @@ export default function ProviderDashboard() {
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
+                  {galleryIdx + 1} / {galleryProject.photos.length}
+                </div>
               </>
-            )}
-            {/* Counter */}
-            {galleryProject && galleryProject.photos.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
-                {galleryIdx + 1} / {galleryProject.photos.length}
-              </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Offer modal */}
       <Dialog open={!!offerProject} onOpenChange={(o) => !o && setOfferProject(null)}>
         <DialogContent>
           <DialogHeader>
@@ -733,30 +1330,24 @@ export default function ProviderDashboard() {
             <div>
               <Label className="mb-2 block">{t.provider.offerTypeLabel}</Label>
               <div className="grid grid-cols-3 gap-2">
-                {(["normal", "highlighted", "top"] as const).map((type) => {
-                  const c = offerCostFor(offerProject?.size, type);
-                  return (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setOfferType(type)}
-                      className={`p-3 rounded-lg border-2 text-left transition ${
-                        offerType === type ? "border-primary bg-primary/5" : "border-border"
-                      }`}
-                      data-testid={`offer-type-${type}`}
-                    >
-                      <div className="flex items-center gap-1 mb-1">
-                        {type === "top" && <Flame className="w-4 h-4 text-amber-600" />}
-                        {type === "highlighted" && <Star className="w-4 h-4 text-blue-600" />}
-                        {type === "normal" && <Sparkles className="w-4 h-4 text-muted-foreground" />}
-                        <span className="font-semibold text-xs capitalize">{t.provider[`offerType${type.charAt(0).toUpperCase() + type.slice(1)}` as keyof typeof t.provider]}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Coins className="w-3 h-3" /> {c}
-                      </div>
-                    </button>
-                  );
-                })}
+                {(["normal", "highlighted", "top"] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setOfferType(type)}
+                    className={`p-3 rounded-lg border-2 text-left transition ${offerType === type ? "border-primary bg-primary/5" : "border-border"}`}
+                    data-testid={`offer-type-${type}`}
+                  >
+                    <div className="flex items-center gap-1 mb-1">
+                      {type === "top" && <Flame className="w-4 h-4 text-amber-600" />}
+                      {type === "highlighted" && <Star className="w-4 h-4 text-blue-600" />}
+                      {type === "normal" && <Sparkles className="w-4 h-4 text-muted-foreground" />}
+                      <span className="font-semibold text-xs capitalize">
+                        {t.provider[`offerType${type.charAt(0).toUpperCase() + type.slice(1)}` as keyof typeof t.provider]}
+                      </span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -778,21 +1369,10 @@ export default function ProviderDashboard() {
                 id="offer-price"
                 value={offerPrice}
                 onChange={(e) => setOfferPrice(e.target.value)}
-                placeholder="€"
+                placeholder="CHF"
                 data-testid="input-offer-price"
               />
             </div>
-
-            {balance && (
-              <div className={`text-sm p-3 rounded-lg ${canSend ? "bg-primary/5" : "bg-destructive/10 text-destructive"}`} data-testid="offer-confirm-text">
-                {canSend
-                  ? t.provider.offerConfirm
-                      .replace("{cost}", String(cost))
-                      .replace("{balance}", String(balance.total))
-                      .replace("{after}", String(afterBalance))
-                  : t.provider.offerInsufficient}
-              </div>
-            )}
 
             {error && (
               <div className="text-sm p-3 rounded-lg bg-destructive/10 text-destructive">{error}</div>

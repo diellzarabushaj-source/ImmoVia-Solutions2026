@@ -6,12 +6,10 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   billingApi,
   type SubscriptionPlan,
-  type ImmocreditPack,
 } from "@/lib/billing-api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Coins, Loader2, Sparkles } from "lucide-react";
+import { Check, Loader2, Sparkles, Zap, Shield, Star, Award } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,27 +19,47 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-function formatEUR(cents: number): string {
-  if (cents === 0) return "€0";
-  return `€${(cents / 100).toFixed(0)}`;
+function formatCHF(cents: number): string {
+  if (cents === 0) return "CHF 0";
+  return `CHF ${(cents / 100).toFixed(0)}`;
 }
 
+const PLAN_ICONS: Record<string, React.ReactNode> = {
+  free: <Shield className="w-5 h-5 text-muted-foreground" />,
+  starter: <Zap className="w-5 h-5 text-blue-600" />,
+  professional: <Star className="w-5 h-5 text-primary" />,
+  premium: <Award className="w-5 h-5 text-amber-600" />,
+  founding: <Sparkles className="w-5 h-5 text-violet-600" />,
+};
+
+const PLAN_ACCENT: Record<string, string> = {
+  free: "border-border",
+  starter: "border-blue-200",
+  professional: "border-primary border-2 shadow-xl",
+  premium: "border-amber-300 border-2",
+  founding: "border-violet-300 border-2",
+};
+
+const PLAN_APP_LABELS: Record<string, string> = {
+  de: "Bewerbungen / Monat",
+  en: "applications / month",
+  sq: "aplikime / muaj",
+  fr: "candidatures / mois",
+};
+
 export default function Pricing() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   usePageMeta({ title: `${t.pricing.title} — ImmoVia`, description: t.pricing.subtitle ?? undefined });
   const { user, refresh } = useAuth();
   const [, setLocation] = useLocation();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [packs, setPacks] = useState<ImmocreditPack[]>([]);
   const [confirmPlan, setConfirmPlan] = useState<SubscriptionPlan | null>(null);
-  const [confirmPack, setConfirmPack] = useState<ImmocreditPack | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     void billingApi.plans().then(setPlans).catch(() => setPlans([]));
-    void billingApi.packs().then(setPacks).catch(() => setPacks([]));
   }, []);
 
   const isProvider = isServiceProvider(user);
@@ -57,19 +75,6 @@ export default function Pricing() {
       return;
     }
     setConfirmPlan(plan);
-  };
-
-  const handlePackCta = (pack: ImmocreditPack) => {
-    setError(null);
-    if (!user) {
-      setLocation("/signup");
-      return;
-    }
-    if (!isProvider) {
-      setError(t.pricing.errorClient);
-      return;
-    }
-    setConfirmPack(pack);
   };
 
   const confirmPlanSubscribe = async () => {
@@ -88,29 +93,14 @@ export default function Pricing() {
     }
   };
 
-  const confirmPackBuy = async () => {
-    if (!confirmPack) return;
-    setSubmitting(true);
-    setError(null);
-    try {
-      await billingApi.buyPack(confirmPack.id);
-      await refresh();
-      setSuccess(
-        t.pricing.successPack
-          .replace("{credits}", String(confirmPack.credits))
-          .replace("{name}", confirmPack.name),
-      );
-      setConfirmPack(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const appLabel = PLAN_APP_LABELS[language] ?? PLAN_APP_LABELS.de;
+
+  const mainPlans = plans.filter(p => p.slug !== "founding");
+  const foundingPlan = plans.find(p => p.slug === "founding");
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
-      <div className="max-w-3xl mx-auto text-center mb-10">
+      <div className="max-w-3xl mx-auto text-center mb-12">
         <h1 className="text-3xl md:text-5xl font-serif font-bold mb-4" data-testid="heading-pricing">
           {t.pricing.title}
         </h1>
@@ -128,79 +118,95 @@ export default function Pricing() {
         </div>
       )}
 
-      <Tabs defaultValue="plans" className="w-full max-w-6xl mx-auto">
-        <TabsList className="mx-auto grid grid-cols-2 w-full max-w-md mb-8">
-          <TabsTrigger value="plans" data-testid="tab-plans">{t.pricing.tabPlans}</TabsTrigger>
-          <TabsTrigger value="packs" data-testid="tab-packs">{t.pricing.tabPacks}</TabsTrigger>
-        </TabsList>
+      {/* Main plans grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto mb-10">
+        {mainPlans.map((plan) => (
+          <Card
+            key={plan.id}
+            className={`p-6 flex flex-col relative ${PLAN_ACCENT[plan.slug] ?? "border-border"}`}
+            data-testid={`plan-${plan.slug}`}
+          >
+            {plan.featured && (
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
+                <Sparkles className="w-3 h-3" />
+                {t.pricing.mostPopular}
+              </span>
+            )}
+            <div className="flex items-center gap-2 mb-3">
+              {PLAN_ICONS[plan.slug]}
+              <h3 className="text-lg font-bold">{plan.name}</h3>
+            </div>
+            <div className="mb-2">
+              <span className="text-3xl font-bold">{formatCHF(plan.priceCents)}</span>
+              <span className="text-muted-foreground text-sm">/{t.pricing.month}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-primary mb-5">
+              <span className="text-lg font-bold">{plan.monthlyCredits}</span>
+              <span className="text-muted-foreground font-normal">{appLabel}</span>
+            </div>
+            <ul className="space-y-2 text-sm mb-6 flex-1">
+              {plan.features.map((f, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <Button
+              className="w-full"
+              variant={plan.featured ? "default" : "outline"}
+              onClick={() => handlePlanCta(plan)}
+              data-testid={`button-plan-${plan.slug}`}
+            >
+              {plan.priceCents === 0 ? t.pricing.ctaGetStarted : t.pricing.ctaSubscribe}
+            </Button>
+          </Card>
+        ))}
+      </div>
 
-        <TabsContent value="plans">
-          <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">{t.pricing.plansDesc}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {plans.map((plan) => (
-              <Card
-                key={plan.id}
-                className={`p-6 flex flex-col relative ${plan.featured ? "border-primary border-2 shadow-xl" : ""}`}
-                data-testid={`plan-${plan.slug}`}
-              >
-                {plan.featured && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" />
-                    {t.pricing.mostPopular}
-                  </span>
-                )}
-                <h3 className="text-lg font-bold mb-1">{plan.name}</h3>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">{formatEUR(plan.priceCents)}</span>
-                  <span className="text-muted-foreground text-sm">/{t.pricing.month}</span>
+      {/* Founding offer banner */}
+      {foundingPlan && (
+        <div className="max-w-6xl mx-auto">
+          <Card className={`p-6 ${PLAN_ACCENT.founding} bg-gradient-to-r from-violet-50/60 to-white`} data-testid={`plan-${foundingPlan.slug}`}>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="p-2.5 rounded-xl bg-violet-100">
+                  <Sparkles className="w-6 h-6 text-violet-600" />
                 </div>
-                <div className="flex items-center gap-2 text-sm font-semibold text-primary mb-4">
-                  <Coins className="w-4 h-4" />
-                  {plan.monthlyCredits} {t.pricing.creditsPerMonth}
+                <div>
+                  <div className="text-xs font-semibold text-violet-600 uppercase tracking-wide mb-0.5">
+                    {language === "de" ? "Startangebot" : language === "fr" ? "Offre de lancement" : language === "sq" ? "Ofertë lansimi" : "Founding offer"}
+                  </div>
+                  <h3 className="text-xl font-bold">{foundingPlan.name}</h3>
                 </div>
-                <ul className="space-y-2 text-sm mb-6 flex-1">
-                  {plan.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+              </div>
+              <div className="flex-1">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                  {foundingPlan.features.map((f, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-violet-600 flex-shrink-0" />
                       <span>{f}</span>
                     </li>
                   ))}
                 </ul>
+              </div>
+              <div className="flex flex-col items-start md:items-end gap-2 flex-shrink-0">
+                <div>
+                  <span className="text-3xl font-bold">{formatCHF(foundingPlan.priceCents)}</span>
+                  <span className="text-muted-foreground text-sm">/{t.pricing.month}</span>
+                </div>
                 <Button
-                  className="w-full"
-                  variant={plan.featured ? "default" : "outline"}
-                  onClick={() => handlePlanCta(plan)}
-                  data-testid={`button-plan-${plan.slug}`}
+                  className="bg-violet-600 hover:bg-violet-700 text-white w-full md:w-auto"
+                  onClick={() => handlePlanCta(foundingPlan)}
+                  data-testid={`button-plan-${foundingPlan.slug}`}
                 >
-                  {plan.priceCents === 0 ? t.pricing.ctaGetStarted : t.pricing.ctaSubscribe}
+                  {t.pricing.ctaSubscribe}
                 </Button>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="packs">
-          <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">{t.pricing.packsDesc}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {packs.map((pack) => (
-              <Card key={pack.id} className="p-6 flex flex-col" data-testid={`pack-${pack.slug}`}>
-                <h3 className="text-lg font-bold mb-1">{pack.name}</h3>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">{formatEUR(pack.priceCents)}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm font-semibold text-primary mb-6">
-                  <Coins className="w-4 h-4" />
-                  {pack.credits} ImmoCredits
-                </div>
-                <p className="text-xs text-muted-foreground mb-6">{t.pricing.expires12Months}</p>
-                <Button className="w-full mt-auto" onClick={() => handlePackCta(pack)} data-testid={`button-pack-${pack.slug}`}>
-                  {t.pricing.ctaBuy}
-                </Button>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       <Dialog open={!!confirmPlan} onOpenChange={(o) => !o && setConfirmPlan(null)}>
         <DialogContent>
@@ -210,7 +216,7 @@ export default function Pricing() {
               {confirmPlan
                 ? t.pricing.confirmPlanDesc
                     .replace("{name}", confirmPlan.name)
-                    .replace("{price}", formatEUR(confirmPlan.priceCents))
+                    .replace("{price}", formatCHF(confirmPlan.priceCents))
                     .replace("{credits}", String(confirmPlan.monthlyCredits))
                 : ""}
             </DialogDescription>
@@ -220,31 +226,6 @@ export default function Pricing() {
               {t.common.cancel}
             </Button>
             <Button onClick={confirmPlanSubscribe} disabled={submitting} data-testid="button-confirm-plan">
-              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {t.pricing.confirmCheckout}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!confirmPack} onOpenChange={(o) => !o && setConfirmPack(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t.pricing.confirmPackTitle}</DialogTitle>
-            <DialogDescription>
-              {confirmPack
-                ? t.pricing.confirmPackDesc
-                    .replace("{name}", confirmPack.name)
-                    .replace("{price}", formatEUR(confirmPack.priceCents))
-                    .replace("{credits}", String(confirmPack.credits))
-                : ""}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmPack(null)} disabled={submitting}>
-              {t.common.cancel}
-            </Button>
-            <Button onClick={confirmPackBuy} disabled={submitting} data-testid="button-confirm-pack">
               {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {t.pricing.confirmCheckout}
             </Button>

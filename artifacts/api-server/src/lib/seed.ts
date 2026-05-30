@@ -1,73 +1,88 @@
 import { db, subscriptionPlansTable, immocreditPacksTable, projectsTable } from "@workspace/db";
-import { eq, and, count } from "drizzle-orm";
+import { eq, and, count, notInArray } from "drizzle-orm";
 import { logger } from "./logger";
+
+const NEW_PLAN_SLUGS = ["free", "starter", "professional", "premium", "founding"];
 
 const PLANS = [
   {
     slug: "free",
     name: "Free",
     priceCents: 0,
-    monthlyCredits: 3,
+    monthlyCredits: 2,
     featured: false,
-    features: ["3 ImmoCredits / month", "Basic profile listing", "Community support"],
+    features: [
+      "Basis-Anbieterprofil",
+      "Name, Ort & Kategorien sichtbar",
+      "Kurzbeschreibung & Logo",
+      "Bis zu 3 Portfolio-Bilder",
+      "2 Bewerbungen pro Monat",
+      "Kontaktdaten nicht sichtbar",
+    ],
     sortOrder: 1,
   },
   {
     slug: "starter",
     name: "Starter",
-    priceCents: 1900,
-    monthlyCredits: 20,
+    priceCents: 4900,
+    monthlyCredits: 10,
     featured: false,
     features: [
-      "20 ImmoCredits / month",
-      "Standard profile listing",
-      "Email support",
-      "Offer history",
+      "Professionelles Anbieterprofil",
+      "Telefon, E-Mail & Website sichtbar",
+      "Direkte Kontaktbuttons",
+      "10 Bewerbungen pro Monat",
+      "Bis zu 10 Portfolio-Bilder",
+      "Bewertungen sichtbar",
+      "Projektbenachrichtigungen",
     ],
     sortOrder: 2,
   },
   {
-    slug: "pro",
-    name: "Pro",
-    priceCents: 4900,
-    monthlyCredits: 70,
+    slug: "professional",
+    name: "Professional",
+    priceCents: 9900,
+    monthlyCredits: 30,
     featured: true,
     features: [
-      "70 ImmoCredits / month",
-      "Featured profile placement",
-      "Priority support",
-      "Advanced offer analytics",
-      "Boosted offer discounts",
+      "Alles aus Starter",
+      "30 Bewerbungen pro Monat",
+      "Bis zu 30 Portfolio-Bilder",
+      "Bessere Sichtbarkeit in Stadt & Kategorie",
+      "Verifiziertes Anbieterabzeichen",
+      "Priorität in Anbieterlisten",
     ],
     sortOrder: 3,
   },
   {
-    slug: "business",
-    name: "Business",
-    priceCents: 9900,
-    monthlyCredits: 180,
+    slug: "premium",
+    name: "Premium",
+    priceCents: 19900,
+    monthlyCredits: 100,
     featured: false,
     features: [
-      "180 ImmoCredits / month",
-      "Top placement on homepage",
-      "Dedicated account manager",
-      "Multi-team support (coming soon)",
-      "Custom branding",
+      "Alles aus Professional",
+      "100 Bewerbungen pro Monat",
+      "Unbegrenzte Portfolio-Bilder",
+      "Top-Platzierung in Stadt & Kategorie",
+      "Featured Anbieterprofil",
+      "Priority Support",
     ],
     sortOrder: 4,
   },
   {
-    slug: "premium",
-    name: "Premium Partner",
-    priceCents: 19900,
-    monthlyCredits: 450,
+    slug: "founding",
+    name: "Founding Anbieter",
+    priceCents: 1900,
+    monthlyCredits: 10,
     featured: false,
     features: [
-      "450 ImmoCredits / month",
-      "Premier homepage placement",
-      "White-glove onboarding",
-      "Custom reporting",
-      "Beta access to new features",
+      "Startangebot — CHF 19/Monat",
+      "Professionelles Anbieterprofil",
+      "Telefon, E-Mail & Website sichtbar",
+      "10 Bewerbungen pro Monat",
+      "Bis zu 10 Portfolio-Bilder",
+      "Founding Anbieter Abzeichen",
     ],
     sortOrder: 5,
   },
@@ -83,6 +98,10 @@ const PACKS = [
 
 export async function seedBilling(): Promise<void> {
   try {
+    await db
+      .delete(subscriptionPlansTable)
+      .where(notInArray(subscriptionPlansTable.slug, NEW_PLAN_SLUGS));
+
     for (const p of PLANS) {
       await db
         .insert(subscriptionPlansTable)

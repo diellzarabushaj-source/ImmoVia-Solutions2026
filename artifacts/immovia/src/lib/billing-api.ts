@@ -102,6 +102,19 @@ export interface InvoiceRow {
   issuedAt: string;
 }
 
+export interface AppStats {
+  planSlug: string;
+  planName: string;
+  priceCents: number;
+  appLimit: number;
+  usedThisMonth: number;
+  contactVisible: boolean;
+  badge: string;
+  periodStart: string;
+  periodEnd: string | null;
+  features: string[];
+}
+
 async function jsonFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
     credentials: "include",
@@ -130,6 +143,7 @@ export const billingApi = {
     jsonFetch<{ subscription: { id: number; planId: number; status: string; currentPeriodStart: string; currentPeriodEnd: string } | null; plan: SubscriptionPlan | null }>(
       "/provider/me",
     ),
+  appStats: () => jsonFetch<AppStats>("/provider/app-stats"),
   transactions: () => jsonFetch<ImmoTransaction[]>("/provider/transactions"),
   payments: () => jsonFetch<PaymentRow[]>("/billing/payments"),
   invoices: () => jsonFetch<InvoiceRow[]>("/billing/invoices"),
