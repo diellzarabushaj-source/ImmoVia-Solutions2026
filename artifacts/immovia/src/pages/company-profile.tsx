@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useRoute, Link } from "wouter";
+import { useRoute, Link, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
   MapPin,
@@ -24,8 +23,6 @@ import {
   Loader2,
   Image,
   MessageSquare,
-  Send,
-  CheckCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -102,6 +99,8 @@ function CompanyAvatar({ name, profilePhoto, workerType, size = "xl" }: { name: 
 export default function CompanyProfile() {
   const [, params] = useRoute("/companies/:id");
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const id = params?.id;
 
   const [company, setCompany] = useState<Company | null>(null);
@@ -113,26 +112,15 @@ export default function CompanyProfile() {
   });
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [galleryErrors, setGalleryErrors] = useState<Set<number>>(new Set());
-  const [showMsgModal, setShowMsgModal] = useState(false);
-  const [msgText, setMsgText] = useState("");
-  const [msgSending, setMsgSending] = useState(false);
-  const [msgSent, setMsgSent] = useState(false);
 
-  const sendMessage = async () => {
-    if (!msgText.trim() || !id) return;
-    setMsgSending(true);
-    try {
-      await fetch("/api/conversations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companyId: Number(id), body: msgText.trim() }),
-      });
-      setMsgSent(true);
-      setMsgText("");
-      setTimeout(() => { setShowMsgModal(false); setMsgSent(false); }, 2000);
-    } catch { /* ignore */ } finally {
-      setMsgSending(false);
-    }
+  const openChat = () => {
+    if (!user) { setLocation("/sign-in"); return; }
+    if (!company) return;
+    window.dispatchEvent(
+      new CustomEvent("immovia:open-chat", {
+        detail: { companyId: company.id, companyName: company.companyName },
+      })
+    );
   };
 
   useEffect(() => {
@@ -294,7 +282,7 @@ export default function CompanyProfile() {
                   </a>
                 </Button>
               )}
-              <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/8" onClick={() => setShowMsgModal(true)}>
+              <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/8" onClick={openChat}>
                 <MessageSquare className="w-4 h-4 mr-2" />
                 {t.publicProfile.sendMessage}
               </Button>
@@ -470,47 +458,6 @@ export default function CompanyProfile() {
           </div>
         </div>
       </div>
-
-      {/* Message modal */}
-      <Dialog open={showMsgModal} onOpenChange={(o) => { setShowMsgModal(o); if (!o) { setMsgSent(false); setMsgText(""); } }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-primary" />
-              {t.publicProfile.sendMessage} — {company.companyName}
-            </DialogTitle>
-          </DialogHeader>
-          {msgSent ? (
-            <div className="flex flex-col items-center gap-3 py-6 text-center">
-              <CheckCircle className="w-10 h-10 text-green-500" />
-              <p className="font-medium text-green-700">{"Message sent!"}</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <Textarea
-                rows={5}
-                placeholder={"Write your message…"}
-                value={msgText}
-                onChange={e => setMsgText(e.target.value)}
-                className="resize-none"
-                autoFocus
-              />
-              <p className="text-xs text-muted-foreground text-right">{msgText.length}/1000</p>
-            </div>
-          )}
-          {!msgSent && (
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowMsgModal(false)} disabled={msgSending}>
-                {t.common.cancel}
-              </Button>
-              <Button onClick={sendMessage} disabled={msgSending || !msgText.trim()}>
-                {msgSending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                {t.publicProfile.sendMessage}
-              </Button>
-            </DialogFooter>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Lightbox */}
       {lightbox && (

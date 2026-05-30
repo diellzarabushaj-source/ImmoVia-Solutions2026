@@ -35,6 +35,11 @@ interface MsgRow {
   senderName: string | null;
 }
 
+interface Draft {
+  companyId: number;
+  companyName: string;
+}
+
 /* ── i18n ────────────────────────────────────────────────────── */
 const ML: Record<string, Record<string, string>> = {
   de: {
@@ -48,6 +53,9 @@ const ML: Record<string, Record<string, string>> = {
     fileTooBig: "Datei zu groß (max 10 MB)",
     invalidFile: "Dateiformat nicht erlaubt",
     errorSend: "Senden fehlgeschlagen.",
+    newConvTo: "Neue Nachricht an",
+    firstMsg: "Ihre erste Nachricht…",
+    sending: "Wird gesendet…",
   },
   en: {
     title: "Messages",
@@ -60,6 +68,9 @@ const ML: Record<string, Record<string, string>> = {
     fileTooBig: "File too large (max 10 MB)",
     invalidFile: "File type not allowed",
     errorSend: "Failed to send.",
+    newConvTo: "New message to",
+    firstMsg: "Your first message…",
+    sending: "Sending…",
   },
   sq: {
     title: "Mesazhet",
@@ -72,6 +83,9 @@ const ML: Record<string, Record<string, string>> = {
     fileTooBig: "Skedari shumë i madh (max 10 MB)",
     invalidFile: "Formati nuk lejohet",
     errorSend: "Dërgimi dështoi.",
+    newConvTo: "Mesazh i ri për",
+    firstMsg: "Mesazhi juaj i parë…",
+    sending: "Duke dërguar…",
   },
   fr: {
     title: "Messages",
@@ -84,6 +98,9 @@ const ML: Record<string, Record<string, string>> = {
     fileTooBig: "Fichier trop grand (max 10 Mo)",
     invalidFile: "Type de fichier non autorisé",
     errorSend: "Échec de l'envoi.",
+    newConvTo: "Nouveau message à",
+    firstMsg: "Votre premier message…",
+    sending: "Envoi en cours…",
   },
 };
 
@@ -123,6 +140,79 @@ function AttachPreview({ path }: { path: string }) {
       <FileText className="h-4 w-4 flex-shrink-0" />
       <span className="truncate max-w-[120px]">{name}</span>
     </a>
+  );
+}
+
+/* ── Draft view (new conversation compose) ───────────────────── */
+function DraftView({
+  draft, m, onCreated, onBack,
+}: {
+  draft: Draft;
+  m: Record<string, string>;
+  onCreated: (convId: number) => void;
+  onBack: () => void;
+}) {
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const send = async () => {
+    if (!text.trim()) return;
+    setSending(true);
+    setErr(null);
+    try {
+      const r = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId: draft.companyId, message: text.trim() }),
+      });
+      if (!r.ok) throw new Error();
+      const d = await r.json() as { conversationId: number };
+      onCreated(d.conversationId);
+    } catch {
+      setErr(m.errorSend);
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-white flex-shrink-0">
+        <button onClick={onBack} className="p-1 rounded-lg hover:bg-muted text-muted-foreground">
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center text-white flex-shrink-0">
+          <Building2 className="h-3 w-3" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-muted-foreground leading-none mb-0.5">{m.newConvTo}</p>
+          <p className="font-semibold text-sm text-foreground truncate">{draft.companyName}</p>
+        </div>
+      </div>
+
+      <div className="flex-1 bg-muted/20 p-3 flex items-end">
+        <p className="text-xs text-muted-foreground text-center w-full py-8">{m.firstMsg}</p>
+      </div>
+
+      <div className="border-t border-border bg-white p-2 flex-shrink-0">
+        {err && <p className="text-[10px] text-destructive mb-1">{err}</p>}
+        <div className="flex items-end gap-1.5">
+          <textarea
+            className="flex-1 resize-none rounded-xl border border-border px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary min-h-[34px] max-h-24"
+            placeholder={m.type}
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
+            rows={1}
+            autoFocus
+          />
+          <Button size="icon" className="h-8 w-8 rounded-xl flex-shrink-0" onClick={() => void send()}
+            disabled={sending || !text.trim()}>
+            {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -169,6 +259,8 @@ function ThreadView({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
+
+  /* suppress unused warning */ void myUserId;
 
   const handleFiles = (fl: FileList) => {
     setFileErr(null);
@@ -288,13 +380,14 @@ function ThreadView({
 export function ChatWidget() {
   const { user } = useAuth();
   const { language } = useLanguage();
-  const m = ML[language] ?? ML.de;
+  const m = ML[language] ?? ML.en;
 
   const [open, setOpen] = useState(false);
   const [minimised, setMinimised] = useState(false);
   const [conversations, setConversations] = useState<ConvRow[]>([]);
   const [myCompanyId, setMyCompanyId] = useState<number | null>(null);
   const [activeConvId, setActiveConvId] = useState<number | null>(null);
+  const [draft, setDraft] = useState<Draft | null>(null);
   const [totalUnread, setTotalUnread] = useState(0);
   const [loading, setLoading] = useState(false);
   const pollRef = useRef<number | null>(null);
@@ -330,6 +423,42 @@ export function ChatWidget() {
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [user]);
 
+  /* Listen for open-chat events dispatched by company profile "Contact" button */
+  useEffect(() => {
+    if (!user) return;
+
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ companyId: number; companyName: string }>).detail;
+      if (!detail?.companyId) return;
+
+      setOpen(true);
+      setMinimised(false);
+
+      /* Try to find existing conversation with that company */
+      void fetch("/api/conversations").then(async r => {
+        if (!r.ok) {
+          setDraft({ companyId: detail.companyId, companyName: detail.companyName });
+          return;
+        }
+        const d = await r.json() as { conversations: ConvRow[]; myCompanyId: number | null };
+        setConversations(d.conversations);
+        setMyCompanyId(d.myCompanyId);
+
+        const existing = d.conversations.find(c => c.companyId === detail.companyId);
+        if (existing) {
+          setDraft(null);
+          setActiveConvId(existing.id);
+        } else {
+          setDraft({ companyId: detail.companyId, companyName: detail.companyName });
+          setActiveConvId(null);
+        }
+      });
+    };
+
+    window.addEventListener("immovia:open-chat", handler);
+    return () => window.removeEventListener("immovia:open-chat", handler);
+  }, [user]);
+
   useEffect(() => {
     if (!user) return;
     void fetchUnread();
@@ -346,6 +475,18 @@ export function ChatWidget() {
   const handleOpen = () => {
     setOpen(true);
     setMinimised(false);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setActiveConvId(null);
+    setDraft(null);
+  };
+
+  const handleBack = () => {
+    setActiveConvId(null);
+    setDraft(null);
+    void fetchConversations();
   };
 
   return (
@@ -373,7 +514,7 @@ export function ChatWidget() {
               <button onClick={() => setMinimised(p => !p)} className="p-1 rounded hover:bg-white/20 transition-colors">
                 <Minus className="h-3.5 w-3.5" />
               </button>
-              <button onClick={() => { setOpen(false); setActiveConvId(null); }} className="p-1 rounded hover:bg-white/20 transition-colors">
+              <button onClick={handleClose} className="p-1 rounded hover:bg-white/20 transition-colors">
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -386,7 +527,14 @@ export function ChatWidget() {
                     myUserId={user.id}
                     myCompanyId={myCompanyId}
                     m={m}
-                    onBack={() => { setActiveConvId(null); void fetchConversations(); }}
+                    onBack={handleBack}
+                  />
+                ) : draft ? (
+                  <DraftView
+                    draft={draft}
+                    m={m}
+                    onBack={handleBack}
+                    onCreated={(convId) => { setDraft(null); setActiveConvId(convId); void fetchConversations(); }}
                   />
                 ) : (
                   <div className="flex-1 overflow-y-auto">
@@ -409,7 +557,7 @@ export function ChatWidget() {
                       return (
                         <button
                           key={conv.id}
-                          onClick={() => setActiveConvId(conv.id)}
+                          onClick={() => { setDraft(null); setActiveConvId(conv.id); }}
                           className="w-full text-left px-4 py-3 border-b border-border/50 hover:bg-muted/40 transition-colors flex gap-3 items-start"
                         >
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center text-white flex-shrink-0">
@@ -449,7 +597,7 @@ export function ChatWidget() {
       <motion.button
         whileHover={{ scale: 1.07 }}
         whileTap={{ scale: 0.95 }}
-        onClick={open ? () => { setOpen(false); setActiveConvId(null); } : handleOpen}
+        onClick={open ? handleClose : handleOpen}
         className="relative w-14 h-14 rounded-full bg-primary shadow-lg hover:shadow-xl flex items-center justify-center text-white transition-shadow"
         aria-label="Messages"
       >
