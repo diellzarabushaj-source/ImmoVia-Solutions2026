@@ -1,0 +1,862 @@
+Please create/fix ImmoVia365 as one coherent role-based marketplace platform.
+
+Do not randomly redesign the dashboards.
+Do not rebuild the dashboard UI.
+Keep the existing dashboard design/layout as it is.
+
+The goal is to make the platform logically connected, role-based, and professional.
+
+Main concept:
+Before login = public website with limited access
+After login = full role-based platform experience
+
+Roles:
+
+* Admin
+* Client / Kunde / Project Poster
+* Service Provider / Dienstleister
+
+Default language: German
+Main market: Switzerland
+German must always be complete and default.
+
+---
+
+## 1. Public website before login
+
+Before login, the website should stay mostly like it is now.
+
+Public users can see:
+
+* Home
+* So funktioniert ImmoVia365
+* Dienstleistungen / categories
+* Blog
+* Limited previews of projects or service providers
+* Login/Register buttons
+
+Public users should understand the platform but should not have full access.
+
+Public users should NOT be able to:
+
+* Contact clients
+* Contact service providers
+* Send messages
+* Unlock projects
+* Apply to projects
+* See full contact details
+* Use dashboards
+* Search or browse unlimited data
+* Access full project/provider details without registration
+
+Add access limits before registration.
+
+If a public user tries to do more, show a registration prompt.
+
+German examples:
+
+* “Bitte registrieren Sie sich, um weitere Projekte zu sehen.”
+* “Erstellen Sie ein kostenloses Konto, um mehr Details zu sehen.”
+* “Melden Sie sich an, um Dienstleister zu kontaktieren.”
+* “Registrieren Sie sich, um Projekte vollständig zu sehen.”
+
+Main rule:
+Public website = preview + marketing + limited browsing
+Registered user = full role-based platform access
+
+---
+
+## 2. Registration and role selection
+
+When a user registers, they must have a clear role.
+
+Roles:
+
+1. Client / Kunde
+2. Service Provider / Dienstleister
+3. Admin
+
+User-facing names:
+
+* EN: Client
+
+* DE: Kunde
+
+* FR: Client
+
+* SQ: Klient
+
+* EN: Service Provider
+
+* DE: Dienstleister
+
+* FR: Prestataire
+
+* SQ: Ofrues Shërbimi
+
+Do not use “Homeowner” because not every client is a homeowner.
+Do not use “Contractor” because the platform is not only for construction contractors.
+
+Internal code can use project_poster or service_provider if needed, but the UI should use:
+
+* Kunde
+* Dienstleister
+
+---
+
+## 3. After login: role-based experience
+
+After login, the platform should not feel generic anymore.
+
+The system must detect the user role and adapt:
+
+* Navbar
+* Home content
+* Main CTA buttons
+* Quick actions
+* Dashboard routing
+* Permissions
+
+Do not show the same experience to all users after login.
+
+Service Provider should focus on projects.
+Client should focus on posting/managing projects.
+Admin should focus on platform management.
+
+---
+
+## 4. Dashboard rule
+
+Important:
+Do not redesign dashboards.
+Do not change the dashboard layout.
+Do not rebuild the dashboard UI.
+
+The dashboards can stay visually as they are.
+
+Only fix:
+
+* Data connections
+* Role-based routing
+* Notifications
+* Status/progress
+* Correct permissions
+* Correct links
+
+Dashboard links must exist in the navbar after login.
+
+Each role should go to the correct dashboard:
+
+* Admin → Admin Dashboard
+* Client → Client Dashboard / My Projects
+* Service Provider → Service Provider Dashboard
+
+---
+
+## 5. Navbar before login
+
+Before login, keep the public navbar simple:
+
+* Home
+* So funktioniert ImmoVia365
+* Dienstleistungen
+* Blog
+* Einloggen
+* Registrieren
+
+The public “So funktioniert ImmoVia365” should explain both sides:
+
+* Kunden posten Projekte kostenlos
+* Dienstleister finden passende Projekte
+* ImmoVia365 connects both sides
+
+---
+
+## 6. Navbar after Client login
+
+After Client/Kunde login, navbar should focus on posting and managing projects.
+
+Client navbar:
+
+* Home
+* Dashboard
+* Projekt erstellen
+* Meine Projekte
+* So funktioniert ImmoVia365 für Kunden
+* Benachrichtigungen
+* Logout
+
+Client focus:
+
+* Create a project
+* Manage own projects
+* See project status/progress
+* See interested service providers
+* Receive messages/applications
+* See notifications
+
+Main CTA:
+“Projekt kostenlos erstellen”
+
+Secondary CTA:
+“Meine Projekte ansehen”
+
+---
+
+## 7. Navbar after Service Provider login
+
+After Service Provider/Dienstleister login, navbar should focus on projects.
+
+Service Provider navbar:
+
+* Home
+* Dashboard
+* Projekte
+* So funktioniert ImmoVia365 für Dienstleister
+* Mein Profil
+* Benachrichtigungen
+* Logout
+
+Service Provider focus:
+
+* Available projects
+* Matching projects based on selected services/categories
+* Projects they unlocked/contacted/applied to
+* Project notifications
+* Credit balance / membership if enabled
+* Provider profile
+
+Main CTA:
+“Passende Projekte finden”
+
+Secondary CTA:
+“Mein Dienstleister-Profil bearbeiten”
+
+Important:
+A Service Provider should not mainly be guided to browse other service providers.
+Their main workflow is projects.
+
+---
+
+## 8. Navbar after Admin login
+
+After Admin login, navbar should focus on management.
+
+Admin navbar:
+
+* Home
+* Admin Dashboard
+* Users
+* Projects
+* Service Providers
+* Blog/Sanity
+* Settings
+* Logout
+
+Admin focus:
+
+* Manage users
+* Manage projects
+* Manage service providers
+* Manage categories/services
+* Manage blog/Sanity
+* Manage settings
+* View system activity
+
+Admin does not need the client/provider marketing flow as the main experience.
+
+---
+
+## 9. Role-based Home after login
+
+Create or adjust the Home experience after login so it is role-focused.
+
+Do not redesign the whole website.
+Use the existing visual style, cards, buttons, colors, and layout.
+
+For Service Provider:
+Home should show project-focused cards:
+
+* Available Projects
+* Matching Projects
+* My Contacted/Unlocked Projects
+* Credits / Membership
+* Provider Profile
+
+For Client:
+Home should show client-focused cards:
+
+* Create Project
+* My Projects
+* Interested Providers
+* Messages / Notifications
+* Project Progress
+
+For Admin:
+Home should show management-focused cards:
+
+* Users
+* Projects
+* Service Providers
+* Blog/Sanity
+* Settings
+
+The Home after login should guide each role to the correct actions.
+
+---
+
+## 10. Role-specific “How it works”
+
+Create role-specific “How it works” content.
+
+There should be:
+
+1. Public version:
+   “So funktioniert ImmoVia365”
+
+2. Client version:
+   “So funktioniert ImmoVia365 für Kunden”
+
+3. Service Provider version:
+   “So funktioniert ImmoVia365 für Dienstleister”
+
+The correct version should be shown or linked depending on the user role.
+
+Client version should explain:
+
+1. Projekt kostenlos posten
+2. Passende Dienstleister erhalten Interesse
+3. Anbieter vergleichen
+4. Den richtigen Dienstleister auswählen
+5. Projekt umsetzen
+
+Service Provider version should explain:
+
+1. Profil erstellen
+2. Leistungen auswählen
+3. Passende Projekte finden
+4. Projekt freischalten oder kontaktieren
+5. Auftrag gewinnen und Kommunikation starten
+
+---
+
+## 11. Main data logic
+
+Keep the system simple.
+
+Main concepts:
+
+1. User Account
+2. Client profile if user is Client
+3. Service Provider profile if user is Service Provider
+4. Projects
+5. Project interactions/messages/unlocks
+6. Admin management
+
+Avoid confusing duplicate concepts like:
+
+* Company
+* Application
+* Bewerbung
+* Provider application
+* Provider profile
+
+if they all mean almost the same thing.
+
+Simple logic:
+Client registers → creates projects
+Service Provider registers → creates/edits service provider profile → sees projects
+Admin → manages users, service providers, and projects
+
+---
+
+## 12. Project must be central
+
+Project should be the central object of the platform.
+
+Every project must belong to one Client/User.
+
+When a Client creates a project:
+
+* Save clientId/userId inside the project.
+* Link the project to the Client profile automatically.
+* Do not ask the Client to re-enter the same personal data if it already exists in their profile.
+
+Project should include:
+
+* projectId
+* clientId / userId
+* title
+* category
+* sub-service
+* description
+* photos
+* location/city/canton
+* budget
+* timeline
+* status
+* createdAt
+* updatedAt
+
+Client dashboard:
+
+* Show only projects created by that Client.
+* Client can edit/delete own projects.
+* Client can see status/progress.
+* Client can see interested service providers/messages/applications.
+
+Service Provider view:
+
+* Browse published projects.
+* See basic project info.
+* Customer contact details stay hidden until allowed/unlocked.
+* After unlock/contact, provider gets access based on platform rules.
+
+Admin panel:
+
+* Admin sees all projects.
+* Admin sees which Client posted each project.
+* Admin sees which Service Providers interacted with each project.
+* Admin can click Project → Client.
+* Admin can click Client → all projects.
+* Admin can click Service Provider → contacted/unlocked projects.
+
+---
+
+## 13. Project creation form
+
+Project creation form must be complete and logical.
+
+Fields:
+
+* Project Title
+* Main Category
+* Specific Service / Sub-service
+* Description
+* Location / City / Canton
+* Photos
+* Budget
+* Timeline
+* Status
+* Submit button
+* Validation messages
+
+The same fields must appear consistently in:
+
+* Project creation form
+* Edit project form
+* Client dashboard
+* Service provider project list
+* Project cards
+* Project detail page
+* Admin panel
+* Search/filter results
+* Messages/applications connected to the project
+* Translation files
+
+Example:
+If “Project Title” exists in the dashboard, it must also exist in the project creation form and edit form.
+
+---
+
+## 14. Categories and sub-services
+
+Create one consistent source of truth for categories and sub-services.
+
+Use the same category/sub-service system in:
+
+* Homepage
+* Project creation
+* Project edit
+* Provider registration/profile
+* Dashboards
+* Project cards
+* Filters/search
+* Admin panel
+* Blog tags if relevant
+* Translation files
+
+Each main category should have an “Other” option.
+Each sub-service list should also have an “Other” option.
+
+When user selects “Other”, allow them to type a custom service name.
+This custom text should appear as a clean professional tag/label.
+
+---
+
+## 15. Service Provider logic
+
+Service Provider profile must be connected directly to the user account.
+
+Service Provider can:
+
+* Register/login
+* Create provider profile
+* Add description
+* Add phone/city
+* Select services/categories
+* Browse available projects
+* See matching projects
+* Unlock/contact/apply to projects depending on platform rules
+* Track contacted/unlocked projects
+* Receive notifications
+
+Service Provider should focus on projects, not other providers.
+
+---
+
+## 16. Client logic
+
+Client can:
+
+* Register/login
+* Create projects
+* Edit projects
+* Delete projects
+* Upload photos
+* See project status/progress
+* See interested service providers
+* Receive messages/applications
+* Receive notifications
+* Access Client dashboard
+
+Client should focus on posting and managing projects.
+
+---
+
+## 17. Admin logic
+
+Admin should manage:
+
+* Users
+* Clients
+* Service Providers
+* Projects
+* Categories
+* Sub-services
+* Tags
+* Blog/Sanity
+* Project statuses
+* Provider statuses
+* Credits/membership if enabled
+* Notifications/system activity
+
+Admin user is Raza.
+Raza will also manage Sanity/blog content.
+
+Admin must see the full connection:
+Client → Project → Service Provider interactions
+
+---
+
+## 18. Notification and email logic
+
+Do not redesign dashboards.
+Only add logical notifications/status updates.
+
+When something important happens, related users should be notified.
+
+Admin actions:
+
+* Admin approves project → project status updates → Client notified → email sent
+* Admin rejects/archives project → Client notified → email sent if needed
+* Admin approves Service Provider → Provider notified → email sent
+* Admin changes credits/membership → Provider notified
+
+Service Provider actions:
+
+* Provider unlocks/contacts/applies to project → Client notified → email sent
+* Provider sends message/application → Client notified
+* Provider withdraws interest → Client notified if needed
+
+Client actions:
+
+* Client accepts/selects Service Provider → Provider notified → email sent
+* Client rejects Provider → Provider notified if needed
+* Client replies to message → Provider notified
+* Client marks project completed → Provider and Admin notified if needed
+
+Create a simple notification system if missing.
+
+Notification fields:
+
+* notificationId
+* recipientUserId
+* type
+* title
+* message
+* relatedProjectId
+* relatedProviderId
+* read/unread
+* createdAt
+
+Use RESEND_API_KEY if available for important emails.
+German must be the default email language.
+
+---
+
+## 19. Ofri-light business model
+
+Use a simplified Ofri-style model for MVP.
+
+Project Poster / Client:
+
+* Posts projects for free.
+* Does not pay to create a project.
+
+Service Provider:
+
+* Can browse project previews.
+* Must unlock/contact project using credits or membership rules.
+* Customer contact details stay locked until allowed/unlocked.
+
+MVP credit logic:
+
+* Small project: 5 credits
+* Medium project: 10 credits
+* Large project: 20 credits
+* Premium project: 30 credits
+
+New Service Provider:
+
+* Gets trial/free credits, for example 20 credits.
+* Can test the platform.
+
+Admin:
+
+* Can manually add/remove credits.
+* Can see credit balance.
+* Can see credit transactions.
+* Can see which projects were unlocked.
+* Can see which providers contacted which projects.
+
+Limit:
+
+* Maximum 5 service providers can unlock/contact the same project.
+* After 5, show “contact limit reached” or similar.
+* Admin can change this later.
+
+Payment:
+Do not make payment too complicated for MVP.
+First create the structure:
+
+* credit balance
+* unlock logic
+* transaction history
+* admin manual credit management
+
+Later Stripe can be added for:
+
+* buying credits
+* subscriptions
+* invoices
+* premium plans
+
+---
+
+## 20. Permissions and access control
+
+Make sure users only access what they should.
+
+Public user:
+
+* limited preview only
+
+Client:
+
+* own projects
+* own messages/applications
+* own notifications
+
+Service Provider:
+
+* provider profile
+* available projects
+* contacted/unlocked projects
+* own notifications
+* own credits
+
+Admin:
+
+* everything
+
+Do not expose customer contact details publicly.
+Do not expose private project/user data to the wrong role.
+
+---
+
+## 21. Translation system
+
+German must be the default and complete language.
+
+German must never be missing.
+
+Add translation keys for:
+
+* Dashboard
+* Projekte
+* Projekt erstellen
+* Meine Projekte
+* Passende Projekte finden
+* Dienstleister-Profil bearbeiten
+* So funktioniert ImmoVia365
+* So funktioniert ImmoVia365 für Kunden
+* So funktioniert ImmoVia365 für Dienstleister
+* Benachrichtigungen
+* Mein Profil
+* Logout
+* Projekt kostenlos erstellen
+* Anbieter vergleichen
+* Projektstatus
+* Interessierte Dienstleister
+* Credits
+* Projekt freischalten
+* Kontakt freischalten
+* Registrieren
+* Einloggen
+* Bitte registrieren Sie sich
+* Zugriff eingeschränkt
+
+Rules:
+
+* No missing German text.
+* No broken translation keys.
+* No random hardcoded English text.
+* Other languages should fallback to German if missing.
+* Default locale should be DE.
+
+---
+
+## 22. Naming consistency
+
+Use the same names everywhere.
+
+Same feature = same name everywhere.
+Same field = same label everywhere.
+Same role = same permissions everywhere.
+Same category = same translation everywhere.
+
+Do not use:
+
+* Title in one place
+* Project Name in another place
+* Projektname somewhere else
+* Missing title in creation form
+
+Use one consistent translation key and translate correctly.
+
+---
+
+## 23. Design rule
+
+Do not redesign everything.
+
+Keep existing style:
+
+* colors
+* buttons
+* cards
+* spacing
+* dashboard layout
+* general visual identity
+
+Only adjust:
+
+* role-based navbar
+* role-based home content
+* correct CTA buttons
+* routing
+* access limits
+* notifications/status logic
+* data relationships
+
+The platform should feel professional, clean, Swiss-style, and coherent.
+
+---
+
+## 24. Build order
+
+Please do this step by step:
+
+Step 1: Define roles and permissions
+Step 2: Fix public access limits
+Step 3: Fix registration/role detection
+Step 4: Fix role-based navbar
+Step 5: Create role-focused Home after login
+Step 6: Keep dashboards visually same but connect data logically
+Step 7: Fix Project → Client relationship
+Step 8: Fix Service Provider → Project interactions
+Step 9: Add notifications/status updates
+Step 10: Add Ofri-light credit/unlock structure
+Step 11: Fix German translations
+Step 12: Final testing
+
+Do not randomly patch one visible bug without checking the connected logic.
+
+---
+
+## 25. Testing checklist
+
+Please test:
+
+Public user:
+
+* Can browse limited website
+* Cannot access full project/contact details
+* Gets registration prompt when trying to do more
+
+Client:
+
+* Registers as Client
+* Sees Client-focused navbar
+* Sees Client-focused Home
+* Can create project
+* Can edit/delete project
+* Sees own projects
+* Sees project status/progress
+* Gets notifications
+
+Service Provider:
+
+* Registers as Service Provider
+* Sees Service Provider-focused navbar
+* Sees project-focused Home
+* Can create provider profile
+* Can see available/matching projects
+* Can unlock/contact/apply based on rules
+* Sees contacted/unlocked projects
+* Gets notifications
+
+Admin:
+
+* Sees Admin-focused navbar
+* Can manage users
+* Can manage projects
+* Can manage service providers
+* Can see Client → Project → Service Provider connections
+* Can manage blog/Sanity
+* Can manage credits manually if enabled
+
+Translations:
+
+* German is default
+* No missing German text
+* No broken keys
+* No random English labels
+* Fallback to German works
+
+---
+
+## Final goal
+
+ImmoVia365 should feel like one professional connected platform:
+
+Public visitor → limited preview → registration
+Client → posts/manages projects
+Service Provider → finds/unlocks/contacts projects
+Admin → manages the whole platform
+
+Do not redesign the dashboards.
+Keep them as they are.
+
+Make the platform smarter, role-based, logically connected, and ready for MVP testing.

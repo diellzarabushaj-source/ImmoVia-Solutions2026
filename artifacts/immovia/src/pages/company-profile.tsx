@@ -246,18 +246,27 @@ export default function CompanyProfile() {
 
             {/* CTA buttons */}
             <div className="flex flex-wrap gap-2 mt-6 pt-5 border-t border-border">
-              <Button asChild>
-                <a href={`mailto:${company.email}`}>
+              {user ? (
+                <>
+                  <Button asChild>
+                    <a href={`mailto:${company.email}`}>
+                      <Mail className="w-4 h-4 mr-2" />
+                      {t.companies.contact}
+                    </a>
+                  </Button>
+                  {company.phone && (
+                    <Button asChild variant="outline">
+                      <a href={`tel:${company.phone}`}>
+                        <Phone className="w-4 h-4 mr-2" />
+                        {t.companies.call}
+                      </a>
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Button onClick={() => setLocation("/sign-in")}>
                   <Mail className="w-4 h-4 mr-2" />
-                  {t.companies.contact}
-                </a>
-              </Button>
-              {company.phone && (
-                <Button asChild variant="outline">
-                  <a href={`tel:${company.phone}`}>
-                    <Phone className="w-4 h-4 mr-2" />
-                    {t.companies.call}
-                  </a>
+                  {t.publicProfile.contactLoginCta}
                 </Button>
               )}
               {company.website && (
@@ -365,52 +374,72 @@ export default function CompanyProfile() {
               transition={{ delay: 0.2 }}
             >
               <h3 className="font-bold text-foreground mb-4">{t.publicProfile.contactInfo}</h3>
-              <div className="space-y-3 mb-5">
-                <div className="flex items-start gap-3 text-sm">
-                  <Mail className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <a href={`mailto:${company.email}`} className="text-foreground/80 hover:text-primary break-all">
-                    {company.email}
-                  </a>
-                </div>
-                {company.phone && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                    <a href={`tel:${company.phone}`} className="text-foreground/80 hover:text-primary">
-                      {company.phone}
-                    </a>
+              {user ? (
+                <>
+                  <div className="space-y-3 mb-5">
+                    <div className="flex items-start gap-3 text-sm">
+                      <Mail className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <a href={`mailto:${company.email}`} className="text-foreground/80 hover:text-primary break-all">
+                        {company.email}
+                      </a>
+                    </div>
+                    {company.phone && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                        <a href={`tel:${company.phone}`} className="text-foreground/80 hover:text-primary">
+                          {company.phone}
+                        </a>
+                      </div>
+                    )}
+                    {company.website && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <Globe className="w-4 h-4 text-primary flex-shrink-0" />
+                        <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
+                          target="_blank" rel="noreferrer"
+                          className="text-foreground/80 hover:text-primary truncate">
+                          {company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                        </a>
+                      </div>
+                    )}
+                    {company.city && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="text-foreground/80">{company.city}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                {company.website && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Globe className="w-4 h-4 text-primary flex-shrink-0" />
-                    <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
-                      target="_blank" rel="noreferrer"
-                      className="text-foreground/80 hover:text-primary truncate">
-                      {company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                    </a>
-                  </div>
-                )}
-                {company.city && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                    <span className="text-foreground/80">{company.city}</span>
-                  </div>
-                )}
-              </div>
 
-              <Button asChild className="w-full mb-2">
-                <a href={`mailto:${company.email}`}>
-                  <Mail className="w-4 h-4 mr-2" />
-                  {t.companies.contact}
-                </a>
-              </Button>
-              {company.phone && (
-                <Button asChild variant="outline" className="w-full mb-4">
-                  <a href={`tel:${company.phone}`}>
-                    <Phone className="w-4 h-4 mr-2" />
-                    {t.companies.call}
-                  </a>
-                </Button>
+                  <Button asChild className="w-full mb-2">
+                    <a href={`mailto:${company.email}`}>
+                      <Mail className="w-4 h-4 mr-2" />
+                      {t.companies.contact}
+                    </a>
+                  </Button>
+                  {company.phone && (
+                    <Button asChild variant="outline" className="w-full mb-4">
+                      <a href={`tel:${company.phone}`}>
+                        <Phone className="w-4 h-4 mr-2" />
+                        {t.companies.call}
+                      </a>
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <div className="mb-4">
+                  {company.city && (
+                    <div className="flex items-center gap-3 text-sm mb-4">
+                      <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                      <span className="text-foreground/80">{company.city}</span>
+                    </div>
+                  )}
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                    <p className="text-sm text-foreground/80 mb-3">{t.publicProfile.contactLoginPrompt}</p>
+                    <Button className="w-full" onClick={() => setLocation("/sign-in")}>
+                      <Mail className="w-4 h-4 mr-2" />
+                      {t.publicProfile.contactLoginCta}
+                    </Button>
+                  </div>
+                </div>
               )}
 
               <div className="border-t border-border pt-4">

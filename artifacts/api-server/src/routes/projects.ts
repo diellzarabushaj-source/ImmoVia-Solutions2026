@@ -15,8 +15,26 @@ import {
 import { requireAdmin } from "../middlewares/requireAdmin";
 import { sendNewProjectNotification, sendProjectConfirmationToClient, sendProjectPublishedNotification, sendProjectRejectedNotification } from "../lib/email";
 import { createNotification, getUserEmail } from "../lib/notify";
+import type { Request } from "express";
 
 const router: IRouter = Router();
+
+// Personal client contact details (name/email/phone) are only returned to
+// authenticated users. Public/unauthenticated requests get them redacted to
+// empty strings so the data never leaves the server, while keeping the response
+// schema valid.
+function isAuthenticated(req: Request): boolean {
+  if (req.session?.adminAuthenticated === true) return true;
+  try {
+    return Boolean(getAuth(req)?.userId);
+  } catch {
+    return false;
+  }
+}
+
+function redactContact<T extends { fullName: string; email: string; phone: string }>(project: T): T {
+  return { ...project, fullName: "", email: "", phone: "" };
+}
 
 router.get("/projects", async (req, res): Promise<void> => {
   const { city, type, status } = req.query;
@@ -35,7 +53,8 @@ router.get("/projects", async (req, res): Promise<void> => {
     .from(projectsTable)
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(sql`${projectsTable.createdAt} desc`);
-  res.json(ListProjectsResponse.parse(projects));
+  const payload = isAuthenticated(req) ? projects : projects.map(redactContact);
+  res.json(ListProjectsResponse.parse(payload));
 });
 
 router.post("/projects", async (req, res): Promise<void> => {
@@ -123,7 +142,8 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(GetProjectResponse.parse(project));
+  const payload = isAuthenticated(req) ? project : redactContact(project);
+  res.json(GetProjectResponse.parse(payload));
 });
 
 router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {

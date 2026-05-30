@@ -11,12 +11,30 @@ import {
   GetCompanyResponse,
   UpdateCompanyResponse,
 } from "@workspace/api-zod";
+import { getAuth } from "@clerk/express";
 import { requireAdmin } from "../middlewares/requireAdmin";
 import { sendNewCompanyNotification, sendProviderApprovedNotification, sendProviderSuspendedNotification } from "../lib/email";
 import { createNotification } from "../lib/notify";
 import { usersTable } from "@workspace/db";
+import type { Request } from "express";
 
 const router: IRouter = Router();
+
+// Personal contact details (email/phone) are only returned to authenticated
+// users. Public/unauthenticated requests get them redacted to empty strings so
+// the data never leaves the server, while keeping the response schema valid.
+function isAuthenticated(req: Request): boolean {
+  if (req.session?.adminAuthenticated === true) return true;
+  try {
+    return Boolean(getAuth(req)?.userId);
+  } catch {
+    return false;
+  }
+}
+
+function redactContact<T extends { email: string; phone: string }>(company: T): T {
+  return { ...company, email: "", phone: "" };
+}
 
 router.get("/companies", async (req, res): Promise<void> => {
   const { city, type, status, workerType } = req.query;
@@ -38,7 +56,8 @@ router.get("/companies", async (req, res): Promise<void> => {
     .from(companiesTable)
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(sql`${companiesTable.createdAt} desc`);
-  res.json(ListCompaniesResponse.parse(companies));
+  const payload = isAuthenticated(req) ? companies : companies.map(redactContact);
+  res.json(ListCompaniesResponse.parse(payload));
 });
 
 router.post("/companies", async (req, res): Promise<void> => {
@@ -102,7 +121,8 @@ router.get("/companies/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(GetCompanyResponse.parse(company));
+  const payload = isAuthenticated(req) ? company : redactContact(company);
+  res.json(GetCompanyResponse.parse(payload));
 });
 
 router.patch("/companies/:id", requireAdmin, async (req, res): Promise<void> => {

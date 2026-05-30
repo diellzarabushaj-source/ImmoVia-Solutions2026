@@ -618,29 +618,39 @@ export default function Companies() {
 
                   {/* CTA footer */}
                   <div className="px-5 pb-5 flex gap-2 items-center">
-                    <button
-                      onClick={e => { e.stopPropagation(); window.location.href = `mailto:${company.email}`; }}
-                      className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
-                    >
-                      <Mail className="h-3.5 w-3.5" />
-                      {t.companies.contact ?? "Contact"}
-                    </button>
-                    {company.phone && (
+                    {user ? (
+                      <>
+                        <button
+                          onClick={e => { e.stopPropagation(); window.location.href = `mailto:${company.email}`; }}
+                          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
+                        >
+                          <Mail className="h-3.5 w-3.5" />
+                          {t.companies.contact ?? "Contact"}
+                        </button>
+                        {company.phone && (
+                          <button
+                            onClick={e => { e.stopPropagation(); window.location.href = `tel:${company.phone}`; }}
+                            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
+                          >
+                            <Phone className="h-3.5 w-3.5" />
+                            {t.companies.call ?? "Call"}
+                          </button>
+                        )}
+                        <button
+                          onClick={e => { e.stopPropagation(); navigate(`/companies/${company.id}?msg=1`); }}
+                          className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          {t.publicProfile.sendMessage}
+                        </button>
+                      </>
+                    ) : (
                       <button
-                        onClick={e => { e.stopPropagation(); window.location.href = `tel:${company.phone}`; }}
-                        className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                        {t.companies.call ?? "Call"}
-                      </button>
-                    )}
-                    {user && (
-                      <button
-                        onClick={e => { e.stopPropagation(); navigate(`/companies/${company.id}?msg=1`); }}
+                        onClick={e => { e.stopPropagation(); navigate("/sign-in"); }}
                         className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
                       >
-                        <MessageSquare className="h-3.5 w-3.5" />
-                        {t.publicProfile.sendMessage}
+                        <Mail className="h-3.5 w-3.5" />
+                        {t.publicProfile.contactLoginCta}
                       </button>
                     )}
                     <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
