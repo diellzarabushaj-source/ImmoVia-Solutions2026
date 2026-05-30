@@ -26,6 +26,7 @@ import blogRouter from "./blog";
 import seedDemoRouter from "./seed-demo";
 import providerProfileRouter from "./provider-profile";
 import conversationsRouter from "./conversations";
+import customerRouter from "./customer";
 
 const router: IRouter = Router();
 
@@ -56,5 +57,6 @@ router.use(searchRouter);
 router.use(blogRouter);
 router.use(providerProfileRouter);
 router.use(conversationsRouter);
+router.use(customerRouter);
 
 export default router;

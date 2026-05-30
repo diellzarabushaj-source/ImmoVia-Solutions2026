@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth, isProjectPoster, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
@@ -7,132 +7,95 @@ import {
   type ProviderProject,
   type OfferWithProvider,
 } from "@/lib/billing-api";
+import { MessagingSystem } from "@/components/MessagingSystem";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Briefcase, Flame, Star, X, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
-import MessageThread from "@/components/MessageThread";
+import {
+  Loader2, Star, X, MessageSquare, ChevronDown, ChevronUp,
+  LayoutDashboard, PlusCircle, FolderOpen, Users, Send,
+  Search, Heart, File, Award, Settings, Briefcase,
+  MapPin, Calendar, ArrowRight, Flame, ShieldCheck,
+  Archive, CheckCircle2, Eye, Trash2, Building2,
+  BarChart3, Scale,
+} from "lucide-react";
 import { format } from "date-fns";
 
-// Inline star picker
+// ── Types ────────────────────────────────────────────────────────────────────
+
+type Section =
+  | "uebersicht"
+  | "erstellen"
+  | "projekte"
+  | "bewerbungen"
+  | "nachrichten"
+  | "angebote"
+  | "finden"
+  | "favoriten"
+  | "dateien"
+  | "bewertungen"
+  | "einstellungen";
+
+interface Favorite {
+  id: number;
+  companyId: number;
+  name: string | null;
+  city: string | null;
+  serviceTypes: string[] | null;
+  logoUrl: string | null;
+  shortDescription: string | null;
+  createdAt: string;
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hovered, setHovered] = useState(0);
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
-        <button
-          key={n}
-          type="button"
-          onMouseEnter={() => setHovered(n)}
-          onMouseLeave={() => setHovered(0)}
-          onClick={() => onChange(n)}
-          className="focus:outline-none"
-          aria-label={String(n)}
-        >
-          <Star
-            className={`w-7 h-7 transition-colors ${
-              n <= (hovered || value)
-                ? "fill-amber-400 text-amber-400"
-                : "fill-muted text-muted-foreground/30"
-            }`}
-          />
+        <button key={n} type="button" onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(0)} onClick={() => onChange(n)} className="focus:outline-none">
+          <Star className={`w-7 h-7 transition-colors ${n <= (hovered || value) ? "fill-amber-400 text-amber-400" : "fill-muted text-muted-foreground/30"}`} />
         </button>
       ))}
     </div>
   );
 }
 
-interface ReviewModalProps {
-  offerId: number;
-  projectId: number;
-  providerName: string;
-  onClose: () => void;
-  onDone: (offerId: number) => void;
-}
-
-function ReviewModal({ offerId, projectId, providerName, onClose, onDone }: ReviewModalProps) {
+function ReviewModal({ offerId, projectId, providerName, onClose, onDone }: { offerId: number; projectId: number; providerName: string; onClose: () => void; onDone: (id: number) => void }) {
   const { t } = useLanguage();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
-
   const submit = async () => {
     if (rating < 1) return;
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(`/api/projects/${projectId}/review`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ offerId, rating, comment: comment.trim() || null }),
-      });
-      if (res.status === 409) {
-        setError(t.reviews.alreadyReviewed);
-        setSubmitting(false);
-        return;
-      }
-      if (!res.ok) {
-        const body = (await res.json()) as { error?: string };
-        setError(body.error ?? "Error");
-        setSubmitting(false);
-        return;
-      }
+      const res = await fetch(`/api/projects/${projectId}/review`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ offerId, rating, comment: comment.trim() || null }) });
+      if (res.status === 409) { setError(t.reviews.alreadyReviewed); setSubmitting(false); return; }
+      if (!res.ok) { const b = await res.json() as { error?: string }; setError(b.error ?? "Error"); setSubmitting(false); return; }
       setDone(true);
-      setTimeout(() => {
-        onDone(offerId);
-        onClose();
-      }, 1200);
-    } catch {
-      setError("Network error");
-      setSubmitting(false);
-    }
+      setTimeout(() => { onDone(offerId); onClose(); }, 1200);
+    } catch { setError("Network error"); setSubmitting(false); }
   };
-
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-6">
         <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-bold">{t.reviews.leaveReview}</h3>
-            <p className="text-sm text-muted-foreground">{providerName}</p>
-          </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="w-5 h-5" />
-          </button>
+          <div><h3 className="text-lg font-bold">{t.reviews.leaveReview}</h3><p className="text-sm text-muted-foreground">{providerName}</p></div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
         </div>
-
-        {done ? (
-          <div className="py-6 text-center text-primary font-semibold">{t.reviews.success}</div>
-        ) : (
+        {done ? <div className="py-6 text-center text-primary font-semibold">{t.reviews.success}</div> : (
           <>
-            <div className="mb-4">
-              <p className="text-sm font-medium mb-2">{t.reviews.rating}</p>
-              <StarPicker value={rating} onChange={setRating} />
-            </div>
-            <div className="mb-4">
-              <label className="text-sm font-medium block mb-2">{t.reviews.comment}</label>
-              <textarea
-                className="w-full border rounded-md p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 min-h-[80px] bg-background"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                maxLength={500}
-              />
-            </div>
+            <div className="mb-4"><p className="text-sm font-medium mb-2">{t.reviews.rating}</p><StarPicker value={rating} onChange={setRating} /></div>
+            <div className="mb-4"><label className="text-sm font-medium block mb-2">{t.reviews.comment}</label><textarea className="w-full border rounded-md p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 min-h-[80px] bg-background" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={500} /></div>
             {error && <p className="text-sm text-destructive mb-3">{error}</p>}
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" size="sm" onClick={onClose}>
-                {t.common?.cancel ?? "Cancel"}
-              </Button>
-              <Button
-                size="sm"
-                onClick={submit}
-                disabled={rating < 1 || submitting}
-                data-testid="button-submit-review"
-              >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t.reviews.submit}
-              </Button>
+              <Button variant="outline" size="sm" onClick={onClose}>{t.common?.cancel ?? "Cancel"}</Button>
+              <Button size="sm" onClick={submit} disabled={rating < 1 || submitting} data-testid="button-submit-review">{submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t.reviews.submit}</Button>
             </div>
           </>
         )}
@@ -141,228 +104,711 @@ function ReviewModal({ offerId, projectId, providerName, onClose, onDone }: Revi
   );
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function ClientDashboard() {
   const { user, loading } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [, setLocation] = useLocation();
+
+  const l = t.customer;
+
+  // ── State ─────────────────────────────────────────────────────────────────
+
+  const [activeSection, setActiveSection] = useState<Section>("uebersicht");
   const [projects, setProjects] = useState<ProviderProject[]>([]);
   const [offersByProject, setOffersByProject] = useState<Record<number, OfferWithProvider[]>>({});
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [reviewedOfferIds, setReviewedOfferIds] = useState<Set<number>>(new Set());
-  const [reviewModal, setReviewModal] = useState<{
-    offerId: number;
-    projectId: number;
-    providerName: string;
-  } | null>(null);
   const [openThreads, setOpenThreads] = useState<Set<number>>(new Set());
+  const [reviewModal, setReviewModal] = useState<{ offerId: number; projectId: number; providerName: string } | null>(null);
+  const [archiving, setArchiving] = useState<number | null>(null);
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedForCompare, setSelectedForCompare] = useState<number[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
-  const toggleThread = (offerId: number) => {
-    setOpenThreads((prev) => {
-      const next = new Set(prev);
-      if (next.has(offerId)) next.delete(offerId);
-      else next.add(offerId);
-      return next;
-    });
-  };
+  // ── Data loading ──────────────────────────────────────────────────────────
+
+  const loadData = useCallback(async () => {
+    if (!user) return;
+    try {
+      const pjs = await billingApi.myProjects();
+      setProjects(pjs);
+      const map: Record<number, OfferWithProvider[]> = {};
+      await Promise.all(pjs.map(async (p) => {
+        try { map[p.id] = await billingApi.projectOffers(p.id); }
+        catch { map[p.id] = []; }
+      }));
+      setOffersByProject(map);
+    } catch { /* ignore */ }
+
+    try {
+      const res = await fetch("/api/reviews/my-reviewed-offers", { credentials: "include" });
+      if (res.ok) { const d = await res.json() as { reviewedOfferIds: number[] }; setReviewedOfferIds(new Set(d.reviewedOfferIds)); }
+    } catch { /* ignore */ }
+
+    try {
+      const res = await fetch("/api/customer/favorites", { credentials: "include" });
+      if (res.ok) setFavorites(await res.json() as Favorite[]);
+    } catch { /* ignore */ }
+
+    setDataLoaded(true);
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) setLocation("/login");
   }, [loading, user, setLocation]);
 
   useEffect(() => {
-    if (!user) return;
-    if (!isProjectPoster(user)) return;
-    void (async () => {
-      try {
-        const pjs = await billingApi.myProjects();
-        setProjects(pjs);
-        const map: Record<number, OfferWithProvider[]> = {};
-        for (const p of pjs) {
-          try {
-            const offers = await billingApi.projectOffers(p.id);
-            map[p.id] = offers;
-          } catch {
-            map[p.id] = [];
-          }
-        }
-        setOffersByProject(map);
-      } catch {
-        // ignore
-      }
+    if (user && isProjectPoster(user)) void loadData();
+  }, [user, loadData]);
 
-      // Fetch already-reviewed offer IDs
-      try {
-        const res = await fetch("/api/reviews/my-reviewed-offers");
-        if (res.ok) {
-          const data = (await res.json()) as { reviewedOfferIds: number[] };
-          setReviewedOfferIds(new Set(data.reviewedOfferIds));
-        }
-      } catch {
-        // ignore
-      }
-    })();
-  }, [user]);
-
-  if (loading || !user) {
-    return (
-      <div className="container mx-auto px-4 py-24 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (loading || !user) return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   if (!isProjectPoster(user)) {
     setLocation(isServiceProvider(user) ? "/provider" : "/admin");
     return null;
   }
 
-  const onAccept = async (offerId: number) => {
-    try {
-      await billingApi.acceptOffer(offerId);
-      const pjs = await billingApi.myProjects();
-      setProjects(pjs);
-    } catch {
-      // ignore
-    }
+  // ── Computed values ───────────────────────────────────────────────────────
+
+  const activeProjects = projects.filter(p => !["archived", "completed"].includes(p.status));
+  const completedProjects = projects.filter(p => p.status === "completed");
+  const allOffers = Object.values(offersByProject).flat();
+  const pendingOffers = allOffers.filter(o => o.status === "pending");
+  const acceptedOffers = allOffers.filter(o => o.status === "accepted");
+
+  const statusLabel = (s: string) => {
+    const map: Record<string, string> = {
+      pending: l.statusPending, reviewing: l.statusPending, open: l.statusOpen,
+      in_discussion: l.statusInDiscussion, offer_received: l.statusOfferReceived,
+      matched: l.statusProviderSelected, completed: l.statusCompleted, archived: l.statusArchived,
+    };
+    return map[s] ?? s;
+  };
+
+  const statusColor = (s: string) => {
+    if (s === "archived") return "bg-muted text-muted-foreground";
+    if (s === "completed" || s === "matched") return "bg-green-100 text-green-800";
+    if (s === "offer_received" || s === "in_discussion") return "bg-blue-100 text-blue-800";
+    return "bg-amber-100 text-amber-800";
   };
 
   const typeBadge = (type: string) => {
-    if (type === "top") return <Badge className="bg-amber-100 text-amber-800 gap-1"><Flame className="w-3 h-3" /> {t.provider.offerTypeTop}</Badge>;
-    if (type === "highlighted") return <Badge className="bg-blue-100 text-blue-800 gap-1"><Star className="w-3 h-3" /> {t.provider.offerTypeHighlighted}</Badge>;
-    return <Badge variant="outline">{t.provider.offerTypeNormal}</Badge>;
+    if (type === "top") return <Badge className="bg-amber-100 text-amber-800 gap-1"><Flame className="w-3 h-3" /> Top</Badge>;
+    if (type === "highlighted") return <Badge className="bg-blue-100 text-blue-800 gap-1"><Star className="w-3 h-3" /> Featured</Badge>;
+    return <Badge variant="outline">Standard</Badge>;
   };
 
+  const onAccept = async (offerId: number) => {
+    try { await billingApi.acceptOffer(offerId); await loadData(); } catch { /* ignore */ }
+  };
+
+  const onArchive = async (projectId: number) => {
+    setArchiving(projectId);
+    try {
+      await fetch(`/api/customer/projects/${projectId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ status: "archived" }) });
+      await loadData();
+    } catch { /* ignore */ }
+    setArchiving(null);
+  };
+
+  const removeFavorite = async (companyId: number) => {
+    try {
+      await fetch(`/api/customer/favorites/${companyId}`, { method: "DELETE", credentials: "include" });
+      setFavorites(prev => prev.filter(f => f.companyId !== companyId));
+    } catch { /* ignore */ }
+  };
+
+  const toggleCompare = (offerId: number) => {
+    setSelectedForCompare(prev =>
+      prev.includes(offerId) ? prev.filter(id => id !== offerId) : prev.length < 4 ? [...prev, offerId] : prev
+    );
+  };
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+
+  const navItems: Array<{ id: Section; label: string; icon: React.ReactNode; badge?: number }> = [
+    { id: "uebersicht", label: l.navOverview, icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: "erstellen", label: l.navCreate, icon: <PlusCircle className="w-4 h-4" /> },
+    { id: "projekte", label: l.navProjects, icon: <FolderOpen className="w-4 h-4" />, badge: activeProjects.length || undefined },
+    { id: "bewerbungen", label: l.navApplications, icon: <Users className="w-4 h-4" />, badge: pendingOffers.length || undefined },
+    { id: "nachrichten", label: l.navMessages, icon: <MessageSquare className="w-4 h-4" /> },
+    { id: "angebote", label: l.navOffers, icon: <Send className="w-4 h-4" />, badge: allOffers.length || undefined },
+    { id: "finden", label: l.navFind, icon: <Search className="w-4 h-4" /> },
+    { id: "favoriten", label: l.navFavorites, icon: <Heart className="w-4 h-4" />, badge: favorites.length || undefined },
+    { id: "dateien", label: l.navFiles, icon: <File className="w-4 h-4" /> },
+    { id: "bewertungen", label: l.navReviews, icon: <Award className="w-4 h-4" /> },
+    { id: "einstellungen", label: l.navSettings, icon: <Settings className="w-4 h-4" /> },
+  ];
+
+  // ── Layout ────────────────────────────────────────────────────────────────
+
   return (
-    <div className="container mx-auto px-4 py-10 max-w-5xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-serif font-bold mb-1">{t.dashboard.welcome}, {user.fullName.split(" ")[0]}</h1>
-          <p className="text-muted-foreground text-sm">{t.dashboard.homeownerSubtitle}</p>
-        </div>
-        <Link href="/submit-project">
-          <Button data-testid="button-new-project">
-            <Briefcase className="w-4 h-4 mr-2" /> {t.clientDashboard.newProject}
-          </Button>
-        </Link>
-      </div>
+    <div className="min-h-screen bg-muted/20">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="flex gap-6">
 
-      {projects.length === 0 && (
-        <Card className="p-10 text-center">
-          <p className="text-muted-foreground mb-4">{t.clientDashboard.noProjects}</p>
-          <Link href="/submit-project">
-            <Button>{t.clientDashboard.newProject}</Button>
-          </Link>
-        </Card>
-      )}
-
-      <div className="space-y-6">
-        {projects.map((p) => {
-          const offers = offersByProject[p.id] ?? [];
-          return (
-            <Card key={p.id} className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-bold capitalize" data-testid={`project-${p.id}`}>{p.projectType}</h3>
-                  <p className="text-sm text-muted-foreground">{p.city} · {t.clientDashboard.size}: <span className="capitalize">{p.size}</span></p>
-                </div>
-                <Badge variant="outline">{p.status}</Badge>
+          {/* Sidebar */}
+          <aside className="w-56 shrink-0 hidden md:block">
+            <Card className="p-2 sticky top-24">
+              <div className="px-3 py-2 mb-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Dashboard</p>
               </div>
-              <p className="text-sm mb-4 line-clamp-2">{p.description}</p>
+              <nav className="space-y-0.5">
+                {navItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveSection(item.id)}
+                    className={`w-full flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeSection === item.id ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-muted hover:text-foreground"}`}
+                  >
+                    <span className="flex items-center gap-2.5">{item.icon}{item.label}</span>
+                    {item.badge !== undefined && (
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeSection === item.id ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}`}>{item.badge}</span>
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </Card>
+          </aside>
 
-              <div className="border-t pt-4">
-                <h4 className="font-semibold text-sm mb-3">
-                  {t.clientDashboard.offersReceived} ({offers.length})
-                </h4>
-                {offers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">{t.clientDashboard.noOffersYet}</p>
+          {/* Mobile nav strip */}
+          <div className="md:hidden w-full mb-4">
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {navItems.map(item => (
+                <button key={item.id} onClick={() => setActiveSection(item.id)} className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors border ${activeSection === item.id ? "bg-primary text-primary-foreground border-primary" : "bg-white border-border text-foreground/70"}`}>
+                  {item.icon}{item.label}
+                  {item.badge !== undefined && <span className="ml-1 text-[10px] font-bold">{item.badge}</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Main content */}
+          <main className="flex-1 min-w-0">
+
+            {/* ── ÜBERSICHT ── */}
+            {activeSection === "uebersicht" && (
+              <div>
+                {/* Welcome banner */}
+                <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-primary/8 via-sky-50/60 to-transparent border border-primary/10">
+                  <h1 className="text-2xl font-serif font-bold mb-1" data-testid="customer-heading">
+                    {t.dashboard.welcome}, {user.fullName.split(" ")[0]}
+                  </h1>
+                  <p className="text-sm text-muted-foreground mb-4">{l.welcomeDesc}</p>
+                  <div className="flex flex-wrap gap-3">
+                    <Button onClick={() => setActiveSection("erstellen")} data-testid="button-new-project">
+                      <PlusCircle className="w-4 h-4 mr-2" />{l.createProject}
+                    </Button>
+                    <Button variant="outline" onClick={() => setActiveSection("finden")}>
+                      <Search className="w-4 h-4 mr-2" />{l.findProviders}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 6 stat cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                  <Card className="p-4 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setActiveSection("projekte")}>
+                    <div className="text-xs text-muted-foreground mb-1">{l.statActive}</div>
+                    <div className="text-2xl font-bold">{activeProjects.length}</div>
+                  </Card>
+                  <Card className="p-4 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setActiveSection("bewerbungen")}>
+                    <div className="text-xs text-muted-foreground mb-1">{l.statApplications}</div>
+                    <div className="text-2xl font-bold text-primary">{pendingOffers.length}</div>
+                  </Card>
+                  <Card className="p-4 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setActiveSection("nachrichten")}>
+                    <div className="text-xs text-muted-foreground mb-1">{l.statMessages}</div>
+                    <div className="text-2xl font-bold">—</div>
+                  </Card>
+                  <Card className="p-4 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setActiveSection("angebote")}>
+                    <div className="text-xs text-muted-foreground mb-1">{l.statOffers}</div>
+                    <div className="text-2xl font-bold">{allOffers.length}</div>
+                  </Card>
+                  <Card className="p-4 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setActiveSection("projekte")}>
+                    <div className="text-xs text-muted-foreground mb-1">{l.statCompleted}</div>
+                    <div className="text-2xl font-bold">{completedProjects.length}</div>
+                  </Card>
+                  <Card className="p-4 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setActiveSection("favoriten")}>
+                    <div className="text-xs text-muted-foreground mb-1">{l.statFavorites}</div>
+                    <div className="text-2xl font-bold">{favorites.length}</div>
+                    <Heart className="w-4 h-4 text-muted-foreground/40 mt-1" />
+                  </Card>
+                </div>
+
+                {/* Next step card */}
+                <Card className="p-5 border-primary/20 bg-primary/3">
+                  {projects.length === 0 ? (
+                    <>
+                      <p className="text-sm mb-3 text-foreground/80">{l.noProjectHint}</p>
+                      <Button onClick={() => setActiveSection("erstellen")} data-testid="button-start-project">
+                        <PlusCircle className="w-4 h-4 mr-2" />{l.noProjectCta}
+                      </Button>
+                    </>
+                  ) : pendingOffers.length > 0 ? (
+                    <>
+                      <p className="text-sm mb-3 text-foreground/80">{l.hasAppsHint}</p>
+                      <Button onClick={() => setActiveSection("bewerbungen")}><Users className="w-4 h-4 mr-2" />{l.hasAppsCta}</Button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm mb-3 text-foreground/80">{l.hasMessagesHint}</p>
+                      <Button onClick={() => setActiveSection("nachrichten")}><MessageSquare className="w-4 h-4 mr-2" />{l.hasMessagesCta}</Button>
+                    </>
+                  )}
+                </Card>
+              </div>
+            )}
+
+            {/* ── PROJEKT ERSTELLEN ── */}
+            {activeSection === "erstellen" && (
+              <div>
+                <h2 className="text-xl font-serif font-bold mb-6">{l.navCreate}</h2>
+                <Card className="p-8 text-center">
+                  <PlusCircle className="w-12 h-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    {language === "de" ? "Neues Projekt erstellen" : language === "fr" ? "Créer un nouveau projet" : language === "sq" ? "Krijo Projekt të Ri" : "Create New Project"}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">{l.publishHelper}</p>
+                  <Link href="/submit-project">
+                    <Button size="lg" data-testid="button-go-create">
+                      <PlusCircle className="w-4 h-4 mr-2" />{l.noProjectCta}
+                    </Button>
+                  </Link>
+                </Card>
+
+                {/* Quick links */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                  {[
+                    { key: "cat_renovation", icon: Briefcase },
+                    { key: "cat_construction", icon: Building2 },
+                    { key: "cat_electrical", icon: ShieldCheck },
+                    { key: "cat_plumbing", icon: Settings },
+                  ].map(({ key, icon: Icon }) => (
+                    <Link href={`/submit-project?type=${key}`} key={key}>
+                      <Card className="p-4 hover:border-primary/40 cursor-pointer transition-colors flex items-center gap-3">
+                        <Icon className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">{(l as Record<string, string>)[key] ?? key}</span>
+                        <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── MEINE PROJEKTE ── */}
+            {activeSection === "projekte" && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-serif font-bold">{l.navProjects}</h2>
+                  <Button onClick={() => setActiveSection("erstellen")} size="sm">
+                    <PlusCircle className="w-4 h-4 mr-1.5" />{l.navCreate}
+                  </Button>
+                </div>
+
+                {projects.length === 0 ? (
+                  <Card className="p-10 text-center">
+                    <FolderOpen className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground mb-4">{t.clientDashboard.noProjects}</p>
+                    <Button onClick={() => setActiveSection("erstellen")}><PlusCircle className="w-4 h-4 mr-2" />{l.noProjectCta}</Button>
+                  </Card>
                 ) : (
-                  <div className="space-y-3">
-                    {offers.map((o) => (
-                      <div key={o.id}>
-                      <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-muted/30 border">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-sm">{o.providerCompany ?? o.providerName}</span>
-                            {typeBadge(o.type)}
+                  <div className="space-y-4">
+                    {projects.map(p => {
+                      const offers = offersByProject[p.id] ?? [];
+                      const isArchiving = archiving === p.id;
+                      return (
+                        <Card key={p.id} className={`p-5 ${p.status === "archived" ? "opacity-60" : ""}`}>
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold capitalize truncate" data-testid={`project-${p.id}`}>
+                                {p.title ?? p.projectType}
+                              </h3>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                                <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{p.city}</span>
+                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{format(new Date(p.createdAt), "dd.MM.yyyy")}</span>
+                              </div>
+                            </div>
+                            <span className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${statusColor(p.status)}`}>{statusLabel(p.status)}</span>
                           </div>
-                          <p className="text-xs text-muted-foreground mb-1">{o.providerCity}</p>
-                          <p className="text-sm">{o.message}</p>
-                          {o.priceEstimate && (
-                            <p className="text-sm font-semibold mt-1">{t.clientDashboard.price}: {o.priceEstimate}</p>
-                          )}
-                        </div>
-                        <div className="flex flex-col gap-2 items-end">
-                          {o.status === "accepted" ? (
-                            <>
-                              <Badge>{t.clientDashboard.accepted}</Badge>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => toggleThread(o.id)}
-                                data-testid={`button-messages-${o.id}`}
-                              >
-                                <MessageSquare className="w-3.5 h-3.5 mr-1" />
-                                {t.messaging.open}
-                                {openThreads.has(o.id) ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
-                              </Button>
-                              {reviewedOfferIds.has(o.id) ? (
-                                <Badge variant="outline" className="text-xs">
-                                  <Star className="w-3 h-3 mr-1 fill-amber-400 text-amber-400" />
-                                  {t.reviews.alreadyReviewed}
-                                </Badge>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    setReviewModal({
-                                      offerId: o.id,
-                                      projectId: p.id,
-                                      providerName: o.providerCompany ?? o.providerName ?? "—",
-                                    })
-                                  }
-                                  data-testid={`button-review-${o.id}`}
-                                >
-                                  <Star className="w-3.5 h-3.5 mr-1" />
-                                  {t.reviews.leaveReview}
-                                </Button>
-                              )}
-                            </>
-                          ) : (
-                            <Button size="sm" onClick={() => onAccept(o.id)} data-testid={`button-accept-${o.id}`}>
-                              {t.clientDashboard.accept}
+
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{p.description}</p>
+
+                          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-4">
+                            {p.budget && <span className="bg-muted px-2 py-1 rounded">{p.budget}</span>}
+                            {p.timeline && <span className="bg-muted px-2 py-1 rounded">{p.timeline}</span>}
+                            <span className="bg-muted px-2 py-1 rounded capitalize">{p.size}</span>
+                            <span className="bg-muted px-2 py-1 rounded">{offers.length} {language === "de" ? "Bewerbungen" : language === "fr" ? "candidatures" : language === "sq" ? "aplikime" : "applications"}</span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <Button size="sm" variant="outline" onClick={() => { setActiveSection("bewerbungen"); }}>
+                              <Users className="w-3.5 h-3.5 mr-1.5" />{l.viewApplications}
                             </Button>
+                            <Button size="sm" variant="outline" onClick={() => setActiveSection("nachrichten")}>
+                              <MessageSquare className="w-3.5 h-3.5 mr-1.5" />{l.openMessages}
+                            </Button>
+                            {p.status !== "archived" && p.status !== "completed" && (
+                              <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => onArchive(p.id)} disabled={isArchiving}>
+                                {isArchiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5 mr-1.5" />}
+                                {l.archiveProject}
+                              </Button>
+                            )}
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── BEWERBUNGEN ── */}
+            {activeSection === "bewerbungen" && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-serif font-bold">{l.navApplications}</h2>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant={compareMode ? "default" : "outline"} onClick={() => { setCompareMode(m => !m); setSelectedForCompare([]); }}>
+                      <Scale className="w-3.5 h-3.5 mr-1.5" />{l.compare}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Compare table */}
+                {compareMode && selectedForCompare.length >= 2 && (
+                  <Card className="p-4 mb-4 overflow-x-auto">
+                    <h3 className="font-semibold text-sm mb-3 flex items-center gap-1.5"><BarChart3 className="w-4 h-4 text-primary" />{l.compare}</h3>
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="text-muted-foreground border-b">
+                          <th className="text-left py-1.5 pr-4">{language === "de" ? "Anbieter" : "Provider"}</th>
+                          <th className="text-left py-1.5 pr-4">Badge</th>
+                          <th className="text-left py-1.5 pr-4">{language === "de" ? "Stadt" : "City"}</th>
+                          <th className="text-left py-1.5 pr-4">{language === "de" ? "Preis" : "Price"}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedForCompare.map(oid => {
+                          const o = allOffers.find(x => x.id === oid);
+                          if (!o) return null;
+                          return (
+                            <tr key={oid} className="border-b last:border-0">
+                              <td className="py-2 pr-4 font-medium">{o.providerCompany ?? o.providerName}</td>
+                              <td className="py-2 pr-4">{typeBadge(o.type)}</td>
+                              <td className="py-2 pr-4 text-muted-foreground">{o.providerCity ?? "—"}</td>
+                              <td className="py-2 pr-4">{o.priceEstimate ?? "—"}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </Card>
+                )}
+
+                {allOffers.length === 0 ? (
+                  <Card className="p-10 text-center">
+                    <Users className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">{l.noApplications}</p>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {projects.map(p => {
+                      const offers = offersByProject[p.id] ?? [];
+                      if (offers.length === 0) return null;
+                      return (
+                        <div key={p.id}>
+                          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-1">
+                            {p.title ?? p.projectType} · {p.city}
+                          </h3>
+                          <div className="space-y-3">
+                            {offers.map(o => (
+                              <div key={o.id}>
+                                <Card className={`p-4 ${compareMode && selectedForCompare.includes(o.id) ? "border-primary ring-1 ring-primary/20" : ""}`}>
+                                  <div className="flex items-start gap-3">
+                                    {compareMode && (
+                                      <input type="checkbox" checked={selectedForCompare.includes(o.id)} onChange={() => toggleCompare(o.id)} className="mt-1 w-4 h-4 accent-primary" />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                        <span className="font-semibold text-sm">{o.providerCompany ?? o.providerName}</span>
+                                        {typeBadge(o.type)}
+                                        <Badge variant="outline" className="text-xs">{o.status}</Badge>
+                                      </div>
+                                      {o.providerCity && <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1"><MapPin className="w-3 h-3" />{o.providerCity}</p>}
+                                      <p className="text-sm text-foreground/80">{o.message}</p>
+                                      {o.priceEstimate && <p className="text-sm font-semibold mt-1 text-primary">{o.priceEstimate}</p>}
+                                    </div>
+                                    <div className="flex flex-col gap-2 items-end shrink-0">
+                                      {o.status === "accepted" ? (
+                                        <>
+                                          <Badge className="bg-green-100 text-green-800"><CheckCircle2 className="w-3 h-3 mr-1" />{t.clientDashboard.accepted}</Badge>
+                                          <Button size="sm" variant="outline" onClick={() => { setOpenThreads(prev => { const n = new Set(prev); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n; })} }>
+                                            <MessageSquare className="w-3.5 h-3.5 mr-1" />{t.messaging.open}
+                                            {openThreads.has(o.id) ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
+                                          </Button>
+                                          {!reviewedOfferIds.has(o.id) && (
+                                            <Button size="sm" variant="outline" onClick={() => setReviewModal({ offerId: o.id, projectId: p.id, providerName: o.providerCompany ?? o.providerName ?? "—" })} data-testid={`button-review-${o.id}`}>
+                                              <Star className="w-3.5 h-3.5 mr-1" />{t.reviews.leaveReview}
+                                            </Button>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <Button size="sm" onClick={() => onAccept(o.id)} data-testid={`button-accept-${o.id}`}>{l.acceptOffer}</Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {o.status === "accepted" && openThreads.has(o.id) && (
+                                    <div className="mt-3 pt-3 border-t">
+                                      <MessagingSystem context={{ offerId: o.id, otherPartyName: o.providerCompany ?? o.providerName ?? undefined }} embedded />
+                                    </div>
+                                  )}
+                                </Card>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── NACHRICHTEN ── */}
+            {activeSection === "nachrichten" && (
+              <div>
+                <h2 className="text-xl font-serif font-bold mb-4">{l.navMessages}</h2>
+                <MessagingSystem />
+              </div>
+            )}
+
+            {/* ── ANGEBOTE ── */}
+            {activeSection === "angebote" && (
+              <div>
+                <h2 className="text-xl font-serif font-bold mb-4">{l.navOffers}</h2>
+                {allOffers.length === 0 ? (
+                  <Card className="p-10 text-center">
+                    <Send className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground mb-4">{l.noOffers}</p>
+                    <Button onClick={() => setActiveSection("projekte")}><FolderOpen className="w-4 h-4 mr-2" />{l.navProjects}</Button>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {projects.map(p => {
+                      const offers = (offersByProject[p.id] ?? []).filter(o => o.status !== "pending");
+                      if (offers.length === 0) return null;
+                      return (
+                        <div key={p.id}>
+                          <h3 className="text-sm font-semibold text-muted-foreground mb-2 px-1">{p.title ?? p.projectType}</h3>
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            {offers.map(o => (
+                              <Card key={o.id} className="p-4">
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <span className="font-semibold text-sm">{o.providerCompany ?? o.providerName}</span>
+                                  {typeBadge(o.type)}
+                                </div>
+                                {o.priceEstimate && <p className="text-lg font-bold text-primary mb-1">{o.priceEstimate}</p>}
+                                <p className="text-xs text-muted-foreground line-clamp-2">{o.message}</p>
+                                <div className="flex items-center justify-between mt-3">
+                                  <Badge variant="outline" className="text-xs">{o.status}</Badge>
+                                  <span className="text-xs text-muted-foreground">{format(new Date(o.createdAt), "dd.MM.yy")}</span>
+                                </div>
+                                {o.status === "accepted" && (
+                                  <Button size="sm" className="w-full mt-3" variant="outline" onClick={() => { setOpenThreads(prev => { const n = new Set(prev); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n; }); setActiveSection("nachrichten"); }}>
+                                    <MessageSquare className="w-3.5 h-3.5 mr-1.5" />{t.messaging.open}
+                                  </Button>
+                                )}
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── ANBIETER FINDEN ── */}
+            {activeSection === "finden" && (
+              <div>
+                <h2 className="text-xl font-serif font-bold mb-4">{l.navFind}</h2>
+                <Card className="p-6 text-center mb-4">
+                  <Search className="w-10 h-10 text-primary mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {language === "de" ? "Durchsuchen Sie unsere geprüften Fachleute und Unternehmen." : language === "fr" ? "Parcourez nos prestataires vérifiés." : language === "sq" ? "Shfletoni profesionistët tanë të verifikuar." : "Browse our verified professionals and companies."}
+                  </p>
+                  <Link href="/companies">
+                    <Button data-testid="button-browse-companies">
+                      <Search className="w-4 h-4 mr-2" />
+                      {language === "de" ? "Alle Anbieter ansehen" : language === "fr" ? "Voir tous les prestataires" : language === "sq" ? "Shiko të Gjithë Ofruesit" : "Browse All Providers"}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </Card>
+              </div>
+            )}
+
+            {/* ── FAVORITEN ── */}
+            {activeSection === "favoriten" && (
+              <div>
+                <h2 className="text-xl font-serif font-bold mb-4">{l.navFavorites}</h2>
+                {favorites.length === 0 ? (
+                  <Card className="p-10 text-center">
+                    <Heart className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground mb-4">{l.noFavorites}</p>
+                    <Button onClick={() => setActiveSection("finden")}><Search className="w-4 h-4 mr-2" />{l.findProviders}</Button>
+                  </Card>
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {favorites.map(f => (
+                      <Card key={f.id} className="p-4">
+                        <div className="flex items-start gap-3">
+                          {f.logoUrl ? (
+                            <img src={`/api/storage${f.logoUrl}`} alt={f.name ?? ""} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                              <Building2 className="w-6 h-6 text-muted-foreground" />
+                            </div>
                           )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate">{f.name ?? "—"}</p>
+                            {f.city && <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{f.city}</p>}
+                            {f.shortDescription && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{f.shortDescription}</p>}
+                          </div>
+                          <button onClick={() => removeFavorite(f.companyId)} className="text-muted-foreground hover:text-destructive shrink-0">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
-                      </div>
-                      {o.status === "accepted" && openThreads.has(o.id) && (
-                        <div className="mt-2 px-1">
-                          <MessageThread
-                            offerId={o.id}
-                            otherPartyName={o.providerCompany ?? o.providerName ?? undefined}
-                          />
+                        <div className="flex gap-2 mt-3">
+                          <Link href={`/companies/${f.companyId}`} className="flex-1">
+                            <Button size="sm" variant="outline" className="w-full">
+                              <Eye className="w-3.5 h-3.5 mr-1.5" />{l.viewProfile}
+                            </Button>
+                          </Link>
+                          <Button size="sm" variant="outline" onClick={() => setActiveSection("nachrichten")}>
+                            <MessageSquare className="w-3.5 h-3.5" />
+                          </Button>
                         </div>
-                      )}
-                      </div>
+                      </Card>
                     ))}
                   </div>
                 )}
               </div>
+            )}
 
-              <p className="text-xs text-muted-foreground mt-3">
-                {t.clientDashboard.posted} {format(new Date(p.createdAt), "MMM d, yyyy")}
-              </p>
-            </Card>
-          );
-        })}
+            {/* ── DATEIEN ── */}
+            {activeSection === "dateien" && (
+              <div>
+                <h2 className="text-xl font-serif font-bold mb-4">{l.navFiles}</h2>
+                {projects.every(p => (p.photos ?? []).length === 0) ? (
+                  <Card className="p-10 text-center">
+                    <File className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground mb-4">{l.noFiles}</p>
+                    <Button onClick={() => setActiveSection("erstellen")}><PlusCircle className="w-4 h-4 mr-2" />{l.navCreate}</Button>
+                  </Card>
+                ) : (
+                  <div className="space-y-6">
+                    {projects.map(p => {
+                      const photos = p.photos ?? [];
+                      if (photos.length === 0) return null;
+                      return (
+                        <div key={p.id}>
+                          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">{p.title ?? p.projectType} · {p.city}</h3>
+                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                            {photos.map((ph, i) => (
+                              <a key={i} href={`/api/storage${ph}`} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-lg overflow-hidden bg-muted border hover:opacity-90 transition-opacity">
+                                <img src={`/api/storage${ph}`} alt="" className="w-full h-full object-cover" />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── BEWERTUNGEN ── */}
+            {activeSection === "bewertungen" && (
+              <div>
+                <h2 className="text-xl font-serif font-bold mb-4">{l.navReviews}</h2>
+                {acceptedOffers.length === 0 ? (
+                  <Card className="p-10 text-center">
+                    <Star className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">
+                      {language === "de" ? "Akzeptieren Sie ein Angebot, um eine Bewertung zu hinterlassen." : language === "fr" ? "Acceptez une offre pour laisser un avis." : language === "sq" ? "Pranoni një ofertë për të lënë një vlerësim." : "Accept an offer to leave a review."}
+                    </p>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {acceptedOffers.map(o => {
+                      const proj = projects.find(p => p.id === o.projectId);
+                      const alreadyReviewed = reviewedOfferIds.has(o.id);
+                      return (
+                        <Card key={o.id} className="p-4 flex items-center justify-between gap-4">
+                          <div>
+                            <p className="font-semibold text-sm">{o.providerCompany ?? o.providerName}</p>
+                            <p className="text-xs text-muted-foreground">{proj?.title ?? proj?.projectType} · {proj?.city}</p>
+                          </div>
+                          {alreadyReviewed ? (
+                            <Badge variant="outline" className="text-xs shrink-0">
+                              <Star className="w-3 h-3 mr-1 fill-amber-400 text-amber-400" />{t.reviews.alreadyReviewed}
+                            </Badge>
+                          ) : (
+                            <Button size="sm" variant="outline" onClick={() => setReviewModal({ offerId: o.id, projectId: o.projectId, providerName: o.providerCompany ?? o.providerName ?? "—" })} data-testid={`button-review-${o.id}`}>
+                              <Star className="w-3.5 h-3.5 mr-1.5" />{t.reviews.leaveReview}
+                            </Button>
+                          )}
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── EINSTELLUNGEN ── */}
+            {activeSection === "einstellungen" && (
+              <div>
+                <h2 className="text-xl font-serif font-bold mb-4">{l.navSettings}</h2>
+                <div className="space-y-3">
+                  <Card className="p-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm">{language === "de" ? "Profil & Konto" : language === "fr" ? "Profil & compte" : language === "sq" ? "Profili & Llogaria" : "Profile & Account"}</p>
+                      <p className="text-xs text-muted-foreground">{user.fullName} · {user.email}</p>
+                    </div>
+                    <Link href="/dashboard/profile">
+                      <Button size="sm" variant="outline">{language === "de" ? "Bearbeiten" : language === "fr" ? "Modifier" : language === "sq" ? "Ndrysho" : "Edit"}</Button>
+                    </Link>
+                  </Card>
+                  <Card className="p-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm">{language === "de" ? "Sprache" : language === "fr" ? "Langue" : language === "sq" ? "Gjuha" : "Language"}</p>
+                      <p className="text-xs text-muted-foreground uppercase">{language}</p>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => window.scrollTo(0, 0)}>
+                      {language === "de" ? "Ändern" : language === "fr" ? "Changer" : language === "sq" ? "Ndrysho" : "Change"}
+                    </Button>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+          </main>
+        </div>
       </div>
 
+      {/* Review Modal */}
       {reviewModal && (
         <ReviewModal
           offerId={reviewModal.offerId}
           projectId={reviewModal.projectId}
           providerName={reviewModal.providerName}
           onClose={() => setReviewModal(null)}
-          onDone={(id) => setReviewedOfferIds((prev) => new Set([...prev, id]))}
+          onDone={(id) => setReviewedOfferIds(prev => new Set([...prev, id]))}
         />
       )}
     </div>
