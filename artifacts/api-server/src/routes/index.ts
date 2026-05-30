@@ -28,6 +28,7 @@ import providerProfileRouter from "./provider-profile";
 import conversationsRouter from "./conversations";
 import customerRouter from "./customer";
 import notificationsRouter from "./notifications";
+import aiRouter from "./ai";
 
 const router: IRouter = Router();
 
@@ -60,5 +61,6 @@ router.use(providerProfileRouter);
 router.use(conversationsRouter);
 router.use(customerRouter);
 router.use(notificationsRouter);
+router.use(aiRouter);
 
 export default router;

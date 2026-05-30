@@ -45,3 +45,5 @@ ADMIN_EMAIL = "immovia.rd@gmail.com"
 VITE_SANITY_PROJECT_ID = "c0tinigu"
 VITE_SANITY_DATASET = "production"
 VITE_SANITY_API_VERSION = "2026-05-28"
+
+[userenv.development]
