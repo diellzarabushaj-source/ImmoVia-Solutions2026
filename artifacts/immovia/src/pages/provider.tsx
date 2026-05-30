@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import NotificationBell from "@/components/NotificationBell";
@@ -435,6 +435,7 @@ export default function ProviderDashboard() {
   const { user, loading, logout } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const [, setLocation] = useLocation();
+  const search = useSearch();
 
   const l = L[language] ?? L.de;
 
@@ -461,7 +462,22 @@ export default function ProviderDashboard() {
   const [browseView, setBrowseView] = useState<"grid" | "list">("grid");
   const [galleryProject, setGalleryProject] = useState<ProviderProject | null>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const [activeSection, setActiveSection] = useState<Section>("uebersicht");
+  const VALID_SECTIONS: Section[] = ["uebersicht","profil","profilbild","galerie","leistungen","preise","projekte","bewerbungen","angebote","nachrichten","plan","sichtbarkeit","bewertungen","rechnungen","einstellungen"];
+  const [activeSection, setActiveSection] = useState<Section>(() => {
+    const tab = new URLSearchParams(search).get("tab") as Section | null;
+    return (tab && VALID_SECTIONS.includes(tab)) ? tab : "uebersicht";
+  });
+
+  // Sync active section when navbar links change the URL
+  useEffect(() => {
+    const tab = new URLSearchParams(search).get("tab") as Section | null;
+    if (tab && VALID_SECTIONS.includes(tab)) {
+      setActiveSection(tab);
+    } else if (!tab) {
+      setActiveSection("uebersicht");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   // Profile editing state
   const [profileForm, setProfileForm] = useState({ bio: "", phone: "", city: "", website: "", hourlyRate: "", profilePhoto: "" });

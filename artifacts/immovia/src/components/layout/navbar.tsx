@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
@@ -37,6 +37,27 @@ export function Navbar() {
             : null;
   const isProvider = accountRole === "provider";
   const isPoster = accountRole === "poster";
+
+  const search = useSearch();
+  const providerTab = new URLSearchParams(search).get("tab") ?? "";
+
+  const providerNavLinks = [
+    { href: "/provider",                    label: t.nav.dashboard,       tab: "" },
+    { href: "/provider?tab=projekte",       label: t.nav.findProjects,    tab: "projekte" },
+    { href: "/provider?tab=bewerbungen",    label: t.nav.myApplications,  tab: "bewerbungen" },
+    { href: "/provider?tab=nachrichten",    label: t.nav.messages,        tab: "nachrichten" },
+    { href: "/provider?tab=profil",         label: t.nav.companyProfile,  tab: "profil" },
+    { href: "/provider?tab=plan",           label: t.nav.plan,            tab: "plan" },
+    { href: "/provider?tab=einstellungen",  label: t.nav.settings,        tab: "einstellungen" },
+  ];
+
+  const isProviderLinkActive = (tab: string) =>
+    location === "/provider" && (tab === "" ? (!providerTab || providerTab === "uebersicht") : providerTab === tab);
+
+  const providerLinkClass = (tab: string) =>
+    `text-sm font-medium px-3 py-2 rounded-md transition-colors hover:text-primary hover:bg-secondary/50 whitespace-nowrap ${
+      isProviderLinkActive(tab) ? "text-primary bg-secondary/50" : "text-foreground/70"
+    }`;
 
   const fetchUnread = useCallback(async () => {
     if (!user) return;
@@ -121,65 +142,67 @@ export function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-0.5">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={(e) => handleNavClick(e, link.href)}
-              className={`text-sm font-medium px-3 py-2 rounded-md transition-colors hover:text-primary hover:bg-secondary/50 whitespace-nowrap ${
-                location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70"
-              }`}
-              data-testid={`nav-${link.href.replace("/", "") || "home"}`}
-            >
-              {link.label}
-            </Link>
-          ))}
-
-          {(!user || isProvider || isPoster) && (
-            <div className="w-px h-5 bg-border mx-2 shrink-0" />
-          )}
-
-          {/* Guests: both role entry points. Logged-in users see only their role's action. */}
-          {!user && (
-            <>
-              <Link href="/signup?account_type=project_poster" data-testid="nav-submit-project">
-                <Button size="sm" className="text-sm">
-                  {t.nav.submitProject}
-                </Button>
-              </Link>
-
-              <Link href="/signup?account_type=service_provider" data-testid="nav-register-company">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-sm border-primary/40 text-primary hover:bg-primary/8 hover:border-primary"
+          {isProvider ? (
+            providerNavLinks.map((link) => (
+              <div key={link.tab || "dashboard"} className="relative">
+                <Link
+                  href={link.href}
+                  className={providerLinkClass(link.tab)}
+                  data-testid={`nav-provider-${link.tab || "dashboard"}`}
                 >
-                  {t.nav.registerCompany}
-                </Button>
-              </Link>
+                  {link.label}
+                </Link>
+                {link.tab === "nachrichten" && unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 pointer-events-none">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </div>
+            ))
+          ) : (
+            <>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(e, link.href)}
+                  className={`text-sm font-medium px-3 py-2 rounded-md transition-colors hover:text-primary hover:bg-secondary/50 whitespace-nowrap ${
+                    location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70"
+                  }`}
+                  data-testid={`nav-${link.href.replace("/", "") || "home"}`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+
+              {(!user || isPoster) && (
+                <div className="w-px h-5 bg-border mx-2 shrink-0" />
+              )}
+
+              {/* Guests: both role entry points */}
+              {!user && (
+                <>
+                  <Link href="/signup?account_type=project_poster" data-testid="nav-submit-project">
+                    <Button size="sm" className="text-sm">
+                      {t.nav.submitProject}
+                    </Button>
+                  </Link>
+                  <Link href="/signup?account_type=service_provider" data-testid="nav-register-company">
+                    <Button variant="outline" size="sm" className="text-sm border-primary/40 text-primary hover:bg-primary/8 hover:border-primary">
+                      {t.nav.registerCompany}
+                    </Button>
+                  </Link>
+                </>
+              )}
+
+              {user && isPoster && (
+                <Link href="/submit-project" data-testid="nav-submit-project">
+                  <Button size="sm" className={`text-sm ${location === "/submit-project" ? "opacity-90" : ""}`}>
+                    {t.nav.submitProject}
+                  </Button>
+                </Link>
+              )}
             </>
-          )}
-
-          {user && isPoster && (
-            <Link href="/submit-project" data-testid="nav-submit-project">
-              <Button
-                size="sm"
-                className={`text-sm ${location === "/submit-project" ? "opacity-90" : ""}`}
-              >
-                {t.nav.submitProject}
-              </Button>
-            </Link>
-          )}
-
-          {user && isProvider && (
-            <Link href="/projects" data-testid="nav-find-projects">
-              <Button
-                size="sm"
-                className={`text-sm ${location === "/projects" ? "opacity-90" : ""}`}
-              >
-                {t.nav.findProjects}
-              </Button>
-            </Link>
           )}
         </div>
 
@@ -208,8 +231,8 @@ export function Navbar() {
 
           {user ? (
             <>
-              {/* Messages icon with unread badge */}
-              <div className="relative hidden sm:block">
+              {/* Messages icon with unread badge — hidden for providers (messages is in their nav) */}
+              {!isProvider && <div className="relative hidden sm:block">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -225,7 +248,7 @@ export function Navbar() {
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
-              </div>
+              </div>}
 
               {/* User menu */}
               <DropdownMenu>
@@ -238,19 +261,23 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer gap-2" data-testid="menu-dashboard">
-                      <LayoutDashboard className="w-4 h-4" />
-                      {t.nav.dashboard}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/profile" className="cursor-pointer gap-2" data-testid="menu-profile">
-                      <User className="w-4 h-4" />
-                      {t.nav.profile}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  {!isProvider && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard" className="cursor-pointer gap-2" data-testid="menu-dashboard">
+                          <LayoutDashboard className="w-4 h-4" />
+                          {t.nav.dashboard}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/profile" className="cursor-pointer gap-2" data-testid="menu-profile">
+                          <User className="w-4 h-4" />
+                          {t.nav.profile}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem onClick={() => void onLogout()} className="cursor-pointer gap-2 text-destructive" data-testid="menu-logout">
                     <LogOut className="w-4 h-4" />
                     {t.nav.logout}
@@ -292,76 +319,103 @@ export function Navbar() {
             className="md:hidden border-t border-border bg-white overflow-hidden"
           >
             <div className="container mx-auto px-4 py-3 flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => { handleNavClick(e, link.href); setMobileOpen(false); }}
-                  className={`text-base font-medium px-3 py-3 rounded-md transition-colors ${
-                    location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70 hover:text-primary hover:bg-secondary/30"
-                  }`}
-                  data-testid={`mobile-nav-${link.href.replace("/", "") || "home"}`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              {!user && (
+              {isProvider ? (
                 <>
-                  <Link href="/signup?account_type=project_poster" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                    {t.nav.submitProject}
-                  </Link>
-                  <Link href="/signup?account_type=service_provider" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                    {t.nav.registerCompany}
-                  </Link>
-                </>
-              )}
-              {user && isPoster && (
-                <Link href="/submit-project" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                  {t.nav.submitProject}
-                </Link>
-              )}
-              {user && isProvider && (
-                <Link href="/projects" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                  {t.nav.findProjects}
-                </Link>
-              )}
-              <div className="border-t border-border mt-2 pt-2 flex flex-col gap-1">
-                {user ? (
-                  <>
-                    {/* Mobile messages link */}
-                    <button
-                      onClick={() => { setMobileOpen(false); openChatWidget(); }}
-                      className="flex items-center gap-2 text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30 text-left"
+                  {providerNavLinks.map((link) => (
+                    <Link
+                      key={link.tab || "dashboard"}
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center justify-between text-base font-medium px-3 py-3 rounded-md transition-colors ${
+                        isProviderLinkActive(link.tab) ? "text-primary bg-secondary/50" : "text-foreground/70 hover:text-primary hover:bg-secondary/30"
+                      }`}
+                      data-testid={`mobile-nav-provider-${link.tab || "dashboard"}`}
                     >
-                      <MessageSquare className="w-4 h-4" />
-                      {"Messages"}
-                      {unreadCount > 0 && (
-                        <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {link.label}
+                      {link.tab === "nachrichten" && unreadCount > 0 && (
+                        <span className="bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                           {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
-                    </button>
-                    <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                      {t.nav.dashboard}
                     </Link>
-                    <Link href="/dashboard/profile" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                      {t.nav.profile}
-                    </Link>
-                    <button onClick={() => { setMobileOpen(false); void onLogout(); }} className="text-left text-base font-medium px-3 py-3 rounded-md text-destructive hover:bg-destructive/10">
+                  ))}
+                  <div className="border-t border-border mt-2 pt-2">
+                    <button
+                      onClick={() => { setMobileOpen(false); void onLogout(); }}
+                      className="text-left w-full text-base font-medium px-3 py-3 rounded-md text-destructive hover:bg-destructive/10"
+                    >
                       {t.nav.logout}
                     </button>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                      {t.nav.login}
+                  </div>
+                </>
+              ) : (
+                <>
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={(e) => { handleNavClick(e, link.href); setMobileOpen(false); }}
+                      className={`text-base font-medium px-3 py-3 rounded-md transition-colors ${
+                        location === link.href ? "text-primary bg-secondary/50" : "text-foreground/70 hover:text-primary hover:bg-secondary/30"
+                      }`}
+                      data-testid={`mobile-nav-${link.href.replace("/", "") || "home"}`}
+                    >
+                      {link.label}
                     </Link>
-                    <Link href="/signup" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-primary bg-secondary/50">
-                      {t.nav.signup}
+                  ))}
+                  {!user && (
+                    <>
+                      <Link href="/signup?account_type=project_poster" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                        {t.nav.submitProject}
+                      </Link>
+                      <Link href="/signup?account_type=service_provider" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                        {t.nav.registerCompany}
+                      </Link>
+                    </>
+                  )}
+                  {user && isPoster && (
+                    <Link href="/submit-project" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                      {t.nav.submitProject}
                     </Link>
-                  </>
-                )}
-              </div>
+                  )}
+                  <div className="border-t border-border mt-2 pt-2 flex flex-col gap-1">
+                    {user ? (
+                      <>
+                        <button
+                          onClick={() => { setMobileOpen(false); openChatWidget(); }}
+                          className="flex items-center gap-2 text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30 text-left"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                          {t.nav.messages}
+                          {unreadCount > 0 && (
+                            <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                              {unreadCount > 9 ? "9+" : unreadCount}
+                            </span>
+                          )}
+                        </button>
+                        <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                          {t.nav.dashboard}
+                        </Link>
+                        <Link href="/dashboard/profile" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                          {t.nav.profile}
+                        </Link>
+                        <button onClick={() => { setMobileOpen(false); void onLogout(); }} className="text-left text-base font-medium px-3 py-3 rounded-md text-destructive hover:bg-destructive/10">
+                          {t.nav.logout}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
+                          {t.nav.login}
+                        </Link>
+                        <Link href="/signup" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-primary bg-secondary/50">
+                          {t.nav.signup}
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
         )}
