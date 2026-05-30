@@ -135,7 +135,7 @@ function getPostedLabel(createdAt: string, listings: { today: string; yesterday:
 }
 
 function ProjectPreviewCard({ project, t }: {
-  project: { id: number; projectType: string; description: string; city: string; budget?: string | null; size?: string | null; createdAt: string };
+  project: { id: number; title?: string | null; projectType: string; description: string; city: string; budget?: string | null; size?: string | null; createdAt: string };
   t: ReturnType<typeof useLanguage>["t"];
 }) {
   const Icon = SERVICE_ICONS[project.projectType] ?? Briefcase;
@@ -144,6 +144,7 @@ function ProjectPreviewCard({ project, t }: {
   const sizeLabel = t.listings[sizeKey] as string;
   const sizeColor = SIZE_COLORS[sz] ?? SIZE_COLORS.medium;
   const typeLabel = (t.offers as Record<string, string>)[project.projectType] ?? project.projectType;
+  const cardTitle = project.title ?? typeLabel;
   const postedLabel = getPostedLabel(project.createdAt, t.listings);
 
   return (
@@ -155,7 +156,7 @@ function ProjectPreviewCard({ project, t }: {
           <Icon className="w-5 h-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-foreground text-sm capitalize leading-tight">{typeLabel}</h3>
+          <h3 className="font-bold text-foreground text-sm leading-tight">{cardTitle}</h3>
           <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
             <MapPin className="h-3 w-3 flex-shrink-0" />
             <span>{project.city}</span>
