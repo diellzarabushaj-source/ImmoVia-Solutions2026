@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import {
   db,
   usersTable,
+  companiesTable,
   toPublicUser,
   subscriptionPlansTable,
   subscriptionsTable,
@@ -204,7 +205,7 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
     req.log.warn({ err }, "Failed to update Clerk publicMetadata");
   }
 
-  // Service providers get a Free plan subscription
+  // Service providers: auto-create Free subscription + pending companies row
   if (accountType === "service_provider") {
     try {
       const [freePlan] = await db
@@ -227,6 +228,24 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
       }
     } catch (err) {
       req.log.warn({ err }, "Failed to create free subscription for new service provider");
+    }
+
+    // Auto-create a pending companies row so the admin sees the provider immediately.
+    // This row stays pending until admin approves it; only then does it appear publicly.
+    try {
+      await db.insert(companiesTable).values({
+        companyName: companyName ?? fullName,
+        contactName: fullName,
+        email: clerkEmail,
+        phone: phone ?? "",
+        city: city ?? "",
+        serviceTypes: serviceTypes ?? [],
+        workerType: accountSubtype === "company" ? "company" : "individual",
+        status: "pending",
+        profilePhoto: clerkAvatarUrl ?? null,
+      });
+    } catch (err) {
+      req.log.warn({ err }, "Failed to auto-create companies row for new service provider");
     }
   }
 
