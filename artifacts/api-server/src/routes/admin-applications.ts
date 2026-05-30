@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { db, applicationsTable, projectsTable, usersTable } from "@workspace/db";
 import { requireAdmin } from "../middlewares/requireAdmin";
 
@@ -24,10 +24,10 @@ router.get("/admin/applications", requireAdmin, async (_req, res): Promise<void>
 
   const [projects, applicants] = await Promise.all([
     projectIds.length
-      ? db.select({ id: projectsTable.id, fullName: projectsTable.fullName, city: projectsTable.city }).from(projectsTable)
+      ? db.select({ id: projectsTable.id, fullName: projectsTable.fullName, city: projectsTable.city }).from(projectsTable).where(inArray(projectsTable.id, projectIds))
       : [],
     userIds.length
-      ? db.select({ id: usersTable.id, fullName: usersTable.fullName, email: usersTable.email }).from(usersTable)
+      ? db.select({ id: usersTable.id, fullName: usersTable.fullName, email: usersTable.email }).from(usersTable).where(inArray(usersTable.id, userIds))
       : [],
   ]);
 

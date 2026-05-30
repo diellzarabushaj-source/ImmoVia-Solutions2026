@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { useLocation } from "wouter";
+
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 
@@ -116,7 +116,6 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
 
 export function AdminProjects() {
   const qc = useQueryClient();
-  const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
