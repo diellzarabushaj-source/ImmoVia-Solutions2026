@@ -179,7 +179,8 @@ export function resolveTagLabel(tagKey: string, lang: Lang): string {
 }
 
 export function resolveAnyLabel(key: string, lang: Lang): string {
-  const cat = getCategoryByKey(key);
+  const resolved = LEGACY_KEY_MAP[key] ?? key;
+  const cat = getCategoryByKey(resolved);
   if (cat) return getCategoryLabel(cat, lang);
-  return resolveTagLabel(key, lang);
+  return resolveTagLabel(resolved, lang);
 }

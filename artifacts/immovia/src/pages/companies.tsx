@@ -15,7 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { CATEGORIES, getCategoryLabel, getTagLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
 
 const SERVICE_OPTIONS = CATEGORIES.map(c => c.key);
 
@@ -590,18 +590,18 @@ export default function Companies() {
 
                     {/* Service badges */}
                     <div className="flex flex-wrap gap-1.5">
-                      {company.serviceTypes.filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).slice(0, 3).map(svc => (
+                      {company.serviceTypes.filter(s => s !== "other").slice(0, 3).map(svc => (
                         <button
                           key={svc}
                           onClick={e => { e.stopPropagation(); setActiveServices(prev => prev.includes(svc) ? prev.filter(s => s !== svc) : [...prev, svc]); }}
-                          className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium hover:bg-primary/15 transition-colors capitalize"
+                          className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium hover:bg-primary/15 transition-colors"
                         >
-                          {getCategoryLabel(CATEGORIES.find(c => c.key === svc)!, language as Lang)}
+                          {resolveAnyLabel(svc, language as Lang)}
                         </button>
                       ))}
-                      {company.serviceTypes.filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).length > 3 && (
+                      {company.serviceTypes.filter(s => s !== "other").length > 3 && (
                         <span className="px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">
-                          +{company.serviceTypes.filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).length - 3}
+                          +{company.serviceTypes.filter(s => s !== "other").length - 3}
                         </span>
                       )}
                     </div>
@@ -670,9 +670,9 @@ export default function Companies() {
                           <p className="text-sm text-foreground/75 leading-relaxed line-clamp-2">{company.description}</p>
                         )}
                         <div className="flex flex-wrap gap-1.5">
-                          {company.serviceTypes.filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).slice(0, 3).map(svc => (
-                            <span key={svc} className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium capitalize">
-                              {getCategoryLabel(CATEGORIES.find(c => c.key === svc)!, language as Lang)}
+                          {company.serviceTypes.filter(s => s !== "other").slice(0, 3).map(svc => (
+                            <span key={svc} className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium">
+                              {resolveAnyLabel(svc, language as Lang)}
                             </span>
                           ))}
                         </div>
