@@ -477,19 +477,19 @@ export default function CompanyProfile() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-primary" />
-              {t.companies.sendMessage} — {company.companyName}
+              {t.publicProfile.sendMessage} — {company.companyName}
             </DialogTitle>
           </DialogHeader>
           {msgSent ? (
             <div className="flex flex-col items-center gap-3 py-6 text-center">
               <CheckCircle className="w-10 h-10 text-green-500" />
-              <p className="font-medium text-green-700">{t.companies.messageSent ?? "Message sent!"}</p>
+              <p className="font-medium text-green-700">{"Message sent!"}</p>
             </div>
           ) : (
             <div className="space-y-3">
               <Textarea
                 rows={5}
-                placeholder={t.companies.messagePlaceholder ?? "Write your message…"}
+                placeholder={"Write your message…"}
                 value={msgText}
                 onChange={e => setMsgText(e.target.value)}
                 className="resize-none"
@@ -505,7 +505,7 @@ export default function CompanyProfile() {
               </Button>
               <Button onClick={sendMessage} disabled={msgSending || !msgText.trim()}>
                 {msgSending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                {t.companies.sendMessage}
+                {t.publicProfile.sendMessage}
               </Button>
             </DialogFooter>
           )}
