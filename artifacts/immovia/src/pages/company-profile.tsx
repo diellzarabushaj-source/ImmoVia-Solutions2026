@@ -72,11 +72,11 @@ function StarRating({ value, size = "sm" }: { value: number; size?: "sm" | "md" 
   );
 }
 
-function CompanyAvatar({ name, profilePhoto, size = "xl" }: { name: string; profilePhoto?: string | null; size?: "xl" | "lg" }) {
-  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+function CompanyAvatar({ name, profilePhoto, workerType, size = "xl" }: { name: string; profilePhoto?: string | null; workerType?: string; size?: "xl" | "lg" }) {
   const colors = ["from-blue-600 to-blue-900", "from-indigo-600 to-indigo-900", "from-primary to-blue-700", "from-sky-600 to-sky-900"];
   const color = colors[name.charCodeAt(0) % colors.length];
-  const cls = size === "xl" ? "w-24 h-24 md:w-32 md:h-32 text-3xl md:text-4xl" : "w-20 h-20 text-2xl";
+  const cls = size === "xl" ? "w-24 h-24 md:w-32 md:h-32" : "w-20 h-20";
+  const iconCls = size === "xl" ? "h-12 w-12 md:h-14 md:w-14" : "h-10 w-10";
   if (profilePhoto) {
     return (
       <div className={`${cls} rounded-2xl overflow-hidden border-4 border-white shadow-lg flex-shrink-0`}>
@@ -84,9 +84,13 @@ function CompanyAvatar({ name, profilePhoto, size = "xl" }: { name: string; prof
       </div>
     );
   }
+  const isIndividual = workerType === "individual";
   return (
-    <div className={`${cls} rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-white font-bold flex-shrink-0 border-4 border-white shadow-lg`}>
-      {initials}
+    <div className={`${cls} rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-white flex-shrink-0 border-4 border-white shadow-lg`}>
+      {isIndividual
+        ? <User className={iconCls} strokeWidth={1.5} />
+        : <Building2 className={iconCls} strokeWidth={1.5} />
+      }
     </div>
   );
 }
@@ -169,7 +173,7 @@ export default function CompanyProfile() {
           <div className="p-6 md:p-8">
             <div className="flex flex-col sm:flex-row gap-6 items-start">
               {/* Avatar */}
-              <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} />
+              <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} workerType={company.workerType} />
 
               {/* Info */}
               <div className="flex-1 min-w-0">

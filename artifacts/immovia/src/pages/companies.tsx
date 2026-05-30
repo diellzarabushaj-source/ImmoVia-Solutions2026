@@ -39,8 +39,7 @@ const SORT_OPTIONS = [
   { value: "experience", labelKey: "sortExperience" },
 ];
 
-function CompanyAvatar({ name, profilePhoto, size = "md" }: { name: string; profilePhoto?: string | null; size?: "sm" | "md" | "lg" }) {
-  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+function CompanyAvatar({ name, profilePhoto, workerType, size = "md" }: { name: string; profilePhoto?: string | null; workerType?: string; size?: "sm" | "md" | "lg" }) {
   const colors = [
     "from-blue-600 to-blue-800",
     "from-indigo-600 to-indigo-800",
@@ -50,6 +49,7 @@ function CompanyAvatar({ name, profilePhoto, size = "md" }: { name: string; prof
   ];
   const color = colors[name.charCodeAt(0) % colors.length];
   const sizeClass = size === "lg" ? "w-16 h-16 text-xl" : size === "sm" ? "w-8 h-8 text-xs" : "w-12 h-12 text-sm";
+  const iconSize = size === "lg" ? "h-7 w-7" : size === "sm" ? "h-3.5 w-3.5" : "h-5 w-5";
   if (profilePhoto) {
     return (
       <div className={`${sizeClass} rounded-xl overflow-hidden flex-shrink-0 border border-border`}>
@@ -57,9 +57,13 @@ function CompanyAvatar({ name, profilePhoto, size = "md" }: { name: string; prof
       </div>
     );
   }
+  const isIndividual = workerType === "individual";
   return (
-    <div className={`${sizeClass} rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white font-bold flex-shrink-0`}>
-      {initials}
+    <div className={`${sizeClass} rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white flex-shrink-0`}>
+      {isIndividual
+        ? <User className={iconSize} strokeWidth={1.8} />
+        : <Building2 className={iconSize} strokeWidth={1.8} />
+      }
     </div>
   );
 }
@@ -507,7 +511,7 @@ export default function Companies() {
                 >
                   {/* Card header */}
                   <div className="p-5 flex gap-3 items-start border-b border-border/50">
-                    <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} />
+                    <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} workerType={company.workerType} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2 flex-wrap">
                         <h3 className="font-bold text-foreground text-base leading-tight flex-1 min-w-0 truncate group-hover:text-primary transition-colors">
@@ -619,7 +623,7 @@ export default function Companies() {
                   return (
                     <div key={`ghost-${company.id}`} className="bg-white rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
                       <div className="p-5 flex gap-3 items-start border-b border-border/50">
-                        <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} />
+                        <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} workerType={company.workerType} />
                         <div className="flex-1 min-w-0">
                           <h3 className="font-bold text-foreground text-base truncate">{company.companyName}</h3>
                           <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
