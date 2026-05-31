@@ -53,7 +53,8 @@ router.post("/stripe/checkout", requireProvider, async (req, res): Promise<void>
   }
 
   const host = `${req.protocol}://${req.get("host")}`;
-  const successUrl = `${host}/provider/billing?checkout=success&plan=${plan.slug}`;
+  // {CHECKOUT_SESSION_ID} is substituted by Stripe so we can retrieve the session on success
+  const successUrl = `${host}/provider/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${host}/provider/billing?checkout=cancel`;
 
   try {
@@ -95,31 +96,65 @@ export async function handleStripeWebhook(payload: Buffer, signature: string): P
 
 // GET /stripe/subscription/sync — verify and activate subscription after successful checkout
 // Frontend calls this on /provider/billing?checkout=success to provision local DB subscription
+// Accepts optional ?session_id=cs_xxx so we can resolve the subscription directly
 router.get("/stripe/subscription/sync", requireAuth, async (req, res): Promise<void> => {
   const userId = req.userId!;
+  const sessionId = typeof req.query["session_id"] === "string" ? req.query["session_id"] : undefined;
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
-  if (!user?.stripeCustomerId) {
+  if (!user?.stripeCustomerId && !sessionId) {
     res.json({ synced: false, reason: "no_stripe_customer" });
     return;
   }
 
   try {
     const stripe = await getStripeClient();
-    const stripeSubs = await stripe.subscriptions.list({
-      customer: user.stripeCustomerId,
-      status: "active",
-      limit: 1,
-    });
 
-    const activeSub = stripeSubs.data[0];
+    // Resolve the active subscription — prefer session_id path to avoid race conditions
+    // where Stripe hasn't transitioned the subscription to "active" yet.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let activeSub: any | undefined;
+
+    if (sessionId) {
+      // Retrieve the checkout session; the subscription field will be the sub ID or object
+      const session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ["subscription"],
+      });
+      const embedded = session.subscription;
+      if (embedded && typeof embedded !== "string") {
+        activeSub = embedded;
+      } else if (typeof embedded === "string") {
+        activeSub = await stripe.subscriptions.retrieve(embedded);
+      }
+    }
+
+    if (!activeSub && user?.stripeCustomerId) {
+      // Fallback: list active/trialing subscriptions for this customer
+      const stripeSubs = await stripe.subscriptions.list({
+        customer: user.stripeCustomerId,
+        status: "active",
+        limit: 1,
+      });
+      if (stripeSubs.data[0]) {
+        activeSub = stripeSubs.data[0];
+      } else {
+        // Also check trialing (free trial period)
+        const trialSubs = await stripe.subscriptions.list({
+          customer: user.stripeCustomerId,
+          status: "trialing",
+          limit: 1,
+        });
+        activeSub = trialSubs.data[0];
+      }
+    }
+
     if (!activeSub) {
       res.json({ synced: false, reason: "no_active_stripe_subscription" });
       return;
     }
 
     // price may be a string ID or an expanded object depending on API version
-    const priceItem = activeSub.items.data[0];
+    const priceItem = activeSub.items?.data[0];
     const rawPrice = priceItem?.price;
     const priceId = typeof rawPrice === "string" ? rawPrice : rawPrice?.id;
     if (!priceId) {

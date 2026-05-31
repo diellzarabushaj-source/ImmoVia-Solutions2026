@@ -170,8 +170,12 @@ export const billingApi = {
     }),
   stripePortal: () =>
     jsonFetch<{ url: string }>("/stripe/portal", { method: "POST" }),
-  stripeSync: () =>
-    jsonFetch<{ synced: boolean; plan?: string; reason?: string }>("/stripe/subscription/sync"),
+  stripeSync: (sessionId?: string) =>
+    jsonFetch<{ synced: boolean; plan?: string; reason?: string }>(
+      sessionId
+        ? `/stripe/subscription/sync?session_id=${encodeURIComponent(sessionId)}`
+        : "/stripe/subscription/sync",
+    ),
   buyPack: (packId: number) =>
     jsonFetch<{ pack: ImmocreditPack; payment: unknown; creditsAdded: number }>("/billing/buy-pack", {
       method: "POST",

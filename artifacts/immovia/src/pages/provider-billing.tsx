@@ -108,6 +108,7 @@ export default function ProviderBilling() {
   const search = useSearch();
   const params = new URLSearchParams(search);
   const checkoutResult = params.get("checkout"); // "success" | "cancel"
+  const checkoutSessionId = params.get("session_id") ?? undefined;
 
   const L = LABELS[language] ?? LABELS.de;
 
@@ -129,7 +130,7 @@ export default function ProviderBilling() {
     if (checkoutResult === "success") {
       setSyncing(true);
       billingApi
-        .stripeSync()
+        .stripeSync(checkoutSessionId)
         .then(async (r) => {
           if (r.synced) {
             setSyncResult("success");
