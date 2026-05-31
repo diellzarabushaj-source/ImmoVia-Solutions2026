@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
-import { db, offersTable, projectsTable, usersTable, subscriptionsTable, subscriptionPlansTable } from "@workspace/db";
+import { db, offersTable, projectsTable, usersTable, subscriptionsTable, subscriptionPlansTable, companiesTable, conversationsTable, convMessagesTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { requireProvider } from "../middlewares/requireProvider";
 import {
@@ -183,6 +183,81 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
     note: `Offer ${type} on project #${projectId}`,
   });
   const balanceAfter = await getBalance(userId);
+
+  // Create conversation thread so the offer message appears in Messages
+  try {
+    if (project.ownerUserId) {
+      // Resolve SP company via their user email
+      const [spUser] = await db
+        .select({ email: usersTable.email })
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+      const [spCompany] = spUser
+        ? await db
+            .select({ id: companiesTable.id })
+            .from(companiesTable)
+            .where(eq(companiesTable.email, spUser.email))
+            .limit(1)
+        : [];
+
+      if (spCompany) {
+        const subject = `Angebot #${projectId} — ${project.projectType} · ${project.city}`;
+        const offerBody = priceEstimate
+          ? `${message}\n\nPreisschätzung: ${priceEstimate}`
+          : message;
+
+        // Find existing conversation between this company and this customer
+        const [existingConv] = await db
+          .select({ id: conversationsTable.id })
+          .from(conversationsTable)
+          .where(
+            and(
+              eq(conversationsTable.companyId, spCompany.id),
+              eq(conversationsTable.customerUserId, project.ownerUserId),
+            ),
+          )
+          .limit(1);
+
+        let convId: number;
+        if (existingConv) {
+          convId = existingConv.id;
+          await db.update(conversationsTable).set({
+            lastMessageText: offerBody.slice(0, 100),
+            lastMessageAt: new Date(),
+            updatedAt: new Date(),
+            unreadCountCustomer: sql`${conversationsTable.unreadCountCustomer} + 1`,
+          }).where(eq(conversationsTable.id, convId));
+        } else {
+          const [conv] = await db
+            .insert(conversationsTable)
+            .values({
+              type: "offer",
+              companyId: spCompany.id,
+              customerUserId: project.ownerUserId,
+              status: "new",
+              subject,
+              lastMessageText: offerBody.slice(0, 100),
+              lastMessageAt: new Date(),
+              unreadCountCustomer: 1,
+            })
+            .returning({ id: conversationsTable.id });
+          convId = conv.id;
+        }
+
+        await db.insert(convMessagesTable).values({
+          conversationId: convId,
+          senderUserId: userId,
+          senderRole: "provider",
+          body: offerBody,
+          messageType: "offer",
+          attachments: [],
+        });
+      }
+    }
+  } catch (err) {
+    req.log.error({ err }, "Failed to create conversation thread for offer");
+  }
 
   // Notify client about the new offer (fire-and-forget)
   void (async () => {
