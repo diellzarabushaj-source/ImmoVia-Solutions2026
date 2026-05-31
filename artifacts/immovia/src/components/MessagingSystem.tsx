@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Send, MessageSquare, ChevronLeft, Paperclip, X,
   FileText, ImageIcon, Building2, User, Clock, Loader2,
+  CheckCircle2, XCircle,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -63,6 +64,13 @@ const ML: Record<string, Record<string, string>> = {
     attachHint: "Max 10 MB · JPG, PNG, PDF, DOCX",
     fileTooBig: "Datei zu groß (max 10 MB)",
     invalidFile: "Dateiformat nicht erlaubt",
+    acceptOffer: "Angebot annehmen",
+    declineOffer: "Ablehnen",
+    offerAccepted: "Angebot angenommen",
+    offerDeclined: "Angebot abgelehnt",
+    offerLabel: "Angebot",
+    priceEstimate: "Preisschätzung",
+    acceptConfirm: "Möchten Sie dieses Angebot wirklich annehmen?",
   },
   en: {
     title: "Messages",
@@ -82,6 +90,13 @@ const ML: Record<string, Record<string, string>> = {
     attachHint: "Max 10 MB · JPG, PNG, PDF, DOCX",
     fileTooBig: "File too large (max 10 MB)",
     invalidFile: "File type not allowed",
+    acceptOffer: "Accept offer",
+    declineOffer: "Decline",
+    offerAccepted: "Offer accepted",
+    offerDeclined: "Offer declined",
+    offerLabel: "Offer",
+    priceEstimate: "Price estimate",
+    acceptConfirm: "Are you sure you want to accept this offer?",
   },
   sq: {
     title: "Mesazhet",
@@ -101,6 +116,13 @@ const ML: Record<string, Record<string, string>> = {
     attachHint: "Max 10 MB · JPG, PNG, PDF, DOCX",
     fileTooBig: "Skedari shumë i madh (max 10 MB)",
     invalidFile: "Formati i skedarit nuk lejohet",
+    acceptOffer: "Prano ofertën",
+    declineOffer: "Refuzo",
+    offerAccepted: "Oferta u pranua",
+    offerDeclined: "Oferta u refuzua",
+    offerLabel: "Ofertë",
+    priceEstimate: "Vlerësimi i çmimit",
+    acceptConfirm: "A jeni i sigurt që doni ta pranoni këtë ofertë?",
   },
   fr: {
     title: "Messages",
@@ -120,6 +142,13 @@ const ML: Record<string, Record<string, string>> = {
     attachHint: "Max 10 Mo · JPG, PNG, PDF, DOCX",
     fileTooBig: "Fichier trop grand (max 10 Mo)",
     invalidFile: "Type de fichier non autorisé",
+    acceptOffer: "Accepter l'offre",
+    declineOffer: "Refuser",
+    offerAccepted: "Offre acceptée",
+    offerDeclined: "Offre refusée",
+    offerLabel: "Offre",
+    priceEstimate: "Estimation de prix",
+    acceptConfirm: "Voulez-vous vraiment accepter cette offre ?",
   },
 };
 
@@ -188,6 +217,8 @@ function ConversationView({
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [sendErr, setSendErr] = useState<string | null>(null);
+  const [offerAction, setOfferAction] = useState<Record<number, "accepted" | "declined">>({});
+  const [offerBusy, setOfferBusy] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<number | null>(null);
@@ -284,11 +315,96 @@ function ConversationView({
         {messages.map(msg => {
           const isMine = (myRole === "customer" && msg.senderRole === "customer") ||
             (myRole === "provider" && msg.senderRole === "provider");
+
+          // Offer card — only shown to the customer receiving the offer
+          if (msg.messageType === "offer" && myRole === "customer" && !isMine) {
+            const action = offerAction[msg.id];
+            // Try to extract price from body: "CHF 1200" or similar
+            const priceMatch = msg.body.match(/CHF\s?[\d'., ]+/i);
+            return (
+              <div key={msg.id} className="flex flex-col items-start">
+                <div className="max-w-[80%] w-full rounded-2xl rounded-bl-sm border border-primary/30 bg-white shadow-sm overflow-hidden">
+                  {/* Offer header */}
+                  <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10">
+                    <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-xs font-semibold text-primary uppercase tracking-wide">{m.offerLabel}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">{msg.senderName ?? partnerName}</span>
+                  </div>
+                  {/* Offer body */}
+                  <div className="px-4 py-3">
+                    {priceMatch && (
+                      <p className="text-xs text-muted-foreground mb-0.5">{m.priceEstimate}</p>
+                    )}
+                    {priceMatch && (
+                      <p className="text-lg font-bold text-primary mb-2">{priceMatch[0]}</p>
+                    )}
+                    <p className="text-sm whitespace-pre-wrap text-foreground">{msg.body}</p>
+                  </div>
+                  {/* Action area */}
+                  {!action && (
+                    <div className="flex gap-2 px-4 pb-4 pt-1">
+                      <Button
+                        size="sm"
+                        className="flex-1 gap-1.5"
+                        disabled={offerBusy === msg.id}
+                        onClick={async () => {
+                          if (!window.confirm(m.acceptConfirm)) return;
+                          setOfferBusy(msg.id);
+                          try {
+                            // Extract offerId from message metadata or fall back to convId
+                            const offerIdMatch = msg.body.match(/offer[_\s]?id[:\s]?(\d+)/i);
+                            const offerIdToUse = offerIdMatch ? Number(offerIdMatch[1]) : msg.id;
+                            await fetch(`/api/offers/${offerIdToUse}/accept`, { method: "POST" });
+                            setOfferAction(prev => ({ ...prev, [msg.id]: "accepted" }));
+                          } catch { /* ignore */ } finally {
+                            setOfferBusy(null);
+                          }
+                        }}
+                      >
+                        {offerBusy === msg.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                        {m.acceptOffer}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/5"
+                        disabled={offerBusy === msg.id}
+                        onClick={() => {
+                          setOfferAction(prev => ({ ...prev, [msg.id]: "declined" }));
+                        }}
+                      >
+                        <XCircle className="h-3.5 w-3.5" />
+                        {m.declineOffer}
+                      </Button>
+                    </div>
+                  )}
+                  {action && (
+                    <div className={`flex items-center gap-2 px-4 pb-4 pt-1 text-sm font-medium ${action === "accepted" ? "text-green-700" : "text-muted-foreground"}`}>
+                      {action === "accepted"
+                        ? <><CheckCircle2 className="h-4 w-4" />{m.offerAccepted}</>
+                        : <><XCircle className="h-4 w-4" />{m.offerDeclined}</>
+                      }
+                    </div>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-0.5 px-1">
+                  {format(new Date(msg.createdAt), "dd.MM · HH:mm")}
+                </p>
+              </div>
+            );
+          }
+
+          // Normal message bubble
           return (
             <div key={msg.id} className={`flex flex-col ${isMine ? "items-end" : "items-start"}`}>
               <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${isMine ? "bg-primary text-white rounded-br-sm" : "bg-white text-foreground rounded-bl-sm border border-border"}`}>
                 {!isMine && (
                   <p className="text-xs font-semibold mb-1 opacity-70">{msg.senderName ?? partnerName}</p>
+                )}
+                {msg.messageType === "offer" && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold mb-1 text-primary/80">
+                    <FileText className="h-3 w-3" />{m.offerLabel}
+                  </span>
                 )}
                 {msg.body !== "[Attachment]" && <p className="whitespace-pre-wrap">{msg.body}</p>}
                 {msg.attachments?.map((a, i) => <AttachmentPreview key={i} path={a} />)}

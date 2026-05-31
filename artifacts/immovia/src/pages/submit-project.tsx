@@ -620,48 +620,82 @@ export default function SubmitProject() {
                     {t.projectForm.reviewInfo}
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Contact</h4>
-                      <p className="font-medium">{form.getValues().fullName}</p>
-                      <p className="text-sm">{form.getValues().email}</p>
-                      <p className="text-sm">{form.getValues().phone}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Location</h4>
-                      <p className="font-medium">{form.getValues().city}</p>
-                    </div>
-                    <div className="md:col-span-2 mt-2">
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Project Details</h4>
-                      <p className="font-medium">{resolveCategoryLabel(form.getValues().projectType, language as Lang)}</p>
-                      {form.getValues().subcategory && (
-                        <p className="text-sm text-primary/80 mt-0.5">
-                          {resolveTagLabel(form.getValues().subcategory!, language as Lang)}
-                          {form.getValues().subcategory === "other" && form.getValues().subcategoryOtherText && (
-                            <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                              <span className="opacity-60">{t.projectForm.otherCustomBadge}:</span>
-                              {form.getValues().subcategoryOtherText}
-                            </span>
+                  {(() => {
+                    const lbl = {
+                      contact:  { de: "Kontakt",          en: "Contact",         sq: "Kontakti",        fr: "Contact"         },
+                      location: { de: "Standort",         en: "Location",        sq: "Vendndodhja",     fr: "Localisation"    },
+                      details:  { de: "Projektdetails",   en: "Project Details", sq: "Detajet",         fr: "Détails"         },
+                      budget:   { de: "Budget",           en: "Budget",          sq: "Buxheti",         fr: "Budget"          },
+                      timeline: { de: "Zeitrahmen",       en: "Timeline",        sq: "Afati kohor",     fr: "Délai"           },
+                      size:     { de: "Projektgrösse",    en: "Project size",    sq: "Madhësia",        fr: "Taille du projet" },
+                      title:    { de: "Projekttitel",     en: "Project title",   sq: "Titulli",         fr: "Titre"           },
+                    } as const;
+                    const lang4 = (["de","en","sq","fr"].includes(language) ? language : "de") as keyof typeof lbl.contact;
+                    const v = form.getValues();
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{lbl.contact[lang4]}</h4>
+                          <p className="font-medium">{v.fullName}</p>
+                          <p className="text-sm text-muted-foreground">{v.email}</p>
+                          <p className="text-sm text-muted-foreground">{v.phone}</p>
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{lbl.location[lang4]}</h4>
+                          <p className="font-medium">{v.city}</p>
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{lbl.title[lang4]}</h4>
+                          <p className="font-medium">{v.title}</p>
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{lbl.size[lang4]}</h4>
+                          <p className="font-medium">{v.size}</p>
+                        </div>
+                        <div className="md:col-span-2">
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{lbl.details[lang4]}</h4>
+                          <p className="font-medium">{resolveCategoryLabel(v.projectType, language as Lang)}</p>
+                          {v.subcategory && (
+                            <p className="text-sm text-primary/80 mt-0.5">
+                              {resolveTagLabel(v.subcategory, language as Lang)}
+                              {v.subcategory === "other" && v.subcategoryOtherText && (
+                                <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                                  <span className="opacity-60">{t.projectForm.otherCustomBadge}:</span>
+                                  {v.subcategoryOtherText}
+                                </span>
+                              )}
+                            </p>
                           )}
-                        </p>
-                      )}
-                      <p className="text-sm mt-1 bg-background p-3 rounded border border-border">
-                        {form.getValues().description}
-                      </p>
-                    </div>
-                    {form.getValues().budget && (
-                      <div>
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Budget</h4>
-                        <p className="font-medium">{form.getValues().budget}</p>
+                          <p className="text-sm mt-2 bg-background p-3 rounded border border-border whitespace-pre-wrap">{v.description}</p>
+                        </div>
+                        {v.budget && (
+                          <div>
+                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{lbl.budget[lang4]}</h4>
+                            <p className="font-medium">{v.budget}</p>
+                          </div>
+                        )}
+                        {v.timeline && (
+                          <div>
+                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{lbl.timeline[lang4]}</h4>
+                            <p className="font-medium">{v.timeline}</p>
+                          </div>
+                        )}
+                        {projectPhotos.length > 0 && (
+                          <div className="md:col-span-2">
+                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                              {language === "de" ? "Fotos" : language === "sq" ? "Foto" : language === "fr" ? "Photos" : "Photos"}
+                              {" "}({projectPhotos.length})
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {projectPhotos.map((p, i) => (
+                                <img key={i} src={`/api/storage${p}`} alt="" className="w-16 h-16 rounded-lg object-cover border border-border" />
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {form.getValues().timeline && (
-                      <div>
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Timeline</h4>
-                        <p className="font-medium">{form.getValues().timeline}</p>
-                      </div>
-                    )}
-                  </div>
+                    );
+                  })()}
                 </motion.div>
               )}
             </AnimatePresence>

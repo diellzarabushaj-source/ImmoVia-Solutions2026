@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Bell } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
+import { useLocation } from "wouter";
 
 interface Notification {
   id: number;
@@ -20,10 +21,27 @@ const L = {
   fr: { empty: "Aucune notification.", markAll: "Tout marquer comme lu", notifications: "Notifications" },
 };
 
+function notifDestination(n: Notification): string | null {
+  if (n.type === "offer_received" && n.relatedProjectId) {
+    return `/dashboard?tab=angebote`;
+  }
+  if (n.type === "offer_accepted" && n.relatedProjectId) {
+    return `/provider?tab=nachrichten`;
+  }
+  if (n.type === "new_message") {
+    return `/provider?tab=nachrichten`;
+  }
+  if (n.relatedCompanyId) {
+    return `/companies/${n.relatedCompanyId}`;
+  }
+  return null;
+}
+
 export default function NotificationBell() {
   const { language } = useLanguage();
   const lang = (["sq", "en", "de", "fr"].includes(language) ? language : "de") as keyof typeof L;
   const l = L[lang];
+  const [, setLocation] = useLocation();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
@@ -31,18 +49,18 @@ export default function NotificationBell() {
 
   const unread = notifications.filter(n => !n.isRead).length;
 
-  const fetchNotifications = () => {
+  const fetchNotifications = useCallback(() => {
     fetch("/api/notifications", { credentials: "include" })
       .then(r => r.ok ? r.json() as Promise<Notification[]> : [])
       .then(data => setNotifications(data))
       .catch(() => {});
-  };
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30_000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -64,12 +82,28 @@ export default function NotificationBell() {
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };
 
+  const handleClick = async (n: Notification) => {
+    await markRead(n.id);
+    setOpen(false);
+    const dest = notifDestination(n);
+    if (dest) setLocation(dest);
+  };
+
   const fmtDate = (iso: string) => {
     try {
-      return new Date(iso).toLocaleDateString(lang === "sq" ? "sq-AL" : lang === "de" ? "de-DE" : lang === "fr" ? "fr-FR" : "en-US", { day: "numeric", month: "short" });
+      return new Date(iso).toLocaleDateString(
+        lang === "sq" ? "sq-AL" : lang === "de" ? "de-DE" : lang === "fr" ? "fr-FR" : "en-US",
+        { day: "numeric", month: "short" },
+      );
     } catch {
       return "";
     }
+  };
+
+  const typeIcon: Record<string, string> = {
+    offer_received: "→",
+    offer_accepted: "✓",
+    new_message: "✉",
   };
 
   return (
@@ -92,10 +126,7 @@ export default function NotificationBell() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
             <span className="text-sm font-semibold text-foreground">{l.notifications}</span>
             {unread > 0 && (
-              <button
-                onClick={markAllRead}
-                className="text-xs text-primary hover:underline"
-              >
+              <button onClick={markAllRead} className="text-xs text-primary hover:underline">
                 {l.markAll}
               </button>
             )}
@@ -105,22 +136,39 @@ export default function NotificationBell() {
             {notifications.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-8">{l.empty}</p>
             ) : (
-              notifications.map(n => (
-                <button
-                  key={n.id}
-                  onClick={() => markRead(n.id)}
-                  className={`w-full text-left px-4 py-3 hover:bg-muted/40 transition-colors ${!n.isRead ? "bg-primary/4" : ""}`}
-                >
-                  <div className="flex items-start gap-2">
-                    {!n.isRead && <span className="mt-1.5 w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
-                    <div className={!n.isRead ? "" : "pl-4"}>
-                      <p className="text-xs font-semibold text-foreground leading-snug">{n.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-snug line-clamp-2">{n.message}</p>
-                      <p className="text-[10px] text-muted-foreground/60 mt-1">{fmtDate(n.createdAt)}</p>
+              notifications.map(n => {
+                const dest = notifDestination(n);
+                return (
+                  <button
+                    key={n.id}
+                    onClick={() => void handleClick(n)}
+                    className={`w-full text-left px-4 py-3 transition-colors ${
+                      !n.isRead ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/40"
+                    } ${dest ? "cursor-pointer" : "cursor-default"}`}
+                  >
+                    <div className="flex items-start gap-2">
+                      {!n.isRead && <span className="mt-1.5 w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
+                      <div className={!n.isRead ? "" : "pl-4"}>
+                        <div className="flex items-center gap-1.5">
+                          {typeIcon[n.type] && (
+                            <span className="text-[10px] font-bold text-primary bg-primary/10 rounded px-1">{typeIcon[n.type]}</span>
+                          )}
+                          <p className="text-xs font-semibold text-foreground leading-snug">{n.title}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-snug line-clamp-2">{n.message}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-[10px] text-muted-foreground/60">{fmtDate(n.createdAt)}</p>
+                          {dest && (
+                            <span className="text-[10px] text-primary font-medium">
+                              {lang === "de" ? "Öffnen →" : lang === "sq" ? "Hap →" : lang === "fr" ? "Ouvrir →" : "Open →"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))
+                  </button>
+                );
+              })
             )}
           </div>
         </div>

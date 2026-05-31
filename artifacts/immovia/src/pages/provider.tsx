@@ -834,6 +834,59 @@ export default function ProviderDashboard() {
                 </p>
               </div>
 
+              {/* Profile completion banner — shown when profile < 100% */}
+              {profileLoaded && (() => {
+                const fields = [
+                  { key: "bio",          label: { de: "Beschreibung",  en: "Description", sq: "Përshkrim",  fr: "Description" } },
+                  { key: "phone",        label: { de: "Telefon",       en: "Phone",        sq: "Telefon",    fr: "Téléphone"   } },
+                  { key: "city",         label: { de: "Stadt",         en: "City",         sq: "Qyteti",     fr: "Ville"       } },
+                  { key: "profilePhoto", label: { de: "Profilfoto",    en: "Profile photo",sq: "Foto",       fr: "Photo"       } },
+                  { key: "website",      label: { de: "Website",       en: "Website",      sq: "Website",    fr: "Site web"    } },
+                  { key: "hourlyRate",   label: { de: "Stundenansatz", en: "Hourly rate",  sq: "Tarifa",     fr: "Tarif"       } },
+                ] as const;
+                const lang4 = (["de","en","sq","fr"].includes(language) ? language : "de") as "de"|"en"|"sq"|"fr";
+                const done = fields.filter(f => Boolean(profileForm[f.key])).length;
+                const pct = Math.round((done / fields.length) * 100);
+                const missing = fields.filter(f => !profileForm[f.key]).map(f => f.label[lang4]);
+                if (pct >= 100) return null;
+                return (
+                  <div
+                    className="mb-6 p-4 rounded-xl border border-amber-200 bg-amber-50/70 cursor-pointer hover:bg-amber-50 transition-colors"
+                    onClick={() => setActiveSection("profil")}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-amber-900">
+                        {language === "de" ? `Profil ${pct}% vollständig`
+                          : language === "fr" ? `Profil complété à ${pct}%`
+                          : language === "sq" ? `Profili ${pct}% i plotë`
+                          : `Profile ${pct}% complete`}
+                      </span>
+                      <span className="text-xs font-medium text-amber-700 underline underline-offset-2">
+                        {language === "de" ? "Profil vervollständigen →"
+                          : language === "fr" ? "Compléter →"
+                          : language === "sq" ? "Plotëso profilin →"
+                          : "Complete profile →"}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-amber-100 rounded-full overflow-hidden mb-2">
+                      <div
+                        className="h-full bg-amber-500 rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    {missing.length > 0 && (
+                      <p className="text-xs text-amber-700">
+                        {language === "de" ? "Noch ausstehend: "
+                          : language === "fr" ? "Manquant : "
+                          : language === "sq" ? "Ende mungojnë: "
+                          : "Still missing: "}
+                        {missing.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* 9 stat cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                 <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("plan")}>
@@ -847,8 +900,16 @@ export default function ProviderDashboard() {
                   </div>
                   <div className="text-lg font-bold text-primary">
                     {profileLoaded
-                      ? `${Math.min(100, Math.round(([profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website].filter(Boolean).length / 5) * 100))}%`
+                      ? `${Math.min(100, Math.round(([profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website, profileForm.hourlyRate].filter(Boolean).length / 6) * 100))}%`
                       : "—"}
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-2">
+                    {profileLoaded && (
+                      <div
+                        className="h-full bg-primary rounded-full"
+                        style={{ width: `${Math.min(100, Math.round(([profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website, profileForm.hourlyRate].filter(Boolean).length / 6) * 100))}%` }}
+                      />
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {language === "de" ? "vollständig" : language === "fr" ? "complet" : language === "sq" ? "i plotë" : "complete"}
