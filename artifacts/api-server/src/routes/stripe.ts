@@ -110,7 +110,6 @@ router.get("/stripe/subscription/sync", requireAuth, async (req, res): Promise<v
       customer: user.stripeCustomerId,
       status: "active",
       limit: 1,
-      expand: ["data.items.data.price"],
     });
 
     const activeSub = stripeSubs.data[0];
@@ -119,8 +118,10 @@ router.get("/stripe/subscription/sync", requireAuth, async (req, res): Promise<v
       return;
     }
 
+    // price may be a string ID or an expanded object depending on API version
     const priceItem = activeSub.items.data[0];
-    const priceId = priceItem?.price?.id;
+    const rawPrice = priceItem?.price;
+    const priceId = typeof rawPrice === "string" ? rawPrice : rawPrice?.id;
     if (!priceId) {
       res.json({ synced: false, reason: "no_price_on_subscription" });
       return;
