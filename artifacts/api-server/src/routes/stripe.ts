@@ -185,11 +185,17 @@ router.get("/stripe/subscription/sync", requireAuth, async (req, res): Promise<v
       .set({ status: "canceled" })
       .where(eq(subscriptionsTable.userId, userId));
 
-    // Stripe v20 uses Unix timestamps (seconds)
-    const rawStart = (activeSub as unknown as { current_period_start: number }).current_period_start;
-    const rawEnd = (activeSub as unknown as { current_period_end: number }).current_period_end;
+    // Stripe v20 API removed current_period_start/current_period_end.
+    // Use start_date (subscription start) and billing_cycle_anchor to derive the period.
+    const rawStart = activeSub.start_date ?? activeSub.billing_cycle_anchor ?? Math.floor(Date.now() / 1000);
     const periodStart = new Date(rawStart * 1000);
-    const periodEnd = new Date(rawEnd * 1000);
+    const periodEnd = new Date(periodStart);
+    // Determine interval from which price matched the plan
+    if (planByYearly) {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    } else {
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+    }
 
     const [sub] = await db
       .insert(subscriptionsTable)
@@ -230,6 +236,7 @@ router.get("/stripe/subscription/sync", requireAuth, async (req, res): Promise<v
 
     res.json({ synced: true, plan: plan.slug, subscriptionId: sub?.id });
   } catch (err) {
+    req.log.error({ err }, "stripe sync error");
     const msg = err instanceof Error ? err.message : "Sync failed";
     res.status(500).json({ error: msg });
   }
