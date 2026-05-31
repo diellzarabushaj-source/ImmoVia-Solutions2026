@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import {
   MessageSquare, X, Send, ChevronLeft, Paperclip,
@@ -623,10 +623,8 @@ function ChatWidgetInner() {
   );
 }
 
-/* ── Public export — hidden for service providers ─────────────── */
+/* ── Public export ────────────────────────────────────────────── */
 export function ChatWidget() {
-  const { user } = useAuth();
-  if (user && isServiceProvider(user)) return null;
   return <ChatWidgetInner />;
 }
 
