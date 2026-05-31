@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import {
   MessageSquare, X, Send, ChevronLeft, Paperclip,
@@ -377,7 +377,7 @@ function ThreadView({
 }
 
 /* ── Main ChatWidget ─────────────────────────────────────────── */
-export function ChatWidget() {
+function ChatWidgetInner() {
   const { user } = useAuth();
   const { language } = useLanguage();
   const m = ML[language] ?? ML.en;
@@ -621,6 +621,13 @@ export function ChatWidget() {
       </motion.button>
     </div>
   );
+}
+
+/* ── Public export — hidden for service providers ─────────────── */
+export function ChatWidget() {
+  const { user } = useAuth();
+  if (user && isServiceProvider(user)) return null;
+  return <ChatWidgetInner />;
 }
 
 export default ChatWidget;

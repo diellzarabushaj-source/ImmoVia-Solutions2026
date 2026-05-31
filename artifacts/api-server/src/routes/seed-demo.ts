@@ -1,7 +1,9 @@
 import { Router, type IRouter } from "express";
-import { db, projectsTable } from "@workspace/db";
+import { db, projectsTable, usersTable } from "@workspace/db";
 import { eq, lt } from "drizzle-orm";
 import { logger } from "../lib/logger";
+
+const DEMO_PP_EMAIL = "demo@immovia365.ch";
 
 const router: IRouter = Router();
 
@@ -32,12 +34,34 @@ router.post("/seed-demo-projects", async (req, res): Promise<void> => {
   }
 
   try {
+    // Ensure demo PP user exists so seeded projects have a real owner
+    const [demoPP] = await db
+      .insert(usersTable)
+      .values({
+        email: DEMO_PP_EMAIL,
+        passwordHash: "x",
+        role: "user",
+        fullName: "ImmoVia Demo",
+        language: "de",
+        accountType: "project_poster",
+      })
+      .onConflictDoUpdate({
+        target: usersTable.email,
+        set: { accountType: "project_poster" },
+      })
+      .returning({ id: usersTable.id });
+
     const deleted = await db.delete(projectsTable)
-      .where(eq(projectsTable.email, "demo@immovia365.ch"))
+      .where(eq(projectsTable.email, DEMO_PP_EMAIL))
       .returning({ id: projectsTable.id });
 
     const inserted = await db.insert(projectsTable)
-      .values(DEMO_PROJECTS.map(p => ({ ...p, status: "open" as const, photos: [] })))
+      .values(DEMO_PROJECTS.map(p => ({
+        ...p,
+        status: "open" as const,
+        photos: [],
+        ownerUserId: demoPP.id,
+      })))
       .returning({ id: projectsTable.id });
 
     logger.info({ deleted: deleted.length, inserted: inserted.length }, "Demo seed complete");
