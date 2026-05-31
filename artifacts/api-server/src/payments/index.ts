@@ -9,6 +9,19 @@ export interface SubscriptionResult extends PaymentResult {
 }
 
 export interface PaymentProvider {
+  createCheckoutSession?(args: {
+    userId: number;
+    priceId: string;
+    successUrl: string;
+    cancelUrl: string;
+    interval: "month" | "year";
+  }): Promise<string>;
+
+  createPortalSession?(args: {
+    userId: number;
+    returnUrl: string;
+  }): Promise<string>;
+
   createSubscription(args: {
     userId: number;
     planSlug: string;

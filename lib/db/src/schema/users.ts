@@ -26,6 +26,7 @@ export const usersTable = pgTable("users", {
   licenseNumber: text("license_number"),
   yearsExperience: integer("years_experience"),
   verified: boolean("verified").notNull().default(false),
+  stripeCustomerId: text("stripe_customer_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

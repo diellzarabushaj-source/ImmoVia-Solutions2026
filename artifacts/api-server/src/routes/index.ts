@@ -29,6 +29,7 @@ import conversationsRouter from "./conversations";
 import customerRouter from "./customer";
 import notificationsRouter from "./notifications";
 import aiRouter from "./ai";
+import stripeRouter from "./stripe";
 
 const router: IRouter = Router();
 
@@ -62,5 +63,6 @@ router.use(conversationsRouter);
 router.use(customerRouter);
 router.use(notificationsRouter);
 router.use(aiRouter);
+router.use(stripeRouter);
 
 export default router;

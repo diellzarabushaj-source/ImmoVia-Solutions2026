@@ -10,13 +10,23 @@ import {
 
 export const subscriptionPlansTable = pgTable("subscription_plans", {
   id: serial("id").primaryKey(),
-  slug: text("slug").notNull().unique(), // free | starter | pro | business | premium
+  slug: text("slug").notNull().unique(), // free | basic | pro | premium
   name: text("name").notNull(),
   priceCents: integer("price_cents").notNull().default(0),
-  monthlyCredits: integer("monthly_credits").notNull().default(0),
+  yearlyPriceCents: integer("yearly_price_cents").notNull().default(0),
+  monthlyCredits: integer("monthly_credits").notNull().default(0), // -1 = unlimited
   featured: boolean("featured").notNull().default(false),
   features: jsonb("features").$type<string[]>().notNull().default([]),
   sortOrder: integer("sort_order").notNull().default(0),
+  // Stripe price IDs — set after running seed-stripe-products script
+  stripePriceMonthly: text("stripe_price_monthly"),
+  stripePriceYearly: text("stripe_price_yearly"),
+  // Badge label for this plan
+  badge: text("badge"),
+  // Visibility rank (higher = shown first in listings)
+  visibilityRank: integer("visibility_rank").notNull().default(0),
+  // Whether this plan allows access to contact details
+  contactVisible: boolean("contact_visible").notNull().default(false),
 });
 
 export const immocreditPacksTable = pgTable("immocredit_packs", {

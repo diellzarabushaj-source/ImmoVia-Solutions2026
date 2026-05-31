@@ -23,25 +23,34 @@ const router: IRouter = Router();
 
 export const PLAN_APP_LIMITS: Record<string, number> = {
   free: 2,
+  basic: 10,
+  pro: 35,
+  premium: -1, // -1 = unlimited
+  // legacy slugs kept for backward compat
   starter: 10,
   professional: 30,
-  premium: 100,
   founding: 10,
 };
 
 export const PLAN_CONTACT_VISIBLE: Record<string, boolean> = {
   free: false,
+  basic: true,
+  pro: true,
+  premium: true,
+  // legacy
   starter: true,
   professional: true,
-  premium: true,
   founding: true,
 };
 
 export const PLAN_BADGES: Record<string, string> = {
-  free: "Basic Anbieter",
+  free: "",
+  basic: "Basic Provider",
+  pro: "Pro Provider",
+  premium: "Premium Partner",
+  // legacy
   starter: "Aktiver Anbieter",
   professional: "Verifizierter Anbieter",
-  premium: "Top Anbieter",
   founding: "Founding Anbieter",
 };
 

@@ -9,53 +9,111 @@ import {
 } from "@/lib/billing-api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2, Sparkles, Zap, Shield, Star, Award } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Check, Loader2, Shield, Zap, Star, Award, BadgeCheck } from "lucide-react";
 
 function formatCHF(cents: number): string {
   if (cents === 0) return "CHF 0";
   return `CHF ${(cents / 100).toFixed(0)}`;
 }
 
+function formatCHFDecimal(cents: number): string {
+  if (cents === 0) return "CHF 0";
+  return `CHF ${(cents / 100 / 12).toFixed(0)}`;
+}
+
 const PLAN_ICONS: Record<string, React.ReactNode> = {
-  free: <Shield className="w-5 h-5 text-muted-foreground" />,
-  starter: <Zap className="w-5 h-5 text-blue-600" />,
-  professional: <Star className="w-5 h-5 text-primary" />,
-  premium: <Award className="w-5 h-5 text-amber-600" />,
-  founding: <Sparkles className="w-5 h-5 text-violet-600" />,
+  free: <Shield className="w-5 h-5 text-slate-400" />,
+  basic: <Zap className="w-5 h-5 text-blue-500" />,
+  pro: <Star className="w-5 h-5 text-primary" />,
+  premium: <Award className="w-5 h-5 text-amber-500" />,
 };
 
 const PLAN_ACCENT: Record<string, string> = {
-  free: "border-border",
-  starter: "border-blue-200",
-  professional: "border-primary border-2 shadow-xl",
-  premium: "border-amber-300 border-2",
-  founding: "border-violet-300 border-2",
+  free: "border-border bg-white",
+  basic: "border-blue-200 bg-white",
+  pro: "border-primary/40 border-2 shadow-xl bg-white",
+  premium: "border-amber-300 border-2 bg-white",
 };
 
-const PLAN_APP_LABELS: Record<string, string> = {
-  de: "Bewerbungen / Monat",
-  en: "applications / month",
-  sq: "aplikime / muaj",
-  fr: "candidatures / mois",
+const PLAN_BADGE_COLOR: Record<string, string> = {
+  basic: "bg-blue-100 text-blue-700",
+  pro: "bg-primary/10 text-primary",
+  premium: "bg-amber-100 text-amber-700",
+};
+
+const YEARLY_DISCOUNT = 20;
+
+const CREDITS_LABEL: Record<string, string> = {
+  de: "Credits/Monat",
+  en: "credits/month",
+  sq: "kredite/muaj",
+  fr: "crédits/mois",
+};
+
+const UNLIMITED_LABEL: Record<string, string> = {
+  de: "Unbegrenzt",
+  en: "Unlimited",
+  sq: "Pa limit",
+  fr: "Illimité",
+};
+
+const MONTHLY_LABEL: Record<string, string> = {
+  de: "Monatlich",
+  en: "Monthly",
+  sq: "Mujore",
+  fr: "Mensuel",
+};
+
+const YEARLY_LABEL: Record<string, string> = {
+  de: "Jährlich",
+  en: "Yearly",
+  sq: "Vjetore",
+  fr: "Annuel",
+};
+
+const SAVE_LABEL: Record<string, string> = {
+  de: "Spare 20%",
+  en: "Save 20%",
+  sq: "Kursej 20%",
+  fr: "Économisez 20%",
+};
+
+const PER_MONTH_LABEL: Record<string, string> = {
+  de: "/Monat",
+  en: "/month",
+  sq: "/muaj",
+  fr: "/mois",
+};
+
+const FREE_CTA: Record<string, string> = {
+  de: "Kostenlos starten",
+  en: "Get started free",
+  sq: "Fillo falas",
+  fr: "Commencer gratuitement",
+};
+
+const SUBSCRIBE_CTA: Record<string, string> = {
+  de: "Jetzt abonnieren",
+  en: "Subscribe now",
+  sq: "Abonohu tani",
+  fr: "S'abonner",
+};
+
+const MOST_POPULAR: Record<string, string> = {
+  de: "Beliebteste Wahl",
+  en: "Most popular",
+  sq: "Më i zgjedhur",
+  fr: "Le plus populaire",
 };
 
 export default function Pricing() {
   const { t, language } = useLanguage();
   usePageMeta({ title: `${t.pricing.title} — ImmoVia`, description: t.pricing.subtitle ?? undefined });
-  const { user, refresh } = useAuth();
+  const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [confirmPlan, setConfirmPlan] = useState<SubscriptionPlan | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [interval, setIntervalMode] = useState<"month" | "year">("month");
+  const [loading, setLoading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,8 +122,9 @@ export default function Pricing() {
 
   const isProvider = isServiceProvider(user);
 
-  const handlePlanCta = (plan: SubscriptionPlan) => {
+  const handlePlanCta = async (plan: SubscriptionPlan) => {
     setError(null);
+
     if (!user) {
       setLocation("/signup");
       return;
@@ -74,164 +133,185 @@ export default function Pricing() {
       setError(t.pricing.errorClient);
       return;
     }
-    setConfirmPlan(plan);
-  };
 
-  const confirmPlanSubscribe = async () => {
-    if (!confirmPlan) return;
-    setSubmitting(true);
-    setError(null);
+    // Free plan — no checkout needed
+    if (plan.slug === "free") {
+      setLocation("/provider/billing");
+      return;
+    }
+
+    // Paid plan — redirect to Stripe Checkout
+    setLoading(plan.id);
     try {
-      await billingApi.subscribe(confirmPlan.id);
-      await refresh();
-      setSuccess(t.pricing.successPlan.replace("{name}", confirmPlan.name));
-      setConfirmPlan(null);
+      const { url } = await billingApi.stripeCheckout(plan.id, interval);
+      window.location.href = url;
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
-    } finally {
-      setSubmitting(false);
+      setError(e instanceof Error ? e.message : "Checkout failed");
+      setLoading(null);
     }
   };
 
-  const appLabel = PLAN_APP_LABELS[language] ?? PLAN_APP_LABELS.de;
+  const creditsLabel = CREDITS_LABEL[language] ?? CREDITS_LABEL.de;
+  const unlimitedLabel = UNLIMITED_LABEL[language] ?? UNLIMITED_LABEL.de;
+  const monthlyLabel = MONTHLY_LABEL[language] ?? MONTHLY_LABEL.de;
+  const yearlyLabel = YEARLY_LABEL[language] ?? YEARLY_LABEL.de;
+  const saveLabel = SAVE_LABEL[language] ?? SAVE_LABEL.de;
+  const perMonth = PER_MONTH_LABEL[language] ?? PER_MONTH_LABEL.de;
+  const freeCta = FREE_CTA[language] ?? FREE_CTA.de;
+  const subscribeCta = SUBSCRIBE_CTA[language] ?? SUBSCRIBE_CTA.de;
+  const mostPopular = MOST_POPULAR[language] ?? MOST_POPULAR.de;
 
-  const mainPlans = plans.filter(p => p.slug !== "founding");
-  const foundingPlan = plans.find(p => p.slug === "founding");
+  const displayedPlans = plans.filter(p => ["free", "basic", "pro", "premium"].includes(p.slug));
+
+  function displayPrice(plan: SubscriptionPlan): string {
+    if (plan.priceCents === 0) return "CHF 0";
+    if (interval === "year") return formatCHFDecimal(plan.yearlyPriceCents);
+    return formatCHF(plan.priceCents);
+  }
+
+  function displayBilledAs(plan: SubscriptionPlan): string | null {
+    if (plan.priceCents === 0 || interval === "month") return null;
+    return formatCHF(plan.yearlyPriceCents);
+  }
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
-      <div className="max-w-3xl mx-auto text-center mb-12">
+      {/* Header */}
+      <div className="max-w-3xl mx-auto text-center mb-10">
         <h1 className="text-3xl md:text-5xl font-serif font-bold mb-4" data-testid="heading-pricing">
           {t.pricing.title}
         </h1>
         <p className="text-muted-foreground text-lg">{t.pricing.subtitle}</p>
       </div>
 
-      {success && (
-        <div className="max-w-3xl mx-auto mb-6 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm" data-testid="pricing-success">
-          {success}
-        </div>
-      )}
+      {/* Monthly / Yearly toggle */}
+      <div className="flex items-center justify-center gap-3 mb-10">
+        <span className={`text-sm font-medium ${interval === "month" ? "text-foreground" : "text-muted-foreground"}`}>
+          {monthlyLabel}
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={interval === "year"}
+          onClick={() => setIntervalMode(i => i === "month" ? "year" : "month")}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${interval === "year" ? "bg-primary" : "bg-muted-foreground/30"}`}
+          data-testid="toggle-interval"
+        >
+          <span
+            className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${interval === "year" ? "translate-x-6" : "translate-x-1"}`}
+          />
+        </button>
+        <span className={`text-sm font-medium flex items-center gap-1.5 ${interval === "year" ? "text-foreground" : "text-muted-foreground"}`}>
+          {yearlyLabel}
+          <span className="text-[11px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
+            -{YEARLY_DISCOUNT}%
+          </span>
+        </span>
+      </div>
+
       {error && (
         <div className="max-w-3xl mx-auto mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm" data-testid="pricing-error">
           {error}
         </div>
       )}
 
-      {/* Main plans grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto mb-10">
-        {mainPlans.map((plan) => (
-          <Card
-            key={plan.id}
-            className={`p-6 flex flex-col relative ${PLAN_ACCENT[plan.slug] ?? "border-border"}`}
-            data-testid={`plan-${plan.slug}`}
-          >
-            {plan.featured && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
-                <Sparkles className="w-3 h-3" />
-                {t.pricing.mostPopular}
-              </span>
-            )}
-            <div className="flex items-center gap-2 mb-3">
-              {PLAN_ICONS[plan.slug]}
-              <h3 className="text-lg font-bold">{plan.name}</h3>
-            </div>
-            <div className="mb-2">
-              <span className="text-3xl font-bold">{formatCHF(plan.priceCents)}</span>
-              <span className="text-muted-foreground text-sm">/{t.pricing.month}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-sm font-semibold text-primary mb-5">
-              <span className="text-lg font-bold">{plan.monthlyCredits}</span>
-              <span className="text-muted-foreground font-normal">{appLabel}</span>
-            </div>
-            <ul className="space-y-2 text-sm mb-6 flex-1">
-              {plan.features.map((f, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <Button
-              className="w-full"
-              variant={plan.featured ? "default" : "outline"}
-              onClick={() => handlePlanCta(plan)}
-              data-testid={`button-plan-${plan.slug}`}
+      {/* Plans grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
+        {displayedPlans.map((plan) => {
+          const isCurrentlyLoading = loading === plan.id;
+          const isFree = plan.slug === "free";
+          const billedAs = displayBilledAs(plan);
+          const creditsDisplay = plan.monthlyCredits === -1 ? unlimitedLabel : String(plan.monthlyCredits);
+
+          return (
+            <Card
+              key={plan.id}
+              className={`p-6 flex flex-col relative ${PLAN_ACCENT[plan.slug] ?? "border-border"}`}
+              data-testid={`plan-${plan.slug}`}
             >
-              {plan.priceCents === 0 ? t.pricing.ctaGetStarted : t.pricing.ctaSubscribe}
-            </Button>
-          </Card>
-        ))}
+              {plan.featured && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">
+                  {mostPopular}
+                </span>
+              )}
+
+              {/* Plan header */}
+              <div className="flex items-center gap-2 mb-2">
+                {PLAN_ICONS[plan.slug]}
+                <h3 className="text-base font-bold">{plan.name}</h3>
+              </div>
+
+              {plan.badge && (
+                <div className="mb-3">
+                  <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${PLAN_BADGE_COLOR[plan.slug] ?? "bg-muted"}`}>
+                    <BadgeCheck className="w-3 h-3" />
+                    {plan.badge}
+                  </span>
+                </div>
+              )}
+
+              {/* Price */}
+              <div className="mb-1">
+                <span className="text-3xl font-bold">{displayPrice(plan)}</span>
+                <span className="text-muted-foreground text-sm">{perMonth}</span>
+              </div>
+
+              {billedAs && (
+                <div className="text-xs text-muted-foreground mb-1">
+                  {language === "de" ? `${billedAs} jährlich abgerechnet` :
+                   language === "fr" ? `${billedAs} facturé annuellement` :
+                   language === "sq" ? `${billedAs} faturim vjetor` :
+                   `${billedAs} billed annually`}
+                </div>
+              )}
+
+              {/* Credits */}
+              <div className="flex items-baseline gap-1.5 mb-5 mt-1">
+                <span className="text-lg font-bold text-primary">{creditsDisplay}</span>
+                <span className="text-xs text-muted-foreground">{creditsLabel}</span>
+              </div>
+
+              {/* Features */}
+              <ul className="space-y-2 text-sm mb-6 flex-1">
+                {plan.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Yearly savings callout */}
+              {!isFree && interval === "year" && (
+                <div className="text-xs font-medium text-green-700 bg-green-50 rounded px-2 py-1 mb-3 text-center">
+                  {saveLabel}
+                </div>
+              )}
+
+              <Button
+                className="w-full"
+                variant={plan.featured ? "default" : isFree ? "ghost" : "outline"}
+                onClick={() => void handlePlanCta(plan)}
+                disabled={isCurrentlyLoading}
+                data-testid={`button-plan-${plan.slug}`}
+              >
+                {isCurrentlyLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {isFree ? freeCta : subscribeCta}
+              </Button>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* Founding offer banner */}
-      {foundingPlan && (
-        <div className="max-w-6xl mx-auto">
-          <Card className={`p-6 ${PLAN_ACCENT.founding} bg-gradient-to-r from-violet-50/60 to-white`} data-testid={`plan-${foundingPlan.slug}`}>
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <div className="p-2.5 rounded-xl bg-violet-100">
-                  <Sparkles className="w-6 h-6 text-violet-600" />
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-violet-600 uppercase tracking-wide mb-0.5">
-                    {language === "de" ? "Startangebot" : language === "fr" ? "Offre de lancement" : language === "sq" ? "Ofertë lansimi" : "Founding offer"}
-                  </div>
-                  <h3 className="text-xl font-bold">{foundingPlan.name}</h3>
-                </div>
-              </div>
-              <div className="flex-1">
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
-                  {foundingPlan.features.map((f, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-violet-600 flex-shrink-0" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex flex-col items-start md:items-end gap-2 flex-shrink-0">
-                <div>
-                  <span className="text-3xl font-bold">{formatCHF(foundingPlan.priceCents)}</span>
-                  <span className="text-muted-foreground text-sm">/{t.pricing.month}</span>
-                </div>
-                <Button
-                  className="bg-violet-600 hover:bg-violet-700 text-white w-full md:w-auto"
-                  onClick={() => handlePlanCta(foundingPlan)}
-                  data-testid={`button-plan-${foundingPlan.slug}`}
-                >
-                  {t.pricing.ctaSubscribe}
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </div>
+      {/* Yearly total note */}
+      {interval === "year" && (
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          {language === "de" ? "Jährliche Zahlung • Preise in CHF" :
+           language === "fr" ? "Paiement annuel • Prix en CHF" :
+           language === "sq" ? "Pagesë vjetore • Çmime në CHF" :
+           "Annual payment • Prices in CHF"}
+        </p>
       )}
-
-      <Dialog open={!!confirmPlan} onOpenChange={(o) => !o && setConfirmPlan(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t.pricing.confirmPlanTitle}</DialogTitle>
-            <DialogDescription>
-              {confirmPlan
-                ? t.pricing.confirmPlanDesc
-                    .replace("{name}", confirmPlan.name)
-                    .replace("{price}", formatCHF(confirmPlan.priceCents))
-                    .replace("{credits}", String(confirmPlan.monthlyCredits))
-                : ""}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmPlan(null)} disabled={submitting}>
-              {t.common.cancel}
-            </Button>
-            <Button onClick={confirmPlanSubscribe} disabled={submitting} data-testid="button-confirm-plan">
-              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {t.pricing.confirmCheckout}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

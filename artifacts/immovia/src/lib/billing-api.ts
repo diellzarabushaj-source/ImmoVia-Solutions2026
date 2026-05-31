@@ -3,10 +3,16 @@ export interface SubscriptionPlan {
   slug: string;
   name: string;
   priceCents: number;
+  yearlyPriceCents: number;
   monthlyCredits: number;
   featured: boolean;
   features: string[];
   sortOrder: number;
+  badge: string | null;
+  visibilityRank: number;
+  contactVisible: boolean;
+  stripePriceMonthly: string | null;
+  stripePriceYearly: string | null;
 }
 
 export interface ImmocreditPack {
@@ -157,6 +163,15 @@ export const billingApi = {
       method: "POST",
       body: JSON.stringify({ planId }),
     }),
+  stripeCheckout: (planId: number, interval: "month" | "year") =>
+    jsonFetch<{ url: string }>("/stripe/checkout", {
+      method: "POST",
+      body: JSON.stringify({ planId, interval }),
+    }),
+  stripePortal: () =>
+    jsonFetch<{ url: string }>("/stripe/portal", { method: "POST" }),
+  stripeSync: () =>
+    jsonFetch<{ synced: boolean; plan?: string; reason?: string }>("/stripe/subscription/sync"),
   buyPack: (packId: number) =>
     jsonFetch<{ pack: ImmocreditPack; payment: unknown; creditsAdded: number }>("/billing/buy-pack", {
       method: "POST",

@@ -27,6 +27,7 @@ import CompanyProfile from "@/pages/company-profile";
 import Projects from "@/pages/projects";
 import ProjectDetail from "@/pages/project-detail";
 import Pricing from "@/pages/pricing";
+import ProviderBilling from "@/pages/provider-billing";
 import ProviderDashboard from "@/pages/provider";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
@@ -176,6 +177,7 @@ function Router() {
         <Route path="/dashboard/portfolio" component={Portfolio} />
         <Route path="/company/:slug" component={PublicProfile} />
         <Route path="/provider" component={ProviderDashboard} />
+        <Route path="/provider/billing" component={ProviderBilling} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />

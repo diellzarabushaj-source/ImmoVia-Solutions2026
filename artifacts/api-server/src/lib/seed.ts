@@ -2,89 +2,86 @@ import { db, subscriptionPlansTable, immocreditPacksTable, projectsTable } from 
 import { eq, and, count, notInArray } from "drizzle-orm";
 import { logger } from "./logger";
 
-const NEW_PLAN_SLUGS = ["free", "starter", "professional", "premium", "founding"];
+const NEW_PLAN_SLUGS = ["free", "basic", "pro", "premium"];
 
 const PLANS = [
   {
     slug: "free",
     name: "Free",
     priceCents: 0,
+    yearlyPriceCents: 0,
     monthlyCredits: 2,
     featured: false,
+    badge: null,
+    visibilityRank: 0,
+    contactVisible: false,
     features: [
+      "2 Project Credits/Monat",
       "Basis-Anbieterprofil",
-      "Name, Ort & Kategorien sichtbar",
-      "Kurzbeschreibung & Logo",
-      "Bis zu 3 Portfolio-Bilder",
-      "2 Bewerbungen pro Monat",
+      "Nur registrierte Auftraggeber",
       "Kontaktdaten nicht sichtbar",
+      "Nur In-Plattform-Messaging",
+      "Niedrigste Sichtbarkeit",
     ],
     sortOrder: 1,
   },
   {
-    slug: "starter",
-    name: "Starter",
-    priceCents: 4900,
+    slug: "basic",
+    name: "Basic Provider",
+    priceCents: 2900,       // 29 CHF/month
+    yearlyPriceCents: 27900, // 279 CHF/year
     monthlyCredits: 10,
     featured: false,
+    badge: "Basic Provider",
+    visibilityRank: 1,
+    contactVisible: true,
     features: [
-      "Professionelles Anbieterprofil",
-      "Telefon, E-Mail & Website sichtbar",
-      "Direkte Kontaktbuttons",
-      "10 Bewerbungen pro Monat",
-      "Bis zu 10 Portfolio-Bilder",
-      "Bewertungen sichtbar",
-      "Projektbenachrichtigungen",
+      "10 Project Credits/Monat",
+      "Basic Provider Abzeichen",
+      "Kontaktdaten sichtbar (registrierte Auftraggeber)",
+      "Nur registrierte Auftraggeber",
+      "Standardsichtbarkeit",
     ],
     sortOrder: 2,
   },
   {
-    slug: "professional",
-    name: "Professional",
-    priceCents: 9900,
-    monthlyCredits: 30,
+    slug: "pro",
+    name: "Pro Provider",
+    priceCents: 7900,       // 79 CHF/month
+    yearlyPriceCents: 75900, // 759 CHF/year
+    monthlyCredits: 35,
     featured: true,
+    badge: "Pro Provider",
+    visibilityRank: 2,
+    contactVisible: true,
     features: [
-      "Alles aus Starter",
-      "30 Bewerbungen pro Monat",
-      "Bis zu 30 Portfolio-Bilder",
-      "Bessere Sichtbarkeit in Stadt & Kategorie",
-      "Verifiziertes Anbieterabzeichen",
-      "Priorität in Anbieterlisten",
+      "35 Project Credits/Monat",
+      "Pro Provider Abzeichen",
+      "Erscheint über Basic-Anbietern",
+      "Bessere Sichtbarkeit",
+      "Kontaktdaten sichtbar (registrierte Auftraggeber)",
     ],
     sortOrder: 3,
   },
   {
     slug: "premium",
-    name: "Premium",
-    priceCents: 19900,
-    monthlyCredits: 100,
+    name: "Premium Partner",
+    priceCents: 14900,       // 149 CHF/month
+    yearlyPriceCents: 143000, // 1430 CHF/year
+    monthlyCredits: -1,      // -1 = unlimited
     featured: false,
+    badge: "Premium Partner",
+    visibilityRank: 3,
+    contactVisible: true,
     features: [
-      "Alles aus Professional",
-      "100 Bewerbungen pro Monat",
-      "Unbegrenzte Portfolio-Bilder",
-      "Top-Platzierung in Stadt & Kategorie",
-      "Featured Anbieterprofil",
-      "Priority Support",
+      "Unbegrenzte Project Credits",
+      "Premium Partner Abzeichen",
+      "Erstplatzierung in Anbieterlisten",
+      "Zugang zu nicht-registrierten Leads",
+      "Kontaktdaten für alle sichtbar",
+      "Featured Platzierung",
     ],
     sortOrder: 4,
-  },
-  {
-    slug: "founding",
-    name: "Founding Anbieter",
-    priceCents: 1900,
-    monthlyCredits: 10,
-    featured: false,
-    features: [
-      "Startangebot — CHF 19/Monat",
-      "Professionelles Anbieterprofil",
-      "Telefon, E-Mail & Website sichtbar",
-      "10 Bewerbungen pro Monat",
-      "Bis zu 10 Portfolio-Bilder",
-      "Founding Anbieter Abzeichen",
-    ],
-    sortOrder: 5,
   },
 ];
 
@@ -111,10 +108,14 @@ export async function seedBilling(): Promise<void> {
           set: {
             name: p.name,
             priceCents: p.priceCents,
+            yearlyPriceCents: p.yearlyPriceCents,
             monthlyCredits: p.monthlyCredits,
             featured: p.featured,
             features: p.features,
             sortOrder: p.sortOrder,
+            badge: p.badge,
+            visibilityRank: p.visibilityRank,
+            contactVisible: p.contactVisible,
           },
         });
     }
