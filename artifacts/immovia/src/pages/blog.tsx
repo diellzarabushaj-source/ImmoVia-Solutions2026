@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { format } from "date-fns";
 import { Calendar, Tag, ArrowRight, Loader2, BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { isSanityConfigured, urlFor, fetchBlogList } from "@/lib/sanity";
+import { urlFor, fetchBlogList } from "@/lib/sanity";
 import type { BlogPostSummary, SanityImageRef } from "@/lib/sanity";
 import { useLanguage } from "@/lib/language-context";
 import { resolveCategoryLabel, type Lang } from "@/lib/categories";
@@ -107,20 +107,18 @@ export default function Blog() {
   const [error, setError] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-  const projectId = import.meta.env.VITE_SANITY_PROJECT_ID;
-
-  useEffect(() => {
-    if (!projectId) {
-      setLoading(false);
-      setError("config");
-      return;
-    }
+  const loadPosts = () => {
     setLoading(true);
     setError(null);
     fetchBlogList()
       .then((data: BlogPostSummary[]) => { setPosts(data ?? []); setLoading(false); })
       .catch(() => { setError("fetch"); setLoading(false); });
-  }, [projectId]);
+  };
+
+  useEffect(() => {
+    loadPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const categories = ["all", ...Array.from(new Set(posts.map((p) => p.category).filter(Boolean) as string[]))];
   const filtered = categoryFilter === "all" ? posts : posts.filter((p) => p.category === categoryFilter);
@@ -143,22 +141,17 @@ export default function Blog() {
       </section>
 
       <div className="container mx-auto px-4 py-12 max-w-6xl">
-        {/* Config error */}
-        {error === "config" && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center mb-8">
-            <p className="text-amber-800 font-semibold mb-1">{t.blog.configError}</p>
-            <p className="text-amber-700 text-sm">
-              Set <code className="bg-amber-100 px-1.5 py-0.5 rounded text-xs font-mono">VITE_SANITY_PROJECT_ID</code> and{" "}
-              <code className="bg-amber-100 px-1.5 py-0.5 rounded text-xs font-mono">VITE_SANITY_DATASET</code> to connect your Sanity project.
-            </p>
-          </div>
-        )}
-
         {/* Fetch error */}
         {error === "fetch" && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mb-8">
             <p className="text-red-700 font-semibold">{t.blog.loadError}</p>
             <p className="text-red-600 text-sm mt-1">{t.blog.loadErrorDesc}</p>
+            <button
+              onClick={loadPosts}
+              className="mt-4 px-4 py-2 text-sm font-semibold rounded-lg bg-red-100 hover:bg-red-200 text-red-800 transition-colors"
+            >
+              {language === "de" ? "Erneut versuchen" : language === "fr" ? "Réessayer" : language === "sq" ? "Provo përsëri" : "Try again"}
+            </button>
           </div>
         )}
 
