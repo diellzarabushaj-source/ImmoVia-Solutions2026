@@ -69,6 +69,7 @@ export async function getStripeSync(): Promise<StripeSync> {
     _stripeSync = new StripeSync({
       poolConfig: { connectionString: databaseUrl, max: 2 },
       stripeSecretKey: secretKey,
+      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
     });
   }
   return _stripeSync;
