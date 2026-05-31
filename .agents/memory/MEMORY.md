@@ -6,3 +6,4 @@
 - [OpenAPI field add — persistence not automatic](openapi-field-persistence.md) — new request-schema field validates but is dropped unless POST AND PATCH handlers map it into the DB payload.
 - [i18n locale-bypass traps](i18n-locale-bypass.md) — wiring JSX labels isn't enough; hardcoded "en" helper args, raw enum values, and API status labels still leak English.
 - [Provider middleware role mismatch](provider-middleware-role-mismatch.md) — requireProvider/requireContractor must mirror frontend isServiceProvider() (3 conditions) or legacy users 403 on all API calls.
+- [Stripe v20 API breaking changes](stripe-v20-breaking-changes.md) — current_period_start/end removed; use start_date + billing_cycle_anchor; also pass {CHECKOUT_SESSION_ID} in success URL to avoid race conditions.
