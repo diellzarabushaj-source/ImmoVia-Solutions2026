@@ -39,9 +39,17 @@ app.use(
         connectSrc: [
           "'self'",
           "https://api.openai.com",
+          // Clerk dev domains
           "https://*.clerk.accounts.dev",
           "https://clerk.*.lcl.dev",
           "wss://*.clerk.accounts.dev",
+          // Clerk production domains
+          "https://frontend-api.clerk.dev",
+          "https://api.clerk.dev",
+          "https://*.clerk.com",
+          "wss://frontend-api.clerk.dev",
+          // Sanity CDN for images in blog
+          "https://cdn.sanity.io",
         ],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],

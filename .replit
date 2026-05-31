@@ -47,3 +47,8 @@ VITE_SANITY_DATASET = "production"
 VITE_SANITY_API_VERSION = "2026-05-28"
 
 [userenv.development]
+VITE_APP_URL = "https://390f730c-9883-4048-8a7c-03f152e0bedd-00-m9zjw6x6ksiy.worf.replit.dev"
+
+[userenv.production]
+VITE_CLERK_PROXY_URL = "https://immovia365.ch/api/__clerk"
+VITE_APP_URL = "https://immovia365.ch"

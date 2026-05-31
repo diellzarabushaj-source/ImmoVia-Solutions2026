@@ -96,11 +96,8 @@ export default function BlogPost() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const projectId = import.meta.env.VITE_SANITY_PROJECT_ID;
-
   useEffect(() => {
     if (!slug) return;
-    if (!projectId) { setLoading(false); setError("config"); return; }
     setLoading(true);
     setError(null);
     fetchBlogPost(slug)
@@ -109,7 +106,7 @@ export default function BlogPost() {
         setLoading(false);
       })
       .catch(() => { setError("fetch"); setLoading(false); });
-  }, [slug, projectId]);
+  }, [slug]);
 
   const imageUrl = post?.mainImage
     ? urlFor(post.mainImage).width(1200).height(500).fit("crop").url()

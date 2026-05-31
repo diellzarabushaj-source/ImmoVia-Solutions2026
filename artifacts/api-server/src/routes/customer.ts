@@ -65,7 +65,7 @@ router.get("/customer/favorites", requireAuth, async (req, res): Promise<void> =
   const userId = req.userId!;
   const rows = await db.execute(sql`
     SELECT cf.id, cf.company_id AS "companyId", cf.created_at AS "createdAt",
-           c.name, c.city, c.service_types AS "serviceTypes", c.logo_url AS "logoUrl",
+           c.company_name AS "name", c.city, c.service_types AS "serviceTypes", c.logo_url AS "logoUrl",
            c.short_description AS "shortDescription"
     FROM customer_favorites cf
     LEFT JOIN companies c ON c.id = cf.company_id
