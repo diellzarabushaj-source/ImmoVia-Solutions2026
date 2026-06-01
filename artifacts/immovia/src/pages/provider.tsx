@@ -4,6 +4,7 @@ import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import NotificationBell from "@/components/NotificationBell";
 import { CATEGORIES, getCategoryLabel, resolveTagLabel, resolveCategoryLabel, type Lang } from "@/lib/categories";
+import { ProjectCard } from "@/components/project/ProjectCard";
 import {
   billingApi,
   offerCostFor,
@@ -1341,65 +1342,35 @@ export default function ProviderDashboard() {
 
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filtered.map(p => {
-                      const hasPhotos = p.photos && p.photos.length > 0;
-                      const coverUrl = hasPhotos ? `/api/storage${p.photos[0]}` : null;
-                      return (
-                        <div key={p.id} className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 flex flex-col overflow-hidden">
-                          <div className={`relative h-44 flex-shrink-0 ${!coverUrl ? "bg-gradient-to-br from-primary/10 via-sky-50 to-blue-100 flex items-center justify-center" : ""}`}>
-                            {coverUrl ? (
-                              <img src={coverUrl} alt={p.projectType} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="text-primary/30"><Images className="w-12 h-12" /></div>
-                            )}
-                            <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
-                              <Badge className="capitalize bg-white/90 text-primary border-primary/20 backdrop-blur-sm text-xs shadow-sm">
-                                {getCategoryLabel(CATEGORIES.find(c => c.key === p.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}
-                              </Badge>
-                              {(p as {subcategory?: string | null}).subcategory && (
-                                <Badge className="bg-primary/10 text-primary border-primary/20 backdrop-blur-sm text-xs shadow-sm">
-                                  {resolveTagLabel((p as {subcategory?: string | null}).subcategory!, language as Lang)}
-                                </Badge>
-                              )}
-                            </div>
-                            {hasPhotos && p.photos.length > 1 && (
-                              <button
-                                onClick={() => { setGalleryProject(p); setGalleryIdx(0); }}
-                                className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-1 rounded-full hover:bg-black/80 transition-colors"
-                              >
-                                <Images className="w-3 h-3" />
-                                {p.photos.length} {t.provider.photoCount}
-                              </button>
-                            )}
-                            <div className="absolute top-2.5 right-2.5">
-                              <Badge variant="secondary" className="text-xs capitalize">{p.size}</Badge>
-                            </div>
+                    {filtered.map(p => (
+                      <ProjectCard
+                        key={p.id}
+                        project={p}
+                        onClick={() => setDetailProject(p)}
+                        footer={
+                          <div className="flex gap-2 pt-3 border-t border-border/40">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1"
+                              onClick={(e) => { e.stopPropagation(); setDetailProject(p); }}
+                              data-testid={`button-view-project-${p.id}`}
+                            >
+                              {t.provider.viewDetails}
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              onClick={(e) => { e.stopPropagation(); openOfferModal(p); }}
+                              disabled={atLimit}
+                              data-testid={`button-send-offer-${p.id}`}
+                            >
+                              {t.provider.sendOffer}
+                            </Button>
                           </div>
-                          <div className="p-4 flex flex-col flex-1 gap-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <h3 className="font-semibold text-foreground text-base leading-tight truncate">{p.title?.trim() || resolveCategoryLabel(p.projectType, language as Lang)}</h3>
-                            </div>
-                            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{p.city}</span>
-                              {p.budget && <span className="flex items-center gap-1"><Wallet className="w-3 h-3" />{p.budget}</span>}
-                              {p.timeline && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{p.timeline}</span>}
-                              <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" />{format(new Date(p.createdAt), "MMM d")}</span>
-                            </div>
-                            {p.description && (
-                              <p className="text-sm text-foreground/70 line-clamp-2 leading-relaxed">{p.description}</p>
-                            )}
-                            <div className="flex gap-2 mt-auto pt-1">
-                              <Button size="sm" variant="outline" className="flex-1" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
-                                {t.provider.viewDetails}
-                              </Button>
-                              <Button size="sm" className="flex-1" onClick={() => openOfferModal(p)} disabled={atLimit} data-testid={`button-send-offer-${p.id}`}>
-                                {t.provider.sendOffer}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                        }
+                      />
+                    ))}
                   </div>
                 );
               })()}

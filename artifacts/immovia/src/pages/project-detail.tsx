@@ -24,8 +24,10 @@ import {
   ArrowRight,
   CheckCircle2,
   Image,
+  User,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { resolvePhotoSrc } from "@/lib/display";
 
 interface Project {
   id: number;
@@ -42,6 +44,9 @@ interface Project {
   photos: string[];
   status: string;
   createdAt: string;
+  posterName?: string | null;
+  posterType?: string | null;
+  posterAvatarUrl?: string | null;
 }
 
 const SERVICE_ICONS: Record<string, React.ElementType> = {
@@ -315,6 +320,37 @@ export default function ProjectDetail() {
 
           {/* Right — apply sidebar */}
           <div className="space-y-4">
+            {/* Poster identity — only populated by the API for authenticated users */}
+            {project.posterName && project.posterName.trim() && (
+              <motion.div
+                className="bg-white rounded-2xl border border-border shadow-sm p-5"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                <h2 className="text-sm font-bold text-foreground mb-3">{t.projectDetail.postedBy}</h2>
+                <div className="flex items-center gap-3">
+                  {project.posterAvatarUrl ? (
+                    <img
+                      src={resolvePhotoSrc(project.posterAvatarUrl)}
+                      alt={project.posterName}
+                      className="w-11 h-11 rounded-full object-cover border border-border flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold flex-shrink-0">
+                      {project.posterName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm text-foreground truncate">{project.posterName}</p>
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      {project.posterType === "company" ? <Building2 className="w-3 h-3" /> : <User className="w-3 h-3" />}
+                      {project.posterType === "company" ? (t.companies?.company ?? "Company") : (t.companies?.individual ?? "Individual")}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
             <motion.div
               className="bg-white rounded-2xl border border-border shadow-sm p-6 lg:sticky lg:top-24"
               initial={{ opacity: 0, y: 16 }}

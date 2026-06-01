@@ -42,7 +42,8 @@ import {
   LocateFixed,
   Loader2,
 } from "lucide-react";
-import { CATEGORIES, getCategoryByKey, getCategoryLabel, getTagLabel, resolveCategoryLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
+import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { ProjectCard } from "@/components/project/ProjectCard";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
   animate: { opacity: 1, y: 0 },
@@ -52,68 +53,6 @@ const fadeUp = {
 const stagger = {
   animate: { transition: { staggerChildren: 0.1 } },
 };
-
-function CompanyPreviewCard({ company, t, language }: { company: { id: number; companyName: string; profilePhoto?: string | null; workerType?: string | null; city: string; yearsExperience?: number | null; hourlyRate?: number | null; serviceTypes: string[]; description?: string | null }; t: ReturnType<typeof useLanguage>["t"]; language: string }) {
-  const isIndividual = company.workerType === "individual";
-  const colors = ["from-blue-600 to-blue-800", "from-indigo-600 to-indigo-800", "from-primary to-blue-700", "from-sky-600 to-sky-800", "from-slate-600 to-slate-800"];
-  const color = colors[company.companyName.charCodeAt(0) % colors.length];
-  const initials = company.companyName.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
-  return (
-    <Link href={`/companies/${company.id}`}>
-      <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group h-full">
-        <div className="p-4 flex gap-3 items-start border-b border-border/50">
-          {company.profilePhoto ? (
-            <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 border border-border">
-              <img src={`/api/storage${company.profilePhoto}`} alt={company.companyName} className="w-full h-full object-cover" />
-            </div>
-          ) : (
-            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
-              {initials}
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start gap-2 flex-wrap">
-              <h3 className="font-bold text-foreground text-sm leading-tight flex-1 min-w-0 truncate group-hover:text-primary transition-colors">
-                {company.companyName}
-              </h3>
-              <Badge variant={isIndividual ? "outline" : "secondary"} className={`flex-shrink-0 text-xs flex items-center gap-1 ${isIndividual ? "border-primary/40 text-primary" : ""}`}>
-                {isIndividual ? <><User className="h-3 w-3" />{t.companies?.individual ?? "Individual"}</> : <><Building2 className="h-3 w-3" />{t.companies?.company ?? "Company"}</>}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
-              <MapPin className="h-3 w-3" />
-              <span>{company.city}</span>
-            </div>
-          </div>
-        </div>
-        <div className="p-4 flex-1 flex flex-col gap-3">
-          {isIndividual && company.hourlyRate ? (
-            <div className="flex items-center gap-1.5 text-primary font-bold">
-              <Clock className="h-3.5 w-3.5" />
-              <span className="text-sm">{company.hourlyRate} €</span>
-              <span className="text-xs font-normal text-muted-foreground">/{t.companies?.hour ?? "hr"}</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
-              <FileText className="h-3.5 w-3.5" />
-              <span>{t.companies?.contractBased ?? "Contract-based"}</span>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-1">
-            {company.serviceTypes.slice(0, 3).map((svc: string) => (
-              <span key={svc} className="px-2 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium">
-                {resolveAnyLabel(svc, language as Lang)}
-              </span>
-            ))}
-            {company.serviceTypes.length > 3 && (
-              <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">+{company.serviceTypes.length - 3}</span>
-            )}
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 const SERVICE_ICONS: Record<string, React.ElementType> = {
   renovation:     Hammer,
@@ -130,111 +69,6 @@ const SERVICE_ICONS: Record<string, React.ElementType> = {
   exterior:       TreePine,
   electric:       Plug,
 };
-
-const SIZE_COLORS: Record<string, string> = {
-  small: "bg-slate-100 text-slate-600",
-  medium: "bg-blue-50 text-blue-700",
-  large: "bg-indigo-50 text-indigo-700",
-  premium: "bg-primary/10 text-primary",
-};
-
-function getPostedLabel(createdAt: string, listings: { today: string; yesterday: string; daysAgo: string }): string {
-  const diffMs = Date.now() - new Date(createdAt).getTime();
-  const diffDays = Math.floor(diffMs / 86400000);
-  if (diffDays === 0) return listings.today;
-  if (diffDays === 1) return listings.yesterday;
-  return `${diffDays} ${listings.daysAgo}`;
-}
-
-function resolvePhotoSrc(src: string): string {
-  return src.startsWith("http") ? src : src.startsWith("/api") ? src : `/api/storage${src}`;
-}
-
-function ProjectPreviewCard({ project, t, language }: {
-  project: { id: number; title?: string | null; projectType: string; description: string; city: string; budget?: string | null; size?: string | null; createdAt: string; photos?: string[] | null; posterName?: string; posterAvatarUrl?: string | null; posterType?: string | null };
-  t: ReturnType<typeof useLanguage>["t"];
-  language: string;
-}) {
-  const Icon = SERVICE_ICONS[project.projectType] ?? Briefcase;
-  const sz = project.size ?? "medium";
-  const sizeKey = ({ small: "sizeSm", medium: "sizeMd", large: "sizeLg", premium: "sizePremium" } as Record<string, keyof typeof t.listings>)[sz] ?? "sizeMd";
-  const sizeLabel = t.listings[sizeKey] as string;
-  const sizeColor = SIZE_COLORS[sz] ?? SIZE_COLORS.medium;
-  const typeLabel = resolveCategoryLabel(project.projectType, language as Lang);
-  const cardTitle = project.title ?? typeLabel;
-  const postedLabel = getPostedLabel(project.createdAt, t.listings);
-  const firstPhoto = (project.photos ?? []).find(Boolean);
-  const coverSrc = firstPhoto ? resolvePhotoSrc(firstPhoto) : (getCategoryByKey(project.projectType)?.photo ?? CATEGORIES[0].photo);
-  const posterName = project.posterName?.trim();
-  const isCompanyPoster = project.posterType === "company";
-  const PosterIcon = isCompanyPoster ? Building2 : User;
-  const posterAvatar = project.posterAvatarUrl ? resolvePhotoSrc(project.posterAvatarUrl) : null;
-  const posterInitial = posterName ? posterName.charAt(0).toUpperCase() : "";
-
-  return (
-    <Link href={`/projects/${project.id}`}>
-    <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden h-full cursor-pointer group">
-      {/* Cover photo */}
-      <div className="relative h-40 overflow-hidden bg-muted flex-shrink-0">
-        <img
-          src={coverSrc}
-          alt={cardTitle}
-          loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-        <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm ${sizeColor}`}>{sizeLabel}</span>
-      </div>
-      {/* Header */}
-      <div className="px-5 pt-5 pb-4">
-        <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 mb-3">{cardTitle}</h3>
-        {/* Category pill */}
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-          <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-          {typeLabel}
-        </span>
-        {/* City */}
-        <div className="flex items-center gap-1 text-muted-foreground text-xs mt-2">
-          <MapPin className="h-3 w-3 flex-shrink-0" />
-          <span>{project.city}</span>
-        </div>
-      </div>
-      {/* Body */}
-      <div className="px-5 pb-4 flex-1 flex flex-col gap-3 border-t border-border/40 pt-3">
-        <p className="text-sm text-foreground/70 leading-relaxed line-clamp-2">{project.description}</p>
-        <div className="flex items-center justify-between mt-auto pt-1">
-          {project.budget ? (
-            <div className="flex items-center gap-1.5 text-primary font-bold text-sm">
-              <FileText className="h-3.5 w-3.5" />
-              <span>{project.budget}</span>
-            </div>
-          ) : (
-            <span className="text-xs text-muted-foreground">{t.companies?.contractBased ?? "Contract-based"}</span>
-          )}
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {postedLabel}
-          </span>
-        </div>
-        {posterName && (
-          <div className="flex items-center gap-2 pt-3 border-t border-border/40">
-            {posterAvatar ? (
-              <img src={posterAvatar} alt={posterName} loading="lazy" className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-border" />
-            ) : (
-              <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 text-[11px] font-bold">{posterInitial}</div>
-            )}
-            <span className="text-xs font-medium text-foreground/80 truncate">{posterName}</span>
-            <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground flex-shrink-0">
-              <PosterIcon className="w-3 h-3" />
-              {isCompanyPoster ? (t.companies?.company ?? "Company") : (t.companies?.individual ?? "Individual")}
-            </span>
-          </div>
-        )}
-      </div>
-    </div>
-    </Link>
-  );
-}
 
 export default function Home() {
   const { t, language } = useLanguage();
@@ -962,7 +796,7 @@ export default function Home() {
               >
                 {previewProjects.map((project, idx) => (
                   <motion.div key={project.id} variants={fadeUp}>
-                    <ProjectPreviewCard project={project} t={t} language={language} />
+                    <ProjectCard project={project} />
                   </motion.div>
                 ))}
               </motion.div>
@@ -973,7 +807,7 @@ export default function Home() {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
                     {previewProjects.slice(0, 3).map((project, idx) => (
                       <div key={`ghost-${idx}`}>
-                        <ProjectPreviewCard project={project} t={t} language={language} />
+                        <ProjectCard project={project} />
                       </div>
                     ))}
                   </div>

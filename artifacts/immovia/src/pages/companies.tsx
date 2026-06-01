@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { CATEGORIES, getCategoryLabel, getTagLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
+import { ProviderCard } from "@/components/provider/ProviderCard";
 
 const SERVICE_OPTIONS = CATEGORIES.map(c => c.key);
 
@@ -38,44 +39,6 @@ const SORT_OPTIONS = [
   { value: "price_desc", labelKey: "sortPriceDesc" },
   { value: "experience", labelKey: "sortExperience" },
 ];
-
-function CompanyAvatar({ name, profilePhoto, workerType, size = "md" }: { name: string; profilePhoto?: string | null; workerType?: string; size?: "sm" | "md" | "lg" }) {
-  const [imgError, setImgError] = useState(false);
-  const colors = [
-    "from-blue-600 to-blue-800",
-    "from-indigo-600 to-indigo-800",
-    "from-primary to-blue-700",
-    "from-sky-600 to-sky-800",
-    "from-slate-600 to-slate-800",
-  ];
-  const color = colors[name.charCodeAt(0) % colors.length];
-  const sizeClass = size === "lg" ? "w-16 h-16" : size === "sm" ? "w-8 h-8" : "w-12 h-12";
-  const iconSize = size === "lg" ? "h-7 w-7" : size === "sm" ? "h-3.5 w-3.5" : "h-5 w-5";
-  const isIndividual = workerType === "individual";
-
-  if (profilePhoto && !imgError) {
-    const src = profilePhoto.startsWith("/api") ? profilePhoto : `/api/storage${profilePhoto}`;
-    return (
-      <div className={`${sizeClass} rounded-xl overflow-hidden flex-shrink-0 border border-border`}>
-        <img
-          src={src}
-          alt={name}
-          className="w-full h-full object-cover"
-          onError={() => setImgError(true)}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className={`${sizeClass} rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white flex-shrink-0`}>
-      {isIndividual
-        ? <User className={iconSize} strokeWidth={1.8} />
-        : <Building2 className={iconSize} strokeWidth={1.8} />
-      }
-    </div>
-  );
-}
 
 export default function Companies() {
   const { t, language } = useLanguage();
@@ -528,138 +491,61 @@ export default function Companies() {
         <div className="relative">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           <AnimatePresence>
-            {(user ? filtered : filtered.slice(0, 8)).map((company, idx) => {
-              const isIndividual = company.workerType === "individual";
-              return (
-                <motion.div
-                  key={company.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: idx * 0.04, duration: 0.3 }}
-                  className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group"
+            {(user ? filtered : filtered.slice(0, 8)).map((company, idx) => (
+              <motion.div
+                key={company.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ delay: idx * 0.04, duration: 0.3 }}
+                className="h-full"
+              >
+                <ProviderCard
+                  provider={company}
                   onClick={() => navigate(`/companies/${company.id}`)}
-                >
-                  {/* Card header */}
-                  <div className="p-5 flex gap-3 items-start border-b border-border/50">
-                    <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} workerType={company.workerType} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-2 flex-wrap">
-                        <h3 className="font-bold text-foreground text-base leading-tight flex-1 min-w-0 truncate group-hover:text-primary transition-colors">
-                          {company.companyName}
-                        </h3>
-                        <Badge
-                          variant={isIndividual ? "outline" : "secondary"}
-                          className={`flex-shrink-0 text-xs flex items-center gap-1 ${isIndividual ? "border-primary/40 text-primary" : ""}`}
-                        >
-                          {isIndividual
-                            ? <><User className="h-3 w-3" />{t.companies.individual ?? "Individual"}</>
-                            : <><Building2 className="h-3 w-3" />{t.companies.company ?? "Company"}</>
-                          }
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
-                        <MapPin className="h-3 w-3" />
-                        <span>{company.city}</span>
-                        {company.yearsExperience && (
-                          <>
-                            <span className="mx-1">·</span>
-                            <CalendarDays className="h-3 w-3" />
-                            <span>{company.yearsExperience} {t.companies.years} exp</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Body */}
-                  <div className="p-5 flex-1 flex flex-col gap-4">
-                    {/* Price */}
-                    <div>
-                      {isIndividual && company.hourlyRate ? (
-                        <div className="flex items-center gap-1.5 text-primary font-bold text-lg">
-                          <Clock className="h-4 w-4" />
-                          <span>{company.hourlyRate} €</span>
-                          <span className="text-sm font-normal text-muted-foreground">/{t.companies.hour ?? "hr"}</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
-                          <FileText className="h-4 w-4" />
-                          <span>{t.companies.contractBased ?? "Contract-based"}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Description */}
-                    {company.description && (
-                      <p className="text-sm text-foreground/75 leading-relaxed line-clamp-2">
-                        {company.description}
-                      </p>
-                    )}
-
-                    {/* Service badges */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {company.serviceTypes.filter(s => s !== "other").slice(0, 3).map(svc => (
-                        <button
-                          key={svc}
-                          onClick={e => { e.stopPropagation(); setActiveServices(prev => prev.includes(svc) ? prev.filter(s => s !== svc) : [...prev, svc]); }}
-                          className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium hover:bg-primary/15 transition-colors"
-                        >
-                          {resolveAnyLabel(svc, language as Lang)}
-                        </button>
-                      ))}
-                      {company.serviceTypes.filter(s => s !== "other").length > 3 && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">
-                          +{company.serviceTypes.filter(s => s !== "other").length - 3}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* CTA footer */}
-                  <div className="px-5 pb-5 flex gap-2 items-center">
-                    {user ? (
-                      <>
-                        <button
-                          onClick={e => { e.stopPropagation(); window.location.href = `mailto:${company.email}`; }}
-                          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
-                        >
-                          <Mail className="h-3.5 w-3.5" />
-                          {t.companies.contact ?? "Contact"}
-                        </button>
-                        {company.phone && (
+                  showDescription
+                  footer={
+                    <div className="flex gap-2 items-center pt-3 border-t border-border/40">
+                      {user ? (
+                        <>
                           <button
-                            onClick={e => { e.stopPropagation(); window.location.href = `tel:${company.phone}`; }}
+                            onClick={e => { e.stopPropagation(); window.location.href = `mailto:${company.email}`; }}
                             className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
                           >
-                            <Phone className="h-3.5 w-3.5" />
-                            {t.companies.call ?? "Call"}
+                            <Mail className="h-3.5 w-3.5" />
+                            {t.companies.contact ?? "Contact"}
                           </button>
-                        )}
+                          {company.phone && (
+                            <button
+                              onClick={e => { e.stopPropagation(); window.location.href = `tel:${company.phone}`; }}
+                              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
+                            >
+                              <Phone className="h-3.5 w-3.5" />
+                              {t.companies.call ?? "Call"}
+                            </button>
+                          )}
+                          <button
+                            onClick={e => { e.stopPropagation(); navigate(`/companies/${company.id}?msg=1`); }}
+                            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
+                          >
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            {t.publicProfile.sendMessage}
+                          </button>
+                        </>
+                      ) : (
                         <button
-                          onClick={e => { e.stopPropagation(); navigate(`/companies/${company.id}?msg=1`); }}
+                          onClick={e => { e.stopPropagation(); navigate("/sign-in"); }}
                           className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
                         >
-                          <MessageSquare className="h-3.5 w-3.5" />
-                          {t.publicProfile.sendMessage}
+                          <Mail className="h-3.5 w-3.5" />
+                          {t.publicProfile.contactLoginCta}
                         </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={e => { e.stopPropagation(); navigate("/sign-in"); }}
-                        className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-primary/8"
-                      >
-                        <Mail className="h-3.5 w-3.5" />
-                        {t.publicProfile.contactLoginCta}
-                      </button>
-                    )}
-                    <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                      Shiko Profilin <ArrowRight className="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })}
+                      )}
+                    </div>
+                  }
+                />
+              </motion.div>
+            ))}
           </AnimatePresence>
           </div>
 
@@ -669,33 +555,9 @@ export default function Companies() {
               <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-background z-10 pointer-events-none" />
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
                 {filtered.slice(8, 11).map((company) => {
-                  const isIndividual = company.workerType === "individual";
                   return (
-                    <div key={`ghost-${company.id}`} className="bg-white rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
-                      <div className="p-5 flex gap-3 items-start border-b border-border/50">
-                        <CompanyAvatar name={company.companyName} profilePhoto={company.profilePhoto} workerType={company.workerType} />
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-foreground text-base truncate">{company.companyName}</h3>
-                          <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
-                            <MapPin className="h-3 w-3" /><span>{company.city}</span>
-                          </div>
-                        </div>
-                        <Badge variant={isIndividual ? "outline" : "secondary"} className="text-xs flex-shrink-0">
-                          {isIndividual ? <User className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
-                        </Badge>
-                      </div>
-                      <div className="p-5 flex-1 flex flex-col gap-3">
-                        {company.description && (
-                          <p className="text-sm text-foreground/75 leading-relaxed line-clamp-2">{company.description}</p>
-                        )}
-                        <div className="flex flex-wrap gap-1.5">
-                          {company.serviceTypes.filter(s => s !== "other").slice(0, 3).map(svc => (
-                            <span key={svc} className="px-2.5 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium">
-                              {resolveAnyLabel(svc, language as Lang)}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                    <div key={`ghost-${company.id}`}>
+                      <ProviderCard provider={company} showDescription />
                     </div>
                   );
                 })}

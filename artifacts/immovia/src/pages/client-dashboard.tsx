@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { ProviderCard } from "@/components/provider/ProviderCard";
 
 // ── Category icon map ─────────────────────────────────────────────────────────
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -714,35 +715,46 @@ export default function ClientDashboard() {
                 ) : (
                   <div className="grid sm:grid-cols-2 gap-4">
                     {favorites.map(f => (
-                      <Card key={f.id} className="p-4">
-                        <div className="flex items-start gap-3">
-                          {f.logoUrl ? (
-                            <img src={`/api/storage${f.logoUrl}`} alt={f.name ?? ""} className="w-12 h-12 rounded-lg object-cover shrink-0" />
-                          ) : (
-                            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                              <Building2 className="w-6 h-6 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm truncate">{f.name ?? "—"}</p>
-                            {f.city && <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{f.city}</p>}
-                            {f.shortDescription && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{f.shortDescription}</p>}
-                          </div>
-                          <button onClick={() => removeFavorite(f.companyId)} className="text-muted-foreground hover:text-destructive shrink-0">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="flex gap-2 mt-3">
-                          <Link href={`/companies/${f.companyId}`} className="flex-1">
-                            <Button size="sm" variant="outline" className="w-full">
+                      <ProviderCard
+                        key={f.id}
+                        provider={{
+                          id: f.companyId,
+                          companyName: f.name,
+                          city: f.city,
+                          serviceTypes: f.serviceTypes,
+                          profilePhoto: f.logoUrl,
+                          description: f.shortDescription,
+                        }}
+                        onClick={() => setLocation(`/companies/${f.companyId}`)}
+                        showDescription
+                        footer={
+                          <div className="flex gap-2 pt-3 border-t border-border/40">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1"
+                              onClick={(e) => { e.stopPropagation(); setLocation(`/companies/${f.companyId}`); }}
+                            >
                               <Eye className="w-3.5 h-3.5 mr-1.5" />{l.viewProfile}
                             </Button>
-                          </Link>
-                          <Button size="sm" variant="outline" onClick={() => setActiveSection("nachrichten")}>
-                            <MessageSquare className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </Card>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => { e.stopPropagation(); setActiveSection("nachrichten"); }}
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-muted-foreground hover:text-destructive"
+                              onClick={(e) => { e.stopPropagation(); removeFavorite(f.companyId); }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        }
+                      />
                     ))}
                   </div>
                 )}

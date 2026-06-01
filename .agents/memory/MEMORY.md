@@ -1,6 +1,7 @@
 - [LanguageProvider must not return null](language-provider-null.md) — returning null before isMounted causes HMR crashes; always render children with default 'en'.
 - [Role terminology](role-terminology.md) — exactly two account_types: Project Poster & Service Provider (user picks ONE at signup, never both); subtype individual/company is a separate axis.
 - [Clerk auth integration pattern](clerk-auth-pattern.md) — JIT provisioning, role selection flow, Tailwind v4 layer ordering, and key pitfalls.
+- [Unified card components & poster gating](unified-card-components.md) — one shared ProjectCard/ProviderCard fed by API; poster identity gated server-side on BOTH list + detail.
 - [pnpm filtered add prunes deps](pnpm-filtered-add-prunes-deps.md) — a filtered `pnpm add` can drop a sibling's hoisted dep; run full `pnpm install` to recover, not a dep fix.
 - [Contact gating dual-auth](contact-gating-dual-auth.md) — PII gated at UI + API; isAuthenticated must check BOTH Clerk getAuth and admin session.
 - [Published status differs by table](published-status-divergence.md) — projects public = status "open"; companies public = status "approved". No shared constant.
