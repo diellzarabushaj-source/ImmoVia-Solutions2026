@@ -1,0 +1,101 @@
+Please add a NEW section directly before the currently selected “How ImmoVia365 Works” section.
+
+Do not edit or redesign the selected section. Only insert this new section above it.
+
+New section title:
+Trusted by local professionals
+
+Subtitle:
+Example professionals and companies ready to receive renovation, repair, and home service projects through ImmoVia365.
+
+Create a horizontal moving carousel with 10 demo company cards.
+
+Very important:
+Each company must have its own generated logo.
+Do not use real company logos.
+Do not use external logo images.
+Generate each logo directly in the code as a simple modern SVG or styled initials icon.
+
+Each logo should be unique and professional, like a real brand placeholder:
+- Rounded square or circle background
+- Initials of the company
+- Small related icon or geometric symbol
+- Clean Swiss-style design
+- Matching ImmoVia365 colors: dark navy, blue, white, light gray
+
+Company cards:
+
+1. Zurich Renovation GmbH
+Category: Renovation
+City: Zürich
+Rating: 4.9 ★
+Logo: Generate a ZR logo with a small hammer/renovation symbol.
+
+2. SwissHome Services
+Category: Home Services
+City: Bern
+Rating: 4.8 ★
+Logo: Generate an SH logo with a simple house roof symbol.
+
+3. Alpine Maler AG
+Category: Painting
+City: Luzern
+Rating: 4.9 ★
+Logo: Generate an AM logo with a paint brush or paint drop symbol.
+
+4. Basel Bau Partner
+Category: Construction
+City: Basel
+Rating: 4.7 ★
+Logo: Generate a BB logo with a building/block construction symbol.
+
+5. Geneva Interior Studio
+Category: Interior Design
+City: Geneva
+Rating: 4.8 ★
+Logo: Generate a GI logo with a minimal interior/design grid symbol.
+
+6. Bern Elektro Service
+Category: Electrical
+City: Bern
+Rating: 4.9 ★
+Logo: Generate a BE logo with a lightning bolt symbol.
+
+7. Luzern Sanitär Team
+Category: Plumbing
+City: Luzern
+Rating: 4.8 ★
+Logo: Generate an LS logo with a water drop or pipe symbol.
+
+8. Ticino Gartenbau
+Category: Garden & Outdoor
+City: Lugano
+Rating: 4.7 ★
+Logo: Generate a TG logo with a leaf/garden symbol.
+
+9. Lausanne Cleaning Experts
+Category: Cleaning
+City: Lausanne
+Rating: 4.8 ★
+Logo: Generate an LC logo with a sparkle/cleaning symbol.
+
+10. St. Gallen Smart Home
+Category: Smart Home
+City: St. Gallen
+Rating: 4.9 ★
+Logo: Generate an SG logo with a wifi/home symbol.
+
+Card content should include:
+- Generated logo
+- Company name
+- Category
+- City
+- Rating
+- Verified badge
+
+Design requirements:
+- Premium, clean, trustworthy marketplace style
+- Same spacing, typography, and color style as the current homepage
+- Smooth horizontal moving carousel
+- Fully responsive on desktop and mobile
+- Do not break any existing homepage sections

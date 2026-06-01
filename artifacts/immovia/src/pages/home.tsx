@@ -974,6 +974,332 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── TRUSTED BY PROFESSIONALS ── */}
+      <section className="py-14 md:py-20 bg-slate-50 border-y border-border overflow-hidden">
+        <style>{`
+          @keyframes immovia-ticker {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+          }
+          .immovia-ticker-track {
+            animation: immovia-ticker 42s linear infinite;
+            will-change: transform;
+          }
+          .immovia-ticker-track:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+
+        {/* Heading */}
+        <div className="container mx-auto px-4 mb-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">
+              { language === "de" ? "Geprüfte Fachleute" : language === "sq" ? "Profesionistë të verifikuar" : language === "fr" ? "Professionnels certifiés" : "Verified Professionals" }
+            </p>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+              { language === "de" ? "Vertrauen von lokalen Fachleuten" : language === "sq" ? "Të besuar nga profesionistët lokalë" : language === "fr" ? "La confiance des professionnels locaux" : "Trusted by local professionals" }
+            </h2>
+            <p className="text-muted-foreground text-sm max-w-xl mx-auto">
+              { language === "de" ? "Beispielunternehmen und Fachleute, die über ImmoVia365 Renovierungs- und Heimwerkerprojekte annehmen." : language === "sq" ? "Kompani dhe profesionistë shembullorë të gatshëm të marrin projekte nëpërmjet ImmoVia365." : language === "fr" ? "Des entreprises et professionnels exemplaires prêts à recevoir des projets via ImmoVia365." : "Example professionals and companies ready to receive renovation, repair, and home service projects through ImmoVia365." }
+            </p>
+            <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
+          </motion.div>
+        </div>
+
+        {/* Carousel — gradient fade edges */}
+        <div className="relative">
+          <div className="absolute left-0 top-0 bottom-0 w-16 md:w-28 z-10 pointer-events-none bg-gradient-to-r from-slate-50 to-transparent" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 md:w-28 z-10 pointer-events-none bg-gradient-to-l from-slate-50 to-transparent" />
+
+          <div className="overflow-hidden">
+            <div className="immovia-ticker-track flex gap-5 w-max">
+              {/* Cards duplicated for seamless loop */}
+              {[
+                {
+                  initials: "ZR",
+                  name: "Zurich Renovation GmbH",
+                  category: language === "de" ? "Renovierung" : language === "sq" ? "Rinovim" : language === "fr" ? "Rénovation" : "Renovation",
+                  city: "Zürich",
+                  rating: 4.9,
+                  color: "#0f172a",
+                  accent: "#3b82f6",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#0f172a"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">ZR</text>
+                      <path d="M15 28 L18 23 L22 27 L26 22 L29 28" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      <circle cx="31" cy="25" r="1.5" fill="#3b82f6"/>
+                    </svg>
+                  ),
+                },
+                {
+                  initials: "SH",
+                  name: "SwissHome Services",
+                  category: language === "de" ? "Hausdienstleistungen" : language === "sq" ? "Shërbime Shtëpie" : language === "fr" ? "Services Maison" : "Home Services",
+                  city: "Bern",
+                  rating: 4.8,
+                  color: "#1e3a5f",
+                  accent: "#60a5fa",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#1e3a5f"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">SH</text>
+                      <path d="M16 29 L16 24 L22 20 L28 24 L28 29 Z" stroke="#60a5fa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      <path d="M19 29 L19 26 L25 26 L25 29" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                    </svg>
+                  ),
+                },
+                {
+                  initials: "AM",
+                  name: "Alpine Maler AG",
+                  category: language === "de" ? "Malerarbeiten" : language === "sq" ? "Pikturë" : language === "fr" ? "Peinture" : "Painting",
+                  city: "Luzern",
+                  rating: 4.9,
+                  color: "#0c2340",
+                  accent: "#93c5fd",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#0c2340"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">AM</text>
+                      <path d="M19 29 L19 24 L22 21 L25 24" stroke="#93c5fd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      <circle cx="22" cy="29" r="2.2" fill="#93c5fd"/>
+                      <path d="M22 26.8 L22 27.5" stroke="#0c2340" strokeWidth="1"/>
+                    </svg>
+                  ),
+                },
+                {
+                  initials: "BB",
+                  name: "Basel Bau Partner",
+                  category: language === "de" ? "Bauwesen" : language === "sq" ? "Ndërtim" : language === "fr" ? "Construction" : "Construction",
+                  city: "Basel",
+                  rating: 4.7,
+                  color: "#162032",
+                  accent: "#38bdf8",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#162032"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">BB</text>
+                      <rect x="15" y="25" width="6" height="5" rx="1" stroke="#38bdf8" strokeWidth="1.6" fill="none"/>
+                      <rect x="23" y="25" width="6" height="5" rx="1" stroke="#38bdf8" strokeWidth="1.6" fill="none"/>
+                      <rect x="19" y="21" width="6" height="5" rx="1" stroke="#38bdf8" strokeWidth="1.6" fill="none"/>
+                    </svg>
+                  ),
+                },
+                {
+                  initials: "GI",
+                  name: "Geneva Interior Studio",
+                  category: language === "de" ? "Innendesign" : language === "sq" ? "Dizajn Interior" : language === "fr" ? "Design d'Intérieur" : "Interior Design",
+                  city: "Geneva",
+                  rating: 4.8,
+                  color: "#1a1a2e",
+                  accent: "#818cf8",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#1a1a2e"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">GI</text>
+                      <line x1="15" y1="23" x2="29" y2="23" stroke="#818cf8" strokeWidth="1.5"/>
+                      <line x1="15" y1="26.5" x2="25" y2="26.5" stroke="#818cf8" strokeWidth="1.5"/>
+                      <line x1="15" y1="30" x2="27" y2="30" stroke="#818cf8" strokeWidth="1.5"/>
+                      <circle cx="29" cy="27" r="2" fill="#818cf8"/>
+                    </svg>
+                  ),
+                },
+                {
+                  initials: "BE",
+                  name: "Bern Elektro Service",
+                  category: language === "de" ? "Elektroinstallation" : language === "sq" ? "Elektricitet" : language === "fr" ? "Électricité" : "Electrical",
+                  city: "Bern",
+                  rating: 4.9,
+                  color: "#0f172a",
+                  accent: "#facc15",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#0f172a"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">BE</text>
+                      <path d="M23.5 20.5 L20 25.5 L23 25.5 L20.5 30.5" stroke="#facc15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    </svg>
+                  ),
+                },
+                {
+                  initials: "LS",
+                  name: "Luzern Sanitär Team",
+                  category: language === "de" ? "Sanitär" : language === "sq" ? "Hidraulikë" : language === "fr" ? "Plomberie" : "Plumbing",
+                  city: "Luzern",
+                  rating: 4.8,
+                  color: "#0e3460",
+                  accent: "#7dd3fc",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#0e3460"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">LS</text>
+                      <path d="M22 21 C19 24 17 26 17 28 C17 30.2 19.2 32 22 32 C24.8 32 27 30.2 27 28 C27 26 25 24 22 21Z" stroke="#7dd3fc" strokeWidth="1.6" fill="none" strokeLinejoin="round"/>
+                    </svg>
+                  ),
+                },
+                {
+                  initials: "TG",
+                  name: "Ticino Gartenbau",
+                  category: language === "de" ? "Garten & Outdoor" : language === "sq" ? "Kopsht & Natyrë" : language === "fr" ? "Jardin & Extérieur" : "Garden & Outdoor",
+                  city: "Lugano",
+                  rating: 4.7,
+                  color: "#14291a",
+                  accent: "#86efac",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#14291a"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">TG</text>
+                      <path d="M22 30 L22 25" stroke="#86efac" strokeWidth="1.8" strokeLinecap="round"/>
+                      <path d="M22 25 C22 25 19 22 17 20 C19 20 21 21 22 22 C22 21 21.5 19 22 18 C22.5 19 22 21 22 22 C23 21 25 20 27 20 C25 22 22 25 22 25Z" fill="#86efac"/>
+                    </svg>
+                  ),
+                },
+                {
+                  initials: "LC",
+                  name: "Lausanne Cleaning Experts",
+                  category: language === "de" ? "Reinigung" : language === "sq" ? "Pastrim" : language === "fr" ? "Nettoyage" : "Cleaning",
+                  city: "Lausanne",
+                  rating: 4.8,
+                  color: "#0c1e3c",
+                  accent: "#a5f3fc",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#0c1e3c"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">LC</text>
+                      <path d="M22 22 L22 24" stroke="#a5f3fc" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path d="M18.5 23.5 L20 24.8" stroke="#a5f3fc" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path d="M25.5 23.5 L24 24.8" stroke="#a5f3fc" strokeWidth="1.5" strokeLinecap="round"/>
+                      <circle cx="22" cy="27.5" r="2.5" stroke="#a5f3fc" strokeWidth="1.5" fill="none"/>
+                      <circle cx="17.5" cy="28.5" r="1.5" stroke="#a5f3fc" strokeWidth="1.2" fill="none"/>
+                      <circle cx="26.5" cy="28.5" r="1.5" stroke="#a5f3fc" strokeWidth="1.2" fill="none"/>
+                    </svg>
+                  ),
+                },
+                {
+                  initials: "SG",
+                  name: "St. Gallen Smart Home",
+                  category: language === "de" ? "Smart Home" : language === "sq" ? "Shtëpi Inteligjente" : language === "fr" ? "Maison Connectée" : "Smart Home",
+                  city: "St. Gallen",
+                  rating: 4.9,
+                  color: "#0f1f3d",
+                  accent: "#6ee7b7",
+                  logo: (
+                    <svg viewBox="0 0 44 44" fill="none" className="w-full h-full">
+                      <rect width="44" height="44" rx="10" fill="#0f1f3d"/>
+                      <text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">SG</text>
+                      <path d="M15 24 Q22 20 29 24" stroke="#6ee7b7" strokeWidth="1.6" strokeLinecap="round" fill="none"/>
+                      <path d="M17.5 26.5 Q22 23.5 26.5 26.5" stroke="#6ee7b7" strokeWidth="1.6" strokeLinecap="round" fill="none"/>
+                      <circle cx="22" cy="29" r="1.8" fill="#6ee7b7"/>
+                    </svg>
+                  ),
+                },
+              ].concat([
+                {
+                  initials: "ZR", name: "Zurich Renovation GmbH",
+                  category: language === "de" ? "Renovierung" : language === "sq" ? "Rinovim" : language === "fr" ? "Rénovation" : "Renovation",
+                  city: "Zürich", rating: 4.9, color: "#0f172a", accent: "#3b82f6",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#0f172a"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">ZR</text><path d="M15 28 L18 23 L22 27 L26 22 L29 28" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="31" cy="25" r="1.5" fill="#3b82f6"/></svg>,
+                },
+                {
+                  initials: "SH", name: "SwissHome Services",
+                  category: language === "de" ? "Hausdienstleistungen" : language === "sq" ? "Shërbime Shtëpie" : language === "fr" ? "Services Maison" : "Home Services",
+                  city: "Bern", rating: 4.8, color: "#1e3a5f", accent: "#60a5fa",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#1e3a5f"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">SH</text><path d="M16 29 L16 24 L22 20 L28 24 L28 29 Z" stroke="#60a5fa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/><path d="M19 29 L19 26 L25 26 L25 29" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round" fill="none"/></svg>,
+                },
+                {
+                  initials: "AM", name: "Alpine Maler AG",
+                  category: language === "de" ? "Malerarbeiten" : language === "sq" ? "Pikturë" : language === "fr" ? "Peinture" : "Painting",
+                  city: "Luzern", rating: 4.9, color: "#0c2340", accent: "#93c5fd",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#0c2340"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">AM</text><path d="M19 29 L19 24 L22 21 L25 24" stroke="#93c5fd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="22" cy="29" r="2.2" fill="#93c5fd"/></svg>,
+                },
+                {
+                  initials: "BB", name: "Basel Bau Partner",
+                  category: language === "de" ? "Bauwesen" : language === "sq" ? "Ndërtim" : language === "fr" ? "Construction" : "Construction",
+                  city: "Basel", rating: 4.7, color: "#162032", accent: "#38bdf8",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#162032"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">BB</text><rect x="15" y="25" width="6" height="5" rx="1" stroke="#38bdf8" strokeWidth="1.6" fill="none"/><rect x="23" y="25" width="6" height="5" rx="1" stroke="#38bdf8" strokeWidth="1.6" fill="none"/><rect x="19" y="21" width="6" height="5" rx="1" stroke="#38bdf8" strokeWidth="1.6" fill="none"/></svg>,
+                },
+                {
+                  initials: "GI", name: "Geneva Interior Studio",
+                  category: language === "de" ? "Innendesign" : language === "sq" ? "Dizajn Interior" : language === "fr" ? "Design d'Intérieur" : "Interior Design",
+                  city: "Geneva", rating: 4.8, color: "#1a1a2e", accent: "#818cf8",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#1a1a2e"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">GI</text><line x1="15" y1="23" x2="29" y2="23" stroke="#818cf8" strokeWidth="1.5"/><line x1="15" y1="26.5" x2="25" y2="26.5" stroke="#818cf8" strokeWidth="1.5"/><line x1="15" y1="30" x2="27" y2="30" stroke="#818cf8" strokeWidth="1.5"/><circle cx="29" cy="27" r="2" fill="#818cf8"/></svg>,
+                },
+                {
+                  initials: "BE", name: "Bern Elektro Service",
+                  category: language === "de" ? "Elektroinstallation" : language === "sq" ? "Elektricitet" : language === "fr" ? "Électricité" : "Electrical",
+                  city: "Bern", rating: 4.9, color: "#0f172a", accent: "#facc15",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#0f172a"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">BE</text><path d="M23.5 20.5 L20 25.5 L23 25.5 L20.5 30.5" stroke="#facc15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>,
+                },
+                {
+                  initials: "LS", name: "Luzern Sanitär Team",
+                  category: language === "de" ? "Sanitär" : language === "sq" ? "Hidraulikë" : language === "fr" ? "Plomberie" : "Plumbing",
+                  city: "Luzern", rating: 4.8, color: "#0e3460", accent: "#7dd3fc",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#0e3460"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">LS</text><path d="M22 21 C19 24 17 26 17 28 C17 30.2 19.2 32 22 32 C24.8 32 27 30.2 27 28 C27 26 25 24 22 21Z" stroke="#7dd3fc" strokeWidth="1.6" fill="none" strokeLinejoin="round"/></svg>,
+                },
+                {
+                  initials: "TG", name: "Ticino Gartenbau",
+                  category: language === "de" ? "Garten & Outdoor" : language === "sq" ? "Kopsht & Natyrë" : language === "fr" ? "Jardin & Extérieur" : "Garden & Outdoor",
+                  city: "Lugano", rating: 4.7, color: "#14291a", accent: "#86efac",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#14291a"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">TG</text><path d="M22 30 L22 25" stroke="#86efac" strokeWidth="1.8" strokeLinecap="round"/><path d="M22 25 C22 25 19 22 17 20 C19 20 21 21 22 22 C22 21 21.5 19 22 18 C22.5 19 22 21 22 22 C23 21 25 20 27 20 C25 22 22 25 22 25Z" fill="#86efac"/></svg>,
+                },
+                {
+                  initials: "LC", name: "Lausanne Cleaning Experts",
+                  category: language === "de" ? "Reinigung" : language === "sq" ? "Pastrim" : language === "fr" ? "Nettoyage" : "Cleaning",
+                  city: "Lausanne", rating: 4.8, color: "#0c1e3c", accent: "#a5f3fc",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#0c1e3c"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">LC</text><path d="M22 22 L22 24" stroke="#a5f3fc" strokeWidth="1.5" strokeLinecap="round"/><path d="M18.5 23.5 L20 24.8" stroke="#a5f3fc" strokeWidth="1.5" strokeLinecap="round"/><path d="M25.5 23.5 L24 24.8" stroke="#a5f3fc" strokeWidth="1.5" strokeLinecap="round"/><circle cx="22" cy="27.5" r="2.5" stroke="#a5f3fc" strokeWidth="1.5" fill="none"/></svg>,
+                },
+                {
+                  initials: "SG", name: "St. Gallen Smart Home",
+                  category: language === "de" ? "Smart Home" : language === "sq" ? "Shtëpi Inteligjente" : language === "fr" ? "Maison Connectée" : "Smart Home",
+                  city: "St. Gallen", rating: 4.9, color: "#0f1f3d", accent: "#6ee7b7",
+                  logo: <svg viewBox="0 0 44 44" fill="none" className="w-full h-full"><rect width="44" height="44" rx="10" fill="#0f1f3d"/><text x="22" y="19" textAnchor="middle" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">SG</text><path d="M15 24 Q22 20 29 24" stroke="#6ee7b7" strokeWidth="1.6" strokeLinecap="round" fill="none"/><path d="M17.5 26.5 Q22 23.5 26.5 26.5" stroke="#6ee7b7" strokeWidth="1.6" strokeLinecap="round" fill="none"/><circle cx="22" cy="29" r="1.8" fill="#6ee7b7"/></svg>,
+                },
+              ]).map((company, idx) => (
+                <div
+                  key={idx}
+                  className="flex-shrink-0 w-56 bg-white rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/25 transition-all duration-200 p-5 flex flex-col gap-3 select-none"
+                >
+                  {/* Logo + verified */}
+                  <div className="flex items-start justify-between">
+                    <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0">
+                      {company.logo}
+                    </div>
+                    <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                      <CheckCircle2 className="w-3 h-3" />
+                      { language === "de" ? "Geprüft" : language === "sq" ? "Verifikuar" : language === "fr" ? "Vérifié" : "Verified" }
+                    </span>
+                  </div>
+
+                  {/* Name */}
+                  <div>
+                    <p className="font-bold text-foreground text-sm leading-snug">{company.name}</p>
+                    <span className="inline-block mt-1 text-[11px] font-medium text-primary bg-primary/8 rounded-full px-2 py-0.5">
+                      {company.category}
+                    </span>
+                  </div>
+
+                  {/* City + Rating */}
+                  <div className="flex items-center justify-between mt-auto pt-1 border-t border-border/60">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                      {company.city}
+                    </div>
+                    <div className="flex items-center gap-0.5 text-xs font-semibold text-amber-500">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      {company.rating.toFixed(1)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── HOW IT WORKS ── */}
       <section id="how-it-works" className="py-14 md:py-24 bg-white scroll-mt-20 md:scroll-mt-24">
         <div className="container mx-auto px-4">
