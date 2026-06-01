@@ -1,30 +1,34 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
-import { subscriptionPlansTable, subscriptionsTable, paymentsTable, invoicesTable, usersTable } from "@workspace/db";
+import { subscriptionPlansTable, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 import { requireProvider } from "../middlewares/requireProvider";
 import { stripePaymentProvider } from "../payments/stripeProvider";
-import { getStripePublishableKey, getUncachableStripeClient as getStripeClient } from "../lib/stripeClient";
-import { grantMonthlyCredits } from "../lib/credits";
+import {
+  getStripePublishableKey,
+  getUncachableStripeClient as getStripeClient,
+  priceIdForSlug,
+  getTestPriceId,
+} from "../lib/stripeClient";
+import { activateSubscription } from "../lib/stripeActivation";
 
 const router: IRouter = Router();
 
-// GET /stripe/config — returns publishable key for frontend
-router.get("/stripe/config", async (_req, res): Promise<void> => {
+// GET /stripe/config — returns publishable key for frontend (safe to expose)
+router.get("/stripe/config", (_req, res): void => {
   try {
-    const publishableKey = await getStripePublishableKey();
-    res.json({ publishableKey });
+    res.json({ publishableKey: getStripePublishableKey() });
   } catch {
     res.status(503).json({ error: "Stripe not configured" });
   }
 });
 
-// POST /stripe/checkout — create Stripe Checkout session for a plan
+// POST /stripe/checkout — create a subscription Checkout session for a plan
 router.post("/stripe/checkout", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;
-  const body = req.body as { planId?: number; interval?: "month" | "year" };
-  const { planId, interval = "month" } = body;
+  const body = req.body as { planId?: number };
+  const { planId } = body;
 
   if (!planId) {
     res.status(400).json({ error: "planId required" });
@@ -46,16 +50,20 @@ router.post("/stripe/checkout", requireProvider, async (req, res): Promise<void>
     return;
   }
 
-  const priceId = interval === "year" ? plan.stripePriceYearly : plan.stripePriceMonthly;
+  // Live monthly price IDs come from explicit env vars (mapped by plan slug).
+  const priceId = priceIdForSlug(plan.slug);
   if (!priceId) {
-    res.status(503).json({ error: "Stripe price not configured for this plan. Run seed-stripe-products first." });
+    res.status(503).json({
+      error:
+        "Stripe price not configured for this plan. Set the STRIPE_*_PRICE_ID environment variables.",
+    });
     return;
   }
 
   const host = `${req.protocol}://${req.get("host")}`;
-  // {CHECKOUT_SESSION_ID} is substituted by Stripe so we can retrieve the session on success
-  const successUrl = `${host}/provider/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
-  const cancelUrl = `${host}/provider/billing?checkout=cancel`;
+  // {CHECKOUT_SESSION_ID} is substituted by Stripe so we can resolve the session on success.
+  const successUrl = `${host}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${host}/pricing?payment=cancelled`;
 
   try {
     const checkoutUrl = await stripePaymentProvider.createCheckoutSession({
@@ -63,11 +71,41 @@ router.post("/stripe/checkout", requireProvider, async (req, res): Promise<void>
       priceId,
       successUrl,
       cancelUrl,
-      interval,
+      interval: "month",
     });
     res.json({ url: checkoutUrl });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Checkout failed";
+    res.status(500).json({ error: msg });
+  }
+});
+
+// POST /stripe/test-checkout — one-time CHF 1 live test payment (no plan upgrade)
+router.post("/stripe/test-checkout", requireProvider, async (req, res): Promise<void> => {
+  const userId = req.userId!;
+
+  let priceId: string;
+  try {
+    priceId = getTestPriceId();
+  } catch {
+    res.status(503).json({ error: "STRIPE_TEST_PRICE_ID is not configured" });
+    return;
+  }
+
+  const host = `${req.protocol}://${req.get("host")}`;
+  const successUrl = `${host}/dashboard?payment=success&test=1`;
+  const cancelUrl = `${host}/pricing?payment=cancelled`;
+
+  try {
+    const checkoutUrl = await stripePaymentProvider.createTestPaymentSession({
+      userId,
+      priceId,
+      successUrl,
+      cancelUrl,
+    });
+    res.json({ url: checkoutUrl });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Test checkout failed";
     res.status(500).json({ error: msg });
   }
 });
@@ -153,88 +191,14 @@ router.get("/stripe/subscription/sync", requireAuth, async (req, res): Promise<v
       return;
     }
 
-    // price may be a string ID or an expanded object depending on API version
-    const priceItem = activeSub.items?.data[0];
-    const rawPrice = priceItem?.price;
-    const priceId = typeof rawPrice === "string" ? rawPrice : rawPrice?.id;
-    if (!priceId) {
-      res.json({ synced: false, reason: "no_price_on_subscription" });
-      return;
-    }
-
-    // Lookup plan by Stripe price ID
-    const [planByMonthly] = await db
-      .select()
-      .from(subscriptionPlansTable)
-      .where(eq(subscriptionPlansTable.stripePriceMonthly, priceId));
-
-    const [planByYearly] = await db
-      .select()
-      .from(subscriptionPlansTable)
-      .where(eq(subscriptionPlansTable.stripePriceYearly, priceId));
-
-    const plan = planByMonthly ?? planByYearly;
-    if (!plan) {
+    // Provision the local subscription idempotently (shared with webhook handling).
+    const slug = await activateSubscription(activeSub);
+    if (!slug) {
       res.json({ synced: false, reason: "plan_not_found_for_price" });
       return;
     }
 
-    // Cancel existing local subscriptions
-    await db
-      .update(subscriptionsTable)
-      .set({ status: "canceled" })
-      .where(eq(subscriptionsTable.userId, userId));
-
-    // Stripe v20 API removed current_period_start/current_period_end.
-    // Use start_date (subscription start) and billing_cycle_anchor to derive the period.
-    const rawStart = activeSub.start_date ?? activeSub.billing_cycle_anchor ?? Math.floor(Date.now() / 1000);
-    const periodStart = new Date(rawStart * 1000);
-    const periodEnd = new Date(periodStart);
-    // Determine interval from which price matched the plan
-    if (planByYearly) {
-      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-    } else {
-      periodEnd.setMonth(periodEnd.getMonth() + 1);
-    }
-
-    const [sub] = await db
-      .insert(subscriptionsTable)
-      .values({
-        userId,
-        planId: plan.id,
-        status: "active",
-        currentPeriodStart: periodStart,
-        currentPeriodEnd: periodEnd,
-        providerRef: activeSub.id,
-      })
-      .returning();
-
-    if (plan.monthlyCredits !== 0) {
-      const credits = plan.monthlyCredits === -1 ? 999 : plan.monthlyCredits;
-      await grantMonthlyCredits(userId, credits, periodEnd, `Stripe sync: ${plan.slug}`);
-    }
-
-    const [payment] = await db
-      .insert(paymentsTable)
-      .values({
-        userId,
-        kind: "subscription",
-        refSlug: plan.slug,
-        amountCents: plan.priceCents,
-        currency: "CHF",
-        providerRef: activeSub.id,
-        status: "succeeded",
-      })
-      .returning();
-
-    if (payment) {
-      await db.insert(invoicesTable).values({
-        paymentId: payment.id,
-        number: `INV-${payment.id.toString().padStart(6, "0")}`,
-      });
-    }
-
-    res.json({ synced: true, plan: plan.slug, subscriptionId: sub?.id });
+    res.json({ synced: true, plan: slug });
   } catch (err) {
     req.log.error({ err }, "stripe sync error");
     const msg = err instanceof Error ? err.message : "Sync failed";

@@ -27,12 +27,12 @@ const PLANS = [
   },
   {
     slug: "basic",
-    name: "Basic Provider",
+    name: "Basic",
     priceCents: 2900,       // 29 CHF/month
-    yearlyPriceCents: 27900, // 279 CHF/year
+    yearlyPriceCents: 0,    // live products are monthly-only
     monthlyCredits: 10,
     featured: false,
-    badge: "Basic Provider",
+    badge: "Basic",
     visibilityRank: 1,
     contactVisible: true,
     features: [
@@ -46,12 +46,12 @@ const PLANS = [
   },
   {
     slug: "pro",
-    name: "Pro Provider",
-    priceCents: 7900,       // 79 CHF/month
-    yearlyPriceCents: 75900, // 759 CHF/year
+    name: "Professional",
+    priceCents: 5900,       // 59 CHF/month
+    yearlyPriceCents: 0,    // live products are monthly-only
     monthlyCredits: 35,
     featured: true,
-    badge: "Pro Provider",
+    badge: "Professional",
     visibilityRank: 2,
     contactVisible: true,
     features: [
@@ -65,12 +65,12 @@ const PLANS = [
   },
   {
     slug: "premium",
-    name: "Premium Partner",
-    priceCents: 14900,       // 149 CHF/month
-    yearlyPriceCents: 143000, // 1430 CHF/year
+    name: "Premium",
+    priceCents: 9900,       // 99 CHF/month
+    yearlyPriceCents: 0,    // live products are monthly-only
     monthlyCredits: -1,      // -1 = unlimited
     featured: false,
-    badge: "Premium Partner",
+    badge: "Premium",
     visibilityRank: 3,
     contactVisible: true,
     features: [
@@ -119,6 +119,20 @@ export async function seedBilling(): Promise<void> {
           },
         });
     }
+    // Sync live Stripe price IDs from explicit env vars (monthly-only live products).
+    const PRICE_ENV_BY_SLUG: Record<string, string | undefined> = {
+      basic: process.env.STRIPE_BASIC_PRICE_ID,
+      pro: process.env.STRIPE_PROFESSIONAL_PRICE_ID,
+      premium: process.env.STRIPE_PREMIUM_PRICE_ID,
+    };
+    for (const [slug, priceId] of Object.entries(PRICE_ENV_BY_SLUG)) {
+      if (!priceId) continue;
+      await db
+        .update(subscriptionPlansTable)
+        .set({ stripePriceMonthly: priceId, stripePriceYearly: null })
+        .where(eq(subscriptionPlansTable.slug, slug));
+    }
+
     for (const p of PACKS) {
       await db
         .insert(immocreditPacksTable)

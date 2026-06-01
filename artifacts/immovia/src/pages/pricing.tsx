@@ -16,11 +16,6 @@ function formatCHF(cents: number): string {
   return `CHF ${(cents / 100).toFixed(0)}`;
 }
 
-function formatCHFDecimal(cents: number): string {
-  if (cents === 0) return "CHF 0";
-  return `CHF ${(cents / 100 / 12).toFixed(0)}`;
-}
-
 const PLAN_ICONS: Record<string, React.ReactNode> = {
   free: <Shield className="w-5 h-5 text-slate-400" />,
   basic: <Zap className="w-5 h-5 text-blue-500" />,
@@ -41,8 +36,6 @@ const PLAN_BADGE_COLOR: Record<string, string> = {
   premium: "bg-amber-100 text-amber-700",
 };
 
-const YEARLY_DISCOUNT = 20;
-
 const CREDITS_LABEL: Record<string, string> = {
   de: "Credits/Monat",
   en: "credits/month",
@@ -57,25 +50,25 @@ const UNLIMITED_LABEL: Record<string, string> = {
   fr: "Illimité",
 };
 
-const MONTHLY_LABEL: Record<string, string> = {
-  de: "Monatlich",
-  en: "Monthly",
-  sq: "Mujore",
-  fr: "Mensuel",
+const CANCELLED_NOTICE: Record<string, string> = {
+  de: "Zahlung abgebrochen. Es wurde nichts belastet.",
+  en: "Payment cancelled. You were not charged.",
+  sq: "Pagesa u anulua. Nuk u tarifua asgjë.",
+  fr: "Paiement annulé. Vous n'avez pas été débité.",
 };
 
-const YEARLY_LABEL: Record<string, string> = {
-  de: "Jährlich",
-  en: "Yearly",
-  sq: "Vjetore",
-  fr: "Annuel",
+const TEST_PAYMENT_LABEL: Record<string, string> = {
+  de: "Test-Zahlung (CHF 1)",
+  en: "Test payment (CHF 1)",
+  sq: "Pagesë testuese (CHF 1)",
+  fr: "Paiement test (CHF 1)",
 };
 
-const SAVE_LABEL: Record<string, string> = {
-  de: "Spare 20%",
-  en: "Save 20%",
-  sq: "Kursej 20%",
-  fr: "Économisez 20%",
+const TEST_PAYMENT_HINT: Record<string, string> = {
+  de: "Nur für Admins — einmalige Live-Testzahlung, kein Plan-Upgrade.",
+  en: "Admins only — one-time live test charge, no plan upgrade.",
+  sq: "Vetëm për adminët — pagesë testuese e njëhershme, pa ndryshim plani.",
+  fr: "Admins uniquement — paiement test unique, sans changement de plan.",
 };
 
 const PER_MONTH_LABEL: Record<string, string> = {
@@ -112,15 +105,22 @@ export default function Pricing() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [interval, setIntervalMode] = useState<"month" | "year">("month");
   const [loading, setLoading] = useState<number | null>(null);
+  const [testLoading, setTestLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cancelled, setCancelled] = useState(false);
 
   useEffect(() => {
     void billingApi.plans().then(setPlans).catch(() => setPlans([]));
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "cancelled") setCancelled(true);
+  }, []);
+
   const isProvider = isServiceProvider(user);
+  const isAdmin = user?.role === "admin";
 
   const handlePlanCta = async (plan: SubscriptionPlan) => {
     setError(null);
@@ -143,7 +143,7 @@ export default function Pricing() {
     // Paid plan — redirect to Stripe Checkout
     setLoading(plan.id);
     try {
-      const { url } = await billingApi.stripeCheckout(plan.id, interval);
+      const { url } = await billingApi.stripeCheckout(plan.id);
       window.location.href = url;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Checkout failed");
@@ -151,11 +151,20 @@ export default function Pricing() {
     }
   };
 
+  const handleTestPayment = async () => {
+    setError(null);
+    setTestLoading(true);
+    try {
+      const { url } = await billingApi.stripeTestCheckout();
+      window.location.href = url;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Test checkout failed");
+      setTestLoading(false);
+    }
+  };
+
   const creditsLabel = CREDITS_LABEL[language] ?? CREDITS_LABEL.de;
   const unlimitedLabel = UNLIMITED_LABEL[language] ?? UNLIMITED_LABEL.de;
-  const monthlyLabel = MONTHLY_LABEL[language] ?? MONTHLY_LABEL.de;
-  const yearlyLabel = YEARLY_LABEL[language] ?? YEARLY_LABEL.de;
-  const saveLabel = SAVE_LABEL[language] ?? SAVE_LABEL.de;
   const perMonth = PER_MONTH_LABEL[language] ?? PER_MONTH_LABEL.de;
   const freeCta = FREE_CTA[language] ?? FREE_CTA.de;
   const subscribeCta = SUBSCRIBE_CTA[language] ?? SUBSCRIBE_CTA.de;
@@ -165,13 +174,7 @@ export default function Pricing() {
 
   function displayPrice(plan: SubscriptionPlan): string {
     if (plan.priceCents === 0) return "CHF 0";
-    if (interval === "year") return formatCHFDecimal(plan.yearlyPriceCents);
     return formatCHF(plan.priceCents);
-  }
-
-  function displayBilledAs(plan: SubscriptionPlan): string | null {
-    if (plan.priceCents === 0 || interval === "month") return null;
-    return formatCHF(plan.yearlyPriceCents);
   }
 
   return (
@@ -184,30 +187,11 @@ export default function Pricing() {
         <p className="text-muted-foreground text-lg">{t.pricing.subtitle}</p>
       </div>
 
-      {/* Monthly / Yearly toggle */}
-      <div className="flex items-center justify-center gap-3 mb-10">
-        <span className={`text-sm font-medium ${interval === "month" ? "text-foreground" : "text-muted-foreground"}`}>
-          {monthlyLabel}
-        </span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={interval === "year"}
-          onClick={() => setIntervalMode(i => i === "month" ? "year" : "month")}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${interval === "year" ? "bg-primary" : "bg-muted-foreground/30"}`}
-          data-testid="toggle-interval"
-        >
-          <span
-            className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${interval === "year" ? "translate-x-6" : "translate-x-1"}`}
-          />
-        </button>
-        <span className={`text-sm font-medium flex items-center gap-1.5 ${interval === "year" ? "text-foreground" : "text-muted-foreground"}`}>
-          {yearlyLabel}
-          <span className="text-[11px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
-            -{YEARLY_DISCOUNT}%
-          </span>
-        </span>
-      </div>
+      {cancelled && (
+        <div className="max-w-3xl mx-auto mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm" data-testid="pricing-cancelled">
+          {CANCELLED_NOTICE[language] ?? CANCELLED_NOTICE.de}
+        </div>
+      )}
 
       {error && (
         <div className="max-w-3xl mx-auto mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm" data-testid="pricing-error">
@@ -220,7 +204,6 @@ export default function Pricing() {
         {displayedPlans.map((plan) => {
           const isCurrentlyLoading = loading === plan.id;
           const isFree = plan.slug === "free";
-          const billedAs = displayBilledAs(plan);
           const creditsDisplay = plan.monthlyCredits === -1 ? unlimitedLabel : String(plan.monthlyCredits);
 
           return (
@@ -256,15 +239,6 @@ export default function Pricing() {
                 <span className="text-muted-foreground text-sm">{perMonth}</span>
               </div>
 
-              {billedAs && (
-                <div className="text-xs text-muted-foreground mb-1">
-                  {language === "de" ? `${billedAs} jährlich abgerechnet` :
-                   language === "fr" ? `${billedAs} facturé annuellement` :
-                   language === "sq" ? `${billedAs} faturim vjetor` :
-                   `${billedAs} billed annually`}
-                </div>
-              )}
-
               {/* Credits */}
               <div className="flex items-baseline gap-1.5 mb-5 mt-1">
                 <span className="text-lg font-bold text-primary">{creditsDisplay}</span>
@@ -281,13 +255,6 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              {/* Yearly savings callout */}
-              {!isFree && interval === "year" && (
-                <div className="text-xs font-medium text-green-700 bg-green-50 rounded px-2 py-1 mb-3 text-center">
-                  {saveLabel}
-                </div>
-              )}
-
               <Button
                 className="w-full"
                 variant={plan.featured ? "default" : isFree ? "ghost" : "outline"}
@@ -303,14 +270,23 @@ export default function Pricing() {
         })}
       </div>
 
-      {/* Yearly total note */}
-      {interval === "year" && (
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          {language === "de" ? "Jährliche Zahlung • Preise in CHF" :
-           language === "fr" ? "Paiement annuel • Prix en CHF" :
-           language === "sq" ? "Pagesë vjetore • Çmime në CHF" :
-           "Annual payment • Prices in CHF"}
-        </p>
+      {/* Admin-only live test payment (CHF 1, no plan upgrade) */}
+      {isAdmin && (
+        <div className="max-w-md mx-auto mt-12 text-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleTestPayment()}
+            disabled={testLoading}
+            data-testid="button-test-payment"
+          >
+            {testLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {TEST_PAYMENT_LABEL[language] ?? TEST_PAYMENT_LABEL.de}
+          </Button>
+          <p className="text-xs text-muted-foreground mt-2">
+            {TEST_PAYMENT_HINT[language] ?? TEST_PAYMENT_HINT.de}
+          </p>
+        </div>
       )}
     </div>
   );

@@ -163,11 +163,13 @@ export const billingApi = {
       method: "POST",
       body: JSON.stringify({ planId }),
     }),
-  stripeCheckout: (planId: number, interval: "month" | "year") =>
+  stripeCheckout: (planId: number) =>
     jsonFetch<{ url: string }>("/stripe/checkout", {
       method: "POST",
-      body: JSON.stringify({ planId, interval }),
+      body: JSON.stringify({ planId }),
     }),
+  stripeTestCheckout: () =>
+    jsonFetch<{ url: string }>("/stripe/test-checkout", { method: "POST" }),
   stripePortal: () =>
     jsonFetch<{ url: string }>("/stripe/portal", { method: "POST" }),
   stripeSync: (sessionId?: string) =>
