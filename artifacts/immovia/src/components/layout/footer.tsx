@@ -28,9 +28,9 @@ export function Footer() {
           <div className="flex flex-col gap-4 md:col-span-1">
             <Link href="/">
               <img
-                src="/logo-white.png"
+                src="/icon-mark.png"
                 alt="ImmoVia365"
-                className="h-10 md:h-12 w-auto object-contain object-left"
+                className="h-20 md:h-24 w-auto object-contain object-left"
               />
             </Link>
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
