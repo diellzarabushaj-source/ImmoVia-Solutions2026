@@ -3,7 +3,7 @@ import { db } from "@workspace/db";
 import { subscriptionPlansTable, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
-import { requireProvider } from "../middlewares/requireProvider";
+import { requireProvider, requireProviderOrAdmin } from "../middlewares/requireProvider";
 import { stripePaymentProvider } from "../payments/stripeProvider";
 import {
   getStripePublishableKey,
@@ -81,7 +81,7 @@ router.post("/stripe/checkout", requireProvider, async (req, res): Promise<void>
 });
 
 // POST /stripe/test-checkout — one-time CHF 1 live test payment (no plan upgrade)
-router.post("/stripe/test-checkout", requireProvider, async (req, res): Promise<void> => {
+router.post("/stripe/test-checkout", requireProviderOrAdmin, async (req, res): Promise<void> => {
   const userId = req.userId!;
 
   let priceId: string;

@@ -90,8 +90,9 @@ export async function activateSubscription(sub: Stripe.Subscription): Promise<st
   }
 
   const { start, end } = periodFromSubscription(sub);
-  const status =
-    sub.status === "active" || sub.status === "trialing" ? "active" : (sub.status ?? "active");
+  // Entitlement (credits + paid status) is only granted for charge-confirmed states.
+  const isEntitled = sub.status === "active" || sub.status === "trialing";
+  const status = isEntitled ? "active" : (sub.status ?? "incomplete");
 
   // Idempotency: if we already track this Stripe subscription, just update it.
   const [existing] = await db
@@ -116,11 +117,20 @@ export async function activateSubscription(sub: Stripe.Subscription): Promise<st
   await db.insert(subscriptionsTable).values({
     userId,
     planId: plan.id,
-    status: "active",
+    status,
     currentPeriodStart: start,
     currentPeriodEnd: end,
     providerRef: sub.id,
   });
+
+  // Do not grant credits or record a paid invoice until Stripe confirms the charge.
+  if (!isEntitled) {
+    logger.info(
+      { userId, plan: plan.slug, subscription: sub.id, status: sub.status },
+      "Recorded Stripe subscription (not yet entitled)",
+    );
+    return plan.slug;
+  }
 
   if (plan.monthlyCredits !== 0) {
     const credits = plan.monthlyCredits === -1 ? 999 : plan.monthlyCredits;

@@ -36,6 +36,44 @@ export async function requireProvider(req: Request, res: Response, next: NextFun
   next();
 }
 
+// requireProviderOrAdmin: signed-in service_provider OR a Clerk user with role "admin".
+// Used by the one-time test payment, which the UI exposes to admins.
+// Also resolves req.userId from the Clerk session → DB user.
+export async function requireProviderOrAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const auth = getAuth(req);
+  if (!auth?.userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const [user] = await db
+    .select({ id: usersTable.id, role: usersTable.role, accountType: usersTable.accountType })
+    .from(usersTable)
+    .where(eq(usersTable.clerkUserId, auth.userId))
+    .limit(1);
+
+  if (!user) {
+    res.status(401).json({ error: "User not provisioned. Please complete sign-up." });
+    return;
+  }
+
+  const isProvider =
+    user.accountType === "service_provider" ||
+    user.role === "contractor" ||
+    user.role === "service_provider";
+  if (!isProvider && user.role !== "admin") {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  req.userId = user.id;
+  next();
+}
+
 // requireUserAdmin: admin via session (set by /api/admin-auth/login).
 export async function requireUserAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
   if (req.session.adminAuthenticated === true) {
