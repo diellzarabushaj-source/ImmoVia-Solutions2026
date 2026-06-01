@@ -16,7 +16,7 @@ const PLANS = [
     visibilityRank: 0,
     contactVisible: false,
     features: [
-      "2 Project Credits/Monat",
+      "2 ImmoCredits/Monat",
       "Basis-Anbieterprofil",
       "Nur registrierte Auftraggeber",
       "Kontaktdaten nicht sichtbar",
@@ -30,13 +30,13 @@ const PLANS = [
     name: "Basic",
     priceCents: 2900,       // 29 CHF/month
     yearlyPriceCents: 0,    // live products are monthly-only
-    monthlyCredits: 10,
+    monthlyCredits: 20,
     featured: false,
     badge: "Basic",
     visibilityRank: 1,
     contactVisible: true,
     features: [
-      "10 Project Credits/Monat",
+      "20 ImmoCredits/Monat",
       "Basic Provider Abzeichen",
       "Kontaktdaten sichtbar (registrierte Auftraggeber)",
       "Nur registrierte Auftraggeber",
@@ -49,13 +49,13 @@ const PLANS = [
     name: "Professional",
     priceCents: 5900,       // 59 CHF/month
     yearlyPriceCents: 0,    // live products are monthly-only
-    monthlyCredits: 35,
+    monthlyCredits: 60,
     featured: true,
     badge: "Professional",
     visibilityRank: 2,
     contactVisible: true,
     features: [
-      "35 Project Credits/Monat",
+      "60 ImmoCredits/Monat",
       "Pro Provider Abzeichen",
       "Erscheint über Basic-Anbietern",
       "Bessere Sichtbarkeit",
@@ -68,13 +68,13 @@ const PLANS = [
     name: "Premium",
     priceCents: 9900,       // 99 CHF/month
     yearlyPriceCents: 0,    // live products are monthly-only
-    monthlyCredits: -1,      // -1 = unlimited
+    monthlyCredits: 150,
     featured: false,
     badge: "Premium",
     visibilityRank: 3,
     contactVisible: true,
     features: [
-      "Unbegrenzte Project Credits",
+      "150 ImmoCredits/Monat",
       "Premium Partner Abzeichen",
       "Erstplatzierung in Anbieterlisten",
       "Zugang zu nicht-registrierten Leads",

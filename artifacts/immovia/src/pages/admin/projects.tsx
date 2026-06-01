@@ -1,7 +1,8 @@
 import { useState } from "react";
 import {
   useListProjects, useUpdateProject, useDeleteProject,
-  getListProjectsQueryKey, getGetAdminStatsQueryKey
+  getListProjectsQueryKey, getGetAdminStatsQueryKey,
+  type Project
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -25,13 +26,14 @@ import {
 } from "@/components/ui/select";
 import {
   MoreHorizontal, CheckCircle2, XCircle, Clock, Trash2, Loader2,
-  Plus, Hammer, Eye, Search, Globe
+  Plus, Hammer, Eye, Search, Globe, LayoutGrid, Table2, Archive
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { ProjectCard, type ProjectCardData } from "@/components/project/ProjectCard";
 import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
 import { useLanguage } from "@/lib/language-context";
 
@@ -114,6 +116,30 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
   );
 }
 
+type AdminProject = Project;
+
+function toCardData(p: AdminProject): ProjectCardData {
+  const x = p as unknown as Record<string, unknown>;
+  return {
+    id: p.id,
+    title: (x.title as string | null) ?? null,
+    projectType: p.projectType,
+    subcategory: (x.subcategory as string | null) ?? null,
+    description: p.description,
+    city: p.city,
+    budget: p.budget ?? null,
+    timeline: p.timeline ?? null,
+    size: (x.size as string | null) ?? null,
+    status: p.status,
+    photos: (x.photos as string[] | null) ?? null,
+    posterName: (x.posterName as string | null) ?? null,
+    posterType: (x.posterType as string | null) ?? null,
+    posterAvatarUrl: (x.posterAvatarUrl as string | null) ?? null,
+    offersCount: (x.offersCount as number | null) ?? null,
+    createdAt: p.createdAt,
+  };
+}
+
 export function AdminProjects() {
   const { t } = useLanguage();
   const qc = useQueryClient();
@@ -121,6 +147,9 @@ export function AdminProjects() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const [view, setView] = useState<"table" | "cards">(
+    () => (typeof window !== "undefined" && window.innerWidth < 768 ? "cards" : "table")
+  );
 
   const { data: projects, isLoading } = useListProjects();
   const updateProject = useUpdateProject();
@@ -136,6 +165,83 @@ export function AdminProjects() {
     deleteProject.mutate({ id: deleteTarget }, { onSuccess: invalidate });
     setDeleteTarget(null);
   };
+
+  const handleArchive = (id: number) =>
+    updateProject.mutate(
+      { id, data: { status: "archived" } },
+      {
+        onSuccess: () => { invalidate(); toast.success(t.admin.toastProjectArchived); },
+        onError: () => toast.error(t.admin.toastProjectArchiveFailed),
+      }
+    );
+
+  const handlePublish = (id: number) =>
+    updateProject.mutate(
+      { id, data: { status: "open" } },
+      {
+        onSuccess: () => { invalidate(); toast.success(t.admin.toastProjectPublished); },
+        onError: () => toast.error(t.admin.toastProjectPublishFailed),
+      }
+    );
+
+  const setStatus = (id: number, status: string) =>
+    updateProject.mutate({ id, data: { status } }, { onSuccess: invalidate });
+
+  function renderActions(project: AdminProject) {
+    return (
+      <div className="flex items-center justify-end gap-1">
+        {(project.status === "pending" || project.status === "reviewing") && (
+          <Button
+            size="sm"
+            className="h-7 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+            disabled={updateProject.isPending}
+            onClick={() => handlePublish(project.id)}
+            title={t.admin.publishToWebsite}
+          >
+            <Globe className="h-3.5 w-3.5" />
+            {t.admin.publish}
+          </Button>
+        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>{t.admin.actions}</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <a href={`/projects/${project.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer">
+                <Eye className="mr-2 h-4 w-4" /> {t.admin.viewProjectPage}
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-gray-400 font-normal">{t.admin.setStatus}</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setStatus(project.id, "open")}>
+              <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> {t.admin.stOpen}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatus(project.id, "reviewing")}>
+              <Eye className="mr-2 h-4 w-4 text-blue-500" /> {t.admin.stReviewing}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatus(project.id, "matched")}>
+              <CheckCircle2 className="mr-2 h-4 w-4 text-purple-500" /> {t.admin.stMatched}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatus(project.id, "pending")}>
+              <Clock className="mr-2 h-4 w-4 text-yellow-500" /> {t.admin.stPendingReview}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatus(project.id, "cancelled")}>
+              <XCircle className="mr-2 h-4 w-4 text-red-500" /> {t.admin.stCancelled}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleArchive(project.id)}>
+              <Archive className="mr-2 h-4 w-4 text-amber-600" /> {t.admin.archive}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(project.id)}>
+              <Trash2 className="mr-2 h-4 w-4" /> {t.admin.delete}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  }
 
   const filtered = (projects ?? []).filter((p) => {
     const q = search.toLowerCase();
@@ -176,107 +282,100 @@ export function AdminProjects() {
             <SelectItem value="cancelled">{t.admin.stCancelled}</SelectItem>
           </SelectContent>
         </Select>
+        <div className="ml-auto inline-flex rounded-md border border-gray-200 p-0.5 bg-white">
+          <Button
+            size="sm"
+            variant={view === "table" ? "default" : "ghost"}
+            className={`h-8 px-2.5 text-xs gap-1.5 ${view === "table" ? "bg-[#1a3a6e] hover:bg-[#0f2044]" : "text-gray-600"}`}
+            onClick={() => setView("table")}
+          >
+            <Table2 className="h-4 w-4" /> {t.admin.viewTable}
+          </Button>
+          <Button
+            size="sm"
+            variant={view === "cards" ? "default" : "ghost"}
+            className={`h-8 px-2.5 text-xs gap-1.5 ${view === "cards" ? "bg-[#1a3a6e] hover:bg-[#0f2044]" : "text-gray-600"}`}
+            onClick={() => setView("cards")}
+          >
+            <LayoutGrid className="h-4 w-4" /> {t.admin.viewCards}
+          </Button>
+        </div>
       </div>
 
-      <Card className="border border-gray-200 shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colTitleProject}</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colClient}</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colLocation}</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colBudget}</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colSize}</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.date}</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
-              <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.actions}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading && (
-              <TableRow><TableCell colSpan={8} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
-            )}
-            {!isLoading && filtered.map((project) => (
-              <TableRow key={project.id} className="hover:bg-gray-50">
-                <TableCell className="max-w-[220px]">
-                  <div className="font-semibold text-sm text-gray-900 truncate">
-                    {(project as { title?: string | null }).title ?? <span className="text-gray-400 font-normal italic">{t.admin.noTitle}</span>}
-                  </div>
-                  <div className="text-xs text-gray-500 capitalize mt-0.5">{project.projectType}</div>
-                </TableCell>
-                <TableCell>
-                  <div className="font-medium text-sm">{project.fullName}</div>
-                  <div className="text-xs text-gray-500">{project.email}</div>
-                </TableCell>
-                <TableCell className="text-sm">{project.city}</TableCell>
-                <TableCell className="text-sm text-gray-600">{project.budget ?? "—"}</TableCell>
-                <TableCell className="text-sm text-gray-600">{(project as { size?: string }).size ?? "—"}</TableCell>
-                <TableCell className="text-xs text-gray-500">{format(new Date(project.createdAt), "MMM d, yyyy")}</TableCell>
-                <TableCell><StatusBadge status={project.status} /></TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    {(project.status === "pending" || project.status === "reviewing") && (
-                      <Button
-                        size="sm"
-                        className="h-7 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
-                        disabled={updateProject.isPending}
-                        onClick={() => updateProject.mutate(
-                          { id: project.id, data: { status: "open" } },
-                          {
-                            onSuccess: () => { invalidate(); toast.success(t.admin.toastProjectPublished); },
-                            onError: () => toast.error(t.admin.toastProjectPublishFailed),
-                          }
-                        )}
-                        title={t.admin.publishToWebsite}
-                      >
-                        <Globe className="h-3.5 w-3.5" />
-                        {t.admin.publish}
-                      </Button>
-                    )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>{t.admin.actions}</DropdownMenuLabel>
-                      <DropdownMenuItem asChild>
-                        <a href={`/projects/${project.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer">
-                          <Eye className="mr-2 h-4 w-4" /> {t.admin.viewProjectPage}
-                        </a>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel className="text-xs text-gray-400 font-normal">{t.admin.setStatus}</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "open" } }, { onSuccess: invalidate })}>
-                        <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> {t.admin.stOpen}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "reviewing" } }, { onSuccess: invalidate })}>
-                        <Eye className="mr-2 h-4 w-4 text-blue-500" /> {t.admin.stReviewing}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "matched" } }, { onSuccess: invalidate })}>
-                        <CheckCircle2 className="mr-2 h-4 w-4 text-purple-500" /> {t.admin.stMatched}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "pending" } }, { onSuccess: invalidate })}>
-                        <Clock className="mr-2 h-4 w-4 text-yellow-500" /> {t.admin.stPendingReview}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateProject.mutate({ id: project.id, data: { status: "cancelled" } }, { onSuccess: invalidate })}>
-                        <XCircle className="mr-2 h-4 w-4 text-red-500" /> {t.admin.stCancelled}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget(project.id)}>
-                        <Trash2 className="mr-2 h-4 w-4" /> {t.admin.delete}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  </div>
-                </TableCell>
+      {isLoading && (
+        <div className="h-40 flex items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-gray-400" /></div>
+      )}
+
+      {!isLoading && filtered.length === 0 && (
+        <Card className="border border-gray-200 shadow-sm h-40 flex items-center justify-center text-gray-400 text-sm">
+          {t.admin.noProjectsFound}
+        </Card>
+      )}
+
+      {!isLoading && filtered.length > 0 && view === "table" && (
+        <Card className="border border-gray-200 shadow-sm">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colTitleProject}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colClient}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colLocation}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colBudget}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colSize}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-600">{t.admin.date}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
+                <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.actions}</TableHead>
               </TableRow>
-            ))}
-            {!isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={8} className="h-24 text-center text-gray-400">{t.admin.noProjectsFound}</TableCell></TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((project) => (
+                <TableRow key={project.id} className="hover:bg-gray-50">
+                  <TableCell className="max-w-[220px]">
+                    <div className="font-semibold text-sm text-gray-900 truncate">
+                      {(project as { title?: string | null }).title ?? <span className="text-gray-400 font-normal italic">{t.admin.noTitle}</span>}
+                    </div>
+                    <div className="text-xs text-gray-500 capitalize mt-0.5">{project.projectType}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="font-medium text-sm">{project.fullName}</div>
+                    <div className="text-xs text-gray-500">{project.email}</div>
+                  </TableCell>
+                  <TableCell className="text-sm">{project.city}</TableCell>
+                  <TableCell className="text-sm text-gray-600">{project.budget ?? "—"}</TableCell>
+                  <TableCell className="text-sm text-gray-600">{(project as { size?: string }).size ?? "—"}</TableCell>
+                  <TableCell className="text-xs text-gray-500">{format(new Date(project.createdAt), "MMM d, yyyy")}</TableCell>
+                  <TableCell><StatusBadge status={project.status} /></TableCell>
+                  <TableCell className="text-right">{renderActions(project)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      {!isLoading && filtered.length > 0 && view === "cards" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={toCardData(project)}
+              disableLink
+              showStatus
+              showPoster={false}
+              footer={
+                <div className="space-y-3 pt-3 border-t border-border/40">
+                  <div className="text-xs leading-relaxed">
+                    <div className="font-medium text-foreground/80">{project.fullName}</div>
+                    <div className="text-muted-foreground">{project.email}</div>
+                    {project.phone && <div className="text-muted-foreground">{project.phone}</div>}
+                  </div>
+                  {renderActions(project)}
+                </div>
+              }
+            />
+          ))}
+        </div>
+      )}
 
       <AddProjectDialog open={addOpen} onClose={() => setAddOpen(false)} onCreated={invalidate} />
 

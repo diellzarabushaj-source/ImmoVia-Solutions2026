@@ -37,10 +37,17 @@ const PLAN_BADGE_COLOR: Record<string, string> = {
 };
 
 const CREDITS_LABEL: Record<string, string> = {
-  de: "Credits/Monat",
-  en: "credits/month",
-  sq: "kredite/muaj",
-  fr: "crédits/mois",
+  de: "ImmoCredits/Monat",
+  en: "ImmoCredits/month",
+  sq: "ImmoCredits/muaj",
+  fr: "ImmoCredits/mois",
+};
+
+const REDIRECTING_LABEL: Record<string, string> = {
+  de: "Weiterleitung zur Kasse…",
+  en: "Redirecting to checkout…",
+  sq: "Po ridrejtoheni te arka…",
+  fr: "Redirection vers le paiement…",
 };
 
 const UNLIMITED_LABEL: Record<string, string> = {
@@ -107,6 +114,8 @@ export default function Pricing() {
   const isProvider = isServiceProvider(user);
 
   const handlePlanCta = async (plan: SubscriptionPlan) => {
+    // Guard against double-clicks while any checkout is already loading.
+    if (loading !== null) return;
     setError(null);
 
     if (!user) {
@@ -140,6 +149,7 @@ export default function Pricing() {
   const perMonth = PER_MONTH_LABEL[language] ?? PER_MONTH_LABEL.de;
   const freeCta = FREE_CTA[language] ?? FREE_CTA.de;
   const subscribeCta = SUBSCRIBE_CTA[language] ?? SUBSCRIBE_CTA.de;
+  const redirectingLabel = REDIRECTING_LABEL[language] ?? REDIRECTING_LABEL.de;
   const mostPopular = MOST_POPULAR[language] ?? MOST_POPULAR.de;
 
   const displayedPlans = plans.filter(p => ["basic", "pro", "premium"].includes(p.slug));
@@ -181,7 +191,12 @@ export default function Pricing() {
           return (
             <Card
               key={plan.id}
-              className={`p-6 flex flex-col relative ${PLAN_ACCENT[plan.slug] ?? "border-border"}`}
+              className={`p-6 flex flex-col relative cursor-pointer transition-all duration-200 hover:-translate-y-1.5 hover:shadow-2xl hover:border-primary ${isCurrentlyLoading ? "opacity-70" : ""} ${PLAN_ACCENT[plan.slug] ?? "border-border"}`}
+              onClick={() => void handlePlanCta(plan)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); void handlePlanCta(plan); } }}
+              aria-busy={isCurrentlyLoading}
               data-testid={`plan-${plan.slug}`}
             >
               {plan.featured && (
@@ -230,12 +245,12 @@ export default function Pricing() {
               <Button
                 className="w-full"
                 variant={plan.featured ? "default" : isFree ? "ghost" : "outline"}
-                onClick={() => void handlePlanCta(plan)}
-                disabled={isCurrentlyLoading}
+                onClick={(e) => { e.stopPropagation(); void handlePlanCta(plan); }}
+                disabled={loading !== null}
                 data-testid={`button-plan-${plan.slug}`}
               >
                 {isCurrentlyLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {isFree ? freeCta : subscribeCta}
+                {isCurrentlyLoading ? redirectingLabel : isFree ? freeCta : subscribeCta}
               </Button>
             </Card>
           );

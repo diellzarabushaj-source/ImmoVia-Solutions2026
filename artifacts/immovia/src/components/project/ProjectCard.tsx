@@ -39,6 +39,8 @@ interface ProjectCardProps {
   offersLabel?: string;
   /** Extra content rendered at the bottom of the card body. */
   footer?: ReactNode;
+  /** Render as a static card (no link/navigation) — used for admin management views with their own action controls. */
+  disableLink?: boolean;
 }
 
 export function ProjectCard({
@@ -49,6 +51,7 @@ export function ProjectCard({
   showPoster = true,
   offersLabel,
   footer,
+  disableLink = false,
 }: ProjectCardProps) {
   const { t, language } = useLanguage();
   const Icon = SERVICE_ICONS[project.projectType] ?? Briefcase;
@@ -158,6 +161,9 @@ export function ProjectCard({
     </div>
   );
 
+  if (disableLink) {
+    return <div className="h-full">{inner}</div>;
+  }
   if (onClick) {
     return (
       <div onClick={onClick} role="button" tabIndex={0} className="h-full text-left">
