@@ -8,6 +8,8 @@ const router: IRouter = Router();
 const DEFAULT_SETTINGS: Record<string, string> = {
   "platform.name": "ImmoVia365",
   "platform.tagline": "Find trusted renovation professionals",
+  "platform.logo_url": "https://immovia365.ch/logo-color.png",
+  "platform.logo_white_url": "https://immovia365.ch/logo-white.png",
   "platform.maintenance": "false",
   "projects.auto_approve": "false",
   "companies.require_license": "false",
