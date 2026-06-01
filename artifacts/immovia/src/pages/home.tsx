@@ -42,7 +42,7 @@ import {
   LocateFixed,
   Loader2,
 } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, getTagLabel, resolveCategoryLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
+import { CATEGORIES, getCategoryByKey, getCategoryLabel, getTagLabel, resolveCategoryLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
   animate: { opacity: 1, y: 0 },
@@ -146,8 +146,12 @@ function getPostedLabel(createdAt: string, listings: { today: string; yesterday:
   return `${diffDays} ${listings.daysAgo}`;
 }
 
+function resolvePhotoSrc(src: string): string {
+  return src.startsWith("http") ? src : src.startsWith("/api") ? src : `/api/storage${src}`;
+}
+
 function ProjectPreviewCard({ project, t, language }: {
-  project: { id: number; title?: string | null; projectType: string; description: string; city: string; budget?: string | null; size?: string | null; createdAt: string };
+  project: { id: number; title?: string | null; projectType: string; description: string; city: string; budget?: string | null; size?: string | null; createdAt: string; photos?: string[] | null; posterName?: string; posterAvatarUrl?: string | null; posterType?: string | null };
   t: ReturnType<typeof useLanguage>["t"];
   language: string;
 }) {
@@ -159,16 +163,31 @@ function ProjectPreviewCard({ project, t, language }: {
   const typeLabel = resolveCategoryLabel(project.projectType, language as Lang);
   const cardTitle = project.title ?? typeLabel;
   const postedLabel = getPostedLabel(project.createdAt, t.listings);
+  const firstPhoto = (project.photos ?? []).find(Boolean);
+  const coverSrc = firstPhoto ? resolvePhotoSrc(firstPhoto) : (getCategoryByKey(project.projectType)?.photo ?? CATEGORIES[0].photo);
+  const posterName = project.posterName?.trim();
+  const isCompanyPoster = project.posterType === "company";
+  const PosterIcon = isCompanyPoster ? Building2 : User;
+  const posterAvatar = project.posterAvatarUrl ? resolvePhotoSrc(project.posterAvatarUrl) : null;
+  const posterInitial = posterName ? posterName.charAt(0).toUpperCase() : "";
 
   return (
     <Link href={`/projects/${project.id}`}>
     <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden h-full cursor-pointer group">
+      {/* Cover photo */}
+      <div className="relative h-40 overflow-hidden bg-muted flex-shrink-0">
+        <img
+          src={coverSrc}
+          alt={cardTitle}
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+        <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm ${sizeColor}`}>{sizeLabel}</span>
+      </div>
       {/* Header */}
       <div className="px-5 pt-5 pb-4">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 flex-1">{cardTitle}</h3>
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 mt-0.5 ${sizeColor}`}>{sizeLabel}</span>
-        </div>
+        <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 mb-3">{cardTitle}</h3>
         {/* Category pill */}
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
           <Icon className="w-3.5 h-3.5 flex-shrink-0" />
@@ -197,6 +216,20 @@ function ProjectPreviewCard({ project, t, language }: {
             {postedLabel}
           </span>
         </div>
+        {posterName && (
+          <div className="flex items-center gap-2 pt-3 border-t border-border/40">
+            {posterAvatar ? (
+              <img src={posterAvatar} alt={posterName} loading="lazy" className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-border" />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 text-[11px] font-bold">{posterInitial}</div>
+            )}
+            <span className="text-xs font-medium text-foreground/80 truncate">{posterName}</span>
+            <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground flex-shrink-0">
+              <PosterIcon className="w-3 h-3" />
+              {isCompanyPoster ? (t.companies?.company ?? "Company") : (t.companies?.individual ?? "Individual")}
+            </span>
+          </div>
+        )}
       </div>
     </div>
     </Link>

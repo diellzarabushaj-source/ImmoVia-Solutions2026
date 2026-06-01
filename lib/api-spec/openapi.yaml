@@ -762,6 +762,15 @@ components:
         createdAt:
           type: string
           format: date-time
+        posterName:
+          type: string
+          description: "Public display name of who posted the project (company name or person's full name)"
+        posterAvatarUrl:
+          type: ["string", "null"]
+          description: "Profile photo / logo of the poster (object path or absolute URL)"
+        posterType:
+          type: ["string", "null"]
+          description: "individual | company"
 
     ProjectInput:
       type: object

@@ -42,4 +42,16 @@ export interface Project {
   /** pending | reviewing | matched | completed | cancelled */
   status: string;
   createdAt: Date;
+  /** Public display name of who posted the project (company name or person's full name) */
+  posterName?: string;
+  /**
+     * Profile photo / logo of the poster (object path or absolute URL)
+     * @nullable
+     */
+  posterAvatarUrl?: string | null;
+  /**
+     * individual | company
+     * @nullable
+     */
+  posterType?: string | null;
 }

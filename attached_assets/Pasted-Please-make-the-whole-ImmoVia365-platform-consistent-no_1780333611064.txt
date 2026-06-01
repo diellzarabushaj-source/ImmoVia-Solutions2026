@@ -1,0 +1,132 @@
+Please make the whole ImmoVia365 platform consistent, not only projects.
+
+Very important:
+Projects and Service Providers must always use one unified system, one consistent database structure, one consistent design language, and reusable components everywhere.
+
+## 1. Project consistency
+
+All project displays must look and work the same everywhere:
+
+* Home page project cards
+* Browse Projects page
+* Project detail page
+* Service Provider dashboard
+* Project Poster dashboard
+* Admin dashboard
+* Recommended projects
+* Saved/favorite projects
+
+Please create/standardize one reusable component:
+
+ProjectCard / ProjectPreview / ProjectDetailBlock
+
+Use the same project fields everywhere:
+
+* title
+* category
+* subcategory
+* city/canton
+* budget range
+* timeline
+* short description
+* status
+* project poster type: individual/company
+* poster name/company name
+* poster avatar/logo
+* number of offers
+* locked contact state
+* created date
+
+Design rule:
+Project cards should follow the same visual style as the Home page. If the design is updated later, it should update everywhere automatically.
+
+Privacy rule:
+Never show phone/email/contact details on public project cards. Contact details stay locked unless a provider unlocks contact or a conversation is opened.
+
+## 2. Service Provider consistency
+
+Service Providers must also have one unified display system everywhere:
+
+* Home page provider cards
+* Browse Providers page
+* Provider detail page
+* Project detail page recommended providers
+* Project Poster dashboard offer comparison
+* Admin dashboard
+* Messages/conversations
+* Reviews
+* Favorites/saved providers
+
+Please create/standardize one reusable component:
+
+ProviderCard / ProviderPreview / ProviderProfileBlock
+
+Use the same provider fields everywhere:
+
+* provider name or company name
+* provider type: individual/company
+* logo/avatar
+* categories/services
+* city/canton/service area
+* rating/reviews
+* verification status
+* subscription plan badge if available
+* portfolio preview
+* response rate if available
+* completed projects if available
+* visibility/status
+* contact locked/unlocked state
+
+Design rule:
+Provider cards should have the same structure, spacing, typography, badges, and buttons everywhere. No page should have a different/random provider card design.
+
+Privacy rule:
+Do not show private phone/email publicly. Contact details should only appear when allowed by the platform logic.
+
+## 3. One unified design system
+
+Please avoid duplicated inconsistent UI.
+
+Use shared reusable components for:
+
+* Project cards
+* Provider cards
+* Status badges
+* Plan badges
+* Category tags
+* City/canton labels
+* Locked contact UI
+* Offer buttons
+* Save/favorite buttons
+* Empty states
+* Loading states
+
+The visual style should be consistent across:
+
+* Public website
+* Service Provider portal
+* Project Poster portal
+* Admin dashboard
+* Mobile view
+* Desktop view
+
+## 4. One source of truth
+
+Projects should come from one consistent project data structure.
+
+Service Providers should come from one consistent provider data structure.
+
+Do not create separate fake/static versions of project cards or provider cards on different pages. If demo data is used, it must still follow the same schema as real production data.
+
+## 5. Final task
+
+Please inspect all pages where projects or providers appear and replace inconsistent layouts with the unified reusable components.
+
+At the end, tell me:
+
+* Which pages were updated
+* Which components were created or reused
+* Which database fields are used
+* Whether projects now look consistent everywhere
+* Whether service providers now look consistent everywhere
+* Whether mobile and desktop are both consistent

@@ -46,7 +46,10 @@ export const ListProjectsResponseItem = zod.object({
   "size": zod.string().optional().describe('small | medium | large | premium'),
   "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos'),
   "status": zod.string().describe('pending | reviewing | matched | completed | cancelled'),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "posterName": zod.string().optional().describe('Public display name of who posted the project (company name or person\'s full name)'),
+  "posterAvatarUrl": zod.string().nullish().describe('Profile photo \/ logo of the poster (object path or absolute URL)'),
+  "posterType": zod.string().nullish().describe('individual | company')
 })
 export const ListProjectsResponse = zod.array(ListProjectsResponseItem)
 
@@ -105,7 +108,10 @@ export const GetProjectResponse = zod.object({
   "size": zod.string().optional().describe('small | medium | large | premium'),
   "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos'),
   "status": zod.string().describe('pending | reviewing | matched | completed | cancelled'),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "posterName": zod.string().optional().describe('Public display name of who posted the project (company name or person\'s full name)'),
+  "posterAvatarUrl": zod.string().nullish().describe('Profile photo \/ logo of the poster (object path or absolute URL)'),
+  "posterType": zod.string().nullish().describe('individual | company')
 })
 
 
@@ -142,7 +148,10 @@ export const UpdateProjectResponse = zod.object({
   "size": zod.string().optional().describe('small | medium | large | premium'),
   "photos": zod.array(zod.string()).optional().describe('Array of object paths for project photos'),
   "status": zod.string().describe('pending | reviewing | matched | completed | cancelled'),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "posterName": zod.string().optional().describe('Public display name of who posted the project (company name or person\'s full name)'),
+  "posterAvatarUrl": zod.string().nullish().describe('Profile photo \/ logo of the poster (object path or absolute URL)'),
+  "posterType": zod.string().nullish().describe('individual | company')
 })
 
 

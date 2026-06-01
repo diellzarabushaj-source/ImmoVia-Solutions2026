@@ -36,6 +36,39 @@ function redactContact<T extends { fullName: string; email: string; phone: strin
   return { ...project, fullName: "", email: "", phone: "" };
 }
 
+type OwnerInfo = {
+  ownerFullName: string | null;
+  ownerCompanyName: string | null;
+  ownerAvatarUrl: string | null;
+  ownerSubtype: string | null;
+};
+
+// Poster identity (name + avatar + type) is only exposed to authenticated
+// users — for public/unauthenticated requests the poster fields are blanked
+// (alongside the contact details handled by redactContact). For projects with
+// a linked account, prefer the account's company name / full name; legacy
+// projects fall back to the project's own name.
+function withPoster<P extends { fullName: string }>(project: P, owner: OwnerInfo, includePoster: boolean) {
+  if (!includePoster) {
+    return { ...project, posterName: "", posterAvatarUrl: null as string | null, posterType: null as string | null };
+  }
+  const isCompany = owner.ownerSubtype === "company";
+  const posterName = (isCompany ? owner.ownerCompanyName : null) ?? owner.ownerFullName ?? project.fullName ?? "";
+  return {
+    ...project,
+    posterName,
+    posterAvatarUrl: owner.ownerAvatarUrl ?? null,
+    posterType: owner.ownerSubtype ?? null,
+  };
+}
+
+const ownerSelect = {
+  ownerFullName: usersTable.fullName,
+  ownerCompanyName: usersTable.companyName,
+  ownerAvatarUrl: usersTable.avatarUrl,
+  ownerSubtype: usersTable.accountSubtype,
+};
+
 router.get("/projects", async (req, res): Promise<void> => {
   const { city, type, status } = req.query;
   const conditions = [];
@@ -48,12 +81,15 @@ router.get("/projects", async (req, res): Promise<void> => {
   if (typeof status === "string" && status.trim()) {
     conditions.push(eq(projectsTable.status, status.trim()));
   }
-  const projects = await db
-    .select()
+  const rows = await db
+    .select({ project: projectsTable, ...ownerSelect })
     .from(projectsTable)
+    .leftJoin(usersTable, eq(projectsTable.ownerUserId, usersTable.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(sql`${projectsTable.createdAt} desc`);
-  const payload = isAuthenticated(req) ? projects : projects.map(redactContact);
+  const authed = isAuthenticated(req);
+  const projects = rows.map(r => withPoster(r.project, r, authed));
+  const payload = authed ? projects : projects.map(redactContact);
   res.json(ListProjectsResponse.parse(payload));
 });
 
@@ -132,17 +168,20 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [project] = await db
-    .select()
+  const [row] = await db
+    .select({ project: projectsTable, ...ownerSelect })
     .from(projectsTable)
+    .leftJoin(usersTable, eq(projectsTable.ownerUserId, usersTable.id))
     .where(eq(projectsTable.id, params.data.id));
 
-  if (!project) {
+  if (!row) {
     res.status(404).json({ error: "Project not found" });
     return;
   }
 
-  const payload = isAuthenticated(req) ? project : redactContact(project);
+  const authed = isAuthenticated(req);
+  const project = withPoster(row.project, row, authed);
+  const payload = authed ? project : redactContact(project);
   res.json(GetProjectResponse.parse(payload));
 });
 
