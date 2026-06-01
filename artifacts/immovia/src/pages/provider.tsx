@@ -1299,44 +1299,37 @@ export default function ProviderDashboard() {
 
                 if (browseView === "list") {
                   return (
-                    <Card>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>{t.provider.colClient}</TableHead>
-                            <TableHead>{t.provider.colType}</TableHead>
-                            <TableHead>{t.provider.colCity}</TableHead>
-                            <TableHead>{t.provider.colSize}</TableHead>
-                            <TableHead className="text-right">{t.provider.colAction}</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filtered.map(p => (
-                            <TableRow key={p.id}>
-                              <TableCell className="font-medium">{p.fullName}</TableCell>
-                              <TableCell>
-                                <div>{getCategoryLabel(CATEGORIES.find(c => c.key === p.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}</div>
-                                {(p as {subcategory?: string | null}).subcategory && (
-                                  <div className="text-xs text-primary/70">{resolveTagLabel((p as {subcategory?: string | null}).subcategory!, language as Lang)}</div>
-                                )}
-                              </TableCell>
-                              <TableCell>{p.city}</TableCell>
-                              <TableCell className="capitalize">{p.size}</TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <Button size="sm" variant="outline" onClick={() => setDetailProject(p)} data-testid={`button-view-project-${p.id}`}>
-                                    {t.provider.viewDetails}
-                                  </Button>
-                                  <Button size="sm" onClick={() => openOfferModal(p)} disabled={atLimit} data-testid={`button-send-offer-${p.id}`}>
-                                    {t.provider.sendOffer}
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </Card>
+                    <div className="grid grid-cols-1 gap-4 max-w-3xl mx-auto">
+                      {filtered.map(p => (
+                        <ProjectCard
+                          key={p.id}
+                          project={p}
+                          onClick={() => setDetailProject(p)}
+                          footer={
+                            <div className="flex gap-2 pt-3 border-t border-border/40">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={(e) => { e.stopPropagation(); setDetailProject(p); }}
+                                data-testid={`button-view-project-${p.id}`}
+                              >
+                                {t.provider.viewDetails}
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="flex-1"
+                                onClick={(e) => { e.stopPropagation(); openOfferModal(p); }}
+                                disabled={atLimit}
+                                data-testid={`button-send-offer-${p.id}`}
+                              >
+                                {t.provider.sendOffer}
+                              </Button>
+                            </div>
+                          }
+                        />
+                      ))}
+                    </div>
                   );
                 }
 

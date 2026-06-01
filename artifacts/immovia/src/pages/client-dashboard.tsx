@@ -25,6 +25,7 @@ import {
 import { format } from "date-fns";
 import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
 import { ProviderCard } from "@/components/provider/ProviderCard";
+import { ProjectCard } from "@/components/project/ProjectCard";
 
 // ── Category icon map ─────────────────────────────────────────────────────────
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -460,54 +461,40 @@ export default function ClientDashboard() {
                     <Button onClick={() => setActiveSection("erstellen")}><PlusCircle className="w-4 h-4 mr-2" />{l.noProjectCta}</Button>
                   </Card>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {projects.map(p => {
                       const offers = offersByProject[p.id] ?? [];
                       const isArchiving = archiving === p.id;
+                      const applicationsLabel = language === "de" ? "Bewerbungen" : language === "fr" ? "candidatures" : language === "sq" ? "aplikime" : "applications";
                       return (
-                        <Card key={p.id} className={`p-5 ${p.status === "archived" ? "opacity-60" : ""}`}>
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold capitalize truncate" data-testid={`project-${p.id}`}>
-                                {p.title ?? p.projectType}
-                              </h3>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap">
-                                <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{p.city}</span>
-                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{format(new Date(p.createdAt), "dd.MM.yyyy")}</span>
-                              </div>
+                        <ProjectCard
+                          key={p.id}
+                          project={{ ...p, offersCount: offers.length }}
+                          showStatus
+                          offersLabel={applicationsLabel}
+                          onClick={() => setLocation(`/projects/${p.id}`)}
+                          footer={
+                            <div className="flex flex-wrap gap-2 pt-3 border-t border-border/40">
+                              <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setActiveSection("bewerbungen"); }}>
+                                <Users className="w-3.5 h-3.5 mr-1.5" />{l.viewApplications}
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setActiveSection("nachrichten"); }}>
+                                <MessageSquare className="w-3.5 h-3.5 mr-1.5" />{l.openMessages}
+                              </Button>
+                              {p.status !== "archived" && p.status !== "completed" && (
+                                <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setEditingProject(p); }}>
+                                  <Pencil className="w-3.5 h-3.5 mr-1.5" />{l.editProject}
+                                </Button>
+                              )}
+                              {p.status !== "archived" && p.status !== "completed" && (
+                                <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={(e) => { e.stopPropagation(); onArchive(p.id); }} disabled={isArchiving}>
+                                  {isArchiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5 mr-1.5" />}
+                                  {l.archiveProject}
+                                </Button>
+                              )}
                             </div>
-                            <span className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${statusColor(p.status)}`}>{statusLabel(p.status)}</span>
-                          </div>
-
-                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{p.description}</p>
-
-                          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-4">
-                            {p.budget && <span className="bg-muted px-2 py-1 rounded">{p.budget}</span>}
-                            {p.timeline && <span className="bg-muted px-2 py-1 rounded">{p.timeline}</span>}
-                            <span className="bg-muted px-2 py-1 rounded capitalize">{p.size}</span>
-                            <span className="bg-muted px-2 py-1 rounded">{offers.length} {language === "de" ? "Bewerbungen" : language === "fr" ? "candidatures" : language === "sq" ? "aplikime" : "applications"}</span>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            <Button size="sm" variant="outline" onClick={() => { setActiveSection("bewerbungen"); }}>
-                              <Users className="w-3.5 h-3.5 mr-1.5" />{l.viewApplications}
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => setActiveSection("nachrichten")}>
-                              <MessageSquare className="w-3.5 h-3.5 mr-1.5" />{l.openMessages}
-                            </Button>
-                            {p.status !== "archived" && p.status !== "completed" && (
-                              <Button size="sm" variant="outline" onClick={() => setEditingProject(p)}>
-                                <Pencil className="w-3.5 h-3.5 mr-1.5" />{l.editProject}
-                              </Button>
-                            )}
-                            {p.status !== "archived" && p.status !== "completed" && (
-                              <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => onArchive(p.id)} disabled={isArchiving}>
-                                {isArchiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5 mr-1.5" />}
-                                {l.archiveProject}
-                              </Button>
-                            )}
-                          </div>
-                        </Card>
+                          }
+                        />
                       );
                     })}
                   </div>

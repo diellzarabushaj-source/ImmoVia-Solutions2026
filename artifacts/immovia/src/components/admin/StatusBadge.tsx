@@ -17,6 +17,14 @@ export function StatusBadge({ status }: StatusBadgeProps) {
       return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">{t.admin.stApproved}</Badge>;
     case "matched":
       return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-xs">{t.admin.stMatched}</Badge>;
+    case "in_discussion":
+      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">{t.admin.stInDiscussion}</Badge>;
+    case "offer_received":
+      return <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-xs">{t.admin.stOfferReceived}</Badge>;
+    case "completed":
+      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">{t.admin.stCompleted}</Badge>;
+    case "archived":
+      return <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200 text-xs">{t.admin.stArchived}</Badge>;
     case "rejected":
       return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">{t.admin.stRejected}</Badge>;
     case "cancelled":
