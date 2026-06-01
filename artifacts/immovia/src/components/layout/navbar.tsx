@@ -155,7 +155,7 @@ export function Navbar() {
           <img
             src="/logo-color.png"
             alt="ImmoVia365"
-            className="h-10 md:h-12 w-auto object-contain"
+            className="h-14 md:h-16 w-auto object-contain"
             decoding="async"
             loading="eager"
           />
