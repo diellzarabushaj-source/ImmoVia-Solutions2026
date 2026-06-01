@@ -1,0 +1,63 @@
+Please prepare ImmoVia365 for production launch and update the production database/data.
+
+Current situation:
+
+* Stripe live payments now work.
+* The CHF 1 test payment worked.
+* Now I want the website and production database to be clean and correct before publishing.
+* Some things are still old/wrong, for example the logo is still the old one in some places.
+
+Please do the following carefully:
+
+1. Production database update
+
+* Check the current production database data.
+* Make sure the pricing plans are correct:
+
+  * Basic: CHF 29/month
+  * Professional: CHF 59/month
+  * Premium: CHF 99/month
+* Remove or mark test/demo Stripe data so it does not count as real revenue, subscriptions, invoices, credits, or paid plans.
+* Make sure no user is upgraded from the CHF 1 test payment.
+* Do not delete real users or real company/project data without asking me first.
+
+2. Logo and branding
+
+* Replace the old logo everywhere with the new ImmoVia365 logo.
+* Check header, footer, dashboard, auth pages, pricing page, emails/checkout branding references if present, and mobile view.
+* Make sure the brand name is always written as ImmoVia365.
+* Use the current tagline:
+  Einfach planen | clever umsetzen
+
+3. Remove test payment from public website
+
+* Hide/remove the CHF 1 test payment button from public pages.
+* If a test payment endpoint exists, make it admin-only or disable it.
+* Normal users should only see Basic, Professional, and Premium plans.
+
+4. Disable unsafe old billing endpoint
+
+* Remove or disable /api/billing/subscribe if it can activate paid plans without Stripe payment.
+* Paid plans must only activate after verified Stripe Checkout/webhook confirmation.
+
+5. Production safety check
+
+* Make sure subscription activation only happens through Stripe webhook.
+* Make sure Stripe Connect/payouts are not enabled.
+* Providers only pay ImmoVia365 for subscriptions/credits.
+* No yearly toggle unless we explicitly add yearly plans later.
+* No old prices should appear anywhere.
+
+6. Final validation
+
+* Run typecheck/build.
+* Restart the server.
+* Check desktop and mobile.
+* Tell me exactly:
+
+  * Which files changed
+  * Which production database tables/rows changed
+  * Whether old logo is fully replaced
+  * Whether test payment is hidden/removed
+  * Whether /api/billing/subscribe is disabled
+  * Whether the app is safe for production launch

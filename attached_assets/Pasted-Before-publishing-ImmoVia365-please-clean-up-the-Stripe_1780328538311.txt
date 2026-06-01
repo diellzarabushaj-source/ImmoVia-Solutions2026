@@ -1,0 +1,62 @@
+Before publishing ImmoVia365, please clean up the Stripe test payment and make the production database safe.
+
+Current status:
+- Live Stripe setup works.
+- CHF 1 test payment worked successfully.
+- Now I want to prepare the app for production/public launch.
+
+Please do the following carefully:
+
+1. Remove or fully hide the CHF 1 test payment button from the public UI.
+   - It should not appear on pricing, dashboard, provider dashboard, or any public page.
+   - If you keep it for future debugging, make it admin-only and protected, but preferably remove it for production.
+
+2. Remove the CHF 1 test payment flow from normal user access.
+   - Do not allow normal providers/users to access the test checkout endpoint.
+   - If there is an endpoint for test checkout, disable it or restrict it to admin only.
+
+3. Stop using STRIPE_TEST_PRICE_ID in production UI.
+   - Keep the secret if needed, but do not expose or call it in public flows.
+
+4. Clean the production database safely:
+   - Find records related to the CHF 1 test payment.
+   - Mark them as test/refunded/internal OR remove them if they are not needed.
+   - Make sure the CHF 1 test payment did not upgrade any user plan.
+   - Make sure it does not count in revenue analytics, subscriptions, provider credits, invoices, or dashboard stats.
+   - Do not delete real Stripe customer/subscription data for real plans.
+   - Before deleting anything, tell me exactly which tables and rows will be affected.
+
+5. Very important:
+   Remove or disable the old legacy endpoint:
+   /api/billing/subscribe
+
+   The previous review said this endpoint can grant a paid plan without an actual Stripe charge.
+   Paid plan activation must only happen through verified Stripe Checkout + webhook events.
+   Please make sure no user can upgrade to Basic/Professional/Premium unless Stripe confirms payment/subscription through the webhook.
+
+6. Verify webhook logic:
+   - checkout.session.completed
+   - customer.subscription.created
+   - customer.subscription.updated
+   - customer.subscription.deleted
+   - invoice.payment_succeeded
+   - invoice.payment_failed
+
+   Make sure only real paid subscriptions activate paid plans.
+
+7. Production database final check:
+   - Basic = CHF 29/month
+   - Professional = CHF 59/month
+   - Premium = CHF 99/month
+   - No yearly toggle
+   - No test payment shown publicly
+   - No fake paid plan activation
+   - No Stripe Connect/payouts
+   - Providers only pay ImmoVia365 for subscriptions/credits.
+
+8. After cleanup, run typecheck/build and restart the server.
+9. Then tell me:
+   - Which files changed
+   - Which database records were changed or removed
+   - Whether /api/billing/subscribe is disabled/removed
+   - Whether the production payment flow is safe for public launch

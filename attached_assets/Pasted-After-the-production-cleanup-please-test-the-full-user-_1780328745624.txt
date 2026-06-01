@@ -1,0 +1,78 @@
+After the production cleanup, please test the full user flow end-to-end and confirm everything works.
+
+Please test these flows:
+
+1. Public website flow
+
+* Home page loads correctly.
+* Logo is updated everywhere.
+* Header/footer look correct on desktop and mobile.
+* Pricing page shows only:
+
+  * Basic CHF 29/month
+  * Professional CHF 59/month
+  * Premium CHF 99/month
+* No CHF 1 test payment is visible publicly.
+* No old prices or old logo are visible.
+
+2. Authentication flow
+
+* New user can register/login.
+* Existing user can login.
+* User roles still work correctly:
+
+  * project poster
+  * service provider
+  * admin
+
+3. Provider subscription flow
+
+* Provider can choose Basic/Professional/Premium.
+* Stripe Checkout opens correctly.
+* Success returns to /dashboard?payment=success.
+* Cancel returns to /pricing?payment=cancelled.
+* After successful Stripe payment/webhook, the provider plan updates correctly in the database.
+* The plan does not update before Stripe confirms payment.
+
+4. Payment safety
+
+* /api/billing/subscribe is removed, disabled, or protected so users cannot upgrade without real Stripe payment.
+* Paid plans activate only through verified Stripe Checkout/webhook.
+* Stripe secret key is never exposed to the frontend.
+* Webhook signature verification works.
+
+5. Database check
+
+* Production database has correct plan prices:
+
+  * Basic 29
+  * Professional 59
+  * Premium 99
+* No CHF 1 test payment counts as real revenue, subscription, invoice, credits, or paid plan.
+* No user was upgraded because of the CHF 1 test payment.
+* No important real users/projects/companies were deleted.
+
+6. Dashboard flow
+
+* Provider dashboard loads correctly.
+* Project poster dashboard loads correctly.
+* Admin dashboard loads correctly.
+* Subscription status appears correctly.
+* Any locked/premium features still respect the user plan.
+
+7. Final technical checks
+
+* Run typecheck.
+* Run build.
+* Restart server.
+* Check logs for Stripe/database errors.
+* Test desktop and mobile layout.
+
+At the end, please give me a clear launch report:
+
+* What was fixed
+* What was changed in the production database
+* What was tested
+* What passed
+* What still needs attention before publishing
+* Whether ImmoVia365 is safe to publish now
