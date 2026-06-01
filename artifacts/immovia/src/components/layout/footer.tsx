@@ -115,7 +115,7 @@ export function Footer() {
           <p className="text-xs text-white/40">
             &copy; {new Date().getFullYear()} ImmoVia365. {t.footer.rights}
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-end">
             <Link href="/terms" className="text-xs text-white/30 hover:text-white/60 transition-colors">
               {t.footer.terms}
             </Link>
@@ -123,6 +123,14 @@ export function Footer() {
             <Link href="/privacy" className="text-xs text-white/30 hover:text-white/60 transition-colors">
               {t.footer.privacy}
             </Link>
+            <span className="text-white/20">·</span>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("immovia:open-cookie-settings"))}
+              className="text-xs text-white/30 hover:text-white/60 transition-colors cursor-pointer bg-transparent border-0 p-0"
+            >
+              Cookie-Einstellungen
+            </button>
             <span className="text-white/20">·</span>
             <Link href="/admin" className="text-xs text-white/20 hover:text-white/40 transition-colors">
               {t.footer.admin}
