@@ -57,20 +57,6 @@ const CANCELLED_NOTICE: Record<string, string> = {
   fr: "Paiement annulé. Vous n'avez pas été débité.",
 };
 
-const TEST_PAYMENT_LABEL: Record<string, string> = {
-  de: "Test-Zahlung (CHF 1)",
-  en: "Test payment (CHF 1)",
-  sq: "Pagesë testuese (CHF 1)",
-  fr: "Paiement test (CHF 1)",
-};
-
-const TEST_PAYMENT_HINT: Record<string, string> = {
-  de: "Nur für Admins — einmalige Live-Testzahlung, kein Plan-Upgrade.",
-  en: "Admins only — one-time live test charge, no plan upgrade.",
-  sq: "Vetëm për adminët — pagesë testuese e njëhershme, pa ndryshim plani.",
-  fr: "Admins uniquement — paiement test unique, sans changement de plan.",
-};
-
 const PER_MONTH_LABEL: Record<string, string> = {
   de: "/Monat",
   en: "/month",
@@ -101,12 +87,11 @@ const MOST_POPULAR: Record<string, string> = {
 
 export default function Pricing() {
   const { t, language } = useLanguage();
-  usePageMeta({ title: `${t.pricing.title} — ImmoVia`, description: t.pricing.subtitle ?? undefined });
+  usePageMeta({ title: `${t.pricing.title} — ImmoVia365`, description: t.pricing.subtitle ?? undefined });
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState<number | null>(null);
-  const [testLoading, setTestLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cancelled, setCancelled] = useState(false);
 
@@ -120,7 +105,6 @@ export default function Pricing() {
   }, []);
 
   const isProvider = isServiceProvider(user);
-  const isAdmin = user?.role === "admin";
 
   const handlePlanCta = async (plan: SubscriptionPlan) => {
     setError(null);
@@ -151,18 +135,6 @@ export default function Pricing() {
     }
   };
 
-  const handleTestPayment = async () => {
-    setError(null);
-    setTestLoading(true);
-    try {
-      const { url } = await billingApi.stripeTestCheckout();
-      window.location.href = url;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Test checkout failed");
-      setTestLoading(false);
-    }
-  };
-
   const creditsLabel = CREDITS_LABEL[language] ?? CREDITS_LABEL.de;
   const unlimitedLabel = UNLIMITED_LABEL[language] ?? UNLIMITED_LABEL.de;
   const perMonth = PER_MONTH_LABEL[language] ?? PER_MONTH_LABEL.de;
@@ -170,7 +142,7 @@ export default function Pricing() {
   const subscribeCta = SUBSCRIBE_CTA[language] ?? SUBSCRIBE_CTA.de;
   const mostPopular = MOST_POPULAR[language] ?? MOST_POPULAR.de;
 
-  const displayedPlans = plans.filter(p => ["free", "basic", "pro", "premium"].includes(p.slug));
+  const displayedPlans = plans.filter(p => ["basic", "pro", "premium"].includes(p.slug));
 
   function displayPrice(plan: SubscriptionPlan): string {
     if (plan.priceCents === 0) return "CHF 0";
@@ -200,7 +172,7 @@ export default function Pricing() {
       )}
 
       {/* Plans grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
         {displayedPlans.map((plan) => {
           const isCurrentlyLoading = loading === plan.id;
           const isFree = plan.slug === "free";
@@ -270,24 +242,6 @@ export default function Pricing() {
         })}
       </div>
 
-      {/* Admin-only live test payment (CHF 1, no plan upgrade) */}
-      {isAdmin && (
-        <div className="max-w-md mx-auto mt-12 text-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void handleTestPayment()}
-            disabled={testLoading}
-            data-testid="button-test-payment"
-          >
-            {testLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {TEST_PAYMENT_LABEL[language] ?? TEST_PAYMENT_LABEL.de}
-          </Button>
-          <p className="text-xs text-muted-foreground mt-2">
-            {TEST_PAYMENT_HINT[language] ?? TEST_PAYMENT_HINT.de}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

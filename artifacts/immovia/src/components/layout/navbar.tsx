@@ -154,7 +154,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center shrink-0" data-testid="link-home-logo">
           <img
             src="/logo-color.png"
-            alt="Immovia365"
+            alt="ImmoVia365"
             className="h-10 md:h-12 w-auto object-contain"
             decoding="async"
             loading="eager"

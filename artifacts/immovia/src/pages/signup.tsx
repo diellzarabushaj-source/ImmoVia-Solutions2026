@@ -109,7 +109,7 @@ export default function Signup() {
   const Shell = ({ children, maxW = "max-w-3xl" }: { children: React.ReactNode; maxW?: string }) => (
     <div className={`container mx-auto px-4 py-12 md:py-20 ${maxW}`}>
       <div className="flex justify-center mb-8">
-        <img src="/logo-color.png" alt="ImmoVia" className="h-14 md:h-16 w-auto object-contain" decoding="async" />
+        <img src="/logo-color.png" alt="ImmoVia365" className="h-14 md:h-16 w-auto object-contain" decoding="async" />
       </div>
       <ProgressBar />
       <div className="text-center mb-1">

@@ -1,6 +1,6 @@
 {
-  "name": "ImmoVia",
-  "short_name": "ImmoVia",
+  "name": "ImmoVia365",
+  "short_name": "ImmoVia365",
   "description": "Professional renovation and construction services",
   "icons": [
     { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },

@@ -57,10 +57,10 @@ const i18n = {
       fr: (sender: string) => `Nouvelle offre sur votre projet — ${sender}`,
     },
     heading: {
-      sq: "ImmoVia — Ofertë e Re",
-      en: "ImmoVia — New Offer Received",
-      de: "ImmoVia — Neues Angebot",
-      fr: "ImmoVia — Nouvelle Offre",
+      sq: "ImmoVia365 — Ofertë e Re",
+      en: "ImmoVia365 — New Offer Received",
+      de: "ImmoVia365 — Neues Angebot",
+      fr: "ImmoVia365 — Nouvelle Offre",
     },
     hi: {
       sq: (name: string) => `Përshëndetje ${name},`,
@@ -87,10 +87,10 @@ const i18n = {
       fr: (type: string, city: string) => `Votre offre a été acceptée — ${type} à ${city}`,
     },
     heading: {
-      sq: "ImmoVia — Ofertë e Pranuar",
-      en: "ImmoVia — Offer Accepted",
-      de: "ImmoVia — Angebot angenommen",
-      fr: "ImmoVia — Offre acceptée",
+      sq: "ImmoVia365 — Ofertë e Pranuar",
+      en: "ImmoVia365 — Offer Accepted",
+      de: "ImmoVia365 — Angebot angenommen",
+      fr: "ImmoVia365 — Offre acceptée",
     },
     hi: {
       sq: (name: string) => `Përshëndetje ${name},`,
@@ -120,10 +120,10 @@ const i18n = {
       fr: (sender: string) => `Nouveau message de ${sender}`,
     },
     heading: {
-      sq: "ImmoVia — Mesazh i Ri",
-      en: "ImmoVia — New Message",
-      de: "ImmoVia — Neue Nachricht",
-      fr: "ImmoVia — Nouveau Message",
+      sq: "ImmoVia365 — Mesazh i Ri",
+      en: "ImmoVia365 — New Message",
+      de: "ImmoVia365 — Neue Nachricht",
+      fr: "ImmoVia365 — Nouveau Message",
     },
     hi: {
       sq: (name: string) => `Përshëndetje ${name},`,
@@ -145,10 +145,10 @@ const i18n = {
 
 function footer(lang: Lang): string {
   const text = {
-    sq: "Platforma ImmoVia &mdash; Njoftim Automatik",
-    en: "ImmoVia Platform &mdash; Automated Notification",
-    de: "ImmoVia Plattform &mdash; Automatische Benachrichtigung",
-    fr: "Plateforme ImmoVia &mdash; Notification automatique",
+    sq: "Platforma ImmoVia365 &mdash; Njoftim Automatik",
+    en: "ImmoVia365 Platform &mdash; Automated Notification",
+    de: "ImmoVia365 Plattform &mdash; Automatische Benachrichtigung",
+    fr: "Plateforme ImmoVia365 &mdash; Notification automatique",
   };
   return `<p style="${FOOTER_STYLE}">${text[lang]}</p>`;
 }
@@ -172,13 +172,13 @@ export async function sendNewProjectNotification(project: {
   }
 
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to,
     subject: `New Project Request — ${project.projectType} in ${project.city}`,
     html: `
       <div style="${WRAP_STYLE}">
         <div style="${NAV_STYLE}">
-          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — New Project Request</h1>
+          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia365 — New Project Request</h1>
         </div>
         <div style="${BODY_STYLE}">
           <table style="width:100%;border-collapse:collapse">
@@ -223,13 +223,13 @@ export async function sendProjectConfirmationToClient(project: {
   }
 
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to: project.email,
-    subject: `Ihre Anfrage wurde erfolgreich eingereicht — ImmoVia`,
+    subject: `Ihre Anfrage wurde erfolgreich eingereicht — ImmoVia365`,
     html: `
       <div style="${WRAP_STYLE}">
         <div style="${NAV_STYLE}">
-          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Anfrage bestätigt</h1>
+          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia365 — Anfrage bestätigt</h1>
         </div>
         <div style="${BODY_STYLE}">
           <p style="margin:0 0 12px">Guten Tag <strong>${project.fullName}</strong>,</p>
@@ -286,13 +286,13 @@ export async function sendNewCompanyNotification(company: {
   }
 
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to,
     subject: `New Company Registration — ${company.companyName}`,
     html: `
       <div style="${WRAP_STYLE}">
         <div style="${NAV_STYLE}">
-          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — New Company Registration</h1>
+          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia365 — New Company Registration</h1>
         </div>
         <div style="${BODY_STYLE}">
           <table style="width:100%;border-collapse:collapse">
@@ -346,7 +346,7 @@ export async function sendNewOfferNotification(data: {
   const senderLabel = data.providerCompany ?? data.providerName;
 
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to: data.clientEmail,
     subject: t.subject[lang](senderLabel),
     html: `
@@ -393,7 +393,7 @@ export async function sendOfferAcceptedNotification(data: {
   const t = i18n.offerAccepted;
 
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to: data.providerEmail,
     subject: t.subject[lang](data.projectType, data.city),
     html: `
@@ -429,12 +429,12 @@ export async function sendProjectPublishedNotification(data: {
   if (!client || !data.clientEmail) return;
   const url = appUrl();
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to: data.clientEmail,
-    subject: `Ihr Projekt wurde veröffentlicht — ImmoVia`,
+    subject: `Ihr Projekt wurde veröffentlicht — ImmoVia365`,
     html: `
       <div style="${WRAP_STYLE}">
-        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Projekt veröffentlicht</h1></div>
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia365 — Projekt veröffentlicht</h1></div>
         <div style="${BODY_STYLE}">
           <p style="margin:0 0 12px">Guten Tag <strong>${data.clientName}</strong>,</p>
           <p style="margin:0 0 20px">Ihr Projekt <strong>${data.projectType}</strong> in <strong>${data.city}</strong> wurde geprüft und ist jetzt auf der Plattform veröffentlicht. Fachbetriebe können Ihr Projekt nun einsehen und Angebote einreichen.</p>
@@ -460,12 +460,12 @@ export async function sendProjectRejectedNotification(data: {
   if (!client || !data.clientEmail) return;
   const url = appUrl();
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to: data.clientEmail,
-    subject: `Ihr Projekt konnte nicht veröffentlicht werden — ImmoVia`,
+    subject: `Ihr Projekt konnte nicht veröffentlicht werden — ImmoVia365`,
     html: `
       <div style="${WRAP_STYLE}">
-        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Projektstatus</h1></div>
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia365 — Projektstatus</h1></div>
         <div style="${BODY_STYLE}">
           <p style="margin:0 0 12px">Guten Tag <strong>${data.clientName}</strong>,</p>
           <p style="margin:0 0 20px">Ihr Projekt <strong>${data.projectType}</strong> in <strong>${data.city}</strong> konnte leider nicht veröffentlicht werden.${data.reason ? ` <strong>Grund:</strong> ${data.reason}` : ""}</p>
@@ -490,12 +490,12 @@ export async function sendProviderApprovedNotification(data: {
   if (!client || !data.providerEmail) return;
   const url = appUrl();
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to: data.providerEmail,
-    subject: `Ihr Profil wurde freigegeben — ImmoVia`,
+    subject: `Ihr Profil wurde freigegeben — ImmoVia365`,
     html: `
       <div style="${WRAP_STYLE}">
-        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Profil freigegeben</h1></div>
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia365 — Profil freigegeben</h1></div>
         <div style="${BODY_STYLE}">
           <p style="margin:0 0 12px">Guten Tag <strong>${data.providerName}</strong>,</p>
           <p style="margin:0 0 20px">Ihr Unternehmensprofil <strong>${data.companyName}</strong> wurde geprüft und ist jetzt aktiv. Sie können nun Projekte einsehen und Angebote einreichen.</p>
@@ -518,12 +518,12 @@ export async function sendProviderSuspendedNotification(data: {
   const client = getResend();
   if (!client || !data.providerEmail) return;
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to: data.providerEmail,
-    subject: `Ihr Profil wurde deaktiviert — ImmoVia`,
+    subject: `Ihr Profil wurde deaktiviert — ImmoVia365`,
     html: `
       <div style="${WRAP_STYLE}">
-        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — Profilestatus</h1></div>
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia365 — Profilestatus</h1></div>
         <div style="${BODY_STYLE}">
           <p style="margin:0 0 12px">Guten Tag <strong>${data.providerName}</strong>,</p>
           <p style="margin:0 0 20px">Ihr Profil <strong>${data.companyName}</strong> wurde vorübergehend deaktiviert. Bitte kontaktieren Sie unser Team für weitere Informationen.</p>
@@ -567,7 +567,7 @@ export async function sendNewMessageNotification(data: {
   const dashUrl = data.isProvider ? `${appUrl()}/provider` : `${appUrl()}/dashboard`;
 
   const { error } = await client.emails.send({
-    from: "ImmoVia <onboarding@resend.dev>",
+    from: "ImmoVia365 <onboarding@resend.dev>",
     to: data.recipientEmail,
     subject: t.subject[lang](data.senderName),
     html: `

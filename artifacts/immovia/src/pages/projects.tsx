@@ -126,7 +126,7 @@ function ProjectCard({ project, t, language }: {
 export default function Projects() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  usePageMeta({ title: `${t.listings.title ?? "Browse Projects"} — ImmoVia`, description: t.listings.subtitle ?? undefined });
+  usePageMeta({ title: `${t.listings.title ?? "Browse Projects"} — ImmoVia365`, description: t.listings.subtitle ?? undefined });
   const search = useSearch();
   const [, navigate] = useLocation();
 

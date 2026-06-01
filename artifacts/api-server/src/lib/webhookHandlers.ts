@@ -4,7 +4,6 @@ import {
   activateSubscription,
   markSubscriptionCanceled,
   markSubscriptionPastDue,
-  recordTestPayment,
   recordInvoice,
 } from "./stripeActivation";
 import { logger } from "./logger";
@@ -25,10 +24,7 @@ export class WebhookHandlers {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        if (session.mode === "payment") {
-          // CHF 1 one-time live test payment — record, never upgrade the plan.
-          await recordTestPayment(session);
-        } else if (session.mode === "subscription" && session.subscription) {
+        if (session.mode === "subscription" && session.subscription) {
           const subId =
             typeof session.subscription === "string"
               ? session.subscription

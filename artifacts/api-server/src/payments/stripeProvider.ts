@@ -54,30 +54,6 @@ export class StripePaymentProvider implements PaymentProvider {
     return session.url;
   }
 
-  /** One-time (mode: payment) CHF 1 live test checkout — never creates a subscription. */
-  async createTestPaymentSession(args: {
-    userId: number;
-    priceId: string;
-    successUrl: string;
-    cancelUrl: string;
-  }): Promise<string> {
-    const stripe = await getUncachableStripeClient();
-    const customerId = await this.getOrCreateCustomer(args.userId);
-
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      payment_method_types: ["card"],
-      line_items: [{ price: args.priceId, quantity: 1 }],
-      mode: "payment",
-      success_url: args.successUrl,
-      cancel_url: args.cancelUrl,
-      metadata: { userId: String(args.userId), kind: "test_payment" },
-    });
-
-    if (!session.url) throw new Error("Stripe did not return a checkout URL");
-    return session.url;
-  }
-
   async createPortalSession(args: {
     userId: number;
     returnUrl: string;

@@ -11,7 +11,7 @@ import { Mail, Phone, MapPin, Clock, CheckCircle2, Send, Quote } from "lucide-re
 
 export default function Contact() {
   const { t } = useLanguage();
-  usePageMeta({ title: `${t.contact.title} — ImmoVia` });
+  usePageMeta({ title: `${t.contact.title} — ImmoVia365` });
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 

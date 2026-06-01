@@ -5,11 +5,11 @@ const content = {
   sq: {
     title: "Politika e Privatësisë",
     updated: "Përditësuar: 1 Janar 2025",
-    intro: "ImmoVia ('ne', 'neve', 'platforma') angazhohet të mbrojë privatësinë tuaj. Kjo politikë shpjegon cilat të dhëna mbledhim, si i përdorim dhe të drejtat tuaja sipas GDPR dhe legjislacionit shqiptar.",
+    intro: "ImmoVia365 ('ne', 'neve', 'platforma') angazhohet të mbrojë privatësinë tuaj. Kjo politikë shpjegon cilat të dhëna mbledhim, si i përdorim dhe të drejtat tuaja sipas GDPR dhe legjislacionit shqiptar.",
     sections: [
       {
         title: "1. Kontrollori i të Dhënave",
-        body: "Kontrollori i të dhënave është ImmoVia SH.P.K., me seli në Tiranë, Shqipëri. Email: privacy@immovia.com",
+        body: "Kontrollori i të dhënave është ImmoVia365 SH.P.K., me seli në Tiranë, Shqipëri. Email: privacy@immovia.com",
       },
       {
         title: "2. Të Dhënat që Mbledhim",
@@ -53,18 +53,18 @@ const content = {
       },
       {
         title: "12. Na Kontaktoni",
-        body: "Zyrtari ynë i Mbrojtjes së të Dhënave: privacy@immovia.com | ImmoVia SH.P.K., Rruga e Durrësit, Tiranë, Shqipëri",
+        body: "Zyrtari ynë i Mbrojtjes së të Dhënave: privacy@immovia.com | ImmoVia365 SH.P.K., Rruga e Durrësit, Tiranë, Shqipëri",
       },
     ],
   },
   en: {
     title: "Privacy Policy",
     updated: "Last updated: January 1, 2025",
-    intro: "ImmoVia ('we', 'us', 'platform') is committed to protecting your privacy. This policy explains what data we collect, how we use it, and your rights under GDPR and applicable law.",
+    intro: "ImmoVia365 ('we', 'us', 'platform') is committed to protecting your privacy. This policy explains what data we collect, how we use it, and your rights under GDPR and applicable law.",
     sections: [
       {
         title: "1. Data Controller",
-        body: "The data controller is ImmoVia LLC, headquartered in Tirana, Albania. Email: privacy@immovia.com",
+        body: "The data controller is ImmoVia365 LLC, headquartered in Tirana, Albania. Email: privacy@immovia.com",
       },
       {
         title: "2. Data We Collect",
@@ -108,18 +108,18 @@ const content = {
       },
       {
         title: "12. Contact Us",
-        body: "Our Data Protection Officer: privacy@immovia.com | ImmoVia LLC, Rruga e Durrësit, Tirana, Albania",
+        body: "Our Data Protection Officer: privacy@immovia.com | ImmoVia365 LLC, Rruga e Durrësit, Tirana, Albania",
       },
     ],
   },
   de: {
     title: "Datenschutzerklärung",
     updated: "Zuletzt aktualisiert: 1. Januar 2025",
-    intro: "ImmoVia ('wir', 'uns', 'Plattform') verpflichtet sich zum Schutz Ihrer Privatsphäre. Diese Richtlinie erläutert, welche Daten wir erfassen, wie wir sie nutzen und Ihre Rechte gemäß DSGVO und geltendem Recht.",
+    intro: "ImmoVia365 ('wir', 'uns', 'Plattform') verpflichtet sich zum Schutz Ihrer Privatsphäre. Diese Richtlinie erläutert, welche Daten wir erfassen, wie wir sie nutzen und Ihre Rechte gemäß DSGVO und geltendem Recht.",
     sections: [
       {
         title: "1. Verantwortlicher",
-        body: "Verantwortlicher für die Datenverarbeitung ist ImmoVia GmbH mit Sitz in Tirana, Albanien. E-Mail: privacy@immovia.com",
+        body: "Verantwortlicher für die Datenverarbeitung ist ImmoVia365 GmbH mit Sitz in Tirana, Albanien. E-Mail: privacy@immovia.com",
       },
       {
         title: "2. Erhobene Daten",
@@ -163,18 +163,18 @@ const content = {
       },
       {
         title: "12. Kontakt",
-        body: "Unser Datenschutzbeauftragter: privacy@immovia.com | ImmoVia GmbH, Rruga e Durrësit, Tirana, Albanien",
+        body: "Unser Datenschutzbeauftragter: privacy@immovia.com | ImmoVia365 GmbH, Rruga e Durrësit, Tirana, Albanien",
       },
     ],
   },
   fr: {
     title: "Politique de Confidentialité",
     updated: "Dernière mise à jour : 1er janvier 2025",
-    intro: "ImmoVia ('nous', 'notre plateforme') s'engage à protéger votre vie privée. Cette politique explique quelles données nous collectons, comment nous les utilisons et vos droits en vertu du RGPD et de la législation applicable.",
+    intro: "ImmoVia365 ('nous', 'notre plateforme') s'engage à protéger votre vie privée. Cette politique explique quelles données nous collectons, comment nous les utilisons et vos droits en vertu du RGPD et de la législation applicable.",
     sections: [
       {
         title: "1. Responsable du traitement",
-        body: "Le responsable du traitement est ImmoVia SARL, dont le siège est à Tirana, Albanie. Email : privacy@immovia.com",
+        body: "Le responsable du traitement est ImmoVia365 SARL, dont le siège est à Tirana, Albanie. Email : privacy@immovia.com",
       },
       {
         title: "2. Données collectées",
@@ -218,7 +218,7 @@ const content = {
       },
       {
         title: "12. Nous contacter",
-        body: "Notre Délégué à la Protection des Données : privacy@immovia.com | ImmoVia SARL, Rruga e Durrësit, Tirana, Albanie",
+        body: "Notre Délégué à la Protection des Données : privacy@immovia.com | ImmoVia365 SARL, Rruga e Durrësit, Tirana, Albanie",
       },
     ],
   },

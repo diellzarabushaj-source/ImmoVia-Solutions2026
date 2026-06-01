@@ -15,7 +15,6 @@ import { paymentProvider } from "../payments";
 import {
   addPurchasedCredits,
   getBalance,
-  grantMonthlyCredits,
   rollSubscriptionCycle,
 } from "../lib/credits";
 
@@ -179,79 +178,9 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
   res.json(allInvoices.filter((i) => paymentIds.has(i.paymentId)));
 });
 
-router.post("/billing/subscribe", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.userId!;
-  const body = req.body as Record<string, unknown>;
-  const planId = typeof body.planId === "number" ? body.planId : null;
-  if (!planId) {
-    res.status(400).json({ error: "planId required" });
-    return;
-  }
-  const [plan] = await db
-    .select()
-    .from(subscriptionPlansTable)
-    .where(eq(subscriptionPlansTable.id, planId));
-  if (!plan) {
-    res.status(404).json({ error: "Plan not found" });
-    return;
-  }
-
-  await db
-    .update(subscriptionsTable)
-    .set({ status: "canceled" })
-    .where(eq(subscriptionsTable.userId, userId));
-
-  const result = await paymentProvider.createSubscription({
-    userId,
-    planSlug: plan.slug,
-    priceCents: plan.priceCents,
-  });
-
-  const [sub] = await db
-    .insert(subscriptionsTable)
-    .values({
-      userId,
-      planId: plan.id,
-      status: "active",
-      currentPeriodStart: result.currentPeriodStart,
-      currentPeriodEnd: result.currentPeriodEnd,
-      providerRef: result.providerRef,
-    })
-    .returning();
-
-  let payment = null;
-  if (plan.priceCents > 0) {
-    [payment] = await db
-      .insert(paymentsTable)
-      .values({
-        userId,
-        kind: "subscription",
-        refSlug: plan.slug,
-        amountCents: plan.priceCents,
-        currency: "CHF",
-        providerRef: result.providerRef,
-        status: "succeeded",
-      })
-      .returning();
-    if (payment) {
-      await db.insert(invoicesTable).values({
-        paymentId: payment.id,
-        number: `INV-${payment.id.toString().padStart(6, "0")}`,
-      });
-    }
-  }
-
-  if (plan.monthlyCredits > 0) {
-    await grantMonthlyCredits(
-      userId,
-      plan.monthlyCredits,
-      result.currentPeriodEnd,
-      `Subscribe: ${plan.slug}`,
-    );
-  }
-
-  res.json({ subscription: sub, plan, payment });
-});
+// NOTE: The legacy POST /billing/subscribe endpoint was removed before launch.
+// It activated paid plans via a mock provider without a real charge. Paid plans
+// now activate ONLY through verified Stripe Checkout + webhook (see routes/stripe.ts).
 
 router.post("/billing/buy-pack", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;

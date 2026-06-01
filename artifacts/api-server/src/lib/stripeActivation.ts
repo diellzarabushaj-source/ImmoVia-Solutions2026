@@ -185,43 +185,6 @@ export async function markSubscriptionPastDue(customer: string | { id: string } 
 }
 
 /**
- * Record a CHF 1 (one-time) live test payment. Does NOT upgrade the plan or grant credits.
- */
-export async function recordTestPayment(session: Stripe.Checkout.Session): Promise<void> {
-  const userId = await resolveUserId({
-    metadataUserId: session.metadata?.["userId"],
-    customer: session.customer,
-  });
-  if (!userId) {
-    logger.warn({ session: session.id }, "Test payment has no matching local user");
-    return;
-  }
-
-  const providerRef =
-    typeof session.payment_intent === "string"
-      ? session.payment_intent
-      : (session.payment_intent?.id ?? session.id);
-
-  // Idempotency: skip if we already recorded this payment.
-  const [existing] = await db
-    .select({ id: paymentsTable.id })
-    .from(paymentsTable)
-    .where(eq(paymentsTable.providerRef, providerRef));
-  if (existing) return;
-
-  await db.insert(paymentsTable).values({
-    userId,
-    kind: "test",
-    refSlug: "test_payment",
-    amountCents: session.amount_total ?? 100,
-    currency: (session.currency ?? "chf").toUpperCase(),
-    providerRef,
-    status: "succeeded",
-  });
-  logger.info({ userId, providerRef }, "Recorded CHF test payment (no plan change)");
-}
-
-/**
  * Record an invoice payment (renewals / failures). Idempotent by invoice id.
  * The initial subscription_create invoice is skipped because activateSubscription
  * already recorded that first payment.

@@ -11,7 +11,6 @@ import { logger } from "./logger";
 //   STRIPE_BASIC_PRICE_ID          — recurring price for Basic (CHF 29/mo)
 //   STRIPE_PROFESSIONAL_PRICE_ID   — recurring price for Professional (CHF 59/mo)
 //   STRIPE_PREMIUM_PRICE_ID        — recurring price for Premium (CHF 99/mo)
-//   STRIPE_TEST_PRICE_ID           — one-time price for the CHF 1 live test payment
 //   STRIPE_WEBHOOK_SECRET          — signing secret for /api/stripe/webhook
 
 const REQUIRED_STRIPE_ENV = [
@@ -20,7 +19,6 @@ const REQUIRED_STRIPE_ENV = [
   "STRIPE_BASIC_PRICE_ID",
   "STRIPE_PROFESSIONAL_PRICE_ID",
   "STRIPE_PREMIUM_PRICE_ID",
-  "STRIPE_TEST_PRICE_ID",
   "STRIPE_WEBHOOK_SECRET",
 ] as const;
 
@@ -31,7 +29,7 @@ export function checkStripeEnv(): string[] {
     logger.error(
       { missing },
       "Stripe is misconfigured — the following required environment variables are missing. " +
-        "Stripe checkout, the test payment, and webhooks will fail until they are set in Replit Secrets.",
+        "Stripe checkout and webhooks will fail until they are set in Replit Secrets.",
     );
   } else {
     logger.info("Stripe live environment variables detected");
@@ -69,12 +67,6 @@ export function getWebhookSecret(): string {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) throw new Error("STRIPE_WEBHOOK_SECRET is not set");
   return secret;
-}
-
-export function getTestPriceId(): string {
-  const id = process.env.STRIPE_TEST_PRICE_ID;
-  if (!id) throw new Error("STRIPE_TEST_PRICE_ID is not set");
-  return id;
 }
 
 /** Maps an internal plan slug to its configured live Stripe price ID. */

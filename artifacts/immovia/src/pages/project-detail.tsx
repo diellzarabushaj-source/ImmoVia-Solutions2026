@@ -78,7 +78,7 @@ export default function ProjectDetail() {
 
   usePageMeta({
     title: project
-      ? `${t.projectDetail.seoProject} ${getCategoryLabel(CATEGORIES.find(c => c.key === project.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)} ${t.projectDetail.seoIn} ${project.city} — ImmoVia`
+      ? `${t.projectDetail.seoProject} ${getCategoryLabel(CATEGORIES.find(c => c.key === project.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)} ${t.projectDetail.seoIn} ${project.city} — ImmoVia365`
       : null,
     description: project?.description ? project.description.slice(0, 160) : null,
   });

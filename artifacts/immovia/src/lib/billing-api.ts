@@ -158,18 +158,11 @@ export const billingApi = {
   transactions: () => jsonFetch<ImmoTransaction[]>("/provider/transactions"),
   payments: () => jsonFetch<PaymentRow[]>("/billing/payments"),
   invoices: () => jsonFetch<InvoiceRow[]>("/billing/invoices"),
-  subscribe: (planId: number) =>
-    jsonFetch<{ subscription: unknown; plan: SubscriptionPlan; payment: unknown }>("/billing/subscribe", {
-      method: "POST",
-      body: JSON.stringify({ planId }),
-    }),
   stripeCheckout: (planId: number) =>
     jsonFetch<{ url: string }>("/stripe/checkout", {
       method: "POST",
       body: JSON.stringify({ planId }),
     }),
-  stripeTestCheckout: () =>
-    jsonFetch<{ url: string }>("/stripe/test-checkout", { method: "POST" }),
   stripePortal: () =>
     jsonFetch<{ url: string }>("/stripe/portal", { method: "POST" }),
   stripeSync: (sessionId?: string) =>

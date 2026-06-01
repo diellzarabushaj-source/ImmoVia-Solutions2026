@@ -315,7 +315,7 @@ function AdminSidebar({ onLogout }: { onLogout: () => void }) {
 // ─── Shell ────────────────────────────────────────────────────────────────────
 
 function AdminShell({ onLogout }: { onLogout: () => void }) {
-  usePageMeta({ title: "Admin — ImmoVia", noindex: true });
+  usePageMeta({ title: "Admin — ImmoVia365", noindex: true });
   const [location] = useLocation();
 
   const renderContent = () => {

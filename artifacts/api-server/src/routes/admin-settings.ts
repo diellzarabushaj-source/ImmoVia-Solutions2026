@@ -6,7 +6,7 @@ import { requireAdmin } from "../middlewares/requireAdmin";
 const router: IRouter = Router();
 
 const DEFAULT_SETTINGS: Record<string, string> = {
-  "platform.name": "ImmoVia",
+  "platform.name": "ImmoVia365",
   "platform.tagline": "Find trusted renovation professionals",
   "platform.maintenance": "false",
   "projects.auto_approve": "false",

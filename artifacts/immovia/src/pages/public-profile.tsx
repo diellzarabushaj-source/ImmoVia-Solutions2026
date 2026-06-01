@@ -84,7 +84,7 @@ export default function PublicProfilePage() {
 
   usePageMeta({
     title: data?.user
-      ? `${data.user.fullName}${data.user.city ? ` · ${data.user.city}` : ""} — ImmoVia`
+      ? `${data.user.fullName}${data.user.city ? ` · ${data.user.city}` : ""} — ImmoVia365`
       : null,
     description: data?.user.bio ? data.user.bio.slice(0, 160) : null,
   });

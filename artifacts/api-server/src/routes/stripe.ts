@@ -3,13 +3,12 @@ import { db } from "@workspace/db";
 import { subscriptionPlansTable, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
-import { requireProvider, requireProviderOrAdmin } from "../middlewares/requireProvider";
+import { requireProvider } from "../middlewares/requireProvider";
 import { stripePaymentProvider } from "../payments/stripeProvider";
 import {
   getStripePublishableKey,
   getUncachableStripeClient as getStripeClient,
   priceIdForSlug,
-  getTestPriceId,
 } from "../lib/stripeClient";
 import { activateSubscription } from "../lib/stripeActivation";
 
@@ -76,36 +75,6 @@ router.post("/stripe/checkout", requireProvider, async (req, res): Promise<void>
     res.json({ url: checkoutUrl });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Checkout failed";
-    res.status(500).json({ error: msg });
-  }
-});
-
-// POST /stripe/test-checkout — one-time CHF 1 live test payment (no plan upgrade)
-router.post("/stripe/test-checkout", requireProviderOrAdmin, async (req, res): Promise<void> => {
-  const userId = req.userId!;
-
-  let priceId: string;
-  try {
-    priceId = getTestPriceId();
-  } catch {
-    res.status(503).json({ error: "STRIPE_TEST_PRICE_ID is not configured" });
-    return;
-  }
-
-  const host = `${req.protocol}://${req.get("host")}`;
-  const successUrl = `${host}/dashboard?payment=success&test=1`;
-  const cancelUrl = `${host}/pricing?payment=cancelled`;
-
-  try {
-    const checkoutUrl = await stripePaymentProvider.createTestPaymentSession({
-      userId,
-      priceId,
-      successUrl,
-      cancelUrl,
-    });
-    res.json({ url: checkoutUrl });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "Test checkout failed";
     res.status(500).json({ error: msg });
   }
 });

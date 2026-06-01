@@ -205,7 +205,7 @@ function ProjectPreviewCard({ project, t, language }: {
 
 export default function Home() {
   const { t, language } = useLanguage();
-  usePageMeta({ title: "ImmoVia", description: t.hero.subtitle });
+  usePageMeta({ title: "ImmoVia365", description: t.hero.subtitle });
   const { user } = useAuth();
   const search = useSearch();
   const [, navigate] = useLocation();
@@ -310,7 +310,7 @@ export default function Home() {
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=en`,
-            { headers: { "User-Agent": "ImmoVia/1.0" } }
+            { headers: { "User-Agent": "ImmoVia365/1.0" } }
           );
           const data = await res.json() as { address?: { city?: string; town?: string; village?: string; county?: string } };
           const city = data.address?.city ?? data.address?.town ?? data.address?.village ?? data.address?.county ?? "";

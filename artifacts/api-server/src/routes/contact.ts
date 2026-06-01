@@ -31,14 +31,14 @@ router.post("/contact", async (req, res): Promise<void> => {
   if (apiKey && adminEmail) {
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({
-      from: "ImmoVia <onboarding@resend.dev>",
+      from: "ImmoVia365 <onboarding@resend.dev>",
       to: adminEmail,
       replyTo: email,
       subject: `Contact Form: ${subject}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
           <div style="background:#0f2044;padding:24px 32px;border-radius:8px 8px 0 0">
-            <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia — New Contact Message</h1>
+            <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">ImmoVia365 — New Contact Message</h1>
           </div>
           <div style="background:#f8fafc;padding:32px;border:1px solid #e2e8f0;border-radius:0 0 8px 8px">
             <table style="width:100%;border-collapse:collapse">
@@ -53,7 +53,7 @@ router.post("/contact", async (req, res): Promise<void> => {
               </a>
             </div>
           </div>
-          <p style="color:#94a3b8;font-size:12px;text-align:center;margin-top:16px">ImmoVia Platform &mdash; Contact Form</p>
+          <p style="color:#94a3b8;font-size:12px;text-align:center;margin-top:16px">ImmoVia365 Platform &mdash; Contact Form</p>
         </div>
       `,
     });

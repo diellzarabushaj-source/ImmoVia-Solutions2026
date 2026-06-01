@@ -29,7 +29,7 @@ export function Footer() {
             <Link href="/">
               <img
                 src="/logo-white.png"
-                alt="Immovia365"
+                alt="ImmoVia365"
                 className="h-10 md:h-12 w-auto object-contain object-left"
               />
             </Link>
@@ -113,7 +113,7 @@ export function Footer() {
 
         <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-white/40">
-            &copy; {new Date().getFullYear()} ImmoVia. {t.footer.rights}
+            &copy; {new Date().getFullYear()} ImmoVia365. {t.footer.rights}
           </p>
           <div className="flex items-center gap-4">
             <Link href="/terms" className="text-xs text-white/30 hover:text-white/60 transition-colors">

@@ -80,7 +80,7 @@ function CompanyAvatar({ name, profilePhoto, workerType, size = "md" }: { name: 
 export default function Companies() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  usePageMeta({ title: `${t.companies.title} — ImmoVia`, description: t.companies.subtitle ?? undefined });
+  usePageMeta({ title: `${t.companies.title} — ImmoVia365`, description: t.companies.subtitle ?? undefined });
   const search = useSearch();
   const params = new URLSearchParams(search);
   const [, navigate] = useLocation();

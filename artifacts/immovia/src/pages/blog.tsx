@@ -132,7 +132,7 @@ export default function Blog() {
             {t.nav.blog}
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            ImmoVia Insights
+            ImmoVia365 Insights
           </h1>
           <p className="text-lg text-white/70 max-w-xl mx-auto">
             {t.blog.subtitle}

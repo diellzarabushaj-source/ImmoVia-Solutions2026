@@ -21,10 +21,10 @@ export default function Chat() {
       id: "1",
       role: "assistant",
       content: language === 'sq' 
-        ? "Përshëndetje! Unë jam asistenti i ImmoVia. Si mund t'ju ndihmoj me projektin tuaj sot?"
+        ? "Përshëndetje! Unë jam asistenti i ImmoVia365. Si mund t'ju ndihmoj me projektin tuaj sot?"
         : language === 'de'
-        ? "Hallo! Ich bin der ImmoVia-Assistent. Wie kann ich Ihnen heute bei Ihrem Projekt helfen?"
-        : "Hello! I'm the ImmoVia assistant. How can I help you with your project today?"
+        ? "Hallo! Ich bin der ImmoVia365-Assistent. Wie kann ich Ihnen heute bei Ihrem Projekt helfen?"
+        : "Hello! I'm the ImmoVia365 assistant. How can I help you with your project today?"
     }
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
