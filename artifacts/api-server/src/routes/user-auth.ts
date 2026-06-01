@@ -241,6 +241,8 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
         city: city ?? "",
         serviceTypes: serviceTypes ?? [],
         workerType: accountSubtype === "company" ? "company" : "individual",
+        // JIT stub: auto-approved so the provider can use the platform immediately.
+        // A full company profile submitted via the registration form requires admin review (status: "pending").
         status: "approved",
         profilePhoto: clerkAvatarUrl ?? null,
       });

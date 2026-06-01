@@ -85,7 +85,7 @@ router.post("/companies", async (req, res): Promise<void> => {
     workerType: parsed.data.workerType ?? "company",
     hourlyRate: parsed.data.hourlyRate ?? null,
     profilePhoto: parsed.data.profilePhoto ?? null,
-    status: "approved",
+    status: "pending", // requires admin approval before appearing in the directory
   }).returning();
 
   void sendNewCompanyNotification({

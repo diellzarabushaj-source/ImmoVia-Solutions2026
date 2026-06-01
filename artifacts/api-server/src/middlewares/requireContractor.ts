@@ -20,11 +20,16 @@ export async function requireContractor(
     .where(eq(usersTable.clerkUserId, auth.userId))
     .limit(1);
 
+  if (!user) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
   const isProvider =
     user.accountType === "service_provider" ||
     user.role === "contractor" ||
     user.role === "service_provider";
-  if (!user || !isProvider) {
+  if (!isProvider) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
