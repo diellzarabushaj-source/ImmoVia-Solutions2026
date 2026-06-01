@@ -1,0 +1,45 @@
+I want to connect Stripe live payments to my ImmoVia365 app.
+
+I already created these Stripe products:
+- ImmoVia365 Basic — CHF 29/month
+- ImmoVia365 Professional — CHF 59/month
+- ImmoVia365 Premium — CHF 99/month
+- ImmoVia365 Test Payment — CHF 1 one-time payment for live testing only
+
+Please implement Stripe Checkout correctly.
+
+Use these environment variables from Replit Secrets:
+- STRIPE_SECRET_KEY
+- VITE_STRIPE_PUBLISHABLE_KEY
+- STRIPE_BASIC_PRICE_ID
+- STRIPE_PROFESSIONAL_PRICE_ID
+- STRIPE_PREMIUM_PRICE_ID
+- STRIPE_TEST_PRICE_ID
+- STRIPE_WEBHOOK_SECRET
+
+Requirements:
+1. Create backend API routes to start Stripe Checkout Sessions.
+2. Basic, Professional, and Premium must use mode: subscription.
+3. Test Payment must use mode: payment.
+4. Never expose STRIPE_SECRET_KEY in frontend code.
+5. Use the backend to create Checkout Sessions.
+6. Add checkout buttons on the pricing page for Basic, Professional, and Premium.
+7. Add a hidden or admin-only test payment button for the CHF 1 test product.
+8. Success redirect should go to /dashboard?payment=success.
+9. Cancel redirect should go to /pricing?payment=cancelled.
+10. Create a Stripe webhook endpoint at /api/stripe/webhook.
+11. Verify webhook signatures using STRIPE_WEBHOOK_SECRET.
+12. Handle these Stripe webhook events:
+   - checkout.session.completed
+   - customer.subscription.created
+   - customer.subscription.updated
+   - customer.subscription.deleted
+   - invoice.payment_succeeded
+   - invoice.payment_failed
+13. Save Stripe customer ID, subscription ID, selected plan, subscription status, current period end, and payment status in the database.
+14. If a user buys the CHF 1 test payment, save it as a test payment and do not upgrade the user plan.
+15. Do not implement Stripe Connect.
+16. Do not create payouts to service providers.
+17. For now, providers only pay ImmoVia365 for subscriptions or credits.
+18. Add clear server logs if any required Stripe environment variable is missing.
+19. After implementation, tell me exactly which files were changed and how to test checkout.
