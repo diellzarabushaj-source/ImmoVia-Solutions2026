@@ -61,7 +61,7 @@ router.post("/stripe/checkout", requireProvider, async (req, res): Promise<void>
 
   const host = `${req.protocol}://${req.get("host")}`;
   // {CHECKOUT_SESSION_ID} is substituted by Stripe so we can resolve the session on success.
-  const successUrl = `${host}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`;
+  const successUrl = `${host}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${host}/pricing?payment=cancelled`;
 
   try {
