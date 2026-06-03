@@ -424,23 +424,34 @@ export const DeleteAdminApplicationParams = zod.object({
  * @summary List active categories with nested subcategories
  */
 export const ListCategoriesQueryParams = zod.object({
-  "type": zod.coerce.string().optional().describe('Filter by category type: service | project')
+  "type": zod.coerce.string().optional().describe('Filter by category type: service | project'),
+  "lang": zod.coerce.string().optional().describe('Language for name resolution: sq | en | de | fr')
 })
 
 export const ListCategoriesResponseItem = zod.object({
   "id": zod.number(),
-  "name": zod.string(),
+  "name": zod.string().describe('Resolved display name for the requested language'),
+  "name_de": zod.string().nullish(),
+  "name_sq": zod.string().nullish(),
+  "name_en": zod.string().nullish(),
+  "name_fr": zod.string().nullish(),
   "slug": zod.string(),
   "type": zod.string().describe('service | project'),
   "active": zod.boolean(),
+  "sortOrder": zod.number(),
   "parentId": zod.number().nullish(),
   "createdAt": zod.coerce.date(),
   "subcategories": zod.array(zod.object({
   "id": zod.number(),
-  "name": zod.string(),
+  "name": zod.string().describe('Resolved display name for the requested language'),
+  "name_de": zod.string().nullish(),
+  "name_sq": zod.string().nullish(),
+  "name_en": zod.string().nullish(),
+  "name_fr": zod.string().nullish(),
   "slug": zod.string(),
   "type": zod.string(),
   "active": zod.boolean(),
+  "sortOrder": zod.number(),
   "parentId": zod.number(),
   "createdAt": zod.coerce.date()
 }))
@@ -454,11 +465,17 @@ export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem)
 export const ListAdminCategoriesResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "name_de": zod.string().nullish(),
+  "name_sq": zod.string().nullish(),
+  "name_en": zod.string().nullish(),
+  "name_fr": zod.string().nullish(),
   "slug": zod.string(),
   "type": zod.string().describe('service | project'),
   "active": zod.boolean(),
+  "sortOrder": zod.number(),
   "parentId": zod.number().nullish().describe('ID of the parent category, or null for a top-level category'),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
 })
 export const ListAdminCategoriesResponse = zod.array(ListAdminCategoriesResponseItem)
 
@@ -468,9 +485,14 @@ export const ListAdminCategoriesResponse = zod.array(ListAdminCategoriesResponse
  */
 export const CreateAdminCategoryBody = zod.object({
   "name": zod.string().optional(),
+  "name_de": zod.string().optional(),
+  "name_sq": zod.string().optional(),
+  "name_en": zod.string().optional(),
+  "name_fr": zod.string().optional(),
   "slug": zod.string().optional(),
   "type": zod.string().optional(),
   "active": zod.boolean().optional(),
+  "sortOrder": zod.number().optional(),
   "parentId": zod.number().nullish().describe('ID of the parent category, or null for a top-level category')
 })
 
@@ -484,20 +506,31 @@ export const PatchAdminCategoryParams = zod.object({
 
 export const PatchAdminCategoryBody = zod.object({
   "name": zod.string().optional(),
+  "name_de": zod.string().optional(),
+  "name_sq": zod.string().optional(),
+  "name_en": zod.string().optional(),
+  "name_fr": zod.string().optional(),
   "slug": zod.string().optional(),
   "type": zod.string().optional(),
   "active": zod.boolean().optional(),
+  "sortOrder": zod.number().optional(),
   "parentId": zod.number().nullish().describe('ID of the parent category, or null for a top-level category')
 })
 
 export const PatchAdminCategoryResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "name_de": zod.string().nullish(),
+  "name_sq": zod.string().nullish(),
+  "name_en": zod.string().nullish(),
+  "name_fr": zod.string().nullish(),
   "slug": zod.string(),
   "type": zod.string().describe('service | project'),
   "active": zod.boolean(),
+  "sortOrder": zod.number(),
   "parentId": zod.number().nullish().describe('ID of the parent category, or null for a top-level category'),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
 })
 
 

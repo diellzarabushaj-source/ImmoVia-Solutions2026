@@ -451,6 +451,12 @@ paths:
           schema:
             type: string
           description: "Filter by category type: service | project"
+        - name: lang
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Language for name resolution: sq | en | de | fr"
       responses:
         "200":
           description: Active categories with subcategories
@@ -1086,12 +1092,21 @@ components:
 
     CategoryNested:
       type: object
-      required: [id, name, slug, type, active, createdAt, subcategories]
+      required: [id, name, slug, type, active, sortOrder, createdAt, subcategories]
       properties:
         id:
           type: integer
         name:
           type: string
+          description: "Resolved display name for the requested language"
+        name_de:
+          type: ["string", "null"]
+        name_sq:
+          type: ["string", "null"]
+        name_en:
+          type: ["string", "null"]
+        name_fr:
+          type: ["string", "null"]
         slug:
           type: string
         type:
@@ -1099,6 +1114,8 @@ components:
           description: "service | project"
         active:
           type: boolean
+        sortOrder:
+          type: integer
         parentId:
           type: ["integer", "null"]
         createdAt:
@@ -1111,18 +1128,29 @@ components:
 
     CategoryNestedItem:
       type: object
-      required: [id, name, slug, type, active, parentId, createdAt]
+      required: [id, name, slug, type, active, sortOrder, parentId, createdAt]
       properties:
         id:
           type: integer
         name:
           type: string
+          description: "Resolved display name for the requested language"
+        name_de:
+          type: ["string", "null"]
+        name_sq:
+          type: ["string", "null"]
+        name_en:
+          type: ["string", "null"]
+        name_fr:
+          type: ["string", "null"]
         slug:
           type: string
         type:
           type: string
         active:
           type: boolean
+        sortOrder:
+          type: integer
         parentId:
           type: integer
         createdAt:
@@ -1131,12 +1159,20 @@ components:
 
     AdminCategory:
       type: object
-      required: [id, name, slug, type, active, createdAt]
+      required: [id, name, slug, type, active, sortOrder, createdAt]
       properties:
         id:
           type: integer
         name:
           type: string
+        name_de:
+          type: ["string", "null"]
+        name_sq:
+          type: ["string", "null"]
+        name_en:
+          type: ["string", "null"]
+        name_fr:
+          type: ["string", "null"]
         slug:
           type: string
         type:
@@ -1144,10 +1180,15 @@ components:
           description: "service | project"
         active:
           type: boolean
+        sortOrder:
+          type: integer
         parentId:
           type: ["integer", "null"]
           description: "ID of the parent category, or null for a top-level category"
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
 
@@ -1156,12 +1197,22 @@ components:
       properties:
         name:
           type: string
+        name_de:
+          type: string
+        name_sq:
+          type: string
+        name_en:
+          type: string
+        name_fr:
+          type: string
         slug:
           type: string
         type:
           type: string
         active:
           type: boolean
+        sortOrder:
+          type: integer
         parentId:
           type: ["integer", "null"]
           description: "ID of the parent category, or null for a top-level category"

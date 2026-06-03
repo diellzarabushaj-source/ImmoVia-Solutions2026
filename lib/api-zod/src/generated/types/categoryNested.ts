@@ -9,11 +9,21 @@ import type { CategoryNestedItem } from './categoryNestedItem';
 
 export interface CategoryNested {
   id: number;
+  /** Resolved display name for the requested language */
   name: string;
+  /** @nullable */
+  name_de?: string | null;
+  /** @nullable */
+  name_sq?: string | null;
+  /** @nullable */
+  name_en?: string | null;
+  /** @nullable */
+  name_fr?: string | null;
   slug: string;
   /** service | project */
   type: string;
   active: boolean;
+  sortOrder: number;
   /** @nullable */
   parentId?: number | null;
   createdAt: Date;

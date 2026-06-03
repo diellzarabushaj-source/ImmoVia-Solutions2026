@@ -1,5 +1,6 @@
 import { useListCategories } from "@workspace/api-client-react";
 import type { CategoryNested, CategoryNestedItem } from "@workspace/api-client-react";
+import { useLanguage } from "@/lib/language-context";
 
 export type { CategoryNested, CategoryNestedItem };
 
@@ -26,7 +27,10 @@ function apiToNorm(apiCats: CategoryNested[]): NormCategory[] {
 }
 
 export function useCategories(type?: "service" | "project") {
-  const params = type ? { type } : undefined;
+  const { language } = useLanguage();
+  const params: Record<string, string> = { lang: language };
+  if (type) params["type"] = type;
+
   const { data, isLoading, isError } = useListCategories(params);
 
   const categories: NormCategory[] = data ? apiToNorm(data) : [];

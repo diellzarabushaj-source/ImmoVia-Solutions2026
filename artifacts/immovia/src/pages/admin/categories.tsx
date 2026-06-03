@@ -20,40 +20,50 @@ import { useLanguage } from "@/lib/language-context";
 interface Category {
   id: number;
   name: string;
+  name_de: string | null;
+  name_sq: string | null;
+  name_en: string | null;
+  name_fr: string | null;
   slug: string;
   type: string;
   active: boolean;
+  sortOrder: number;
   parentId: number | null;
   createdAt: string;
+  updatedAt?: string;
 }
 
 const SERVICE_DEFAULTS = [
-  { name: "Renovation & Construction", slug: "renovation", type: "service" },
-  { name: "Painting & Plastering", slug: "painting", type: "service" },
-  { name: "Electrical & Smart Home", slug: "electrical", type: "service" },
-  { name: "Plumbing & Bathroom", slug: "plumbing", type: "service" },
-  { name: "Kitchen & Carpentry", slug: "kitchen", type: "service" },
-  { name: "Flooring & Tiles", slug: "flooring", type: "service" },
-  { name: "Interior Design", slug: "interior_design", type: "service" },
-  { name: "Cleaning, Garden & Property", slug: "cleaning", type: "service" },
-  { name: "Other", slug: "other", type: "service" },
+  { name_de: "Renovierung & Bau", name_sq: "Rinovim & Ndërtim", name_en: "Renovation & Construction", name_fr: "Rénovation & Construction", slug: "renovation", type: "service" },
+  { name_de: "Maler & Verputz", name_sq: "Lyerje & Suvatim", name_en: "Painting & Plastering", name_fr: "Peinture & Plâtrage", slug: "painting", type: "service" },
+  { name_de: "Elektro & Smart Home", name_sq: "Elektrik & Smart Home", name_en: "Electrical & Smart Home", name_fr: "Électricité & Maison intelligente", slug: "electrical", type: "service" },
+  { name_de: "Sanitär & Bad", name_sq: "Hidraulikë & Banjë", name_en: "Plumbing & Bathroom", name_fr: "Plomberie & Salle de bain", slug: "plumbing", type: "service" },
+  { name_de: "Küche & Tischlerei", name_sq: "Kuzhinë & Marangozi", name_en: "Kitchen & Carpentry", name_fr: "Cuisine & Menuiserie", slug: "kitchen", type: "service" },
+  { name_de: "Böden & Fliesen", name_sq: "Dysheme & Pllaka", name_en: "Flooring & Tiles", name_fr: "Revêtements de sol & Carrelage", slug: "flooring", type: "service" },
+  { name_de: "Innenarchitektur", name_sq: "Dizajn Interior", name_en: "Interior Design", name_fr: "Architecture d'intérieur", slug: "interior_design", type: "service" },
+  { name_de: "Reinigung, Garten & Immobilien", name_sq: "Pastrim, Kopsht & Prona", name_en: "Cleaning, Garden & Property", name_fr: "Nettoyage, Jardin & Immobilier", slug: "cleaning", type: "service" },
+  { name_de: "Sonstiges", name_sq: "Tjera", name_en: "Other", name_fr: "Autre", slug: "other", type: "service" },
 ];
 
 const PROJECT_DEFAULTS = [
-  { name: "Renovation & Construction", slug: "renovation", type: "project" },
-  { name: "Painting & Plastering", slug: "painting", type: "project" },
-  { name: "Electrical & Smart Home", slug: "electrical", type: "project" },
-  { name: "Plumbing & Bathroom", slug: "plumbing", type: "project" },
-  { name: "Kitchen & Carpentry", slug: "kitchen", type: "project" },
-  { name: "Flooring & Tiles", slug: "flooring", type: "project" },
-  { name: "Interior Design", slug: "interior_design", type: "project" },
-  { name: "Cleaning, Garden & Property", slug: "cleaning", type: "project" },
-  { name: "Emergency Repair", slug: "emergency_repair", type: "project" },
-  { name: "Other", slug: "other", type: "project" },
+  { name_de: "Renovierung & Bau", name_sq: "Rinovim & Ndërtim", name_en: "Renovation & Construction", name_fr: "Rénovation & Construction", slug: "renovation", type: "project" },
+  { name_de: "Maler & Verputz", name_sq: "Lyerje & Suvatim", name_en: "Painting & Plastering", name_fr: "Peinture & Plâtrage", slug: "painting", type: "project" },
+  { name_de: "Elektro & Smart Home", name_sq: "Elektrik & Smart Home", name_en: "Electrical & Smart Home", name_fr: "Électricité & Maison intelligente", slug: "electrical", type: "project" },
+  { name_de: "Sanitär & Bad", name_sq: "Hidraulikë & Banjë", name_en: "Plumbing & Bathroom", name_fr: "Plomberie & Salle de bain", slug: "plumbing", type: "project" },
+  { name_de: "Küche & Tischlerei", name_sq: "Kuzhinë & Marangozi", name_en: "Kitchen & Carpentry", name_fr: "Cuisine & Menuiserie", slug: "kitchen", type: "project" },
+  { name_de: "Böden & Fliesen", name_sq: "Dysheme & Pllaka", name_en: "Flooring & Tiles", name_fr: "Revêtements de sol & Carrelage", slug: "flooring", type: "project" },
+  { name_de: "Innenarchitektur", name_sq: "Dizajn Interior", name_en: "Interior Design", name_fr: "Architecture d'intérieur", slug: "interior_design", type: "project" },
+  { name_de: "Reinigung, Garten & Immobilien", name_sq: "Pastrim, Kopsht & Prona", name_en: "Cleaning, Garden & Property", name_fr: "Nettoyage, Jardin & Immobilier", slug: "cleaning", type: "project" },
+  { name_de: "Notfallreparatur", name_sq: "Riparim Emergjent", name_en: "Emergency Repair", name_fr: "Réparation d'urgence", slug: "emergency_repair", type: "project" },
+  { name_de: "Sonstiges", name_sq: "Tjera", name_en: "Other", name_fr: "Autre", slug: "other", type: "project" },
 ];
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
+
+function displayName(cat: Pick<Category, "name" | "name_de" | "name_sq" | "name_en" | "name_fr">): string {
+  return cat.name_de || cat.name_en || cat.name_sq || cat.name_fr || cat.name;
 }
 
 function CategoryDialog({
@@ -70,20 +80,28 @@ function CategoryDialog({
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [name, setName] = useState(initial?.name ?? "");
+  const [nameDe, setNameDe] = useState(initial?.name_de ?? "");
+  const [nameSq, setNameSq] = useState(initial?.name_sq ?? "");
+  const [nameEn, setNameEn] = useState(initial?.name_en ?? "");
+  const [nameFr, setNameFr] = useState(initial?.name_fr ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [type, setType] = useState(initial?.type ?? defaultType ?? "service");
   const [active, setActive] = useState(initial?.active !== undefined ? initial.active : true);
+  const [sortOrder, setSortOrder] = useState(initial?.sortOrder ?? 0);
   const [parentId, setParentId] = useState<number | null>(
     initial?.parentId !== undefined ? (initial.parentId ?? null) : (defaultParentId ?? null)
   );
 
   useEffect(() => {
     if (open) {
-      setName(initial?.name ?? "");
+      setNameDe(initial?.name_de ?? "");
+      setNameSq(initial?.name_sq ?? "");
+      setNameEn(initial?.name_en ?? "");
+      setNameFr(initial?.name_fr ?? "");
       setSlug(initial?.slug ?? "");
       setType(initial?.type ?? defaultType ?? "service");
       setActive(initial?.active !== undefined ? initial.active : true);
+      setSortOrder(initial?.sortOrder ?? 0);
       setParentId(initial?.parentId !== undefined ? (initial.parentId ?? null) : (defaultParentId ?? null));
       setError("");
     }
@@ -95,7 +113,7 @@ function CategoryDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !slug.trim()) { setError(t.admin.nameSlugRequired); return; }
+    if (!nameDe.trim() || !slug.trim()) { setError(t.admin.nameSlugRequired); return; }
     setError(""); setLoading(true);
     try {
       const url = initial ? `/api/admin/categories/${initial.id}` : "/api/admin/categories";
@@ -103,7 +121,14 @@ function CategoryDialog({
       const res = await fetch(url, {
         method, headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ name, slug, type, active, parentId }),
+        body: JSON.stringify({
+          name_de: nameDe || null,
+          name_sq: nameSq || null,
+          name_en: nameEn || null,
+          name_fr: nameFr || null,
+          slug, type, active, parentId,
+          sortOrder,
+        }),
       });
       if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? t.admin.failed); return; }
       onSaved(); onClose();
@@ -115,7 +140,7 @@ function CategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? t.admin.catEdit : (isSubcategory ? t.admin.catAddSub : t.admin.catAdd)}
@@ -139,24 +164,62 @@ function CategoryDialog({
               onValueChange={(v) => setParentId(v === "__none__" ? null : Number(v))}
               disabled={loading}
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">{t.admin.catMainCategory}</SelectItem>
                 {parentOptions.map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                  <SelectItem key={p.id} value={String(p.id)}>{displayName(p)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5">
-            <Label>{t.admin.fName}</Label>
-            <Input value={name} onChange={(e) => { setName(e.target.value); if (!initial) setSlug(slugify(e.target.value)); }} required disabled={loading} placeholder={t.admin.phNameExample} />
+
+          {/* Multilingual name fields */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2.5">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Translations</p>
+            <div className="space-y-1.5">
+              <Label className="text-xs">
+                🇩🇪 {t.admin.fNameDE} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                value={nameDe}
+                onChange={(e) => {
+                  setNameDe(e.target.value);
+                  if (!initial) setSlug(slugify(e.target.value));
+                }}
+                required
+                disabled={loading}
+                placeholder={t.admin.phNameExample}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">🇦🇱 {t.admin.fNameSQ}</Label>
+              <Input value={nameSq} onChange={(e) => setNameSq(e.target.value)} disabled={loading} placeholder={t.admin.phNameExample} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">🇬🇧 {t.admin.fNameEN}</Label>
+              <Input value={nameEn} onChange={(e) => setNameEn(e.target.value)} disabled={loading} placeholder={t.admin.phNameExample} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">🇫🇷 {t.admin.fNameFR}</Label>
+              <Input value={nameFr} onChange={(e) => setNameFr(e.target.value)} disabled={loading} placeholder={t.admin.phNameExample} />
+            </div>
           </div>
+
           <div className="space-y-1.5">
             <Label>{t.admin.fSlug}</Label>
             <Input value={slug} onChange={(e) => setSlug(e.target.value)} required disabled={loading} placeholder={t.admin.phSlugExample} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t.admin.fSortOrder}</Label>
+            <Input
+              type="number"
+              min={0}
+              value={sortOrder}
+              onChange={(e) => setSortOrder(Number(e.target.value))}
+              disabled={loading}
+              placeholder="0"
+            />
           </div>
           <div className="flex items-center gap-3 pt-1">
             <button
@@ -211,7 +274,10 @@ export function AdminCategories() {
 
   const filtered = tabCategories.filter((c) => {
     const matchSearch = !search ||
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      (c.name_de ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (c.name_sq ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (c.name_en ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (c.name_fr ?? "").toLowerCase().includes(search.toLowerCase()) ||
       c.slug.toLowerCase().includes(search.toLowerCase());
     const matchActive = activeFilter === "all" ||
       (activeFilter === "active" ? c.active : !c.active);
@@ -257,7 +323,7 @@ export function AdminCategories() {
     for (const cat of defaults) {
       await fetch("/api/admin/categories", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        credentials: "include", body: JSON.stringify(cat),
+        credentials: "include", body: JSON.stringify({ ...cat, name: cat.name_de }),
       }).catch(() => {});
     }
     setSeeding(false);
@@ -276,9 +342,10 @@ export function AdminCategories() {
     setDialogOpen(true);
   };
 
-  const parentName = (parentId: number | null) => {
+  const parentDisplayName = (parentId: number | null) => {
     if (parentId === null) return null;
-    return categories.find((c) => c.id === parentId)?.name ?? `#${parentId}`;
+    const p = categories.find((c) => c.id === parentId);
+    return p ? displayName(p) : `#${parentId}`;
   };
 
   const childCount = (id: number) => subcategoriesByParent(id).length;
@@ -360,6 +427,7 @@ export function AdminCategories() {
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colName}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 hidden md:table-cell">SQ / EN / FR</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.catColParent}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colSlug}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
@@ -369,31 +437,40 @@ export function AdminCategories() {
           </TableHeader>
           <TableBody>
             {loading && (
-              <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
             {!loading && allFilteredRows.map((cat) => {
               const isChild = cat.parentId !== null;
               const children = childCount(cat.id);
+              const primaryName = cat.name_de || cat.name;
               return (
                 <TableRow key={cat.id} className={`hover:bg-gray-50 ${isChild ? "bg-gray-50/50" : ""}`}>
                   <TableCell className="font-medium text-sm">
                     {isChild ? (
                       <span className="flex items-center gap-1.5 pl-4 text-gray-700">
                         <span className="text-gray-300">└</span>
-                        {cat.name}
+                        {primaryName}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1.5">
-                        {cat.name}
+                        {primaryName}
                         {children > 0 && (
                           <span className="text-xs text-gray-400 font-normal">({children})</span>
                         )}
                       </span>
                     )}
                   </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <div className="flex flex-col gap-0.5">
+                      {cat.name_sq && <span className="text-xs text-gray-500"><span className="text-gray-300 mr-1">sq</span>{cat.name_sq}</span>}
+                      {cat.name_en && <span className="text-xs text-gray-500"><span className="text-gray-300 mr-1">en</span>{cat.name_en}</span>}
+                      {cat.name_fr && <span className="text-xs text-gray-500"><span className="text-gray-300 mr-1">fr</span>{cat.name_fr}</span>}
+                      {!cat.name_sq && !cat.name_en && !cat.name_fr && <span className="text-xs text-gray-300">—</span>}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-xs text-gray-500">
                     {isChild
-                      ? <span className="text-[#1a3a6e] font-medium">{parentName(cat.parentId)}</span>
+                      ? <span className="text-[#1a3a6e] font-medium">{parentDisplayName(cat.parentId)}</span>
                       : <span className="text-gray-300">—</span>
                     }
                   </TableCell>
@@ -432,7 +509,7 @@ export function AdminCategories() {
             })}
             {!loading && allFilteredRows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center">
+                <TableCell colSpan={7} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-3 text-gray-400">
                     {activeTab === "service" ? <Wrench className="h-8 w-8 opacity-30" /> : <FolderOpen className="h-8 w-8 opacity-30" />}
                     <p className="text-sm">

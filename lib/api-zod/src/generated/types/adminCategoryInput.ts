@@ -8,9 +8,14 @@
 
 export interface AdminCategoryInput {
   name?: string;
+  name_de?: string;
+  name_sq?: string;
+  name_en?: string;
+  name_fr?: string;
   slug?: string;
   type?: string;
   active?: boolean;
+  sortOrder?: number;
   /**
      * ID of the parent category, or null for a top-level category
      * @nullable

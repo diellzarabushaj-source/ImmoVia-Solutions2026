@@ -234,21 +234,41 @@ export interface AdminApplicationInput {
 
 export interface CategoryNestedItem {
   id: number;
+  /** Resolved display name for the requested language */
   name: string;
+  /** @nullable */
+  name_de?: string | null;
+  /** @nullable */
+  name_sq?: string | null;
+  /** @nullable */
+  name_en?: string | null;
+  /** @nullable */
+  name_fr?: string | null;
   slug: string;
   type: string;
   active: boolean;
+  sortOrder: number;
   parentId: number;
   createdAt: string;
 }
 
 export interface CategoryNested {
   id: number;
+  /** Resolved display name for the requested language */
   name: string;
+  /** @nullable */
+  name_de?: string | null;
+  /** @nullable */
+  name_sq?: string | null;
+  /** @nullable */
+  name_en?: string | null;
+  /** @nullable */
+  name_fr?: string | null;
   slug: string;
   /** service | project */
   type: string;
   active: boolean;
+  sortOrder: number;
   /** @nullable */
   parentId?: number | null;
   createdAt: string;
@@ -258,23 +278,38 @@ export interface CategoryNested {
 export interface AdminCategory {
   id: number;
   name: string;
+  /** @nullable */
+  name_de?: string | null;
+  /** @nullable */
+  name_sq?: string | null;
+  /** @nullable */
+  name_en?: string | null;
+  /** @nullable */
+  name_fr?: string | null;
   slug: string;
   /** service | project */
   type: string;
   active: boolean;
+  sortOrder: number;
   /**
      * ID of the parent category, or null for a top-level category
      * @nullable
      */
   parentId?: number | null;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface AdminCategoryInput {
   name?: string;
+  name_de?: string;
+  name_sq?: string;
+  name_en?: string;
+  name_fr?: string;
   slug?: string;
   type?: string;
   active?: boolean;
+  sortOrder?: number;
   /**
      * ID of the parent category, or null for a top-level category
      * @nullable
@@ -369,5 +404,9 @@ export type ListCategoriesParams = {
  * Filter by category type: service | project
  */
 type?: string;
+/**
+ * Language for name resolution: sq | en | de | fr
+ */
+lang?: string;
 };
 

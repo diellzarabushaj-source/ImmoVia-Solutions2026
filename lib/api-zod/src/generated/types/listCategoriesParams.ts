@@ -11,4 +11,8 @@ export type ListCategoriesParams = {
  * Filter by category type: service | project
  */
 type?: string;
+/**
+ * Language for name resolution: sq | en | de | fr
+ */
+lang?: string;
 };

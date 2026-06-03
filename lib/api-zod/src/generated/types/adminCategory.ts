@@ -9,14 +9,24 @@
 export interface AdminCategory {
   id: number;
   name: string;
+  /** @nullable */
+  name_de?: string | null;
+  /** @nullable */
+  name_sq?: string | null;
+  /** @nullable */
+  name_en?: string | null;
+  /** @nullable */
+  name_fr?: string | null;
   slug: string;
   /** service | project */
   type: string;
   active: boolean;
+  sortOrder: number;
   /**
      * ID of the parent category, or null for a top-level category
      * @nullable
      */
   parentId?: number | null;
   createdAt: Date;
+  updatedAt?: Date;
 }

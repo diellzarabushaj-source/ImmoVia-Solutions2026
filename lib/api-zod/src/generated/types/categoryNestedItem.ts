@@ -8,10 +8,20 @@
 
 export interface CategoryNestedItem {
   id: number;
+  /** Resolved display name for the requested language */
   name: string;
+  /** @nullable */
+  name_de?: string | null;
+  /** @nullable */
+  name_sq?: string | null;
+  /** @nullable */
+  name_en?: string | null;
+  /** @nullable */
+  name_fr?: string | null;
   slug: string;
   type: string;
   active: boolean;
+  sortOrder: number;
   parentId: number;
   createdAt: Date;
 }
