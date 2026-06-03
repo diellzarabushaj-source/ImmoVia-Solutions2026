@@ -10,6 +10,7 @@ export const categoriesTable = pgTable("categories", {
   slug: text("slug").notNull(),
   type: text("type").notNull().default("service"),
   active: boolean("active").notNull().default(true),
+  imageUrl: text("image_url"),
   sortOrder: integer("sort_order").notNull().default(0),
   parentId: integer("parent_id").references((): AnyPgColumn => categoriesTable.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

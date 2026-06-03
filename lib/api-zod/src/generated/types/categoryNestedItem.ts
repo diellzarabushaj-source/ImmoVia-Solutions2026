@@ -18,6 +18,8 @@ export interface CategoryNestedItem {
   name_en?: string | null;
   /** @nullable */
   name_fr?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
   slug: string;
   type: string;
   active: boolean;

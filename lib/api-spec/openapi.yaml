@@ -1107,6 +1107,9 @@ components:
           type: ["string", "null"]
         name_fr:
           type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+          description: "Optional image URL for the category card"
         slug:
           type: string
         type:
@@ -1143,6 +1146,8 @@ components:
           type: ["string", "null"]
         name_fr:
           type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
         slug:
           type: string
         type:
@@ -1172,6 +1177,8 @@ components:
         name_en:
           type: ["string", "null"]
         name_fr:
+          type: ["string", "null"]
+        imageUrl:
           type: ["string", "null"]
         slug:
           type: string
@@ -1204,6 +1211,8 @@ components:
         name_en:
           type: string
         name_fr:
+          type: string
+        imageUrl:
           type: string
         slug:
           type: string

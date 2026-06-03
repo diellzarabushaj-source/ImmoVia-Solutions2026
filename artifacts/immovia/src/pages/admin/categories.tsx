@@ -24,6 +24,7 @@ interface Category {
   name_sq: string | null;
   name_en: string | null;
   name_fr: string | null;
+  imageUrl: string | null;
   slug: string;
   type: string;
   active: boolean;
@@ -84,6 +85,7 @@ function CategoryDialog({
   const [nameSq, setNameSq] = useState(initial?.name_sq ?? "");
   const [nameEn, setNameEn] = useState(initial?.name_en ?? "");
   const [nameFr, setNameFr] = useState(initial?.name_fr ?? "");
+  const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [type, setType] = useState(initial?.type ?? defaultType ?? "service");
   const [active, setActive] = useState(initial?.active !== undefined ? initial.active : true);
@@ -98,6 +100,7 @@ function CategoryDialog({
       setNameSq(initial?.name_sq ?? "");
       setNameEn(initial?.name_en ?? "");
       setNameFr(initial?.name_fr ?? "");
+      setImageUrl(initial?.imageUrl ?? "");
       setSlug(initial?.slug ?? "");
       setType(initial?.type ?? defaultType ?? "service");
       setActive(initial?.active !== undefined ? initial.active : true);
@@ -126,6 +129,7 @@ function CategoryDialog({
           name_sq: nameSq || null,
           name_en: nameEn || null,
           name_fr: nameFr || null,
+          imageUrl: imageUrl || null,
           slug, type, active, parentId,
           sortOrder,
         }),
@@ -210,6 +214,29 @@ function CategoryDialog({
             <Label>{t.admin.fSlug}</Label>
             <Input value={slug} onChange={(e) => setSlug(e.target.value)} required disabled={loading} placeholder={t.admin.phSlugExample} />
           </div>
+
+          {/* Image URL */}
+          <div className="space-y-1.5">
+            <Label>Image URL</Label>
+            <Input
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              disabled={loading}
+              placeholder="https://images.unsplash.com/…"
+              type="url"
+            />
+            {imageUrl && (
+              <div className="mt-1.5 rounded-lg overflow-hidden h-24 bg-gray-100">
+                <img
+                  src={imageUrl}
+                  alt="preview"
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+            )}
+          </div>
+
           <div className="space-y-1.5">
             <Label>{t.admin.fSortOrder}</Label>
             <Input

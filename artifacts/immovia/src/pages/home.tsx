@@ -214,7 +214,7 @@ export default function Home() {
     icon: SERVICE_ICONS[cat.key] ?? Briefcase,
     title: cat.label,
     desc: cat.subcategories.slice(0, 3).map(sub => sub.label).join(" · "),
-    photo: undefined as string | undefined,
+    photo: cat.imageUrl ?? undefined,
     serviceKey: cat.key,
   }));
 
@@ -644,12 +644,16 @@ export default function Home() {
                     className="group relative rounded-2xl overflow-hidden cursor-pointer h-72 shadow-md hover:shadow-xl transition-all duration-300"
                     data-testid={`service-card-${i}`}
                   >
-                    {/* Photo background */}
-                    <img
-                      src={s.photo}
-                      alt={s.title}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
+                    {/* Photo background — only rendered when imageUrl exists */}
+                    {s.photo ? (
+                      <img
+                        src={s.photo}
+                        alt={s.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#1a3a6e] via-[#2a5298] to-[#1a3a6e]" />
+                    )}
                     {/* Dark gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
 

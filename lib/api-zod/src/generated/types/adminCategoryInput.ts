@@ -12,6 +12,7 @@ export interface AdminCategoryInput {
   name_sq?: string;
   name_en?: string;
   name_fr?: string;
+  imageUrl?: string;
   slug?: string;
   type?: string;
   active?: boolean;

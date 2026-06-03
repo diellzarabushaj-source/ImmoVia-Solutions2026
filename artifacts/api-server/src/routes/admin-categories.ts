@@ -15,6 +15,7 @@ router.get("/admin/categories", requireAdmin, async (_req, res): Promise<void> =
     rows.map((r) => ({
       ...r,
       parentId: r.parentId ?? null,
+      imageUrl: r.imageUrl ?? null,
       createdAt: r.createdAt.toISOString(),
       updatedAt: r.updatedAt.toISOString(),
     }))
@@ -22,12 +23,13 @@ router.get("/admin/categories", requireAdmin, async (_req, res): Promise<void> =
 });
 
 router.post("/admin/categories", requireAdmin, async (req, res): Promise<void> => {
-  const { name, name_de, name_sq, name_en, name_fr, slug, type, active, parentId, sortOrder } = req.body as {
+  const { name, name_de, name_sq, name_en, name_fr, imageUrl, slug, type, active, parentId, sortOrder } = req.body as {
     name?: string;
     name_de?: string;
     name_sq?: string;
     name_en?: string;
     name_fr?: string;
+    imageUrl?: string;
     slug?: string;
     type?: string;
     active?: boolean;
@@ -65,6 +67,7 @@ router.post("/admin/categories", requireAdmin, async (req, res): Promise<void> =
       name_sq: name_sq || null,
       name_en: name_en || null,
       name_fr: name_fr || null,
+      imageUrl: imageUrl || null,
       slug,
       type: type ?? "service",
       active: active !== undefined ? active : true,
@@ -76,6 +79,7 @@ router.post("/admin/categories", requireAdmin, async (req, res): Promise<void> =
   res.status(201).json({
     ...created,
     parentId: created!.parentId ?? null,
+    imageUrl: created!.imageUrl ?? null,
     createdAt: created!.createdAt.toISOString(),
     updatedAt: created!.updatedAt.toISOString(),
   });
@@ -83,12 +87,13 @@ router.post("/admin/categories", requireAdmin, async (req, res): Promise<void> =
 
 router.patch("/admin/categories/:id", requireAdmin, async (req, res): Promise<void> => {
   const id = Number(req.params["id"]);
-  const { name, name_de, name_sq, name_en, name_fr, slug, type, active, parentId, sortOrder } = req.body as {
+  const { name, name_de, name_sq, name_en, name_fr, imageUrl, slug, type, active, parentId, sortOrder } = req.body as {
     name?: string;
     name_de?: string;
     name_sq?: string;
     name_en?: string;
     name_fr?: string;
+    imageUrl?: string;
     slug?: string;
     type?: string;
     active?: boolean;
@@ -122,6 +127,7 @@ router.patch("/admin/categories/:id", requireAdmin, async (req, res): Promise<vo
   if (name_sq !== undefined) patch["name_sq"] = name_sq || null;
   if (name_en !== undefined) patch["name_en"] = name_en || null;
   if (name_fr !== undefined) patch["name_fr"] = name_fr || null;
+  if ("imageUrl" in req.body) patch["imageUrl"] = imageUrl || null;
   if (slug !== undefined) patch["slug"] = slug;
   if (type !== undefined) patch["type"] = type;
   if (active !== undefined) patch["active"] = active;
@@ -142,6 +148,7 @@ router.patch("/admin/categories/:id", requireAdmin, async (req, res): Promise<vo
   res.json({
     ...updated,
     parentId: updated.parentId ?? null,
+    imageUrl: updated.imageUrl ?? null,
     createdAt: updated.createdAt.toISOString(),
     updatedAt: updated.updatedAt.toISOString(),
   });

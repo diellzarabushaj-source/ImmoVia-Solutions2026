@@ -244,6 +244,8 @@ export interface CategoryNestedItem {
   name_en?: string | null;
   /** @nullable */
   name_fr?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
   slug: string;
   type: string;
   active: boolean;
@@ -264,6 +266,11 @@ export interface CategoryNested {
   name_en?: string | null;
   /** @nullable */
   name_fr?: string | null;
+  /**
+     * Optional image URL for the category card
+     * @nullable
+     */
+  imageUrl?: string | null;
   slug: string;
   /** service | project */
   type: string;
@@ -286,6 +293,8 @@ export interface AdminCategory {
   name_en?: string | null;
   /** @nullable */
   name_fr?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
   slug: string;
   /** service | project */
   type: string;
@@ -306,6 +315,7 @@ export interface AdminCategoryInput {
   name_sq?: string;
   name_en?: string;
   name_fr?: string;
+  imageUrl?: string;
   slug?: string;
   type?: string;
   active?: boolean;

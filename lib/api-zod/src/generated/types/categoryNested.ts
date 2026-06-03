@@ -19,6 +19,11 @@ export interface CategoryNested {
   name_en?: string | null;
   /** @nullable */
   name_fr?: string | null;
+  /**
+     * Optional image URL for the category card
+     * @nullable
+     */
+  imageUrl?: string | null;
   slug: string;
   /** service | project */
   type: string;

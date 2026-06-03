@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, isNull, and, asc } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { db, categoriesTable } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -50,6 +50,7 @@ router.get("/categories", async (req, res): Promise<void> => {
     name_sq: p.name_sq,
     name_en: p.name_en,
     name_fr: p.name_fr,
+    imageUrl: p.imageUrl,
     slug: p.slug,
     type: p.type,
     active: p.active,
@@ -65,6 +66,7 @@ router.get("/categories", async (req, res): Promise<void> => {
         name_sq: s.name_sq,
         name_en: s.name_en,
         name_fr: s.name_fr,
+        imageUrl: s.imageUrl,
         slug: s.slug,
         type: s.type,
         active: s.active,
