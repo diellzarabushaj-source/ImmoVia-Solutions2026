@@ -12,7 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search, GitBranch, Wrench, FolderOpen } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search, GitBranch, Wrench, FolderOpen, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { useLanguage } from "@/lib/language-context";
@@ -86,6 +86,8 @@ function CategoryDialog({
   const [nameEn, setNameEn] = useState(initial?.name_en ?? "");
   const [nameFr, setNameFr] = useState(initial?.name_fr ?? "");
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? "");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [type, setType] = useState(initial?.type ?? defaultType ?? "service");
   const [active, setActive] = useState(initial?.active !== undefined ? initial.active : true);
@@ -101,6 +103,7 @@ function CategoryDialog({
       setNameEn(initial?.name_en ?? "");
       setNameFr(initial?.name_fr ?? "");
       setImageUrl(initial?.imageUrl ?? "");
+      setUploadError("");
       setSlug(initial?.slug ?? "");
       setType(initial?.type ?? defaultType ?? "service");
       setActive(initial?.active !== undefined ? initial.active : true);
@@ -109,6 +112,39 @@ function CategoryDialog({
       setError("");
     }
   }, [open, initial, defaultParentId, defaultType]);
+
+  const handleFileUpload = async (file: File) => {
+    setUploading(true);
+    setUploadError("");
+    try {
+      const res = await fetch("/api/admin/categories/upload-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setUploadError((d as { error?: string }).error ?? "Upload failed");
+        return;
+      }
+      const { uploadURL, objectPath } = await res.json() as { uploadURL: string; objectPath: string };
+      const putRes = await fetch(uploadURL, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!putRes.ok) {
+        setUploadError("Upload to storage failed");
+        return;
+      }
+      setImageUrl(`/api/storage${objectPath}`);
+    } catch {
+      setUploadError("Network error during upload");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const parentOptions = allCategories.filter(
     (c) => c.parentId === null && c.id !== initial?.id && c.type === type
@@ -215,26 +251,58 @@ function CategoryDialog({
             <Input value={slug} onChange={(e) => setSlug(e.target.value)} required disabled={loading} placeholder={t.admin.phSlugExample} />
           </div>
 
-          {/* Image URL */}
+          {/* Image */}
           <div className="space-y-1.5">
-            <Label>Image URL</Label>
-            <Input
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              disabled={loading}
-              placeholder="https://images.unsplash.com/…"
-              type="url"
-            />
+            <Label>Image</Label>
+
+            {/* Preview */}
             {imageUrl && (
-              <div className="mt-1.5 rounded-lg overflow-hidden h-24 bg-gray-100">
+              <div className="relative rounded-lg overflow-hidden h-28 bg-gray-100 group">
                 <img
                   src={imageUrl}
                   alt="preview"
                   className="w-full h-full object-cover"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setImageUrl("")}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-3.5 h-3.5 text-white" />
+                </button>
               </div>
             )}
+
+            {/* Upload button */}
+            <div className="flex gap-2">
+              <label className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-md border text-sm font-medium transition-colors ${uploading ? "opacity-50 pointer-events-none" : "hover:bg-gray-50"}`}>
+                {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                {uploading ? "Uploading…" : "Upload image"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  disabled={uploading || loading}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) { e.target.value = ""; void handleFileUpload(f); }
+                  }}
+                />
+              </label>
+
+              {/* OR: paste a URL */}
+              <Input
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                disabled={loading || uploading}
+                placeholder="or paste a URL…"
+                type="url"
+                className="flex-1 text-xs"
+              />
+            </div>
+
+            {uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
           </div>
 
           <div className="space-y-1.5">

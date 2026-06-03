@@ -2,6 +2,12 @@ import { Router, type IRouter } from "express";
 import { eq, asc } from "drizzle-orm";
 import { db, categoriesTable } from "@workspace/db";
 import { requireAdmin } from "../middlewares/requireAdmin";
+import { ObjectStorageService } from "../lib/objectStorage";
+
+const objectStorageService = new ObjectStorageService();
+
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 const router: IRouter = Router();
 
@@ -152,6 +158,35 @@ router.patch("/admin/categories/:id", requireAdmin, async (req, res): Promise<vo
     createdAt: updated.createdAt.toISOString(),
     updatedAt: updated.updatedAt.toISOString(),
   });
+});
+
+/**
+ * POST /admin/categories/upload-image
+ * Admin-only: request a presigned URL to upload a category image directly to GCS.
+ * Body: { name, size, contentType }
+ * Response: { uploadURL, objectPath }
+ */
+router.post("/admin/categories/upload-image", requireAdmin, async (req, res): Promise<void> => {
+  const { name, size, contentType } = req.body as { name?: string; size?: number; contentType?: string };
+  if (!name || typeof size !== "number" || !contentType) {
+    res.status(400).json({ error: "Missing name, size, or contentType" });
+    return;
+  }
+  if (size > MAX_UPLOAD_BYTES) {
+    res.status(413).json({ error: "File too large (max 8 MB)" });
+    return;
+  }
+  if (!ALLOWED_IMAGE_TYPES.has(contentType)) {
+    res.status(415).json({ error: "Only JPEG, PNG, WebP and GIF images are allowed" });
+    return;
+  }
+  try {
+    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+    const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+    res.json({ uploadURL, objectPath });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to generate upload URL" });
+  }
 });
 
 router.delete("/admin/categories/:id", requireAdmin, async (req, res): Promise<void> => {
