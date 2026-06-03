@@ -14,6 +14,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
 import { CATEGORIES, getCategoryLabel, resolveCategoryLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { ProjectCard } from "@/components/project/ProjectCard";
 
 const SORT_OPTIONS = [
@@ -23,6 +24,7 @@ const SORT_OPTIONS = [
 
 export default function Projects() {
   const { t, language } = useLanguage();
+  const { categories } = useCategories();
   const { user } = useAuth();
   usePageMeta({ title: `${t.listings.title ?? "Browse Projects"} — ImmoVia365`, description: t.listings.subtitle ?? undefined });
   const search = useSearch();
@@ -160,7 +162,7 @@ export default function Projects() {
             >
               {t.companies.all ?? "All"}
             </button>
-            {CATEGORIES.filter(cat => cat.key !== "other").map(cat => (
+            {categories.filter(cat => cat.key !== "other").map(cat => (
               <button
                 key={cat.key}
                 onClick={() => setTypeFilter(prev => prev === cat.key ? "" : cat.key)}
@@ -170,7 +172,7 @@ export default function Projects() {
                     : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
                 }`}
               >
-                {getCategoryLabel(cat, language as Lang)}
+                {cat.label(language as Lang)}
               </button>
             ))}
           </div>

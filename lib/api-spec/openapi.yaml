@@ -439,6 +439,21 @@ paths:
         "204":
           description: Deleted
 
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [public]
+      summary: List active categories with nested subcategories
+      responses:
+        "200":
+          description: Active categories with subcategories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryNested"
+
   /admin/categories:
     get:
       operationId: listAdminCategories
@@ -1062,6 +1077,51 @@ components:
         proposedPrice:
           type: string
 
+    CategoryNested:
+      type: object
+      required: [id, name, slug, type, active, createdAt, subcategories]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        type:
+          type: string
+          description: "service | project"
+        active:
+          type: boolean
+        parentId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        subcategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryNestedItem"
+
+    CategoryNestedItem:
+      type: object
+      required: [id, name, slug, type, active, parentId, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        type:
+          type: string
+        active:
+          type: boolean
+        parentId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
     AdminCategory:
       type: object
       required: [id, name, slug, type, active, createdAt]
@@ -1077,6 +1137,9 @@ components:
           description: "service | project"
         active:
           type: boolean
+        parentId:
+          type: ["integer", "null"]
+          description: "ID of the parent category, or null for a top-level category"
         createdAt:
           type: string
           format: date-time
@@ -1092,6 +1155,9 @@ components:
           type: string
         active:
           type: boolean
+        parentId:
+          type: ["integer", "null"]
+          description: "ID of the parent category, or null for a top-level category"
 
     AdminReport:
       type: object

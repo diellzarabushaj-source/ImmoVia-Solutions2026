@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
 import { ProjectCard } from "@/components/project/ProjectCard";
+import { ProviderCard } from "@/components/provider/ProviderCard";
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
   animate: { opacity: 1, y: 0 },
@@ -114,6 +115,12 @@ export default function Home() {
   const previewCompanies = useMemo(
     () => companies?.filter(c => c.status === "approved").slice(0, 6) ?? [],
     [companies]
+  );
+  const carouselCompanies = useMemo(
+    () => (!isLoadingCompanies && previewCompanies.length > 0)
+      ? [...previewCompanies, ...previewCompanies, ...previewCompanies, ...previewCompanies]
+      : null,
+    [isLoadingCompanies, previewCompanies]
   );
   const hasListingFilter = !!(listingTypeFilter || listingCityFilter || listingSizeFilter || listingBudgetFilter);
   const previewProjects = useMemo(() => {
@@ -885,8 +892,13 @@ export default function Home() {
 
           <div className="overflow-hidden">
             <div className="immovia-ticker-track flex gap-5 w-max">
-              {/* Cards duplicated for seamless loop */}
-              {[
+              {carouselCompanies ? (
+                carouselCompanies.map((company, idx) => (
+                  <div key={`live-${idx}`} className="flex-shrink-0 w-64">
+                    <ProviderCard provider={company} />
+                  </div>
+                ))
+              ) : ([
                 {
                   initials: "ZR",
                   name: "Zurich Renovation GmbH",
@@ -1161,7 +1173,8 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           </div>
         </div>

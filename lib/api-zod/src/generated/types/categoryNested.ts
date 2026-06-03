@@ -5,18 +5,17 @@
  * ImmoVia API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CategoryNestedItem } from './categoryNestedItem';
 
-export interface AdminCategory {
+export interface CategoryNested {
   id: number;
   name: string;
   slug: string;
   /** service | project */
   type: string;
   active: boolean;
-  /**
-     * ID of the parent category, or null for a top-level category
-     * @nullable
-     */
+  /** @nullable */
   parentId?: number | null;
   createdAt: Date;
+  subcategories: CategoryNestedItem[];
 }

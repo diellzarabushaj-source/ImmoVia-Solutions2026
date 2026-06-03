@@ -16,9 +16,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { CATEGORIES, getCategoryLabel, getTagLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { ProviderCard } from "@/components/provider/ProviderCard";
 
-const SERVICE_OPTIONS = CATEGORIES.map(c => c.key);
+
 
 const KNOWN_CITIES = [
   // Albania
@@ -42,6 +43,7 @@ const SORT_OPTIONS = [
 
 export default function Companies() {
   const { t, language } = useLanguage();
+  const { categories } = useCategories();
   const { user } = useAuth();
   usePageMeta({ title: `${t.companies.title} — ImmoVia365`, description: t.companies.subtitle ?? undefined });
   const search = useSearch();
@@ -195,7 +197,7 @@ export default function Companies() {
 
   const activeFiltersCount = [activeServices.length > 0, !!workerTypeFilter, !!cityFilter].filter(Boolean).length;
 
-  const activeMainCat = CATEGORIES.find(c => activeServices.includes(c.key)) ?? null;
+  const activeMainCat = categories.find(c => activeServices.includes(c.key)) ?? null;
 
   const clearFilters = () => {
     setActiveServices([]);
@@ -257,26 +259,26 @@ export default function Companies() {
             >
               {t.companies.all ?? "All"}
             </button>
-            {SERVICE_OPTIONS.map(svc => (
+            {categories.map(cat => (
               <button
-                key={svc}
+                key={cat.key}
                 onClick={() => setActiveServices(prev =>
-                  prev.includes(svc) ? prev.filter(s => s !== svc) : [...prev, svc]
+                  prev.includes(cat.key) ? prev.filter(s => s !== cat.key) : [...prev, cat.key]
                 )}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                  activeServices.includes(svc)
+                  activeServices.includes(cat.key)
                     ? "bg-primary text-white border-primary shadow-md"
                     : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
                 }`}
               >
-                {getCategoryLabel(CATEGORIES.find(c => c.key === svc) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)}
+                {cat.label(language as Lang)}
               </button>
             ))}
           </div>
           {/* Sub-category chips — shown when a main category is active */}
           {activeMainCat && (
             <div className="mt-2 flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4">
-              {activeMainCat.tags.map(tag => (
+              {activeMainCat.subcategories.map(tag => (
                 <button
                   key={tag.key}
                   onClick={() => setActiveServices(prev =>
@@ -288,7 +290,7 @@ export default function Companies() {
                       : "bg-white/10 text-white/70 border-white/20 hover:bg-white/20"
                   }`}
                 >
-                  {getTagLabel(tag, language as Lang)}
+                  {tag.label(language as Lang)}
                 </button>
               ))}
             </div>
@@ -441,7 +443,7 @@ export default function Companies() {
         {!isLoading && !isError && (
           <p className="text-sm text-muted-foreground mb-6">
             {filtered.length} {filtered.length === 1 ? (t.companies.result ?? "result") : (t.companies.results ?? "results")}
-            {activeServices.length > 0 && <> · <span className="text-primary font-medium">{activeServices.map(s => getCategoryLabel(CATEGORIES.find(c => c.key === s) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang)).join(", ")}</span></>}
+            {activeServices.length > 0 && <> · <span className="text-primary font-medium">{activeServices.map(s => categories.find(c => c.key === s)?.label(language as Lang) ?? s).join(", ")}</span></>}
             {workerTypeFilter && <> · <span className="text-primary font-medium">{workerTypeFilter === "individual" ? (t.companies.individual ?? "Individual") : (t.companies.company ?? "Company")}</span></>}
           </p>
         )}

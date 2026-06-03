@@ -6,17 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface AdminCategory {
+export interface CategoryNestedItem {
   id: number;
   name: string;
   slug: string;
-  /** service | project */
   type: string;
   active: boolean;
-  /**
-     * ID of the parent category, or null for a top-level category
-     * @nullable
-     */
-  parentId?: number | null;
+  parentId: number;
   createdAt: Date;
 }

@@ -232,6 +232,29 @@ export interface AdminApplicationInput {
   proposedPrice?: string;
 }
 
+export interface CategoryNestedItem {
+  id: number;
+  name: string;
+  slug: string;
+  type: string;
+  active: boolean;
+  parentId: number;
+  createdAt: string;
+}
+
+export interface CategoryNested {
+  id: number;
+  name: string;
+  slug: string;
+  /** service | project */
+  type: string;
+  active: boolean;
+  /** @nullable */
+  parentId?: number | null;
+  createdAt: string;
+  subcategories: CategoryNestedItem[];
+}
+
 export interface AdminCategory {
   id: number;
   name: string;
@@ -239,6 +262,11 @@ export interface AdminCategory {
   /** service | project */
   type: string;
   active: boolean;
+  /**
+     * ID of the parent category, or null for a top-level category
+     * @nullable
+     */
+  parentId?: number | null;
   createdAt: string;
 }
 
@@ -247,6 +275,11 @@ export interface AdminCategoryInput {
   slug?: string;
   type?: string;
   active?: boolean;
+  /**
+     * ID of the parent category, or null for a top-level category
+     * @nullable
+     */
+  parentId?: number | null;
 }
 
 export interface AdminReport {

@@ -11,4 +11,9 @@ export interface AdminCategoryInput {
   slug?: string;
   type?: string;
   active?: boolean;
+  /**
+     * ID of the parent category, or null for a top-level category
+     * @nullable
+     */
+  parentId?: number | null;
 }

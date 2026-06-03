@@ -28,11 +28,13 @@ import {
 } from "@/components/ui/select";
 import { Hammer, Building2, Sofa, TreePine, Wrench, CheckCircle2, Home as HomeIcon, Crown, Sparkles, Layers, Zap, Paintbrush, FlameKindling, ChefHat, Leaf, Star, SquareStack, HelpCircle } from "lucide-react";
 import { CATEGORIES, getCategoryLabel, getTagLabel, resolveCategoryLabel, resolveTagLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { validateOtherTag, otherTagErrorMessage, sanitizeOtherTag } from "@/lib/validateOtherTag";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function SubmitProject() {
   const { t, language } = useLanguage();
+  const { categories } = useCategories();
   const { user, loading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);
@@ -143,12 +145,12 @@ export default function SubmitProject() {
     cleaning:       Leaf,
     other:          HelpCircle,
   };
-  const projectTypes = CATEGORIES.map(cat => ({
+  const projectTypes = categories.map(cat => ({
     id: cat.key,
     icon: SUBMIT_ICONS[cat.key] ?? HelpCircle,
-    label: getCategoryLabel(cat, language as Lang),
+    label: cat.label(language as Lang),
   }));
-  const selectedCategoryData = CATEGORIES.find(c => c.key === form.watch("projectType"));
+  const selectedCategoryData = categories.find(c => c.key === form.watch("projectType"));
 
   if (!authLoading && !user) {
     return (
@@ -394,7 +396,7 @@ export default function SubmitProject() {
                          "More specific service (optional)"}
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {selectedCategoryData.tags.map(tag => {
+                        {selectedCategoryData.subcategories.map(tag => {
                           const isSelected = form.watch("subcategory") === tag.key;
                           return (
                             <button
@@ -414,7 +416,7 @@ export default function SubmitProject() {
                                   : "border-border bg-card text-muted-foreground hover:border-primary/50"
                               }`}
                             >
-                              {getTagLabel(tag, language as Lang)}
+                              {tag.label(language as Lang)}
                             </button>
                           );
                         })}

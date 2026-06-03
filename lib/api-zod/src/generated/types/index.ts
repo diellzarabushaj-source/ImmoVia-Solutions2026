@@ -16,6 +16,8 @@ export * from './adminSetting';
 export * from './adminStats';
 export * from './adminUser';
 export * from './adminUserAction';
+export * from './categoryNested';
+export * from './categoryNestedItem';
 export * from './chatMessageInput';
 export * from './chatResponse';
 export * from './company';

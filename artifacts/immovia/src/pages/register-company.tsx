@@ -21,11 +21,13 @@ import {
 } from "@/components/ui/form";
 import { CheckCircle2, User, Building2 } from "lucide-react";
 import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { validateOtherTag, otherTagErrorMessage, sanitizeOtherTag, buildCustomServiceTag } from "@/lib/validateOtherTag";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function RegisterCompany() {
   const { t, language } = useLanguage();
+  const { categories } = useCategories();
   const [, setLocation] = useLocation();
   const [isSubmitted, setIsSubmitted] = useState(false);
   
@@ -95,9 +97,9 @@ export default function RegisterCompany() {
     });
   };
 
-  const servicesList = CATEGORIES.map(cat => ({
+  const servicesList = categories.map(cat => ({
     id: cat.key,
-    label: getCategoryLabel(cat, language as Lang),
+    label: cat.label(language as Lang),
   }));
 
   if (isSubmitted) {
@@ -320,7 +322,7 @@ export default function RegisterCompany() {
                     </FormDescription>
                   </div>
                   <div className="space-y-2">
-                    {CATEGORIES.map((cat) => (
+                    {categories.map((cat) => (
                       <FormField
                         key={cat.key}
                         control={form.control}
@@ -337,7 +339,7 @@ export default function RegisterCompany() {
                                       if (checked) {
                                         field.onChange([...field.value, cat.key]);
                                       } else {
-                                        const tagKeys = cat.tags.map(t => t.key);
+                                        const tagKeys = cat.subcategories.map(t => t.key);
                                         field.onChange(field.value?.filter((v: string) => v !== cat.key && !tagKeys.includes(v)));
                                         setOtherTexts(prev => { const next = { ...prev }; delete next[cat.key]; return next; });
                                         setOtherTagErrors(prev => { const next = { ...prev }; delete next[cat.key]; return next; });
@@ -346,13 +348,13 @@ export default function RegisterCompany() {
                                   />
                                 </FormControl>
                                 <FormLabel className="font-medium cursor-pointer w-full">
-                                  {getCategoryLabel(cat, language as Lang)}
+                                  {cat.label(language as Lang)}
                                 </FormLabel>
                               </FormItem>
                               {isChecked && (
                                 <div className="px-3 pb-3 space-y-2">
                                   <div className="flex flex-wrap gap-1.5">
-                                    {cat.tags.map(tag => {
+                                    {cat.subcategories.map(tag => {
                                       const isOtherTag = tag.key === "other";
                                       const isTagSelected = isOtherTag
                                         ? cat.key in otherTexts
@@ -391,7 +393,7 @@ export default function RegisterCompany() {
                                               : "border-border text-muted-foreground hover:border-primary/40"
                                           }`}
                                         >
-                                          {getTagLabel(tag, language as Lang)}
+                                          {tag.label(language as Lang)}
                                         </button>
                                       );
                                     })}

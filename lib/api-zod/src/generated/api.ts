@@ -421,6 +421,30 @@ export const DeleteAdminApplicationParams = zod.object({
 
 
 /**
+ * @summary List active categories with nested subcategories
+ */
+export const ListCategoriesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "slug": zod.string(),
+  "type": zod.string().describe('service | project'),
+  "active": zod.boolean(),
+  "parentId": zod.number().nullish(),
+  "createdAt": zod.coerce.date(),
+  "subcategories": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "slug": zod.string(),
+  "type": zod.string(),
+  "active": zod.boolean(),
+  "parentId": zod.number(),
+  "createdAt": zod.coerce.date()
+}))
+})
+export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem)
+
+
+/**
  * @summary List all service categories
  */
 export const ListAdminCategoriesResponseItem = zod.object({
@@ -429,6 +453,7 @@ export const ListAdminCategoriesResponseItem = zod.object({
   "slug": zod.string(),
   "type": zod.string().describe('service | project'),
   "active": zod.boolean(),
+  "parentId": zod.number().nullish().describe('ID of the parent category, or null for a top-level category'),
   "createdAt": zod.coerce.date()
 })
 export const ListAdminCategoriesResponse = zod.array(ListAdminCategoriesResponseItem)
@@ -441,7 +466,8 @@ export const CreateAdminCategoryBody = zod.object({
   "name": zod.string().optional(),
   "slug": zod.string().optional(),
   "type": zod.string().optional(),
-  "active": zod.boolean().optional()
+  "active": zod.boolean().optional(),
+  "parentId": zod.number().nullish().describe('ID of the parent category, or null for a top-level category')
 })
 
 
@@ -456,7 +482,8 @@ export const PatchAdminCategoryBody = zod.object({
   "name": zod.string().optional(),
   "slug": zod.string().optional(),
   "type": zod.string().optional(),
-  "active": zod.boolean().optional()
+  "active": zod.boolean().optional(),
+  "parentId": zod.number().nullish().describe('ID of the parent category, or null for a top-level category')
 })
 
 export const PatchAdminCategoryResponse = zod.object({
@@ -465,6 +492,7 @@ export const PatchAdminCategoryResponse = zod.object({
   "slug": zod.string(),
   "type": zod.string().describe('service | project'),
   "active": zod.boolean(),
+  "parentId": zod.number().nullish().describe('ID of the parent category, or null for a top-level category'),
   "createdAt": zod.coerce.date()
 })
 

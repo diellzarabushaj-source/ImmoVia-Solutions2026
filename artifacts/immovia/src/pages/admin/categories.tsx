@@ -12,7 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search, GitBranch } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { useLanguage } from "@/lib/language-context";
@@ -23,6 +23,7 @@ interface Category {
   slug: string;
   type: string;
   active: boolean;
+  parentId: number | null;
   createdAt: string;
 }
 
@@ -45,12 +46,14 @@ function slugify(s: string) {
 }
 
 function CategoryDialog({
-  open, onClose, onSaved, initial,
+  open, onClose, onSaved, initial, allCategories, defaultParentId,
 }: {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
   initial?: Category | null;
+  allCategories: Category[];
+  defaultParentId?: number | null;
 }) {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
@@ -59,6 +62,9 @@ function CategoryDialog({
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [type, setType] = useState(initial?.type ?? "service");
   const [active, setActive] = useState(initial?.active !== undefined ? initial.active : true);
+  const [parentId, setParentId] = useState<number | null>(
+    initial?.parentId !== undefined ? (initial.parentId ?? null) : (defaultParentId ?? null)
+  );
 
   useEffect(() => {
     if (open) {
@@ -66,9 +72,14 @@ function CategoryDialog({
       setSlug(initial?.slug ?? "");
       setType(initial?.type ?? "service");
       setActive(initial?.active !== undefined ? initial.active : true);
+      setParentId(initial?.parentId !== undefined ? (initial.parentId ?? null) : (defaultParentId ?? null));
       setError("");
     }
-  }, [open, initial]);
+  }, [open, initial, defaultParentId]);
+
+  const parentOptions = allCategories.filter(
+    (c) => c.parentId === null && c.id !== initial?.id
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,18 +90,44 @@ function CategoryDialog({
       const method = initial ? "PATCH" : "POST";
       const res = await fetch(url, {
         method, headers: { "Content-Type": "application/json" },
-        credentials: "include", body: JSON.stringify({ name, slug, type, active }),
+        credentials: "include",
+        body: JSON.stringify({ name, slug, type, active, parentId }),
       });
       if (!res.ok) { const d = await res.json().catch(() => ({})); setError((d as { error?: string }).error ?? t.admin.failed); return; }
       onSaved(); onClose();
     } catch { setError(t.admin.connectionErrorShort); } finally { setLoading(false); }
   };
 
+  const isEditing = !!initial;
+  const isSubcategory = parentId !== null;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>{initial ? t.admin.catEdit : t.admin.catAdd}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>
+            {isEditing ? t.admin.catEdit : (isSubcategory ? t.admin.catAddSub : t.admin.catAdd)}
+          </DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3 py-2">
+          <div className="space-y-1.5">
+            <Label>{t.admin.catParent}</Label>
+            <Select
+              value={parentId !== null ? String(parentId) : "__none__"}
+              onValueChange={(v) => setParentId(v === "__none__" ? null : Number(v))}
+              disabled={loading}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">{t.admin.catMainCategory}</SelectItem>
+                {parentOptions.map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-1.5">
             <Label>{t.admin.fName}</Label>
             <Input value={name} onChange={(e) => { setName(e.target.value); if (!initial) setSlug(slugify(e.target.value)); }} required disabled={loading} placeholder={t.admin.phNameExample} />
@@ -138,6 +175,7 @@ export function AdminCategories() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
+  const [defaultParentId, setDefaultParentId] = useState<number | null>(null);
   const [seeding, setSeeding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [search, setSearch] = useState("");
@@ -153,6 +191,10 @@ export function AdminCategories() {
 
   useEffect(() => { load(); }, []);
 
+  const parents = categories.filter((c) => c.parentId === null);
+  const subcategoriesByParent = (parentId: number) =>
+    categories.filter((c) => c.parentId === parentId);
+
   const filtered = categories.filter((c) => {
     const matchSearch = !search ||
       c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -162,9 +204,27 @@ export function AdminCategories() {
     return matchSearch && matchActive;
   });
 
+  const filteredParents = filtered.filter((c) => c.parentId === null);
+  const filteredSubcategories = (parentId: number) =>
+    filtered.filter((c) => c.parentId === parentId);
+
+  const allFilteredRows: Category[] = [];
+  for (const p of filteredParents) {
+    allFilteredRows.push(p);
+    allFilteredRows.push(...filteredSubcategories(p.id));
+  }
+  const orphanSubs = filtered.filter((c) => c.parentId !== null && !categories.find(p => p.id === c.parentId));
+  allFilteredRows.push(...orphanSubs);
+
   const deleteCategory = async () => {
     if (!deleteTarget) return;
-    await fetch(`/api/admin/categories/${deleteTarget.id}`, { method: "DELETE", credentials: "include" });
+    const res = await fetch(`/api/admin/categories/${deleteTarget.id}`, { method: "DELETE", credentials: "include" });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      alert((d as { error?: string }).error ?? t.admin.failed);
+      setDeleteTarget(null);
+      return;
+    }
     setDeleteTarget(null);
     load();
   };
@@ -189,12 +249,33 @@ export function AdminCategories() {
     load();
   };
 
+  const openAdd = (parentIdArg?: number | null) => {
+    setEditing(null);
+    setDefaultParentId(parentIdArg ?? null);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (cat: Category) => {
+    setEditing(cat);
+    setDefaultParentId(null);
+    setDialogOpen(true);
+  };
+
+  const parentName = (parentId: number | null) => {
+    if (parentId === null) return null;
+    return categories.find((c) => c.id === parentId)?.name ?? `#${parentId}`;
+  };
+
+  const childCount = (id: number) => subcategoriesByParent(id).length;
+
   return (
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t.admin.catTitle}</h1>
-          <p className="text-sm text-gray-500 mt-1">{categories.length} {t.admin.navCategories.toLowerCase()} — {categories.filter((c) => c.active).length} {t.admin.active.toLowerCase()}</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {parents.length} {t.admin.navCategories.toLowerCase()} — {categories.filter((c) => c.active).length} {t.admin.active.toLowerCase()}
+          </p>
         </div>
         <div className="flex gap-2">
           {categories.length === 0 && (
@@ -202,7 +283,7 @@ export function AdminCategories() {
               {seeding ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />{t.admin.saving}</> : <><Tag className="h-4 w-4 mr-1.5" />{t.admin.seedDefaults}</>}
             </Button>
           )}
-          <Button size="sm" className="bg-[#1a3a6e] hover:bg-[#0f2044]" onClick={() => { setEditing(null); setDialogOpen(true); }}>
+          <Button size="sm" className="bg-[#1a3a6e] hover:bg-[#0f2044]" onClick={() => openAdd(null)}>
             <Plus className="h-4 w-4 mr-1.5" /> {t.admin.catAdd}
           </Button>
         </div>
@@ -228,6 +309,7 @@ export function AdminCategories() {
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colName}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.catColParent}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colSlug}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.type}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
@@ -237,36 +319,70 @@ export function AdminCategories() {
           </TableHeader>
           <TableBody>
             {loading && (
-              <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
-            {!loading && filtered.map((cat) => (
-              <TableRow key={cat.id} className="hover:bg-gray-50">
-                <TableCell className="font-medium text-sm">{cat.name}</TableCell>
-                <TableCell><code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">{cat.slug}</code></TableCell>
-                <TableCell className="text-sm capitalize text-gray-600">{cat.type}</TableCell>
-                <TableCell>
-                  {cat.active
-                    ? <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />{t.admin.active}</span>
-                    : <span className="inline-flex items-center gap-1 text-xs text-gray-400"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block" />{t.admin.inactive}</span>}
-                </TableCell>
-                <TableCell className="text-xs text-gray-500">{format(new Date(cat.createdAt), "MMM d, yyyy")}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-[#1a3a6e]" title={cat.active ? t.admin.deactivate : t.admin.activate} onClick={() => toggleActive(cat)}>
-                      <Power className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => { setEditing(cat); setDialogOpen(true); }}>
-                      <Pencil className="h-3.5 w-3.5 text-gray-500" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setDeleteTarget(cat)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {!loading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-400">{categories.length === 0 ? t.admin.noCategoriesYet : t.admin.noCategoriesMatch}</TableCell></TableRow>
+            {!loading && allFilteredRows.map((cat) => {
+              const isChild = cat.parentId !== null;
+              const children = childCount(cat.id);
+              return (
+                <TableRow key={cat.id} className={`hover:bg-gray-50 ${isChild ? "bg-gray-50/50" : ""}`}>
+                  <TableCell className="font-medium text-sm">
+                    {isChild ? (
+                      <span className="flex items-center gap-1.5 pl-4 text-gray-700">
+                        <span className="text-gray-300">└</span>
+                        {cat.name}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5">
+                        {cat.name}
+                        {children > 0 && (
+                          <span className="text-xs text-gray-400 font-normal">({children})</span>
+                        )}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs text-gray-500">
+                    {isChild
+                      ? <span className="text-[#1a3a6e] font-medium">{parentName(cat.parentId)}</span>
+                      : <span className="text-gray-300">—</span>
+                    }
+                  </TableCell>
+                  <TableCell><code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">{cat.slug}</code></TableCell>
+                  <TableCell className="text-sm capitalize text-gray-600">{cat.type}</TableCell>
+                  <TableCell>
+                    {cat.active
+                      ? <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />{t.admin.active}</span>
+                      : <span className="inline-flex items-center gap-1 text-xs text-gray-400"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block" />{t.admin.inactive}</span>}
+                  </TableCell>
+                  <TableCell className="text-xs text-gray-500">{format(new Date(cat.createdAt), "MMM d, yyyy")}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      {!isChild && (
+                        <Button
+                          variant="ghost" size="sm"
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-[#1a3a6e]"
+                          title={t.admin.catAddSub}
+                          onClick={() => openAdd(cat.id)}
+                        >
+                          <GitBranch className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-[#1a3a6e]" title={cat.active ? t.admin.deactivate : t.admin.activate} onClick={() => toggleActive(cat)}>
+                        <Power className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEdit(cat)}>
+                        <Pencil className="h-3.5 w-3.5 text-gray-500" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setDeleteTarget(cat)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            {!loading && allFilteredRows.length === 0 && (
+              <TableRow><TableCell colSpan={7} className="h-24 text-center text-gray-400">{categories.length === 0 ? t.admin.noCategoriesYet : t.admin.noCategoriesMatch}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -277,13 +393,19 @@ export function AdminCategories() {
         onClose={() => setDialogOpen(false)}
         onSaved={load}
         initial={editing}
+        allCategories={categories}
+        defaultParentId={defaultParentId}
       />
 
       {deleteTarget && (
         <ConfirmDialog
           open={true}
           title={t.admin.catDelete}
-          description={t.admin.confirmDeleteCategory}
+          description={
+            childCount(deleteTarget.id) > 0
+              ? t.admin.catDeleteWithChildren
+              : t.admin.confirmDeleteCategory
+          }
           confirmLabel={t.admin.delete}
           variant="destructive"
           onConfirm={deleteCategory}
