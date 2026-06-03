@@ -255,9 +255,9 @@ function CategoryDialog({
           <div className="space-y-1.5">
             <Label>Image</Label>
 
-            {/* Preview */}
-            {imageUrl && (
-              <div className="relative rounded-lg overflow-hidden h-28 bg-gray-100 group">
+            {imageUrl ? (
+              /* Preview — shown when an image is set */
+              <div className="relative rounded-lg overflow-hidden h-28 bg-gray-100">
                 <img
                   src={imageUrl}
                   alt="preview"
@@ -266,41 +266,41 @@ function CategoryDialog({
                 />
                 <button
                   type="button"
-                  onClick={() => setImageUrl("")}
+                  onClick={() => { setImageUrl(""); setUploadError(""); }}
                   className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors"
                 >
                   <X className="w-3.5 h-3.5 text-white" />
                 </button>
               </div>
+            ) : (
+              /* No image yet — show upload button + URL paste */
+              <div className="space-y-2">
+                <label className={`flex items-center gap-1.5 cursor-pointer w-fit px-3 py-1.5 rounded-md border text-sm font-medium transition-colors ${uploading ? "opacity-50 pointer-events-none" : "hover:bg-gray-50"}`}>
+                  {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                  {uploading ? "Uploading…" : "Upload image"}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    disabled={uploading || loading}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) { e.target.value = ""; void handleFileUpload(f); }
+                    }}
+                  />
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">or</span>
+                  <Input
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    disabled={loading || uploading}
+                    placeholder="paste an image URL…"
+                    className="flex-1 text-xs"
+                  />
+                </div>
+              </div>
             )}
-
-            {/* Upload button */}
-            <div className="flex gap-2">
-              <label className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-md border text-sm font-medium transition-colors ${uploading ? "opacity-50 pointer-events-none" : "hover:bg-gray-50"}`}>
-                {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                {uploading ? "Uploading…" : "Upload image"}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="hidden"
-                  disabled={uploading || loading}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) { e.target.value = ""; void handleFileUpload(f); }
-                  }}
-                />
-              </label>
-
-              {/* OR: paste a URL */}
-              <Input
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                disabled={loading || uploading}
-                placeholder="or paste a URL…"
-                type="url"
-                className="flex-1 text-xs"
-              />
-            </div>
 
             {uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
           </div>
