@@ -27,7 +27,7 @@ import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function RegisterCompany() {
   const { t, language } = useLanguage();
-  const { categories } = useCategories();
+  const { categories } = useCategories("service");
   const [, setLocation] = useLocation();
   const [isSubmitted, setIsSubmitted] = useState(false);
   

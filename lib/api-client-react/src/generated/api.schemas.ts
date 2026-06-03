@@ -364,3 +364,10 @@ status?: string;
 workerType?: string;
 };
 
+export type ListCategoriesParams = {
+/**
+ * Filter by category type: service | project
+ */
+type?: string;
+};
+

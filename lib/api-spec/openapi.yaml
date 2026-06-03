@@ -444,6 +444,13 @@ paths:
       operationId: listCategories
       tags: [public]
       summary: List active categories with nested subcategories
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filter by category type: service | project"
       responses:
         "200":
           description: Active categories with subcategories

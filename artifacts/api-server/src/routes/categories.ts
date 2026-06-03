@@ -4,11 +4,18 @@ import { db, categoriesTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
-router.get("/categories", async (_req, res): Promise<void> => {
+router.get("/categories", async (req, res): Promise<void> => {
+  const { type } = req.query as { type?: string };
+
+  const conditions: ReturnType<typeof eq>[] = [eq(categoriesTable.active, true)];
+  if (type === "service" || type === "project") {
+    conditions.push(eq(categoriesTable.type, type));
+  }
+
   const all = await db
     .select()
     .from(categoriesTable)
-    .where(and(eq(categoriesTable.active, true)))
+    .where(and(...conditions))
     .orderBy(categoriesTable.name);
 
   const parents = all.filter((c) => c.parentId === null);

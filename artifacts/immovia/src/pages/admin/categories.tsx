@@ -12,7 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search, GitBranch } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search, GitBranch, Wrench, FolderOpen } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { useLanguage } from "@/lib/language-context";
@@ -27,18 +27,29 @@ interface Category {
   createdAt: string;
 }
 
-const DEFAULTS = [
-  { name: "Renovation", slug: "renovation", type: "service" },
-  { name: "Construction", slug: "construction", type: "service" },
-  { name: "Interior Design", slug: "interior-design", type: "service" },
-  { name: "Plumbing", slug: "plumbing", type: "service" },
-  { name: "Electrical", slug: "electrical", type: "service" },
-  { name: "Painting", slug: "painting", type: "service" },
-  { name: "Flooring", slug: "flooring", type: "service" },
-  { name: "Roofing", slug: "roofing", type: "service" },
-  { name: "Landscaping", slug: "landscaping", type: "service" },
-  { name: "HVAC", slug: "hvac", type: "service" },
-  { name: "Cleaning", slug: "cleaning", type: "service" },
+const SERVICE_DEFAULTS = [
+  { name: "Renovation & Construction", slug: "renovation", type: "service" },
+  { name: "Painting & Plastering", slug: "painting", type: "service" },
+  { name: "Electrical & Smart Home", slug: "electrical", type: "service" },
+  { name: "Plumbing & Bathroom", slug: "plumbing", type: "service" },
+  { name: "Kitchen & Carpentry", slug: "kitchen", type: "service" },
+  { name: "Flooring & Tiles", slug: "flooring", type: "service" },
+  { name: "Interior Design", slug: "interior_design", type: "service" },
+  { name: "Cleaning, Garden & Property", slug: "cleaning", type: "service" },
+  { name: "Other", slug: "other", type: "service" },
+];
+
+const PROJECT_DEFAULTS = [
+  { name: "Renovation & Construction", slug: "renovation", type: "project" },
+  { name: "Painting & Plastering", slug: "painting", type: "project" },
+  { name: "Electrical & Smart Home", slug: "electrical", type: "project" },
+  { name: "Plumbing & Bathroom", slug: "plumbing", type: "project" },
+  { name: "Kitchen & Carpentry", slug: "kitchen", type: "project" },
+  { name: "Flooring & Tiles", slug: "flooring", type: "project" },
+  { name: "Interior Design", slug: "interior_design", type: "project" },
+  { name: "Cleaning, Garden & Property", slug: "cleaning", type: "project" },
+  { name: "Emergency Repair", slug: "emergency_repair", type: "project" },
+  { name: "Other", slug: "other", type: "project" },
 ];
 
 function slugify(s: string) {
@@ -46,7 +57,7 @@ function slugify(s: string) {
 }
 
 function CategoryDialog({
-  open, onClose, onSaved, initial, allCategories, defaultParentId,
+  open, onClose, onSaved, initial, allCategories, defaultParentId, defaultType,
 }: {
   open: boolean;
   onClose: () => void;
@@ -54,13 +65,14 @@ function CategoryDialog({
   initial?: Category | null;
   allCategories: Category[];
   defaultParentId?: number | null;
+  defaultType?: string;
 }) {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
-  const [type, setType] = useState(initial?.type ?? "service");
+  const [type, setType] = useState(initial?.type ?? defaultType ?? "service");
   const [active, setActive] = useState(initial?.active !== undefined ? initial.active : true);
   const [parentId, setParentId] = useState<number | null>(
     initial?.parentId !== undefined ? (initial.parentId ?? null) : (defaultParentId ?? null)
@@ -70,15 +82,15 @@ function CategoryDialog({
     if (open) {
       setName(initial?.name ?? "");
       setSlug(initial?.slug ?? "");
-      setType(initial?.type ?? "service");
+      setType(initial?.type ?? defaultType ?? "service");
       setActive(initial?.active !== undefined ? initial.active : true);
       setParentId(initial?.parentId !== undefined ? (initial.parentId ?? null) : (defaultParentId ?? null));
       setError("");
     }
-  }, [open, initial, defaultParentId]);
+  }, [open, initial, defaultParentId, defaultType]);
 
   const parentOptions = allCategories.filter(
-    (c) => c.parentId === null && c.id !== initial?.id
+    (c) => c.parentId === null && c.id !== initial?.id && c.type === type
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,6 +123,16 @@ function CategoryDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3 py-2">
           <div className="space-y-1.5">
+            <Label>{t.admin.type}</Label>
+            <Select value={type} onValueChange={(v) => { setType(v); setParentId(null); }} disabled={loading}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="service">{t.admin.optService}</SelectItem>
+                <SelectItem value="project">{t.admin.optProject}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
             <Label>{t.admin.catParent}</Label>
             <Select
               value={parentId !== null ? String(parentId) : "__none__"}
@@ -135,16 +157,6 @@ function CategoryDialog({
           <div className="space-y-1.5">
             <Label>{t.admin.fSlug}</Label>
             <Input value={slug} onChange={(e) => setSlug(e.target.value)} required disabled={loading} placeholder={t.admin.phSlugExample} />
-          </div>
-          <div className="space-y-1.5">
-            <Label>{t.admin.type}</Label>
-            <Select value={type} onValueChange={setType} disabled={loading}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="service">{t.admin.optService}</SelectItem>
-                <SelectItem value="project">{t.admin.optProject}</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           <div className="flex items-center gap-3 pt-1">
             <button
@@ -180,6 +192,7 @@ export function AdminCategories() {
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState<"service" | "project">("service");
 
   const load = () => {
     setLoading(true);
@@ -191,11 +204,12 @@ export function AdminCategories() {
 
   useEffect(() => { load(); }, []);
 
-  const parents = categories.filter((c) => c.parentId === null);
+  const tabCategories = categories.filter((c) => c.type === activeTab);
+  const parents = tabCategories.filter((c) => c.parentId === null);
   const subcategoriesByParent = (parentId: number) =>
-    categories.filter((c) => c.parentId === parentId);
+    tabCategories.filter((c) => c.parentId === parentId);
 
-  const filtered = categories.filter((c) => {
+  const filtered = tabCategories.filter((c) => {
     const matchSearch = !search ||
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.slug.toLowerCase().includes(search.toLowerCase());
@@ -213,7 +227,7 @@ export function AdminCategories() {
     allFilteredRows.push(p);
     allFilteredRows.push(...filteredSubcategories(p.id));
   }
-  const orphanSubs = filtered.filter((c) => c.parentId !== null && !categories.find(p => p.id === c.parentId));
+  const orphanSubs = filtered.filter((c) => c.parentId !== null && !tabCategories.find(p => p.id === c.parentId));
   allFilteredRows.push(...orphanSubs);
 
   const deleteCategory = async () => {
@@ -238,8 +252,9 @@ export function AdminCategories() {
   };
 
   const seedDefaults = async () => {
+    const defaults = activeTab === "service" ? SERVICE_DEFAULTS : PROJECT_DEFAULTS;
     setSeeding(true);
-    for (const cat of DEFAULTS) {
+    for (const cat of defaults) {
       await fetch("/api/admin/categories", {
         method: "POST", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify(cat),
@@ -268,17 +283,21 @@ export function AdminCategories() {
 
   const childCount = (id: number) => subcategoriesByParent(id).length;
 
+  const serviceCount = categories.filter(c => c.type === "service").length;
+  const projectCount = categories.filter(c => c.type === "project").length;
+  const tabCount = activeTab === "service" ? serviceCount : projectCount;
+
   return (
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t.admin.catTitle}</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {parents.length} {t.admin.navCategories.toLowerCase()} — {categories.filter((c) => c.active).length} {t.admin.active.toLowerCase()}
+            {serviceCount} {t.admin.catTabService.toLowerCase()} · {projectCount} {t.admin.catTabProject.toLowerCase()}
           </p>
         </div>
         <div className="flex gap-2">
-          {categories.length === 0 && (
+          {tabCount === 0 && (
             <Button variant="outline" size="sm" onClick={seedDefaults} disabled={seeding}>
               {seeding ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />{t.admin.saving}</> : <><Tag className="h-4 w-4 mr-1.5" />{t.admin.seedDefaults}</>}
             </Button>
@@ -287,6 +306,38 @@ export function AdminCategories() {
             <Plus className="h-4 w-4 mr-1.5" /> {t.admin.catAdd}
           </Button>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-5 bg-gray-100 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => { setActiveTab("service"); setSearch(""); }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === "service"
+              ? "bg-white text-[#1a3a6e] shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          <Wrench className="h-3.5 w-3.5" />
+          {t.admin.catTabService}
+          <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${activeTab === "service" ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-500"}`}>
+            {serviceCount}
+          </span>
+        </button>
+        <button
+          onClick={() => { setActiveTab("project"); setSearch(""); }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === "project"
+              ? "bg-white text-[#1a3a6e] shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          <FolderOpen className="h-3.5 w-3.5" />
+          {t.admin.catTabProject}
+          <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${activeTab === "project" ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-500"}`}>
+            {projectCount}
+          </span>
+        </button>
       </div>
 
       <div className="flex gap-3 mb-4">
@@ -311,7 +362,6 @@ export function AdminCategories() {
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colName}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.catColParent}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colSlug}</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600">{t.admin.type}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colCreated}</TableHead>
               <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.actions}</TableHead>
@@ -319,7 +369,7 @@ export function AdminCategories() {
           </TableHeader>
           <TableBody>
             {loading && (
-              <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
             {!loading && allFilteredRows.map((cat) => {
               const isChild = cat.parentId !== null;
@@ -348,7 +398,6 @@ export function AdminCategories() {
                     }
                   </TableCell>
                   <TableCell><code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">{cat.slug}</code></TableCell>
-                  <TableCell className="text-sm capitalize text-gray-600">{cat.type}</TableCell>
                   <TableCell>
                     {cat.active
                       ? <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />{t.admin.active}</span>
@@ -382,7 +431,22 @@ export function AdminCategories() {
               );
             })}
             {!loading && allFilteredRows.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="h-24 text-center text-gray-400">{categories.length === 0 ? t.admin.noCategoriesYet : t.admin.noCategoriesMatch}</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={6} className="h-32 text-center">
+                  <div className="flex flex-col items-center gap-3 text-gray-400">
+                    {activeTab === "service" ? <Wrench className="h-8 w-8 opacity-30" /> : <FolderOpen className="h-8 w-8 opacity-30" />}
+                    <p className="text-sm">
+                      {tabCount === 0 ? t.admin.noCategoriesYet : t.admin.noCategoriesMatch}
+                    </p>
+                    {tabCount === 0 && (
+                      <Button size="sm" variant="outline" onClick={seedDefaults} disabled={seeding}>
+                        {seeding ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Tag className="h-3.5 w-3.5 mr-1.5" />}
+                        {t.admin.seedDefaults}
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
             )}
           </TableBody>
         </Table>
@@ -395,6 +459,7 @@ export function AdminCategories() {
         initial={editing}
         allCategories={categories}
         defaultParentId={defaultParentId}
+        defaultType={activeTab}
       />
 
       {deleteTarget && (

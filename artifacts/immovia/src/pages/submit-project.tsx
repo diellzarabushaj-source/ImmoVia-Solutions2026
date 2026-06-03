@@ -34,7 +34,9 @@ import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function SubmitProject() {
   const { t, language } = useLanguage();
-  const { categories } = useCategories();
+  const { categories: projectCats, fromApi: projectFromApi } = useCategories("project");
+  const { categories: serviceCats } = useCategories("service");
+  const categories = (projectFromApi && projectCats.length > 0) ? projectCats : serviceCats;
   const { user, loading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);

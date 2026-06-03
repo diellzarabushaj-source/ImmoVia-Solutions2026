@@ -28,6 +28,7 @@ export * from './errorEnvelope';
 export * from './errorResponse';
 export * from './healthStatus';
 export * from './keyValueMap';
+export * from './listCategoriesParams';
 export * from './listCompaniesParams';
 export * from './listProjectsParams';
 export * from './project';

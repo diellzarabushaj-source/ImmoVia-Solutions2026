@@ -423,6 +423,10 @@ export const DeleteAdminApplicationParams = zod.object({
 /**
  * @summary List active categories with nested subcategories
  */
+export const ListCategoriesQueryParams = zod.object({
+  "type": zod.coerce.string().optional().describe('Filter by category type: service | project')
+})
+
 export const ListCategoriesResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),

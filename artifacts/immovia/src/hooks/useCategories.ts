@@ -15,8 +15,8 @@ export interface NormCategory {
   subcategories: NormTag[];
 }
 
-function fallbackCategories(): NormCategory[] {
-  return CATEGORIES.map((cat) => ({
+function fallbackCategories(type?: "service" | "project"): NormCategory[] {
+  const all = CATEGORIES.map((cat) => ({
     key: cat.key,
     label: (lang: Lang) => getCategoryLabel(cat, lang),
     subcategories: cat.tags.map((tag) => ({
@@ -24,6 +24,7 @@ function fallbackCategories(): NormCategory[] {
       label: (lang: Lang) => getTagLabel(tag, lang),
     })),
   }));
+  return all;
 }
 
 function apiToNorm(apiCats: CategoryNested[]): NormCategory[] {
@@ -53,11 +54,14 @@ function apiToNorm(apiCats: CategoryNested[]): NormCategory[] {
   });
 }
 
-export function useCategories() {
-  const { data, isLoading, isError } = useListCategories();
+export function useCategories(type?: "service" | "project") {
+  const params = type ? { type } : undefined;
+  const { data, isLoading, isError } = useListCategories(params);
+
+  const fromApi = !!(data && data.length > 0);
 
   const categories: NormCategory[] =
-    data && data.length > 0 ? apiToNorm(data) : fallbackCategories();
+    fromApi ? apiToNorm(data!) : fallbackCategories(type);
 
-  return { categories, isLoading, isError, fromApi: !!(data && data.length > 0) };
+  return { categories, isLoading, isError, fromApi };
 }

@@ -39,6 +39,7 @@ import type {
   ErrorResponse,
   HealthStatus,
   KeyValueMap,
+  ListCategoriesParams,
   ListCompaniesParams,
   ListProjectsParams,
   Project,
@@ -1403,20 +1404,27 @@ export const useDeleteAdminApplication = <TError = ErrorType<unknown>,
       return useMutation(getDeleteAdminApplicationMutationOptions(options));
     }
 
-export const getListCategoriesUrl = () => {
+export const getListCategoriesUrl = (params?: ListCategoriesParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/categories`
+  return stringifiedParams.length > 0 ? `/api/categories?${stringifiedParams}` : `/api/categories`
 }
 
 /**
  * @summary List active categories with nested subcategories
  */
-export const listCategories = async ( options?: RequestInit): Promise<CategoryNested[]> => {
+export const listCategories = async (params?: ListCategoriesParams, options?: RequestInit): Promise<CategoryNested[]> => {
 
-  return customFetch<CategoryNested[]>(getListCategoriesUrl(),
+  return customFetch<CategoryNested[]>(getListCategoriesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -1429,23 +1437,23 @@ export const listCategories = async ( options?: RequestInit): Promise<CategoryNe
 
 
 
-export const getListCategoriesQueryKey = () => {
+export const getListCategoriesQueryKey = (params?: ListCategoriesParams,) => {
     return [
-    `/api/categories`
+    `/api/categories`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof listCategories>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof listCategories>>, TError = ErrorType<unknown>>(params?: ListCategoriesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListCategoriesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListCategoriesQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCategories>>> = ({ signal }) => listCategories({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCategories>>> = ({ signal }) => listCategories(params, { signal, ...requestOptions });
 
 
 
@@ -1463,11 +1471,11 @@ export type ListCategoriesQueryError = ErrorType<unknown>
  */
 
 export function useListCategories<TData = Awaited<ReturnType<typeof listCategories>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params?: ListCategoriesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListCategoriesQueryOptions(options)
+  const queryOptions = getListCategoriesQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
