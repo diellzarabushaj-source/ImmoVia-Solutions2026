@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import type { ReactNode } from "react";
 import { useLanguage } from "@/lib/language-context";
 import { Briefcase, MapPin, FileText, Clock, Building2, User, MessageSquare } from "lucide-react";
-import { CATEGORIES, getCategoryByKey, resolveCategoryLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { SERVICE_ICONS, SIZE_COLORS, resolvePhotoSrc, getPostedLabel } from "@/lib/display";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 
@@ -53,7 +53,8 @@ export function ProjectCard({
   footer,
   disableLink = false,
 }: ProjectCardProps) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { categories } = useCategories("project");
   const Icon = SERVICE_ICONS[project.projectType] ?? Briefcase;
   const sz = project.size ?? "medium";
   const sizeKey =
@@ -61,11 +62,11 @@ export function ProjectCard({
     "sizeMd";
   const sizeLabel = t.listings[sizeKey] as string;
   const sizeColor = SIZE_COLORS[sz] ?? SIZE_COLORS.medium;
-  const typeLabel = resolveCategoryLabel(project.projectType, language as Lang);
+  const typeLabel = categories.find(c => c.key === project.projectType)?.label ?? project.projectType;
   const cardTitle = project.title ?? typeLabel;
   const postedLabel = getPostedLabel(project.createdAt, t.listings);
   const firstPhoto = (project.photos ?? []).find(Boolean);
-  const coverSrc = firstPhoto ? resolvePhotoSrc(firstPhoto) : getCategoryByKey(project.projectType)?.photo ?? CATEGORIES[0].photo;
+  const coverSrc = firstPhoto ? resolvePhotoSrc(firstPhoto) : null;
   const posterName = project.posterName?.trim();
   const isCompanyPoster = project.posterType === "company";
   const PosterIcon = isCompanyPoster ? Building2 : User;
@@ -76,12 +77,18 @@ export function ProjectCard({
     <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden h-full cursor-pointer group">
       {/* Cover photo */}
       <div className="relative h-40 overflow-hidden bg-muted flex-shrink-0">
-        <img
-          src={coverSrc}
-          alt={cardTitle}
-          loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {coverSrc ? (
+          <img
+            src={coverSrc}
+            alt={cardTitle}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center">
+            <Icon className="w-12 h-12 text-primary/30" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
         <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm ${sizeColor}`}>{sizeLabel}</span>
         {showStatus && project.status && (
@@ -100,7 +107,7 @@ export function ProjectCard({
           </span>
           {project.subcategory && (
             <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
-              {resolveAnyLabel(project.subcategory, language as Lang)}
+              {categories.flatMap(c => c.subcategories).find(s => s.key === project.subcategory)?.label ?? project.subcategory}
             </span>
           )}
         </div>

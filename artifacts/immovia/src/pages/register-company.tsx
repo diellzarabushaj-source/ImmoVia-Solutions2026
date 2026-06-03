@@ -20,7 +20,7 @@ import {
   FormDescription
 } from "@/components/ui/form";
 import { CheckCircle2, User, Building2 } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import type { Lang } from "@/lib/categories";
 import { useCategories } from "@/hooks/useCategories";
 import { validateOtherTag, otherTagErrorMessage, sanitizeOtherTag, buildCustomServiceTag } from "@/lib/validateOtherTag";
 import { PhotoUploader } from "@/components/photo-uploader";
@@ -99,7 +99,7 @@ export default function RegisterCompany() {
 
   const servicesList = categories.map(cat => ({
     id: cat.key,
-    label: cat.label(language as Lang),
+    label: cat.label,
   }));
 
   if (isSubmitted) {
@@ -348,7 +348,7 @@ export default function RegisterCompany() {
                                   />
                                 </FormControl>
                                 <FormLabel className="font-medium cursor-pointer w-full">
-                                  {cat.label(language as Lang)}
+                                  {cat.label}
                                 </FormLabel>
                               </FormItem>
                               {isChecked && (
@@ -393,7 +393,7 @@ export default function RegisterCompany() {
                                               : "border-border text-muted-foreground hover:border-primary/40"
                                           }`}
                                         >
-                                          {tag.label(language as Lang)}
+                                          {tag.label}
                                         </button>
                                       );
                                     })}

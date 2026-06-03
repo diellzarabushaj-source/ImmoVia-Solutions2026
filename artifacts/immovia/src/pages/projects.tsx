@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
-import { CATEGORIES, getCategoryLabel, resolveCategoryLabel, type Lang } from "@/lib/categories";
 import { useCategories } from "@/hooks/useCategories";
 import { ProjectCard } from "@/components/project/ProjectCard";
 
@@ -24,7 +23,7 @@ const SORT_OPTIONS = [
 
 export default function Projects() {
   const { t, language } = useLanguage();
-  const { categories } = useCategories();
+  const { categories } = useCategories("project");
   const { user } = useAuth();
   usePageMeta({ title: `${t.listings.title ?? "Browse Projects"} — ImmoVia365`, description: t.listings.subtitle ?? undefined });
   const search = useSearch();
@@ -172,7 +171,7 @@ export default function Projects() {
                     : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
                 }`}
               >
-                {cat.label(language as Lang)}
+                {cat.label}
               </button>
             ))}
           </div>
@@ -275,7 +274,7 @@ export default function Projects() {
         {!isLoading && !isError && (
           <p className="text-sm text-muted-foreground mb-6">
             {displayList.length} {displayList.length === 1 ? (t.listings.result ?? "result") : (t.listings.results ?? "results")}
-            {typeFilter && <> · <span className="text-primary font-medium">{resolveCategoryLabel(typeFilter, language as Lang)}</span></>}
+            {typeFilter && <> · <span className="text-primary font-medium">{categories.find(c => c.key === typeFilter)?.label ?? typeFilter}</span></>}
           </p>
         )}
 

@@ -42,7 +42,7 @@ import {
   LocateFixed,
   Loader2,
 } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import { ProviderCard } from "@/components/provider/ProviderCard";
 const fadeUp = {
@@ -77,6 +77,7 @@ export default function Home() {
   const { user } = useAuth();
   const search = useSearch();
   const [, navigate] = useLocation();
+  const { categories: serviceCategories } = useCategories("service");
   const { data: companies, isLoading: isLoadingCompanies } = useListCompanies();
   const { data: projects, isLoading: isLoadingProjects } = useListProjects();
   const [listingTypeFilter, setListingTypeFilter] = useState(() => new URLSearchParams(search).get("type") ?? "");
@@ -200,7 +201,6 @@ export default function Home() {
     );
   };
 
-  const SEARCH_CATEGORIES = CATEGORIES.map(c => c.key);
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (searchKeyword.trim()) params.set("keyword", searchKeyword.trim());
@@ -210,11 +210,11 @@ export default function Home() {
     navigate(activeTab === "service" ? `/companies${qs ? `?${qs}` : ""}` : `/projects${qs ? `?${qs}` : ""}`);
   };
 
-  const services = CATEGORIES.map(cat => ({
+  const services = serviceCategories.map(cat => ({
     icon: SERVICE_ICONS[cat.key] ?? Briefcase,
-    title: getCategoryLabel(cat, language as Lang),
-    desc: cat.tags.slice(0, 3).map(tag => getTagLabel(tag, language as Lang)).join(" · "),
-    photo: cat.photo,
+    title: cat.label,
+    desc: cat.subcategories.slice(0, 3).map(sub => sub.label).join(" · "),
+    photo: undefined as string | undefined,
     serviceKey: cat.key,
   }));
 
@@ -378,12 +378,9 @@ export default function Home() {
                     className="h-11 rounded-xl border border-border bg-muted/30 px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 sm:w-44"
                   >
                     <option value="">{t.search.categoryAll}</option>
-                    {SEARCH_CATEGORIES.map(cat => {
-                      const catObj = CATEGORIES.find(c => c.key === cat);
-                      return (
-                        <option key={cat} value={cat}>{catObj ? getCategoryLabel(catObj, language as Lang) : cat}</option>
-                      );
-                    })}
+                    {serviceCategories.map(cat => (
+                      <option key={cat.key} value={cat.key}>{cat.label}</option>
+                    ))}
                   </select>
                   <div className="relative sm:w-44">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -703,8 +700,8 @@ export default function Home() {
               className="h-9 rounded-lg border border-border bg-muted/40 px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="">{t.listings.filterAllTypes ?? "All types"}</option>
-              {CATEGORIES.map(cat => (
-                <option key={cat.key} value={cat.key}>{getCategoryLabel(cat, language as Lang)}</option>
+              {serviceCategories.map(cat => (
+                <option key={cat.key} value={cat.key}>{cat.label}</option>
               ))}
             </select>
             <div className="relative">

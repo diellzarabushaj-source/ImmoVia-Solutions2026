@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { useLanguage } from "@/lib/language-context";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, FileText, Building2, User, Star, BadgeCheck } from "lucide-react";
-import { resolveAnyLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { resolvePhotoSrc, avatarGradient, initialsOf } from "@/lib/display";
 
 export interface ProviderCardData {
@@ -45,7 +45,8 @@ export function ProviderCard({
   showRating = true,
   footer,
 }: ProviderCardProps) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { categories } = useCategories("service");
   const name = provider.companyName?.trim() || provider.fullName?.trim() || "—";
   const isIndividual = provider.workerType === "individual";
   const photo = provider.profilePhoto || provider.avatarUrl;
@@ -136,7 +137,7 @@ export function ProviderCard({
         <div className="flex flex-wrap gap-1">
           {services.slice(0, 3).map((svc) => (
             <span key={svc} className="px-2 py-0.5 rounded-full bg-primary/8 text-primary text-xs font-medium">
-              {resolveAnyLabel(svc, language as Lang)}
+              {categories.find(c => c.key === svc)?.label ?? svc}
             </span>
           ))}
           {services.length > 3 && (

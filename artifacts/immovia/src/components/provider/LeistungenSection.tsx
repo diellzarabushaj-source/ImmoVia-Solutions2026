@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Tag, MapPin, X } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
+import type { Lang } from "@/lib/categories";
 import { validateOtherTag, sanitizeOtherTag, otherTagErrorMessage, buildCustomServiceTag } from "@/lib/validateOtherTag";
 
 const L: Record<string, Record<string, string>> = {
@@ -77,6 +78,7 @@ interface Props {
 export default function LeistungenSection({ language }: Props) {
   const l = L[language] ?? L.de;
   const lang = (["en", "de", "sq", "fr"].includes(language) ? language : "de") as Lang;
+  const { categories } = useCategories("service");
 
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -102,8 +104,8 @@ export default function LeistungenSection({ language }: Props) {
         } | null;
       }) => {
         const svcTypes = d.company?.serviceTypes ?? [];
-        setSelectedCats(svcTypes.filter(s => CATEGORIES.some(c => c.key === s)));
-        setSelectedTags(svcTypes.filter(s => s !== "other" && !CATEGORIES.some(c => c.key === s)));
+        setSelectedCats(svcTypes.filter(s => categories.some(c => c.key === s)));
+        setSelectedTags(svcTypes.filter(s => s !== "other" && !categories.some(c => c.key === s)));
         const ot: Record<string, string> = {};
         for (const t of (d.company?.customServiceTags ?? [])) {
           const idx = t.indexOf("|");
@@ -119,8 +121,8 @@ export default function LeistungenSection({ language }: Props) {
 
   const toggleCat = (catKey: string) => {
     if (selectedCats.includes(catKey)) {
-      const cat = CATEGORIES.find(c => c.key === catKey);
-      const tagKeys = cat?.tags.map(t => t.key) ?? [];
+      const cat = categories.find(c => c.key === catKey);
+      const tagKeys = cat?.subcategories.map(t => t.key) ?? [];
       setSelectedTags(prev => prev.filter(t => !tagKeys.includes(t)));
       setOtherTexts(prev => { const n = { ...prev }; delete n[catKey]; return n; });
       setOtherTagErrors(prev => { const n = { ...prev }; delete n[catKey]; return n; });
@@ -205,7 +207,7 @@ export default function LeistungenSection({ language }: Props) {
         </h3>
         <p className="text-xs text-muted-foreground mb-4">{l.mainCatHint}</p>
         <div className="space-y-2">
-          {CATEGORIES.map(cat => {
+          {categories.map(cat => {
             const isChecked = selectedCats.includes(cat.key);
             return (
               <div key={cat.key} className="border border-border rounded-lg overflow-hidden">
@@ -217,27 +219,27 @@ export default function LeistungenSection({ language }: Props) {
                     className="w-4 h-4 rounded border-border accent-primary shrink-0"
                   />
                   <span className={`text-sm transition-colors font-medium ${isChecked ? "text-primary" : "text-foreground group-hover:text-primary"}`}>
-                    {getCategoryLabel(cat, lang)}
+                    {cat.label}
                   </span>
                 </label>
                 {isChecked && (
                   <div className="px-3 pb-3 space-y-2">
                     <div className="flex flex-wrap gap-1.5">
-                      {cat.tags.map(tag => {
-                        const isOther = tag.key === "other";
-                        const isTagSelected = isOther ? cat.key in otherTexts : selectedTags.includes(tag.key);
+                      {cat.subcategories.map(sub => {
+                        const isOther = sub.key === "other";
+                        const isTagSelected = isOther ? cat.key in otherTexts : selectedTags.includes(sub.key);
                         return (
                           <button
-                            key={tag.key}
+                            key={sub.key}
                             type="button"
-                            onClick={() => toggleTag(cat.key, tag.key)}
+                            onClick={() => toggleTag(cat.key, sub.key)}
                             className={`px-2.5 py-1 text-xs rounded-full border transition-all ${
                               isTagSelected
                                 ? "bg-primary/10 border-primary text-primary font-medium"
                                 : "border-border text-muted-foreground hover:border-primary/40"
                             }`}
                           >
-                            {getTagLabel(tag, lang)}
+                            {sub.label}
                           </button>
                         );
                       })}

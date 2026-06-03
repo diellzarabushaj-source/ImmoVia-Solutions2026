@@ -33,11 +33,12 @@ import {
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-import { CATEGORIES, getCategoryLabel, resolveCategoryLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { useLanguage } from "@/lib/language-context";
 
 function AddCompanyDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { categories } = useCategories("service");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
@@ -104,10 +105,10 @@ function AddCompanyDialog({ open, onClose, onCreated }: { open: boolean; onClose
           <div className="space-y-1.5">
             <Label>{t.admin.fServices}</Label>
             <div className="grid grid-cols-2 gap-1.5">
-              {CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <button key={cat.key} type="button" disabled={loading} onClick={() => toggle(cat.key)}
                   className={`text-xs rounded px-2 py-1.5 border transition-colors text-left ${serviceTypes.includes(cat.key) ? "bg-[#1a3a6e] text-white border-[#1a3a6e]" : "bg-white text-gray-500 border-gray-200 hover:border-[#1a3a6e]"}`}>
-                  {getCategoryLabel(cat, language as Lang)}
+                  {cat.label}
                 </button>
               ))}
             </div>
@@ -143,7 +144,8 @@ type Company = {
 };
 
 function CompanyDrawer({ company, onClose, onAction }: { company: Company; onClose: () => void; onAction: (id: number, status: string) => void }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { categories } = useCategories("service");
   return (
     <Sheet open onOpenChange={onClose}>
       <SheetContent side="right" className="w-[480px] max-w-full overflow-y-auto">
@@ -184,8 +186,8 @@ function CompanyDrawer({ company, onClose, onAction }: { company: Company; onClo
           <div>
             <span className="text-gray-500 block text-xs uppercase tracking-wide mb-1.5">{t.admin.colServices}</span>
             <div className="flex flex-wrap gap-1.5">
-              {(company.serviceTypes ?? []).filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).map((s) => (
-                <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-2 py-1">{resolveCategoryLabel(s, language as Lang)}</span>
+              {(company.serviceTypes ?? []).filter(s => categories.some(c => c.key === s)).map((s) => (
+                <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-2 py-1">{categories.find(c => c.key === s)?.label ?? s}</span>
               ))}
             </div>
           </div>
@@ -230,7 +232,8 @@ function CompanyDrawer({ company, onClose, onAction }: { company: Company; onClo
 }
 
 export function AdminCompanies() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { categories } = useCategories("service");
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -329,11 +332,11 @@ export function AdminCompanies() {
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1 max-w-[120px]">
-                    {(company.serviceTypes ?? []).filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).slice(0, 2).map((s: string) => (
-                      <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5">{resolveCategoryLabel(s, language as Lang)}</span>
+                    {(company.serviceTypes ?? []).filter(s => categories.some(c => c.key === s)).slice(0, 2).map((s: string) => (
+                      <span key={s} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5">{categories.find(c => c.key === s)?.label ?? s}</span>
                     ))}
-                    {(company.serviceTypes ?? []).filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).length > 2 && (
-                      <span className="text-xs bg-gray-100 text-gray-500 rounded px-1.5 py-0.5">+{(company.serviceTypes ?? []).filter(s => s !== "other" && CATEGORIES.some(c => c.key === s)).length - 2}</span>
+                    {(company.serviceTypes ?? []).filter(s => categories.some(c => c.key === s)).length > 2 && (
+                      <span className="text-xs bg-gray-100 text-gray-500 rounded px-1.5 py-0.5">+{(company.serviceTypes ?? []).filter(s => categories.some(c => c.key === s)).length - 2}</span>
                     )}
                   </div>
                 </TableCell>

@@ -34,11 +34,12 @@ import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ProjectCard, type ProjectCardData } from "@/components/project/ProjectCard";
-import { CATEGORIES, getCategoryLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { useLanguage } from "@/lib/language-context";
 
 function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { categories } = useCategories("project");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
@@ -91,8 +92,8 @@ function AddProjectDialog({ open, onClose, onCreated }: { open: boolean; onClose
             <Select value={form.projectType} onValueChange={(v) => setForm((f) => ({ ...f, projectType: v }))}>
               <SelectTrigger disabled={loading}><SelectValue /></SelectTrigger>
               <SelectContent>
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.key} value={cat.key}>{getCategoryLabel(cat, language as Lang)}</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.key} value={cat.key}>{cat.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

@@ -1,0 +1,88 @@
+Please update the category and subcategory system for ImmoVia365 so it works correctly with the multilingual website.
+
+Important:
+- Do not reset the database.
+- Do not drop or delete any existing tables or data.
+- Do not change the visual design except where admin fields are needed.
+- Use proper Drizzle migrations for any database schema changes.
+- After finishing, show me all modified files.
+
+Requirements:
+
+1. Inspect the current categories database schema, admin category routes, public/frontend category usage, and src/lib/categories.ts.
+
+2. Categories must support hierarchy:
+   - parentId = null means main category
+   - parentId pointing to another category means subcategory
+
+3. Categories and subcategories must support multilingual names:
+   - name_de
+   - name_sq
+   - name_en
+
+4. Each category/subcategory should support:
+   - id
+   - name_de
+   - name_sq
+   - name_en
+   - slug
+   - parentId
+   - isActive
+   - sortOrder
+   - createdAt
+   - updatedAt
+
+5. If the current schema only has one name field, migrate existing data safely:
+   - keep existing data
+   - copy the old name into name_de
+   - if name_sq or name_en are empty, fallback to name_de
+   - do not delete the old data during migration unless it is fully safe
+
+6. Update admin category CRUD so the admin can:
+   - create a main category
+   - create a subcategory under a selected parent category
+   - edit German, Albanian, and English names
+   - edit slug
+   - edit active/inactive status
+   - edit sort order
+   - delete only when safe, or deactivate instead if deletion would break existing data
+
+7. Add or update a public GET /categories endpoint.
+
+8. Public GET /categories must return only active categories, nested like this:
+   - main categories
+   - each main category includes its active subcategories
+
+9. Public GET /categories should support language selection, for example:
+   - GET /categories?lang=de
+   - GET /categories?lang=sq
+   - GET /categories?lang=en
+
+10. Category name fallback order:
+   - selected language
+   - German
+   - any available name
+
+11. Update frontend dropdowns and filters so these places use the API categories instead of only the static src/lib/categories.ts:
+   - submit project form
+   - register company form
+   - provider profile
+   - project filters/search filters
+   - company filters/search filters
+   - any other category dropdowns
+
+12. Keep src/lib/categories.ts as fallback only if the API fails, so the website does not break.
+
+13. Make sure the frontend uses the currently selected website language when showing category/subcategory names.
+
+14. Do not translate code variable names, API paths, database fields, or component names beyond the required category fields.
+
+15. After changes, test or explain how to test:
+   - admin creates main category
+   - admin creates subcategory
+   - admin enters DE/SQ/EN names
+   - public website shows German category names in German mode
+   - public website shows Albanian category names in Albanian mode
+   - public website shows English category names in English mode
+   - fallback works if one translation is missing
+   - existing projects/companies do not break

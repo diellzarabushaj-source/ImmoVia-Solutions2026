@@ -3,7 +3,7 @@ import { Link, useLocation, useSearch } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import NotificationBell from "@/components/NotificationBell";
-import { CATEGORIES, getCategoryLabel, resolveTagLabel, resolveCategoryLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import {
   billingApi,
@@ -435,6 +435,7 @@ type Section =
 export default function ProviderDashboard() {
   const { user, loading, logout } = useAuth();
   const { t, language, setLanguage } = useLanguage();
+  const { categories: projectCategories } = useCategories("project");
   const [, setLocation] = useLocation();
   const search = useSearch();
 
@@ -1213,8 +1214,8 @@ export default function ProviderDashboard() {
                   className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="">{t.provider.filterAllTypes}</option>
-                  {CATEGORIES.map(cat => (
-                    <option key={cat.key} value={cat.key}>{getCategoryLabel(cat, language as Lang)}</option>
+                  {projectCategories.map(cat => (
+                    <option key={cat.key} value={cat.key}>{cat.label}</option>
                   ))}
                 </select>
                 <div className="relative">
@@ -1884,9 +1885,9 @@ export default function ProviderDashboard() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-muted/40 rounded-lg p-3">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">{t.provider.colType}</p>
-                <p className="font-medium">{detailProject?.projectType ? getCategoryLabel(CATEGORIES.find(c => c.key === detailProject.projectType) ?? CATEGORIES[CATEGORIES.length - 1], language as Lang) : ""}</p>
+                <p className="font-medium">{detailProject?.projectType ? (projectCategories.find(c => c.key === detailProject.projectType)?.label ?? detailProject.projectType) : ""}</p>
                 {(detailProject as {subcategory?: string | null} | null)?.subcategory && (
-                  <p className="text-xs text-primary/70 mt-0.5">{resolveTagLabel((detailProject as {subcategory?: string | null}).subcategory!, language as Lang)}</p>
+                  <p className="text-xs text-primary/70 mt-0.5">{projectCategories.flatMap(c => c.subcategories).find(s => s.key === (detailProject as {subcategory?: string | null}).subcategory)?.label ?? (detailProject as {subcategory?: string | null}).subcategory}</p>
                 )}
               </div>
               <div className="bg-muted/40 rounded-lg p-3">

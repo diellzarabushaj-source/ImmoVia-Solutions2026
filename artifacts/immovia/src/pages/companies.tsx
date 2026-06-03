@@ -15,7 +15,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { CATEGORIES, getCategoryLabel, getTagLabel, resolveAnyLabel, type Lang } from "@/lib/categories";
 import { useCategories } from "@/hooks/useCategories";
 import { ProviderCard } from "@/components/provider/ProviderCard";
 
@@ -271,7 +270,7 @@ export default function Companies() {
                     : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
                 }`}
               >
-                {cat.label(language as Lang)}
+                {cat.label}
               </button>
             ))}
           </div>
@@ -290,7 +289,7 @@ export default function Companies() {
                       : "bg-white/10 text-white/70 border-white/20 hover:bg-white/20"
                   }`}
                 >
-                  {tag.label(language as Lang)}
+                  {tag.label}
                 </button>
               ))}
             </div>
@@ -443,7 +442,7 @@ export default function Companies() {
         {!isLoading && !isError && (
           <p className="text-sm text-muted-foreground mb-6">
             {filtered.length} {filtered.length === 1 ? (t.companies.result ?? "result") : (t.companies.results ?? "results")}
-            {activeServices.length > 0 && <> · <span className="text-primary font-medium">{activeServices.map(s => categories.find(c => c.key === s)?.label(language as Lang) ?? s).join(", ")}</span></>}
+            {activeServices.length > 0 && <> · <span className="text-primary font-medium">{activeServices.map(s => categories.find(c => c.key === s)?.label ?? s).join(", ")}</span></>}
             {workerTypeFilter && <> · <span className="text-primary font-medium">{workerTypeFilter === "individual" ? (t.companies.individual ?? "Individual") : (t.companies.company ?? "Company")}</span></>}
           </p>
         )}

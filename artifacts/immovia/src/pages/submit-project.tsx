@@ -27,16 +27,14 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Hammer, Building2, Sofa, TreePine, Wrench, CheckCircle2, Home as HomeIcon, Crown, Sparkles, Layers, Zap, Paintbrush, FlameKindling, ChefHat, Leaf, Star, SquareStack, HelpCircle } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, getTagLabel, resolveCategoryLabel, resolveTagLabel, type Lang } from "@/lib/categories";
 import { useCategories } from "@/hooks/useCategories";
+import type { Lang } from "@/lib/categories";
 import { validateOtherTag, otherTagErrorMessage, sanitizeOtherTag } from "@/lib/validateOtherTag";
 import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function SubmitProject() {
   const { t, language } = useLanguage();
-  const { categories: projectCats, fromApi: projectFromApi } = useCategories("project");
-  const { categories: serviceCats } = useCategories("service");
-  const categories = (projectFromApi && projectCats.length > 0) ? projectCats : serviceCats;
+  const { categories } = useCategories("project");
   const { user, loading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);
@@ -150,7 +148,7 @@ export default function SubmitProject() {
   const projectTypes = categories.map(cat => ({
     id: cat.key,
     icon: SUBMIT_ICONS[cat.key] ?? HelpCircle,
-    label: cat.label(language as Lang),
+    label: cat.label,
   }));
   const selectedCategoryData = categories.find(c => c.key === form.watch("projectType"));
 
@@ -418,7 +416,7 @@ export default function SubmitProject() {
                                   : "border-border bg-card text-muted-foreground hover:border-primary/50"
                               }`}
                             >
-                              {tag.label(language as Lang)}
+                              {tag.label}
                             </button>
                           );
                         })}
@@ -658,10 +656,10 @@ export default function SubmitProject() {
                         </div>
                         <div className="md:col-span-2">
                           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{lbl.details[lang4]}</h4>
-                          <p className="font-medium">{resolveCategoryLabel(v.projectType, language as Lang)}</p>
+                          <p className="font-medium">{categories.find(c => c.key === v.projectType)?.label ?? v.projectType}</p>
                           {v.subcategory && (
                             <p className="text-sm text-primary/80 mt-0.5">
-                              {resolveTagLabel(v.subcategory, language as Lang)}
+                              {categories.flatMap(c => c.subcategories).find(s => s.key === v.subcategory)?.label ?? v.subcategory}
                               {v.subcategory === "other" && v.subcategoryOtherText && (
                                 <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                                   <span className="opacity-60">{t.projectForm.otherCustomBadge}:</span>

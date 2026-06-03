@@ -11,11 +11,12 @@ import {
 import { CheckCircle2, XCircle, Loader2, FolderOpen } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/lib/language-context";
-import { resolveCategoryLabel, resolveTagLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 
 export function AdminPending() {
   const qc = useQueryClient();
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
+  const { categories } = useCategories("project");
 
   const { data: projects, isLoading: projectsLoading } = useListProjects({ status: "pending" });
 
@@ -67,10 +68,10 @@ export function AdminPending() {
                     <div className="text-xs text-gray-500 truncate max-w-[120px]">{p.email}</div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm font-medium">{resolveCategoryLabel(p.projectType, language as Lang)}</div>
+                    <div className="text-sm font-medium">{categories.find(c => c.key === p.projectType)?.label ?? p.projectType}</div>
                     {(p as {subcategory?: string | null}).subcategory && (
                       <div className="text-xs text-primary/70 flex items-center gap-1">
-                        {resolveTagLabel((p as {subcategory?: string | null}).subcategory!, language as Lang)}
+                        {categories.flatMap(c => c.subcategories).find(s => s.key === (p as {subcategory?: string | null}).subcategory)?.label ?? (p as {subcategory?: string | null}).subcategory}
                         {(p as {subcategory?: string | null}).subcategory === "other" && (p as {subcategoryOtherText?: string | null}).subcategoryOtherText && (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                             {(p as {subcategoryOtherText?: string | null}).subcategoryOtherText}

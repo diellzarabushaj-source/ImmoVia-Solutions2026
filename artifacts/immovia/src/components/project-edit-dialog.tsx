@@ -34,7 +34,8 @@ import {
   Hammer, Sofa, Wrench, Home as HomeIcon, Crown, Sparkles, Layers,
   Zap, Paintbrush, ChefHat, Leaf, SquareStack, HelpCircle, Loader2,
 } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
+import type { Lang } from "@/lib/categories";
 import { validateOtherTag, otherTagErrorMessage, sanitizeOtherTag } from "@/lib/validateOtherTag";
 import { PhotoUploader } from "@/components/photo-uploader";
 
@@ -59,6 +60,7 @@ interface ProjectEditDialogProps {
 
 export function ProjectEditDialog({ project, open, onOpenChange, onSaved }: ProjectEditDialogProps) {
   const { t, language } = useLanguage();
+  const { categories } = useCategories("project");
   const l = t.customer;
   const [projectPhotos, setProjectPhotos] = useState<string[]>(project.photos ?? []);
   const [otherTagError, setOtherTagError] = useState<string | null>(null);
@@ -98,12 +100,12 @@ export function ProjectEditDialog({ project, open, onOpenChange, onSaved }: Proj
     },
   });
 
-  const categoryOptions = CATEGORIES.map((cat) => ({
+  const categoryOptions = categories.map((cat) => ({
     id: cat.key,
     icon: CATEGORY_ICONS[cat.key] ?? HelpCircle,
-    label: getCategoryLabel(cat, language as Lang),
+    label: cat.label,
   }));
-  const selectedCategoryData = CATEGORIES.find((c) => c.key === form.watch("projectType"));
+  const selectedCategoryData = categories.find((c) => c.key === form.watch("projectType"));
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (values.subcategory === "other") {
@@ -193,14 +195,14 @@ export function ProjectEditDialog({ project, open, onOpenChange, onSaved }: Proj
                    "More specific service (optional)"}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {selectedCategoryData.tags.map((tag) => {
-                    const isSelected = form.watch("subcategory") === tag.key;
+                  {selectedCategoryData.subcategories.map((sub) => {
+                    const isSelected = form.watch("subcategory") === sub.key;
                     return (
                       <button
-                        key={tag.key}
+                        key={sub.key}
                         type="button"
                         onClick={() => {
-                          const newVal = isSelected ? "" : tag.key;
+                          const newVal = isSelected ? "" : sub.key;
                           form.setValue("subcategory", newVal);
                           if (newVal !== "other") {
                             form.setValue("subcategoryOtherText", "");
@@ -213,7 +215,7 @@ export function ProjectEditDialog({ project, open, onOpenChange, onSaved }: Proj
                             : "border-border bg-card text-muted-foreground hover:border-primary/50"
                         }`}
                       >
-                        {getTagLabel(tag, language as Lang)}
+                        {sub.label}
                       </button>
                     );
                   })}

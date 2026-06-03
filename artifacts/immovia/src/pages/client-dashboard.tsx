@@ -23,7 +23,7 @@ import {
   Hammer, Paintbrush, Zap, Wrench, ChefHat, SquareStack, Sofa, Leaf, HelpCircle,
 } from "lucide-react";
 import { format } from "date-fns";
-import { CATEGORIES, getCategoryLabel, getTagLabel, type Lang } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { ProviderCard } from "@/components/provider/ProviderCard";
 import { ProjectCard } from "@/components/project/ProjectCard";
 
@@ -128,6 +128,7 @@ function ReviewModal({ offerId, projectId, providerName, onClose, onDone }: { of
 export default function ClientDashboard() {
   const { user, loading } = useAuth();
   const { t, language } = useLanguage();
+  const { categories: serviceCategories } = useCategories("service");
   const [, setLocation] = useLocation();
   const search = useSearch();
 
@@ -411,7 +412,7 @@ export default function ClientDashboard() {
                     <p className="text-sm text-muted-foreground mt-1">{l.publishHelper}</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {CATEGORIES.map(cat => {
+                    {serviceCategories.map(cat => {
                       const Icon = CATEGORY_ICONS[cat.key] ?? HelpCircle;
                       return (
                         <div key={cat.key} className="bg-white rounded-2xl border border-border p-5 flex flex-col gap-3 hover:border-primary/30 hover:shadow-sm transition-all duration-200">
@@ -419,12 +420,12 @@ export default function ClientDashboard() {
                             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                               <Icon className="w-5 h-5 text-primary" />
                             </div>
-                            <span className="font-semibold text-sm leading-tight">{getCategoryLabel(cat, language as Lang)}</span>
+                            <span className="font-semibold text-sm leading-tight">{cat.label}</span>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
-                            {cat.tags.map(tag => (
-                              <span key={tag.key} className="text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded-full">
-                                {getTagLabel(tag, language as Lang)}
+                            {cat.subcategories.map(sub => (
+                              <span key={sub.key} className="text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded-full">
+                                {sub.label}
                               </span>
                             ))}
                           </div>
