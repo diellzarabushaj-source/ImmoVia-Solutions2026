@@ -42,7 +42,7 @@ const SORT_OPTIONS = [
 
 export default function Companies() {
   const { t, language } = useLanguage();
-  const { categories } = useCategories();
+  const { categories } = useCategories("service");
   const { user } = useAuth();
   usePageMeta({ title: `${t.companies.title} — ImmoVia365`, description: t.companies.subtitle ?? undefined });
   const search = useSearch();

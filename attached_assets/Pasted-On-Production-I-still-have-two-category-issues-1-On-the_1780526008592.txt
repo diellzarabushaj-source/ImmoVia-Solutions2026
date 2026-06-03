@@ -1,0 +1,45 @@
+On Production, I still have two category issues:
+
+1. On the Service Providers page (/companies), main category chips are duplicated.
+Example:
+- Böden & Fliesen appears twice
+- Elektro & Smart Home appears twice
+- Innenarchitektur appears twice
+
+But in Admin/database each category exists only once.
+
+2. I created subcategories in Admin, but they do not appear on the public website after selecting a main category.
+
+Please fix only the frontend/category rendering logic.
+
+Requirements:
+1. Do not change database schema.
+2. Do not delete or reset any data.
+3. Do not change admin.
+4. Do not change visual design.
+5. Fix /companies so main category chips render only once.
+6. Use the same working category rendering logic as /projects, because /projects is currently correct.
+7. Show only main categories where parentId is null in the first category chip row.
+8. Do not merge API categories with fallback/static categories when API returns data.
+9. Use fallback categories only if API fails or returns empty.
+10. Deduplicate categories by id or slug before rendering.
+
+Subcategory behavior:
+11. When a user selects a main category, show that category’s subcategories.
+12. Subcategories must come from the API response, for example category.children or category.subcategories.
+13. If the API uses another field name, inspect the response and use the correct field.
+14. Do not show all subcategories globally.
+15. Show only subcategories that belong to the selected main category.
+16. Apply this behavior to both /companies and /projects if missing.
+17. Use the current selected website language for category and subcategory names.
+18. Run typecheck.
+19. Show me all modified files and explain how I can test it.
+
+Edhe shtoja këtë në fund, se është shumë me rëndësi:
+
+Before changing code, please check the actual Production GET /categories response and confirm whether subcategories are included there.
+
+Kjo ia bën shumë të qartë:
+
+Service Providers page = po dalin 2 herë
+Subcategories = i kam shtuar në admin, por nuk dalin në publik
