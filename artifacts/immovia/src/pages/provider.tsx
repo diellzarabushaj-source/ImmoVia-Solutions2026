@@ -176,6 +176,11 @@ const L: Record<string, Record<string, string>> = {
     noInvoices: "Asnjë faturë ende.",
     downloadPdf: "Shkarko",
     paymentHistory: "Historiku i pagesave",
+    manageBilling: "Menaxho abonementin",
+    cancelSub: "Anulo abonementin",
+    portalOpening: "Duke hapur...",
+    stripeInvoices: "Faturat Stripe",
+    noStripeInvoices: "Asnjë faturë Stripe ende.",
     registrationFeeLabel: "Tarifë regjistrimi",
     paidStatus: "Paguar",
     nextBilling: "Faturimi tjetër",
@@ -273,6 +278,11 @@ const L: Record<string, Record<string, string>> = {
     noInvoices: "No invoices yet.",
     downloadPdf: "Download",
     paymentHistory: "Payment history",
+    manageBilling: "Manage subscription",
+    cancelSub: "Cancel subscription",
+    portalOpening: "Opening...",
+    stripeInvoices: "Stripe invoices",
+    noStripeInvoices: "No Stripe invoices yet.",
     registrationFeeLabel: "Registration fee",
     paidStatus: "Paid",
     nextBilling: "Next billing",
@@ -370,6 +380,11 @@ const L: Record<string, Record<string, string>> = {
     noInvoices: "Noch keine Rechnungen.",
     downloadPdf: "Herunterladen",
     paymentHistory: "Zahlungsverlauf",
+    manageBilling: "Abonnement verwalten",
+    cancelSub: "Abonnement kündigen",
+    portalOpening: "Öffnet...",
+    stripeInvoices: "Stripe-Rechnungen",
+    noStripeInvoices: "Noch keine Stripe-Rechnungen.",
     registrationFeeLabel: "Registrierungsgebühr",
     paidStatus: "Bezahlt",
     nextBilling: "Nächste Abrechnung",
@@ -467,6 +482,11 @@ const L: Record<string, Record<string, string>> = {
     noInvoices: "Pas encore de factures.",
     downloadPdf: "Télécharger",
     paymentHistory: "Historique des paiements",
+    manageBilling: "Gérer l'abonnement",
+    cancelSub: "Résilier l'abonnement",
+    portalOpening: "Ouverture...",
+    stripeInvoices: "Factures Stripe",
+    noStripeInvoices: "Pas encore de factures Stripe.",
     registrationFeeLabel: "Frais d'inscription",
     paidStatus: "Payé",
     nextBilling: "Prochaine facturation",
@@ -514,6 +534,9 @@ export default function ProviderDashboard() {
   const [offers, setOffers] = useState<ProviderOffer[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
+  const [stripeInvoices, setStripeInvoices] = useState<Array<{ stripeId: string; number: string; date: number; amountCents: number; currency: string; pdfUrl: string | null; hostedUrl: string | null; status: string }>>([]);
+  const [stripeInvoicesLoaded, setStripeInvoicesLoaded] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [detailProject, setDetailProject] = useState<ProviderProject | null>(null);
   const [offerProject, setOfferProject] = useState<ProviderProject | null>(null);
   const [offerMessage, setOfferMessage] = useState("");
@@ -679,6 +702,29 @@ export default function ProviderDashboard() {
     } finally {
       setProfileSaving(false);
     }
+  };
+
+  const openPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const r = await fetch("/api/stripe/portal", { method: "POST", headers: { "Content-Type": "application/json" } });
+      if (!r.ok) throw new Error();
+      const { url } = await r.json() as { url: string };
+      window.open(url, "_blank", "noopener");
+    } catch { /* ignore */ } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const loadStripeInvoices = async () => {
+    if (stripeInvoicesLoaded) return;
+    try {
+      const r = await fetch("/api/billing/stripe-invoices");
+      if (!r.ok) return;
+      const data = await r.json() as typeof stripeInvoices;
+      setStripeInvoices(data);
+      setStripeInvoicesLoaded(true);
+    } catch { /* ignore */ }
   };
 
   const loadSettings = async () => {
@@ -2029,9 +2075,22 @@ export default function ProviderDashboard() {
           )}
 
           {/* ── RECHNUNGEN ── */}
+          {activeSection === "rechnungen" && (() => { void loadStripeInvoices(); return null; })()}
           {activeSection === "rechnungen" && (
             <div>
-              <h2 className="text-xl font-serif font-bold mb-6">{l.navInvoices}</h2>
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <h2 className="text-xl font-serif font-bold">{l.navInvoices}</h2>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => void openPortal()} disabled={portalLoading}>
+                    {portalLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Settings className="w-4 h-4 mr-2" />}
+                    {l.manageBilling}
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-destructive hover:text-destructive border-destructive/30 hover:border-destructive" onClick={() => void openPortal()} disabled={portalLoading}>
+                    {portalLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <X className="w-4 h-4 mr-2" />}
+                    {l.cancelSub}
+                  </Button>
+                </div>
+              </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="p-5">
                   <h3 className="font-bold mb-3">{l.paymentHistory}</h3>
@@ -2053,34 +2112,64 @@ export default function ProviderDashboard() {
                     )}
                   </div>
                 </Card>
+
                 <Card className="p-5">
-                  <h3 className="font-bold mb-3">{l.invoicesTitle}</h3>
+                  <h3 className="font-bold mb-3">{l.stripeInvoices}</h3>
                   <div className="space-y-2">
-                    {invoices.map((inv) => (
-                      <div key={`${inv.id}-${inv.kind ?? ""}`} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
+                    {stripeInvoices.map((inv) => (
+                      <div key={inv.stripeId} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
                         <div>
-                          <div className="font-medium">
-                            {inv.kind === "registration" ? l.registrationFeeLabel : inv.number}
-                          </div>
-                          <div className="text-xs text-muted-foreground">{format(new Date(inv.issuedAt), "MMM d, yyyy")}</div>
+                          <div className="font-medium">{inv.number}</div>
+                          <div className="text-xs text-muted-foreground">{format(new Date(inv.date * 1000), "MMM d, yyyy")}</div>
                         </div>
-                        {inv.kind === "registration" ? (
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold">{formatCHF(inv.amountCents ?? 0)}</span>
-                            <Badge className="text-[10px] bg-green-100 text-green-800 hover:bg-green-100">{l.paidStatus}</Badge>
-                          </div>
-                        ) : (
-                          <Button size="sm" variant="ghost" disabled>{l.downloadPdf}</Button>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-right">{formatCHF(inv.amountCents)}</span>
+                          {inv.pdfUrl ? (
+                            <Button size="sm" variant="ghost" asChild className="h-7 px-2">
+                              <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer">
+                                <FileText className="w-3.5 h-3.5 mr-1" />{l.downloadPdf}
+                              </a>
+                            </Button>
+                          ) : inv.hostedUrl ? (
+                            <Button size="sm" variant="ghost" asChild className="h-7 px-2">
+                              <a href={inv.hostedUrl} target="_blank" rel="noopener noreferrer">
+                                <FileText className="w-3.5 h-3.5 mr-1" />{l.downloadPdf}
+                              </a>
+                            </Button>
+                          ) : null}
+                        </div>
                       </div>
                     ))}
-                    {invoices.length === 0 && (
-                      <p className="text-sm text-muted-foreground py-4">{l.noInvoices}</p>
+                    {stripeInvoices.length === 0 && stripeInvoicesLoaded && (
+                      <p className="text-sm text-muted-foreground py-4">{l.noStripeInvoices}</p>
+                    )}
+                    {!stripeInvoicesLoaded && (
+                      <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      </div>
                     )}
                   </div>
                 </Card>
               </div>
 
+              {/* Registration fee row */}
+              {invoices.some(i => i.kind === "registration") && (
+                <Card className="p-5 mt-6">
+                  <h3 className="font-bold mb-3">{l.registrationFeeLabel}</h3>
+                  {invoices.filter(i => i.kind === "registration").map((inv) => (
+                    <div key={`${inv.id}-reg`} className="flex justify-between items-center text-sm">
+                      <div>
+                        <div className="font-medium">{inv.number}</div>
+                        <div className="text-xs text-muted-foreground">{format(new Date(inv.issuedAt), "MMM d, yyyy")}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{formatCHF(inv.amountCents ?? 0)}</span>
+                        <Badge className="text-[10px] bg-green-100 text-green-800 hover:bg-green-100">{l.paidStatus}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </Card>
+              )}
             </div>
           )}
 
