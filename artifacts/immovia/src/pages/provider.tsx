@@ -83,6 +83,7 @@ import MessageThread from "@/components/MessageThread";
 import { MessagingSystem } from "@/components/MessagingSystem";
 import { PhotoUploader } from "@/components/photo-uploader";
 import ProfilbildSection from "@/components/provider/ProfilbildSection";
+import MeinProfilSection from "@/components/provider/MeinProfilSection";
 import LeistungenSection from "@/components/provider/LeistungenSection";
 import PreiseSection from "@/components/provider/PreiseSection";
 import { format } from "date-fns";
@@ -95,6 +96,7 @@ function formatCHF(cents: number): string {
 const L: Record<string, Record<string, string>> = {
   sq: {
     navOverview: "Gjithëpamje",
+    navMyProfile: "Pamja e Profilit",
     navProfile: "Profili im",
     navProfilbild: "Foto & Logo",
     navGalerie: "Galeria",
@@ -197,6 +199,7 @@ const L: Record<string, Record<string, string>> = {
   },
   en: {
     navOverview: "Overview",
+    navMyProfile: "Profile Preview",
     navProfile: "My Profile",
     navProfilbild: "Photos & Logo",
     navGalerie: "Gallery",
@@ -299,6 +302,7 @@ const L: Record<string, Record<string, string>> = {
   },
   de: {
     navOverview: "Übersicht",
+    navMyProfile: "Profilvorschau",
     navProfile: "Mein Dienstleisterprofil",
     navProfilbild: "Profilbild & Logo",
     navGalerie: "Galerie & Portfolio",
@@ -401,6 +405,7 @@ const L: Record<string, Record<string, string>> = {
   },
   fr: {
     navOverview: "Vue d'ensemble",
+    navMyProfile: "Aperçu du profil",
     navProfile: "Mon profil",
     navProfilbild: "Photo & Logo",
     navGalerie: "Galerie & Portfolio",
@@ -505,6 +510,7 @@ const L: Record<string, Record<string, string>> = {
 
 type Section =
   | "uebersicht"
+  | "meinprofil"
   | "profil"
   | "profilbild"
   | "leistungen"
@@ -551,7 +557,7 @@ export default function ProviderDashboard() {
   const [browseView, setBrowseView] = useState<"grid" | "list">("grid");
   const [galleryProject, setGalleryProject] = useState<ProviderProject | null>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const VALID_SECTIONS: Section[] = ["uebersicht","profil","profilbild","leistungen","preise","projekte","bewerbungen","angebote","nachrichten","plan","sichtbarkeit","bewertungen","rechnungen","einstellungen"];
+  const VALID_SECTIONS: Section[] = ["uebersicht","meinprofil","profil","profilbild","leistungen","preise","projekte","bewerbungen","angebote","nachrichten","plan","sichtbarkeit","bewertungen","rechnungen","einstellungen"];
   const [activeSection, setActiveSection] = useState<Section>(() => {
     const tab = new URLSearchParams(search).get("tab") as Section | null;
     return (tab && VALID_SECTIONS.includes(tab)) ? tab : "uebersicht";
@@ -1001,6 +1007,7 @@ export default function ProviderDashboard() {
 
   const navItems: Array<{ id: Section; label: string; icon: React.ReactNode; badge?: number }> = [
     { id: "uebersicht", label: l.navOverview, icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: "meinprofil", label: l.navMyProfile, icon: <Eye className="w-4 h-4" /> },
     { id: "profil", label: l.navProfile, icon: <User className="w-4 h-4" /> },
     { id: "profilbild", label: l.navProfilbild, icon: <Camera className="w-4 h-4" /> },
     { id: "leistungen", label: l.navLeistungen, icon: <Tag className="w-4 h-4" /> },
@@ -1555,6 +1562,11 @@ export default function ProviderDashboard() {
             </div>
             );
           })()}
+
+          {/* ── MEIN PROFIL (VORSCHAU) ── */}
+          {activeSection === "meinprofil" && (
+            <MeinProfilSection language={language} onNavigate={(s) => setActiveSection(s as Section)} />
+          )}
 
           {/* ── PROFILBILD & LOGO ── */}
           {activeSection === "profilbild" && (
