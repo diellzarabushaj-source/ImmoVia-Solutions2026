@@ -527,7 +527,8 @@ export default function ProviderDashboard() {
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  const [registrationGate, setRegistrationGate] = useState<"checking" | "unpaid" | "paid">("checking");
+  const [registrationGate, setRegistrationGate] = useState<"checking" | "unpaid" | "paid" | "error">("checking");
+  const [gateFetchTrigger, setGateFetchTrigger] = useState(0);
   const [gateCompanyId, setGateCompanyId] = useState<number | null>(null);
   const [gatePaymentLoading, setGatePaymentLoading] = useState(false);
   const [gatePaymentError, setGatePaymentError] = useState<string | null>(null);
@@ -578,9 +579,8 @@ export default function ProviderDashboard() {
   useEffect(() => {
     if (!user || !isServiceProvider(user)) return;
     fetch("/api/provider/profile")
-      .then(r => r.ok ? r.json() : null)
-      .then((d: { company?: { id: number; registrationFeePaid?: boolean | null } | null } | null) => {
-        if (!d) { setRegistrationGate("paid"); return; }
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("not_ok")))
+      .then((d: { company?: { id: number; registrationFeePaid?: boolean | null } | null }) => {
         if (!d.company) { setLocation("/register-company"); return; }
         if (d.company.registrationFeePaid) {
           setRegistrationGate("paid");
@@ -589,8 +589,8 @@ export default function ProviderDashboard() {
           setRegistrationGate("unpaid");
         }
       })
-      .catch(() => setRegistrationGate("paid"));
-  }, [user]);
+      .catch(() => setRegistrationGate("error"));
+  }, [user, gateFetchTrigger]);
 
   const loadProfile = async () => {
     if (profileLoaded) return;
@@ -683,6 +683,25 @@ export default function ProviderDashboard() {
     return (
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (registrationGate === "error") {
+    return (
+      <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center gap-4">
+        <p className="text-muted-foreground text-sm">
+          {language === "sq" ? "Ndodhi një gabim gjatë ngarkimit. Ju lutemi provoni përsëri." :
+           language === "de" ? "Beim Laden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." :
+           language === "fr" ? "Une erreur s'est produite. Veuillez réessayer." :
+           "An error occurred while loading. Please try again."}
+        </p>
+        <Button variant="outline" onClick={() => { setRegistrationGate("checking"); setGateFetchTrigger(n => n + 1); }}>
+          {language === "sq" ? "Provo Përsëri" :
+           language === "de" ? "Erneut versuchen" :
+           language === "fr" ? "Réessayer" :
+           "Retry"}
+        </Button>
       </div>
     );
   }

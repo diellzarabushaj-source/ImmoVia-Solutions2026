@@ -31,6 +31,12 @@ export default function RegistrationPaymentSuccess() {
     );
   }, []);
 
+  useEffect(() => {
+    if (status !== "paid") return;
+    const t = setTimeout(() => setLocation("/provider"), 2000);
+    return () => clearTimeout(t);
+  }, [status, setLocation]);
+
   const copy: Record<string, Record<string, string>> = {
     verifying: {
       sq: "Duke verifikuar pagesën...",
