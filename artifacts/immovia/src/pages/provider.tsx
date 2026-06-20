@@ -75,6 +75,7 @@ import {
   CircleDollarSign,
   Send,
   LogOut,
+  CheckCircle2,
 } from "lucide-react";
 import MessageThread from "@/components/MessageThread";
 import { MessagingSystem } from "@/components/MessagingSystem";
@@ -490,7 +491,6 @@ export default function ProviderDashboard() {
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [detailProject, setDetailProject] = useState<ProviderProject | null>(null);
   const [offerProject, setOfferProject] = useState<ProviderProject | null>(null);
-  const [offerType, setOfferType] = useState<"normal" | "highlighted" | "top">("normal");
   const [offerMessage, setOfferMessage] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -806,7 +806,6 @@ export default function ProviderDashboard() {
 
   const openOfferModal = (project: ProviderProject) => {
     setOfferProject(project);
-    setOfferType("normal");
     setOfferMessage("");
     setOfferPrice("");
     setError(null);
@@ -818,7 +817,7 @@ export default function ProviderDashboard() {
     setError(null);
     try {
       await billingApi.sendOffer(offerProject.id, {
-        type: offerType,
+        type: "normal",
         message: offerMessage,
         priceEstimate: offerPrice || undefined,
       });
@@ -2189,72 +2188,76 @@ export default function ProviderDashboard() {
             <DialogDescription>{offerProject?.fullName} · {offerProject?.city}</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div>
-              <Label className="mb-2 block">{t.provider.offerTypeLabel}</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {(["normal", "highlighted", "top"] as const).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setOfferType(type)}
-                    className={`p-3 rounded-lg border-2 text-left transition ${offerType === type ? "border-primary bg-primary/5" : "border-border"}`}
-                    data-testid={`offer-type-${type}`}
-                  >
-                    <div className="flex items-center gap-1 mb-1">
-                      {type === "top" && <Flame className="w-4 h-4 text-amber-600" />}
-                      {type === "highlighted" && <Star className="w-4 h-4 text-blue-600" />}
-                      {type === "normal" && <Sparkles className="w-4 h-4 text-muted-foreground" />}
-                      <span className="font-semibold text-xs capitalize">
-                        {t.provider[`offerType${type.charAt(0).toUpperCase() + type.slice(1)}` as keyof typeof t.provider]}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+          {atLimit ? (
+            <div className="py-4 text-center space-y-3">
+              <div className="text-sm text-muted-foreground">
+                {language === "de"
+                  ? "Sie haben Ihr monatliches Limit erreicht. Upgraden Sie, um weitere Bewerbungen zu senden."
+                  : language === "fr"
+                  ? "Vous avez atteint votre limite mensuelle. Passez à un plan supérieur pour envoyer plus de candidatures."
+                  : language === "sq"
+                  ? "Keni arritur kufirin mujor. Ndrysho planin për të dërguar më shumë aplikime."
+                  : "You've reached your monthly limit. Upgrade to send more applications."}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {appStats?.usedThisMonth} / {appStats?.appLimit}{" "}
+                {language === "de" ? "Bewerbungen diesen Monat" : language === "fr" ? "candidatures ce mois" : language === "sq" ? "aplikime këtë muaj" : "applications this month"}
               </div>
             </div>
+          ) : (
+            <div className="space-y-4">
+              {appStats && appStats.appLimit !== -1 && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                  <span>
+                    {appStats.appLimit - appStats.usedThisMonth}{" "}
+                    {language === "de" ? "Bewerbungen übrig diesen Monat" : language === "fr" ? "candidatures restantes ce mois" : language === "sq" ? "aplikime mbetur këtë muaj" : "applications remaining this month"}
+                  </span>
+                </div>
+              )}
 
-            <div>
-              <Label htmlFor="offer-message">{t.provider.offerMessage}</Label>
-              <Textarea
-                id="offer-message"
-                value={offerMessage}
-                onChange={(e) => setOfferMessage(e.target.value)}
-                rows={4}
-                placeholder={t.provider.offerMessagePlaceholder}
-                data-testid="input-offer-message"
-              />
+              <div>
+                <Label htmlFor="offer-message">{t.provider.offerMessage}</Label>
+                <Textarea
+                  id="offer-message"
+                  value={offerMessage}
+                  onChange={(e) => setOfferMessage(e.target.value)}
+                  rows={4}
+                  placeholder={t.provider.offerMessagePlaceholder}
+                  data-testid="input-offer-message"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="offer-price">{t.provider.offerPrice}</Label>
+                <Input
+                  id="offer-price"
+                  value={offerPrice}
+                  onChange={(e) => setOfferPrice(e.target.value)}
+                  placeholder="CHF"
+                  data-testid="input-offer-price"
+                />
+              </div>
+
+              {error && (
+                <div className="text-sm p-3 rounded-lg bg-destructive/10 text-destructive">{error}</div>
+              )}
             </div>
-
-            <div>
-              <Label htmlFor="offer-price">{t.provider.offerPrice}</Label>
-              <Input
-                id="offer-price"
-                value={offerPrice}
-                onChange={(e) => setOfferPrice(e.target.value)}
-                placeholder="CHF"
-                data-testid="input-offer-price"
-              />
-            </div>
-
-            {error && (
-              <div className="text-sm p-3 rounded-lg bg-destructive/10 text-destructive">{error}</div>
-            )}
-          </div>
+          )}
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setOfferProject(null)} disabled={submitting}>
               {t.common.cancel}
             </Button>
-            {canSend ? (
-              <Button onClick={submitOffer} disabled={submitting} data-testid="button-confirm-send-offer">
-                {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {t.provider.sendOfferConfirm}
-              </Button>
-            ) : (
+            {atLimit ? (
               <Link href="/pricing">
                 <Button data-testid="button-go-pricing">{t.provider.goToPricing}</Button>
               </Link>
+            ) : (
+              <Button onClick={submitOffer} disabled={submitting || offerMessage.trim().length < 5} data-testid="button-confirm-send-offer">
+                {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {t.provider.sendOfferConfirm}
+              </Button>
             )}
           </DialogFooter>
         </DialogContent>
