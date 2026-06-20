@@ -57,10 +57,10 @@ export default function RegistrationPaymentSuccess() {
       fr: "Échec de la vérification. Contactez le support si votre paiement a été débité.",
     },
     home: {
-      sq: "Faqja Kryesore",
-      en: "Go Home",
-      de: "Startseite",
-      fr: "Accueil",
+      sq: "Shko te paneli",
+      en: "Go to dashboard",
+      de: "Zum Dashboard",
+      fr: "Aller au tableau de bord",
     },
     register: {
       sq: "Regjistrohu Sërisht",
@@ -93,7 +93,7 @@ export default function RegistrationPaymentSuccess() {
           </div>
           <h2 className="text-2xl font-serif font-bold mb-3">{copy.paid[lang]}</h2>
           <p className="text-muted-foreground text-sm mb-8">{copy.paidSub[lang]}</p>
-          <Button className="bg-[#1a3a6e] hover:bg-[#0f2044]" onClick={() => setLocation("/")}>
+          <Button className="bg-[#1a3a6e] hover:bg-[#0f2044]" onClick={() => setLocation("/provider")}>
             {copy.home[lang]}
           </Button>
         </motion.div>

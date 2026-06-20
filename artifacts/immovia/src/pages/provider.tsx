@@ -5,6 +5,7 @@ import { useLanguage } from "@/lib/language-context";
 import NotificationBell from "@/components/NotificationBell";
 import { useCategories } from "@/hooks/useCategories";
 import { ProjectCard } from "@/components/project/ProjectCard";
+import { useCreateRegistrationCheckout } from "@workspace/api-client-react";
 import {
   billingApi,
   offerCostFor,
@@ -172,6 +173,15 @@ const L: Record<string, Record<string, string>> = {
     paymentHistory: "Historiku i pagesave",
     nextBilling: "Faturimi tjetër",
     periodEnd: "Fundi i periudhës",
+    gateTitle: "Tarifa e Regjistrimit",
+    gateSub: "Pagoni tarifën njëherëshe prej CHF\u00a0149 për të aktivizuar profilin tuaj dhe filluar të merrni projekte.",
+    gateFeat1: "Profili juaj shfaqet në drejtorinë e kontraktorëve",
+    gateFeat2: "Klientët mund t'ju kontaktojnë drejtpërdrejt",
+    gateFeat3: "Merrni njoftime për projekte të reja",
+    gateBtn: "Paguaj CHF\u00a0149 tani",
+    gateSecure: "Pagesë e sigurt me Stripe",
+    gateOpening: "Duke hapur...",
+    gateError: "Ndodhi një gabim. Ju lutemi provoni përsëri.",
   },
   en: {
     navOverview: "Overview",
@@ -252,6 +262,15 @@ const L: Record<string, Record<string, string>> = {
     paymentHistory: "Payment history",
     nextBilling: "Next billing",
     periodEnd: "Period end",
+    gateTitle: "Registration Fee",
+    gateSub: "Pay the one-time CHF\u00a0149 fee to activate your profile and start receiving projects.",
+    gateFeat1: "Your profile appears in the contractor directory",
+    gateFeat2: "Clients can contact you directly",
+    gateFeat3: "Receive notifications for new projects",
+    gateBtn: "Pay CHF\u00a0149 now",
+    gateSecure: "Secure payment via Stripe",
+    gateOpening: "Opening...",
+    gateError: "An error occurred. Please try again.",
   },
   de: {
     navOverview: "Übersicht",
@@ -332,6 +351,15 @@ const L: Record<string, Record<string, string>> = {
     paymentHistory: "Zahlungsverlauf",
     nextBilling: "Nächste Abrechnung",
     periodEnd: "Periodenende",
+    gateTitle: "Registrierungsgebühr",
+    gateSub: "Zahlen Sie die einmalige CHF\u00a0149 Gebühr, um Ihr Profil zu aktivieren und Projekte zu erhalten.",
+    gateFeat1: "Ihr Profil erscheint im Verzeichnis",
+    gateFeat2: "Kunden können Sie direkt kontaktieren",
+    gateFeat3: "Benachrichtigungen über neue Projekte erhalten",
+    gateBtn: "Jetzt CHF\u00a0149 bezahlen",
+    gateSecure: "Sichere Zahlung über Stripe",
+    gateOpening: "Öffnet...",
+    gateError: "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
   },
   fr: {
     navOverview: "Vue d'ensemble",
@@ -412,6 +440,15 @@ const L: Record<string, Record<string, string>> = {
     paymentHistory: "Historique des paiements",
     nextBilling: "Prochaine facturation",
     periodEnd: "Fin de période",
+    gateTitle: "Frais d'inscription",
+    gateSub: "Payez les CHF\u00a0149 uniques pour activer votre profil et commencer à recevoir des projets.",
+    gateFeat1: "Votre profil apparaît dans l'annuaire",
+    gateFeat2: "Les clients peuvent vous contacter directement",
+    gateFeat3: "Recevez des notifications pour les nouveaux projets",
+    gateBtn: "Payer CHF\u00a0149 maintenant",
+    gateSecure: "Paiement sécurisé via Stripe",
+    gateOpening: "Ouverture...",
+    gateError: "Une erreur s'est produite. Veuillez réessayer.",
   },
 };
 
@@ -490,6 +527,12 @@ export default function ProviderDashboard() {
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
+  const [registrationGate, setRegistrationGate] = useState<"checking" | "unpaid" | "paid">("checking");
+  const [gateCompanyId, setGateCompanyId] = useState<number | null>(null);
+  const [gatePaymentLoading, setGatePaymentLoading] = useState(false);
+  const [gatePaymentError, setGatePaymentError] = useState<string | null>(null);
+  const createGateCheckout = useCreateRegistrationCheckout();
+
   const toggleThread = (offerId: number) => {
     setOpenThreads((prev) => {
       const next = new Set(prev);
@@ -530,6 +573,23 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     if (user && isServiceProvider(user)) void refreshAll();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !isServiceProvider(user)) return;
+    fetch("/api/provider/profile")
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { company?: { id: number; registrationFeePaid?: boolean | null } | null } | null) => {
+        if (!d) { setRegistrationGate("paid"); return; }
+        if (!d.company) { setLocation("/register-company"); return; }
+        if (d.company.registrationFeePaid) {
+          setRegistrationGate("paid");
+        } else {
+          setGateCompanyId(d.company.id);
+          setRegistrationGate("unpaid");
+        }
+      })
+      .catch(() => setRegistrationGate("paid"));
   }, [user]);
 
   const loadProfile = async () => {
@@ -615,6 +675,84 @@ export default function ProviderDashboard() {
     return (
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (registrationGate === "checking") {
+    return (
+      <div className="container mx-auto px-4 py-24 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (registrationGate === "unpaid") {
+    const handleGatePay = async () => {
+      if (!gateCompanyId) return;
+      setGatePaymentLoading(true);
+      setGatePaymentError(null);
+      try {
+        const result = await createGateCheckout.mutateAsync({
+          id: gateCompanyId,
+          data: { email: user.email ?? "" },
+        });
+        if (result.url) window.location.href = result.url;
+      } catch {
+        setGatePaymentError(l.gateError);
+        setGatePaymentLoading(false);
+      }
+    };
+
+    return (
+      <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CreditCard className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-serif font-bold mb-2">{l.gateTitle}</h2>
+            <p className="text-muted-foreground text-sm">{l.gateSub}</p>
+          </div>
+
+          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm mb-4">
+            <div className="bg-[#1a3a6e] text-white px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 opacity-80" />
+                <span className="text-sm font-semibold uppercase tracking-wide">{l.gateTitle}</span>
+              </div>
+              <span className="text-xl font-bold">CHF 149</span>
+            </div>
+            <div className="px-6 py-5 space-y-3">
+              {[l.gateFeat1, l.gateFeat2, l.gateFeat3].map((feat, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
+                  <p className="text-sm text-foreground">{feat}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {gatePaymentError && (
+            <p className="text-sm text-red-600 text-center mb-3">{gatePaymentError}</p>
+          )}
+
+          <Button
+            size="lg"
+            className="w-full bg-[#1a3a6e] hover:bg-[#0f2044]"
+            onClick={handleGatePay}
+            disabled={gatePaymentLoading}
+          >
+            {gatePaymentLoading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" /> {l.gateOpening}
+              </span>
+            ) : l.gateBtn}
+          </Button>
+          <p className="text-xs text-center text-muted-foreground mt-3 flex items-center justify-center gap-1">
+            <ShieldCheck className="w-3 h-3" /> {l.gateSecure}
+          </p>
+        </div>
       </div>
     );
   }
