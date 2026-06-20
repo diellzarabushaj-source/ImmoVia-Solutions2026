@@ -37,11 +37,11 @@ const PLAN_BADGE_COLOR: Record<string, string> = {
   premium: "bg-amber-100 text-amber-700",
 };
 
-const CREDITS_LABEL: Record<string, string> = {
-  de: "ImmoCredits/Monat",
-  en: "ImmoCredits/month",
-  sq: "ImmoCredits/muaj",
-  fr: "ImmoCredits/mois",
+const APPS_LABEL: Record<string, string> = {
+  de: "Bewerbungen/Monat",
+  en: "Applications/month",
+  sq: "Aplikime/muaj",
+  fr: "Candidatures/mois",
 };
 
 const REDIRECTING_LABEL: Record<string, string> = {
@@ -99,7 +99,7 @@ export default function Pricing() {
       "mainEntity": [
         { "@type": "Question", "name": "Für wen sind die ImmoVia365-Pakete gedacht?", "acceptedAnswer": { "@type": "Answer", "text": "Die Pakete sind für Handwerker, Baufirmen, Reinigungsunternehmen und andere Dienstleister gedacht, die Renovierungsanfragen aus der Schweiz erhalten möchten." } },
         { "@type": "Question", "name": "Kann ich das Abo jederzeit kündigen?", "acceptedAnswer": { "@type": "Answer", "text": "Ja, alle Abonnements sind monatlich kündbar. Nach der Kündigung läuft der Zugang bis zum Ende des bezahlten Zeitraums weiter." } },
-        { "@type": "Question", "name": "Was sind ImmoCredits?", "acceptedAnswer": { "@type": "Answer", "text": "ImmoCredits sind Punkte, mit denen Dienstleister Kontaktdaten von Auftraggebern freischalten können. Je nach Paket erhalten Sie monatlich unterschiedliche Mengen an ImmoCredits." } }
+        { "@type": "Question", "name": "Wie viele Bewerbungen kann ich pro Monat senden?", "acceptedAnswer": { "@type": "Answer", "text": "Das hängt von Ihrem Abo ab: Basic erlaubt 20 Bewerbungen pro Monat, Professional 50 und Premium unbegrenzt. Sobald Sie sich bewerben, wird automatisch ein Gesprächsfaden mit dem Auftraggeber eröffnet." } }
       ]
     },
     {
@@ -154,7 +154,7 @@ export default function Pricing() {
     }
   };
 
-  const creditsLabel = CREDITS_LABEL[language] ?? CREDITS_LABEL.de;
+  const appsLabel = APPS_LABEL[language] ?? APPS_LABEL.de;
   const unlimitedLabel = UNLIMITED_LABEL[language] ?? UNLIMITED_LABEL.de;
   const perMonth = PER_MONTH_LABEL[language] ?? PER_MONTH_LABEL.de;
   const subscribeCta = SUBSCRIBE_CTA[language] ?? SUBSCRIBE_CTA.de;

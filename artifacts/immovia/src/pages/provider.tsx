@@ -28,6 +28,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -968,9 +969,11 @@ export default function ProviderDashboard() {
         message: offerMessage,
         priceEstimate: offerPrice || undefined,
       });
-      setSuccess(t.provider.offerSent);
       setOfferProject(null);
       await refreshAll();
+      // Navigate straight to the auto-opened conversation
+      setActiveSection("nachrichten");
+      setSuccess(t.provider.offerSent);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
@@ -1588,16 +1591,17 @@ export default function ProviderDashboard() {
 
               {/* Filter bar */}
               <div className="flex flex-wrap items-center gap-2 mb-5">
-                <select
-                  value={browseTypeFilter}
-                  onChange={e => setBrowseTypeFilter(e.target.value)}
-                  className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="">{t.provider.filterAllTypes}</option>
-                  {projectCategories.map(cat => (
-                    <option key={cat.key} value={cat.key}>{cat.label}</option>
-                  ))}
-                </select>
+                <Select value={browseTypeFilter || "__all__"} onValueChange={v => setBrowseTypeFilter(v === "__all__" ? "" : v)}>
+                  <SelectTrigger className="h-9 w-48 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">{t.provider.filterAllTypes}</SelectItem>
+                    {projectCategories.map(cat => (
+                      <SelectItem key={cat.key} value={cat.key}>{cat.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <div className="relative">
                   <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
@@ -1612,29 +1616,31 @@ export default function ProviderDashboard() {
                     </button>
                   )}
                 </div>
-                <select
-                  value={browseSizeFilter}
-                  onChange={e => setBrowseSizeFilter(e.target.value)}
-                  className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="">{t.provider.filterAllSizes}</option>
-                  <option value="small">{t.listings.sizeSm}</option>
-                  <option value="medium">{t.listings.sizeMd}</option>
-                  <option value="large">{t.listings.sizeLg}</option>
-                  <option value="premium">{t.listings.sizePremium}</option>
-                </select>
-                <select
-                  value={browseBudgetFilter}
-                  onChange={e => setBrowseBudgetFilter(e.target.value)}
-                  className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="">{t.provider.filterAllBudgets}</option>
-                  <option value="under-10k">{"< 10k"}</option>
-                  <option value="10k-50k">{"10k – 50k"}</option>
-                  <option value="50k-100k">{"50k – 100k"}</option>
-                  <option value="100k-500k">{"100k – 500k"}</option>
-                  <option value="over-500k">{"> 500k"}</option>
-                </select>
+                <Select value={browseSizeFilter || "__all__"} onValueChange={v => setBrowseSizeFilter(v === "__all__" ? "" : v)}>
+                  <SelectTrigger className="h-9 w-40 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">{t.provider.filterAllSizes}</SelectItem>
+                    <SelectItem value="small">{t.listings.sizeSm}</SelectItem>
+                    <SelectItem value="medium">{t.listings.sizeMd}</SelectItem>
+                    <SelectItem value="large">{t.listings.sizeLg}</SelectItem>
+                    <SelectItem value="premium">{t.listings.sizePremium}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={browseBudgetFilter || "__all__"} onValueChange={v => setBrowseBudgetFilter(v === "__all__" ? "" : v)}>
+                  <SelectTrigger className="h-9 w-40 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">{t.provider.filterAllBudgets}</SelectItem>
+                    <SelectItem value="under-10k">{"< 10k"}</SelectItem>
+                    <SelectItem value="10k-50k">{"10k – 50k"}</SelectItem>
+                    <SelectItem value="50k-100k">{"50k – 100k"}</SelectItem>
+                    <SelectItem value="100k-500k">{"100k – 500k"}</SelectItem>
+                    <SelectItem value="over-500k">{"> 500k"}</SelectItem>
+                  </SelectContent>
+                </Select>
                 {(browseTypeFilter || browseCityFilter || browseSizeFilter || browseBudgetFilter) && (
                   <button
                     onClick={() => { setBrowseTypeFilter(""); setBrowseCityFilter(""); setBrowseSizeFilter(""); setBrowseBudgetFilter(""); }}
@@ -2535,6 +2541,12 @@ export default function ProviderDashboard() {
                   placeholder="CHF"
                   data-testid="input-offer-price"
                 />
+              </div>
+
+              {/* Auto-conversation notice */}
+              <div className="flex items-start gap-2 text-xs text-muted-foreground bg-blue-50 border border-blue-100 rounded-md px-3 py-2.5">
+                <MessageSquare className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
+                <span>{t.provider.offerConfirm}</span>
               </div>
 
               {error && (
