@@ -759,18 +759,30 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
         {data.portfolio.length === 0 ? (
           <p className="text-sm text-muted-foreground">{l.noPortfolio}</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {data.portfolio.map(item => (
               <button
                 key={item.id}
                 onClick={() => setLightbox(item)}
-                className="group aspect-square rounded-xl overflow-hidden border border-border bg-muted hover:shadow-md transition-shadow"
+                className="group text-left rounded-xl overflow-hidden border border-border bg-muted hover:shadow-md transition-shadow"
               >
-                <img
-                  src={item.imageUrl}
-                  alt={item.title ?? ""}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
+                <div className="aspect-video overflow-hidden bg-muted">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title ?? ""}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                </div>
+                {(item.title || item.description) && (
+                  <div className="p-3 bg-background">
+                    {item.title && (
+                      <p className="text-sm font-semibold line-clamp-1">{item.title}</p>
+                    )}
+                    {item.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{item.description}</p>
+                    )}
+                  </div>
+                )}
               </button>
             ))}
           </div>
