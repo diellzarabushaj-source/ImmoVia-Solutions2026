@@ -62,7 +62,7 @@ catalog:
   tailwind-merge: ^3.3.1
   tailwindcss: ^4.1.14
   tsx: ^4.21.0
-  vite: ^7.3.2
+  vite: ^7.3.5
   wouter: ^3.3.5
   zod: ^3.25.76
 
@@ -157,10 +157,19 @@ overrides:
   "@expo/ngrok-bin>@expo/ngrok-bin-win32-x64": "-"
   # drizzle-kit uses esbuild internally on an older version that's vulnerable, this overrides it
   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
-  esbuild: "0.27.3"
+  # Security: GHSA-g7r4-m6w7-qqqr esbuild dev server arbitrary file read (Windows); patched >=0.28.1
+  esbuild: "^0.28.1"
   # Security: uuid <11.1.1 has a buffer bounds-check bug in v3/v5/v6 when buf is provided (GHSA-w5hq-g745-h8pq)
   # Transitive via @google-cloud/storage (both uuid@8.3.2 and uuid@9.0.1)
   uuid: "^11.1.1"
   # Security: qs >=6.11.1 <=6.15.1 crashes with TypeError in stringify when encodeValuesOnly is set (GHSA-q8mj-m7cp-5q26)
   # Transitive via express@5
   qs: ">=6.15.2"
+  # Security: GHSA-hmw2-7cc7-3qxx form-data CRLF injection; patched >=2.5.6
+  form-data: ">=2.5.6"
+  # Security: GHSA-h67p-54hq-rp68 js-yaml ReDoS; patched >=4.2.0
+  js-yaml: ">=4.2.0"
+  # Security: GHSA-6v5v-wf23-fmfq markdown-it quadratic complexity DoS; patched >=14.2.0
+  markdown-it: ">=14.2.0"
+  # Security: GHSA-4x5r-pxfx-6jf8 @babel/core arbitrary file read; patched >=7.29.6
+  "@babel/core": ">=7.29.6"
