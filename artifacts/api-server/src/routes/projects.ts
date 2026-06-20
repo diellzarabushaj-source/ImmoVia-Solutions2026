@@ -15,22 +15,9 @@ import {
 import { requireAdmin } from "../middlewares/requireAdmin";
 import { sendNewProjectNotification, sendProjectConfirmationToClient, sendProjectPublishedNotification, sendProjectRejectedNotification } from "../lib/email";
 import { createNotification, getUserEmail } from "../lib/notify";
-import type { Request } from "express";
+import { isAuthenticated, canViewContactDetails, canViewProjectContacts } from "../lib/planGating";
 
 const router: IRouter = Router();
-
-// Personal client contact details (name/email/phone) are only returned to
-// authenticated users. Public/unauthenticated requests get them redacted to
-// empty strings so the data never leaves the server, while keeping the response
-// schema valid.
-function isAuthenticated(req: Request): boolean {
-  if (req.session?.adminAuthenticated === true) return true;
-  try {
-    return Boolean(getAuth(req)?.userId);
-  } catch {
-    return false;
-  }
-}
 
 function redactContact<T extends { fullName: string; email: string; phone: string }>(project: T): T {
   return { ...project, fullName: "", email: "", phone: "" };
@@ -88,8 +75,9 @@ router.get("/projects", async (req, res): Promise<void> => {
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(sql`${projectsTable.createdAt} desc`);
   const authed = isAuthenticated(req);
+  const canContact = await canViewContactDetails(req);
   const projects = rows.map(r => withPoster(r.project, r, authed));
-  const payload = authed ? projects : projects.map(redactContact);
+  const payload = canContact ? projects : projects.map(redactContact);
   res.json(ListProjectsResponse.parse(payload));
 });
 
@@ -180,8 +168,9 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
   }
 
   const authed = isAuthenticated(req);
+  const canContact = await canViewProjectContacts(req, row.project.ownerUserId ?? null);
   const project = withPoster(row.project, row, authed);
-  const payload = authed ? project : redactContact(project);
+  const payload = canContact ? project : redactContact(project);
   res.json(GetProjectResponse.parse(payload));
 });
 

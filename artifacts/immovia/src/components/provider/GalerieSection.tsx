@@ -43,7 +43,6 @@ const L: Record<string, Record<string, string>> = {
     saving: "Speichern...",
     deleteConfirm: "Bild löschen?",
     portfolioTitle: "Arbeitsbeispiele & Portfolio",
-    limitFree: "Kostenloser Plan: bis zu 3 Portfolio-Bilder",
   },
   en: {
     title: "Gallery & Portfolio",
@@ -68,7 +67,6 @@ const L: Record<string, Record<string, string>> = {
     saving: "Saving...",
     deleteConfirm: "Delete photo?",
     portfolioTitle: "Work examples & Portfolio",
-    limitFree: "Free plan: up to 3 portfolio photos",
   },
   sq: {
     title: "Galeria & Portofoli",
@@ -93,7 +91,6 @@ const L: Record<string, Record<string, string>> = {
     saving: "Duke ruajtur...",
     deleteConfirm: "Fshi foton?",
     portfolioTitle: "Shembuj punimesh & Portofoli",
-    limitFree: "Plan falas: deri në 3 foto portofoli",
   },
   fr: {
     title: "Galerie & Portfolio",
@@ -118,7 +115,6 @@ const L: Record<string, Record<string, string>> = {
     saving: "Enregistrement...",
     deleteConfirm: "Supprimer la photo ?",
     portfolioTitle: "Exemples de travaux & Portfolio",
-    limitFree: "Plan gratuit : jusqu'à 3 photos de portfolio",
   },
 };
 

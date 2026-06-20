@@ -34,11 +34,11 @@ const PLANS = [
     featured: false,
     badge: "Basic",
     visibilityRank: 1,
-    contactVisible: true,
+    contactVisible: false,  // Basic: no contact details access
     features: [
       "20 ImmoCredits/Monat",
       "Basic Provider Abzeichen",
-      "Kontaktdaten sichtbar (registrierte Auftraggeber)",
+      "Nur In-Plattform-Messaging",
       "Nur registrierte Auftraggeber",
       "Standardsichtbarkeit",
     ],
@@ -53,13 +53,13 @@ const PLANS = [
     featured: true,
     badge: "Professional",
     visibilityRank: 2,
-    contactVisible: true,
+    contactVisible: true,   // Professional: contact details visible
     features: [
       "60 ImmoCredits/Monat",
       "Pro Provider Abzeichen",
       "Erscheint über Basic-Anbietern",
       "Bessere Sichtbarkeit",
-      "Kontaktdaten sichtbar (registrierte Auftraggeber)",
+      "Kontaktdaten der Auftraggeber sichtbar",
     ],
     sortOrder: 3,
   },

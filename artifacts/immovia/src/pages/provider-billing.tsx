@@ -262,8 +262,7 @@ export default function ProviderBilling() {
           </div>
         ) : (
           <div className="text-sm text-muted-foreground">
-            <p className="mb-1">{L.noPlan}</p>
-            <p>{L.freePlan}</p>
+            <p>{L.noPlan}</p>
           </div>
         )}
       </Card>
@@ -288,7 +287,7 @@ export default function ProviderBilling() {
         )}
 
         <Button
-          variant={currentPlan?.slug === "free" || !currentPlan ? "default" : "ghost"}
+          variant={!currentPlan ? "default" : "ghost"}
           onClick={() => setLocation("/pricing")}
           className="flex items-center gap-2"
         >
@@ -296,34 +295,6 @@ export default function ProviderBilling() {
         </Button>
       </div>
 
-      {/* Plan cards for upsell */}
-      {stats?.planSlug === "free" && plans.filter(p => p.slug !== "free").length > 0 && (
-        <div className="mt-10">
-          <div className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
-            {L.seePlans}
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {plans
-              .filter(p => ["basic", "pro", "premium"].includes(p.slug))
-              .map(plan => (
-                <Card
-                  key={plan.id}
-                  className={`p-4 cursor-pointer hover:shadow-md transition-shadow ${plan.featured ? "border-primary/40 border-2" : ""}`}
-                  onClick={() => setLocation("/pricing")}
-                >
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    {PLAN_ICONS[plan.slug]}
-                    <span className="text-sm font-bold">{plan.name}</span>
-                  </div>
-                  <div className="text-lg font-bold text-primary">
-                    CHF {(plan.priceCents / 100).toFixed(0)}
-                    <span className="text-xs font-normal text-muted-foreground">/Mo</span>
-                  </div>
-                </Card>
-              ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

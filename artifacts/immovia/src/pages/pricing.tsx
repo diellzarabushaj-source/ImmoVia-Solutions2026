@@ -71,13 +71,6 @@ const PER_MONTH_LABEL: Record<string, string> = {
   fr: "/mois",
 };
 
-const FREE_CTA: Record<string, string> = {
-  de: "Kostenlos starten",
-  en: "Get started free",
-  sq: "Fillo falas",
-  fr: "Commencer gratuitement",
-};
-
 const SUBSCRIBE_CTA: Record<string, string> = {
   de: "Jetzt abonnieren",
   en: "Subscribe now",
@@ -127,12 +120,6 @@ export default function Pricing() {
       return;
     }
 
-    // Free plan — no checkout needed
-    if (plan.slug === "free") {
-      setLocation("/provider/billing");
-      return;
-    }
-
     // Paid plan — redirect to Stripe Checkout
     setLoading(plan.id);
     try {
@@ -147,7 +134,6 @@ export default function Pricing() {
   const creditsLabel = CREDITS_LABEL[language] ?? CREDITS_LABEL.de;
   const unlimitedLabel = UNLIMITED_LABEL[language] ?? UNLIMITED_LABEL.de;
   const perMonth = PER_MONTH_LABEL[language] ?? PER_MONTH_LABEL.de;
-  const freeCta = FREE_CTA[language] ?? FREE_CTA.de;
   const subscribeCta = SUBSCRIBE_CTA[language] ?? SUBSCRIBE_CTA.de;
   const redirectingLabel = REDIRECTING_LABEL[language] ?? REDIRECTING_LABEL.de;
   const mostPopular = MOST_POPULAR[language] ?? MOST_POPULAR.de;
@@ -185,7 +171,7 @@ export default function Pricing() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
         {displayedPlans.map((plan) => {
           const isCurrentlyLoading = loading === plan.id;
-          const isFree = plan.slug === "free";
+          const isPremium = plan.slug === "premium";
           const creditsDisplay = plan.monthlyCredits === -1 ? unlimitedLabel : String(plan.monthlyCredits);
 
           return (
@@ -228,7 +214,7 @@ export default function Pricing() {
 
               {/* Credits */}
               <div className="flex items-baseline gap-1.5 mb-5 mt-1">
-                <span className="text-lg font-bold text-primary">{creditsDisplay}</span>
+                <span className={`text-lg font-bold ${isPremium ? "text-amber-600" : "text-primary"}`}>{creditsDisplay}</span>
                 <span className="text-xs text-muted-foreground">{creditsLabel}</span>
               </div>
 
@@ -244,13 +230,13 @@ export default function Pricing() {
 
               <Button
                 className="w-full"
-                variant={plan.featured ? "default" : isFree ? "ghost" : "outline"}
+                variant={plan.featured ? "default" : "outline"}
                 onClick={(e) => { e.stopPropagation(); void handlePlanCta(plan); }}
                 disabled={loading !== null}
                 data-testid={`button-plan-${plan.slug}`}
               >
                 {isCurrentlyLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {isCurrentlyLoading ? redirectingLabel : isFree ? freeCta : subscribeCta}
+                {isCurrentlyLoading ? redirectingLabel : subscribeCta}
               </Button>
             </Card>
           );

@@ -1,0 +1,63 @@
+Please replace the old pricing/package UI with the new consistent package logic everywhere.
+
+Important pricing consistency rules:
+
+- Search the whole frontend for all pricing/package sections.
+- Replace every old or different pricing version with one single consistent pricing component.
+- Pricing must look and work the same everywhere:
+  - Homepage
+  - Service Provider signup/onboarding
+  - Provider dashboard
+  - Billing page
+  - Project detail locked sections
+  - Any upgrade/paywall modal
+- Do not show different package rules in different places.
+
+Service Provider package flow:
+
+- Provider first chooses a package:
+  - Basic
+  - Professional
+  - Premium
+
+- After payment, be very careful that the correct selected package is activated.
+- Do not activate the wrong package.
+- Use Stripe webhook confirmation, not only frontend redirect.
+- Store the active package correctly in the backend/database.
+- Admin dashboard must show the correct active package.
+
+Package access rules:
+
+Basic:
+- Basic providers can only communicate inside the website through platform messages/offers.
+- Basic providers must NOT see phone numbers.
+- Basic providers must NOT see emails.
+- Basic providers must NOT see private contact details.
+- Basic providers must NOT contact project posters outside the platform.
+- Basic providers can see city only.
+
+Professional:
+- Professional providers can communicate inside the website.
+- Professional providers can unlock/view project poster phone number and private contact details.
+- Professional providers have the Professional badge.
+- Professional providers have higher ranking than Basic.
+
+Premium:
+- Premium providers can communicate inside the website.
+- Premium providers can unlock/view project poster phone number and private contact details.
+- Premium providers have unlimited/best access.
+- Premium providers have the Premium badge.
+- Premium providers have the highest ranking/featured visibility.
+
+Critical privacy rule:
+
+- Only Professional and Premium providers can see project poster phone numbers and private contact details.
+- Nobody else can see phone numbers or private contact data.
+- Enforce this in backend API responses, not only frontend UI.
+- Redact phone, email, exact address, and private contact fields for Basic and unauthorized users.
+
+Also:
+
+- Keep UI clean, professional, mobile-friendly, and consistent with ImmoVia365.
+- Do not break Project Poster signup, project posting, messages, offers, payments, subscriptions, or admin dashboard.
+- Run validation and explain exactly which pricing components, routes, and backend permission checks were changed.

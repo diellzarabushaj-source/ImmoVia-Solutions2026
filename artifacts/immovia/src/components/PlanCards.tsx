@@ -1,4 +1,4 @@
-import { Star, Zap, Crown, CheckCircle2 } from "lucide-react";
+import { Star, Zap, Crown, Check, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 
 export type PlanType = "basic" | "professional" | "premium";
@@ -10,66 +10,136 @@ interface PlanCardsProps {
 
 export const PLAN_CONFIG: Record<PlanType, {
   icon: React.ReactNode;
-  iconBg: string;
-  cardBg: string;
-  cardBorder: string;
-  accentColor: string;
   monthlyChf: number;
+  monthlyCredits: number;
   badge: Record<string, string>;
   features: Record<string, string[]>;
 }> = {
   basic: {
-    icon: <Star className="w-6 h-6 text-blue-500 group-hover:scale-110 transition-transform" />,
-    iconBg: "bg-blue-50 group-hover:bg-blue-100",
-    cardBg: "bg-white",
-    cardBorder: "border-border group-hover:border-blue-300",
-    accentColor: "text-blue-600",
+    icon: <Zap className="w-5 h-5 text-blue-500" />,
     monthlyChf: 49,
-    badge: { sq: "Fillestare", en: "Starter", de: "Starter", fr: "Débutant" },
+    monthlyCredits: 20,
+    badge: { sq: "Bazë", en: "Basic", de: "Basic", fr: "De base" },
     features: {
-      sq: ["Listim standard në drejtori", "Faqe profili bazike", "Mbështetje me email"],
-      en: ["Standard directory listing", "Basic profile page", "Email support"],
-      de: ["Standard-Verzeichniseintrag", "Basis-Profilseite", "E-Mail-Support"],
-      fr: ["Annuaire standard", "Page de profil de base", "Support par email"],
+      sq: [
+        "20 ImmoCredits/muaj",
+        "Insinjë Basic Provider",
+        "Vetëm mesazhe brenda platformës",
+        "Vetëm Auftraggeber të regjistruar",
+        "Dukshmëri standarde",
+      ],
+      en: [
+        "20 ImmoCredits/month",
+        "Basic Provider badge",
+        "Platform messages only",
+        "Registered clients only",
+        "Standard visibility",
+      ],
+      de: [
+        "20 ImmoCredits/Monat",
+        "Basic Provider Abzeichen",
+        "Nur In-Plattform-Messaging",
+        "Nur registrierte Auftraggeber",
+        "Standardsichtbarkeit",
+      ],
+      fr: [
+        "20 ImmoCredits/mois",
+        "Badge Basic Provider",
+        "Messagerie plateforme seulement",
+        "Clients enregistrés seulement",
+        "Visibilité standard",
+      ],
     },
   },
   professional: {
-    icon: <Zap className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />,
-    iconBg: "bg-white/20",
-    cardBg: "bg-gradient-to-br from-[#1a3a6e] to-[#2563eb]",
-    cardBorder: "border-primary",
-    accentColor: "text-blue-200",
+    icon: <Star className="w-5 h-5 text-primary" />,
     monthlyChf: 99,
-    badge: { sq: "Rekomanduar", en: "Recommended", de: "Empfohlen", fr: "Recommandé" },
+    monthlyCredits: 60,
+    badge: { sq: "Profesional", en: "Professional", de: "Professional", fr: "Professionnel" },
     features: {
-      sq: ["Gjithçka nga Basic", "Listim me përparësi", "Insignë e verifikuar", "Galeri portofoli"],
-      en: ["Everything in Basic", "Priority listing", "Verified badge", "Portfolio gallery"],
-      de: ["Alles aus Basic", "Priorisiertes Listing", "Verifiziert-Badge", "Portfolio-Galerie"],
-      fr: ["Tout de Basic", "Annonce prioritaire", "Badge vérifié", "Galerie portfolio"],
+      sq: [
+        "60 ImmoCredits/muaj",
+        "Insinjë Pro Provider",
+        "Shfaqet mbi ofruesit Basic",
+        "Dukshmëri më e mirë",
+        "Të dhënat e kontaktit të Auftraggeber-it të dukshme",
+      ],
+      en: [
+        "60 ImmoCredits/month",
+        "Pro Provider badge",
+        "Appears above Basic providers",
+        "Better visibility",
+        "Client contact details visible",
+      ],
+      de: [
+        "60 ImmoCredits/Monat",
+        "Pro Provider Abzeichen",
+        "Erscheint über Basic-Anbietern",
+        "Bessere Sichtbarkeit",
+        "Kontaktdaten der Auftraggeber sichtbar",
+      ],
+      fr: [
+        "60 ImmoCredits/mois",
+        "Badge Pro Provider",
+        "Apparaît au-dessus des Basic",
+        "Meilleure visibilité",
+        "Coordonnées des clients visibles",
+      ],
     },
   },
   premium: {
-    icon: <Crown className="w-6 h-6 text-amber-400 group-hover:scale-110 transition-transform" />,
-    iconBg: "bg-amber-400/20",
-    cardBg: "bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100",
-    cardBorder: "border-amber-300 group-hover:border-amber-500",
-    accentColor: "text-amber-700",
+    icon: <Crown className="w-5 h-5 text-amber-500" />,
     monthlyChf: 149,
-    badge: { sq: "Plotë", en: "Complete", de: "Komplett", fr: "Complet" },
+    monthlyCredits: 150,
+    badge: { sq: "Premium", en: "Premium", de: "Premium", fr: "Premium" },
     features: {
-      sq: ["Gjithçka nga Professional", "Paraqitje kryesore", "Vendosje në krye", "Panel analitik"],
-      en: ["Everything in Professional", "Home page feature", "Top search placement", "Analytics panel"],
-      de: ["Alles aus Professional", "Homepage-Feature", "Top-Platzierung", "Analyse-Panel"],
-      fr: ["Tout de Professional", "Mise en avant accueil", "Position en tête", "Tableau analytique"],
+      sq: [
+        "150 ImmoCredits/muaj",
+        "Insinjë Premium Partner",
+        "Vendi i parë në lista",
+        "Qasje te klientët e paregjistruar",
+        "Të dhënat e kontaktit për të gjithë të dukshme",
+        "Shfaqje e veçantë (Featured)",
+      ],
+      en: [
+        "150 ImmoCredits/month",
+        "Premium Partner badge",
+        "First placement in provider lists",
+        "Access to unregistered leads",
+        "Contact details visible for all",
+        "Featured placement",
+      ],
+      de: [
+        "150 ImmoCredits/Monat",
+        "Premium Partner Abzeichen",
+        "Erstplatzierung in Anbieterlisten",
+        "Zugang zu nicht-registrierten Leads",
+        "Kontaktdaten für alle sichtbar",
+        "Featured Platzierung",
+      ],
+      fr: [
+        "150 ImmoCredits/mois",
+        "Badge Premium Partner",
+        "Première position dans les listes",
+        "Accès aux prospects non enregistrés",
+        "Coordonnées visibles pour tous",
+        "Placement en vedette",
+      ],
     },
   },
 };
 
-const STRINGS: Record<string, { perMonth: string; regFee: string; selected: string }> = {
-  sq: { perMonth: "/ muaj", regFee: "Tarifë regjistrimi njëherë: CHF 149", selected: "Zgjedhur" },
-  en: { perMonth: "/ mo",   regFee: "One-time registration fee: CHF 149",  selected: "Selected" },
-  de: { perMonth: "/ Monat",regFee: "Einmalige Registrierungsgebühr: CHF 149", selected: "Gewählt" },
-  fr: { perMonth: "/ mois", regFee: "Frais d'inscription uniques\u00a0: CHF 149", selected: "Sélectionné" },
+const STRINGS: Record<string, {
+  perMonth: string;
+  credits: string;
+  mostPopular: string;
+  select: string;
+  selected: string;
+}> = {
+  sq: { perMonth: "/muaj", credits: "ImmoCredits/muaj", mostPopular: "Më i zgjedhur", select: "Zgjidhni", selected: "Zgjedhur" },
+  en: { perMonth: "/month", credits: "ImmoCredits/month", mostPopular: "Most popular", select: "Select", selected: "Selected" },
+  de: { perMonth: "/Monat", credits: "ImmoCredits/Monat", mostPopular: "Beliebteste Wahl", select: "Wählen", selected: "Gewählt" },
+  fr: { perMonth: "/mois", credits: "ImmoCredits/mois", mostPopular: "Le plus populaire", select: "Choisir", selected: "Sélectionné" },
 };
 
 export function PlanCards({ selected, onSelect }: PlanCardsProps) {
@@ -81,6 +151,7 @@ export function PlanCards({ selected, onSelect }: PlanCardsProps) {
       {(["basic", "professional", "premium"] as PlanType[]).map((plan) => {
         const cfg = PLAN_CONFIG[plan];
         const isPro = plan === "professional";
+        const isPremium = plan === "premium";
         const isSelected = selected === plan;
         const feats = cfg.features[language] ?? cfg.features.en;
         const badgeLabel = cfg.badge[language] ?? cfg.badge.en;
@@ -90,66 +161,90 @@ export function PlanCards({ selected, onSelect }: PlanCardsProps) {
             key={plan}
             type="button"
             onClick={() => onSelect(plan)}
-            className={`group relative text-left rounded-2xl border-2 p-6 transition-all duration-200 hover:-translate-y-1 ${cfg.cardBg} ${cfg.cardBorder} ${
-              isSelected ? "ring-2 ring-primary ring-offset-2 shadow-xl -translate-y-1" : "hover:shadow-lg"
-            }`}
+            className={[
+              "group relative text-left rounded-2xl border-2 p-6 bg-white transition-all duration-200 hover:-translate-y-1 focus:outline-none",
+              isPro
+                ? "border-primary"
+                : isPremium
+                  ? "border-amber-300 hover:border-amber-400"
+                  : "border-blue-200 hover:border-blue-300",
+              isSelected ? "ring-2 ring-offset-2 shadow-xl -translate-y-1" + (isPremium ? " ring-amber-400" : " ring-primary") : "hover:shadow-lg",
+            ].join(" ")}
           >
-            {/* Badge */}
+            {/* Most popular banner */}
             {isPro && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                 <span className="bg-primary text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow">
-                  {badgeLabel}
+                  {s.mostPopular}
                 </span>
               </div>
             )}
-            {!isPro && (
-              <div className={`absolute top-3 right-3 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                plan === "premium" ? "bg-amber-200 text-amber-800" : "bg-blue-100 text-blue-700"
-              }`}>
-                {badgeLabel}
-              </div>
-            )}
 
-            {/* Icon */}
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors ${cfg.iconBg}`}>
+            {/* Icon + name */}
+            <div className="flex items-center gap-2 mb-2">
               {cfg.icon}
+              <h3 className="text-base font-bold text-foreground">{badgeLabel}</h3>
             </div>
 
-            {/* Plan label */}
-            <div className={`text-xs font-bold uppercase tracking-widest mb-1 ${isPro ? "text-blue-200" : cfg.accentColor}`}>
-              {plan.toUpperCase()}
-            </div>
-
-            {/* Price */}
-            <div className={`text-3xl font-bold mb-4 ${isPro ? "text-white" : "text-foreground"}`}>
-              CHF {cfg.monthlyChf}
-              <span className={`text-sm font-normal ml-1 ${isPro ? "text-blue-200" : "text-muted-foreground"}`}>
-                {s.perMonth}
+            {/* Badge pill */}
+            <div className="mb-4">
+              <span className={[
+                "inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full",
+                isPremium
+                  ? "bg-amber-100 text-amber-700"
+                  : isPro
+                    ? "bg-primary/10 text-primary"
+                    : "bg-blue-100 text-blue-700",
+              ].join(" ")}>
+                {badgeLabel}
               </span>
             </div>
 
+            {/* Price */}
+            <div className="mb-1">
+              <span className="text-3xl font-bold text-foreground">CHF {cfg.monthlyChf}</span>
+              <span className="text-muted-foreground text-sm">{s.perMonth}</span>
+            </div>
+
+            {/* ImmoCredits */}
+            <div className={["flex items-baseline gap-1.5 mb-5", isPremium ? "text-amber-600" : "text-primary"].join(" ")}>
+              <span className="text-lg font-bold">{cfg.monthlyCredits}</span>
+              <span className="text-xs">{s.credits}</span>
+            </div>
+
             {/* Features */}
-            <ul className="space-y-2 mb-4">
+            <ul className="space-y-2 text-sm mb-6">
               {feats.map((feat) => (
                 <li key={feat} className="flex items-start gap-2">
-                  <CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${isPro ? "text-blue-300" : "text-green-500"}`} />
-                  <span className={`text-sm ${isPro ? "text-blue-100" : "text-foreground"}`}>{feat}</span>
+                  <Check className={["w-4 h-4 mt-0.5 shrink-0", isPremium ? "text-amber-500" : "text-primary"].join(" ")} />
+                  <span className="text-foreground">{feat}</span>
                 </li>
               ))}
             </ul>
 
-            {/* Registration fee note */}
-            <div className={`text-xs ${isPro ? "text-blue-200/70" : "text-muted-foreground"}`}>
-              + {s.regFee}
+            {/* Select button */}
+            <div className={[
+              "w-full py-2.5 rounded-lg text-sm font-semibold text-center transition-all",
+              isSelected
+                ? isPro
+                  ? "bg-primary text-white"
+                  : isPremium
+                    ? "bg-amber-500 text-white"
+                    : "bg-primary text-white"
+                : isPro
+                  ? "bg-primary text-white"
+                  : "border border-current text-primary",
+              !isSelected && isPremium ? "border-amber-400 text-amber-600" : "",
+            ].join(" ")}>
+              {isSelected ? (
+                <span className="flex items-center justify-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  {s.selected}
+                </span>
+              ) : (
+                s.select
+              )}
             </div>
-
-            {/* Selected indicator */}
-            {isSelected && (
-              <div className={`mt-4 flex items-center gap-2 text-sm font-semibold ${isPro ? "text-white" : "text-primary"}`}>
-                <CheckCircle2 className="w-4 h-4" />
-                {s.selected}
-              </div>
-            )}
           </button>
         );
       })}

@@ -33,13 +33,13 @@ export const PLAN_APP_LIMITS: Record<string, number> = {
 
 export const PLAN_CONTACT_VISIBLE: Record<string, boolean> = {
   free: false,
-  basic: true,
-  pro: true,
-  premium: true,
+  basic: false,   // Basic: platform messages only, no contact details
+  pro: true,      // Professional: can see project poster contact details
+  premium: true,  // Premium: can see all contact details
   // legacy
-  starter: true,
+  starter: false,
   professional: true,
-  founding: true,
+  founding: false,
 };
 
 export const PLAN_BADGES: Record<string, string> = {
