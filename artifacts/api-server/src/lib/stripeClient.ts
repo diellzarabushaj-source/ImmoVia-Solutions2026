@@ -8,9 +8,9 @@ import { logger } from "./logger";
 // Required secrets:
 //   STRIPE_SECRET_KEY              — live secret key (server-only, never exposed)
 //   VITE_STRIPE_PUBLISHABLE_KEY    — live publishable key (safe for the client)
-//   STRIPE_BASIC_PRICE_ID          — recurring price for Basic (CHF 29/mo)
-//   STRIPE_PROFESSIONAL_PRICE_ID   — recurring price for Professional (CHF 59/mo)
-//   STRIPE_PREMIUM_PRICE_ID        — recurring price for Premium (CHF 99/mo)
+//   STRIPE_BASIC_PRICE_ID          — recurring price for Basic (CHF 49/mo)
+//   STRIPE_PROFESSIONAL_PRICE_ID   — recurring price for Professional (CHF 99/mo)
+//   STRIPE_PREMIUM_PRICE_ID        — recurring price for Premium (CHF 149/mo)
 //   STRIPE_WEBHOOK_SECRET          — signing secret for /api/stripe/webhook
 
 const REQUIRED_STRIPE_ENV = [

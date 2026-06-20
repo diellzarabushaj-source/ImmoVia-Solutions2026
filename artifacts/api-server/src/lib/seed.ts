@@ -28,7 +28,7 @@ const PLANS = [
   {
     slug: "basic",
     name: "Basic",
-    priceCents: 2900,       // 29 CHF/month
+    priceCents: 4900,       // 49 CHF/month
     yearlyPriceCents: 0,    // live products are monthly-only
     monthlyCredits: 20,
     featured: false,
@@ -47,7 +47,7 @@ const PLANS = [
   {
     slug: "pro",
     name: "Professional",
-    priceCents: 5900,       // 59 CHF/month
+    priceCents: 9900,       // 99 CHF/month
     yearlyPriceCents: 0,    // live products are monthly-only
     monthlyCredits: 60,
     featured: true,
@@ -66,7 +66,7 @@ const PLANS = [
   {
     slug: "premium",
     name: "Premium",
-    priceCents: 9900,       // 99 CHF/month
+    priceCents: 14900,      // 149 CHF/month
     yearlyPriceCents: 0,    // live products are monthly-only
     monthlyCredits: 150,
     featured: false,
