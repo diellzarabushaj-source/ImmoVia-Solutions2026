@@ -32,6 +32,7 @@ import PaymentSuccess from "@/pages/payment-success";
 import RegistrationPaymentSuccess from "@/pages/registration-payment-success";
 import ProviderOnboarding from "@/pages/provider-onboarding";
 import PackagePaymentSuccess from "@/pages/package-payment-success";
+import SignupComplete from "@/pages/signup-complete";
 import ProviderDashboard from "@/pages/provider";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
@@ -134,6 +135,7 @@ function SignUpPage() {
         routing="path"
         path={`${basePath}/sign-up`}
         signInUrl={`${basePath}/sign-in`}
+        forceRedirectUrl={`${basePath}/signup-complete`}
         appearance={clerkAppearance}
       />
     </div>
@@ -175,6 +177,7 @@ function Router() {
         <Route path="/registration-payment-success" component={RegistrationPaymentSuccess} />
         <Route path="/provider-onboarding" component={ProviderOnboarding} />
         <Route path="/package-payment-success" component={PackagePaymentSuccess} />
+        <Route path="/signup-complete" component={SignupComplete} />
         <Route path="/chat" component={Chat} />
         <Route path="/contact" component={Contact} />
         <Route path="/login" component={Login} />

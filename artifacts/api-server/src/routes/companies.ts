@@ -343,9 +343,16 @@ router.post("/companies/:id/package-checkout", async (req, res): Promise<void> =
   const stripe = getStripeClient();
   const origin = (req.headers.origin as string) || `https://${req.headers.host}`;
 
+  const regFeePrice = process.env.STRIPE_REGISTRATION_FEE_PRICE_ID;
+  const lineItems: { price: string; quantity: number }[] = [
+    { price: priceId, quantity: 1 },
+  ];
+  if (regFeePrice) lineItems.push({ price: regFeePrice, quantity: 1 });
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    line_items: [{ price: priceId, quantity: 1 }],
+    line_items: lineItems,
+    allow_promotion_codes: true,
     customer_email: body.data.email,
     metadata: { companyId: String(company.id) },
     success_url: `${origin}/package-payment-success?company_id=${company.id}&session_id={CHECKOUT_SESSION_ID}`,
@@ -383,7 +390,7 @@ router.post("/companies/:id/package-payment/verify", async (req, res): Promise<v
     if (isPaid && session.metadata?.companyId === String(company.id)) {
       await db
         .update(companiesTable)
-        .set({ packagePaid: true, stripePackageSessionId: session.id })
+        .set({ packagePaid: true, registrationFeePaid: true, stripePackageSessionId: session.id })
         .where(eq(companiesTable.id, company.id));
       res.json({ paid: true });
       return;
