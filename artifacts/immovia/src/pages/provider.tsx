@@ -165,6 +165,9 @@ const L: Record<string, Record<string, string>> = {
     planAppsPerMonth: "aplikime / muaj",
     navMessages: "Mesazhet",
     profilePhoto: "Foto e profilit",
+    profileFullName: "Emri dhe Mbiemri",
+    profileCompanyName: "Emri i kompanisë",
+    profileContactName: "Personi i kontaktit",
     profileBio: "Përshkrim",
     profilePhone: "Telefon",
     profileCity: "Qyteti",
@@ -268,6 +271,9 @@ const L: Record<string, Record<string, string>> = {
     planAppsPerMonth: "applications / month",
     navMessages: "Messages",
     profilePhoto: "Profile photo",
+    profileFullName: "Full name",
+    profileCompanyName: "Company name",
+    profileContactName: "Contact person",
     profileBio: "Description",
     profilePhone: "Phone",
     profileCity: "City",
@@ -371,6 +377,9 @@ const L: Record<string, Record<string, string>> = {
     planAppsPerMonth: "Bewerbungen / Monat",
     navMessages: "Nachrichten",
     profilePhoto: "Profilfoto",
+    profileFullName: "Vollständiger Name",
+    profileCompanyName: "Firmenname",
+    profileContactName: "Kontaktperson",
     profileBio: "Beschreibung",
     profilePhone: "Telefon",
     profileCity: "Stadt",
@@ -474,6 +483,9 @@ const L: Record<string, Record<string, string>> = {
     planAppsPerMonth: "candidatures / mois",
     navMessages: "Messages",
     profilePhoto: "Photo de profil",
+    profileFullName: "Nom complet",
+    profileCompanyName: "Nom de la société",
+    profileContactName: "Personne de contact",
     profileBio: "Description",
     profilePhone: "Téléphone",
     profileCity: "Ville",
@@ -580,7 +592,7 @@ export default function ProviderDashboard() {
   }, [search]);
 
   // Profile editing state
-  const [profileForm, setProfileForm] = useState({ bio: "", phone: "", city: "", website: "", hourlyRate: "", profilePhoto: "" });
+  const [profileForm, setProfileForm] = useState({ fullName: "", companyName: "", contactName: "", bio: "", phone: "", city: "", website: "", hourlyRate: "", profilePhoto: "" });
   const [portfolioItems, setPortfolioItems] = useState<Array<{ id: number; imageUrl: string }>>([]);
   const [portfolioObjectPaths, setPortfolioObjectPaths] = useState<string[]>([]);
   const [profilePhotoPath, setProfilePhotoPath] = useState<string>("");
@@ -669,11 +681,14 @@ export default function ProviderDashboard() {
       const r = await fetch("/api/provider/profile");
       if (!r.ok) return;
       const d = await r.json() as {
-        user: { bio?: string | null; phone?: string | null; city?: string | null; website?: string | null; avatarUrl?: string | null };
-        company?: { hourlyRate?: number | null; profilePhoto?: string | null; galleryPhotos?: string[] | null } | null;
+        user: { fullName?: string | null; bio?: string | null; phone?: string | null; city?: string | null; website?: string | null; avatarUrl?: string | null };
+        company?: { hourlyRate?: number | null; profilePhoto?: string | null; galleryPhotos?: string[] | null; companyName?: string | null; contactName?: string | null } | null;
         portfolio: Array<{ id: number; imageUrl: string }>;
       };
       setProfileForm({
+        fullName: d.user.fullName ?? "",
+        companyName: d.company?.companyName ?? "",
+        contactName: d.company?.contactName ?? "",
         bio: d.user.bio ?? "",
         phone: d.user.phone ?? "",
         city: d.user.city ?? "",
@@ -695,6 +710,9 @@ export default function ProviderDashboard() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          fullName: profileForm.fullName || undefined,
+          companyName: profileForm.companyName || undefined,
+          contactName: profileForm.contactName || undefined,
           bio: profileForm.bio,
           phone: profileForm.phone,
           city: profileForm.city,
@@ -1224,7 +1242,11 @@ export default function ProviderDashboard() {
 
               {/* Profile completion banner — shown when profile < 100% */}
               {profileLoaded && (() => {
+                const nameField = user?.accountSubtype === "company"
+                  ? { key: "companyName" as const, label: { de: "Firmenname",         en: "Company name", sq: "Emri kompanisë", fr: "Nom société"  } }
+                  : { key: "fullName"    as const, label: { de: "Vollständiger Name", en: "Full name",    sq: "Emri i plotë",   fr: "Nom complet"  } };
                 const fields = [
+                  nameField,
                   { key: "bio",          label: { de: "Beschreibung",  en: "Description", sq: "Përshkrim",  fr: "Description" } },
                   { key: "phone",        label: { de: "Telefon",       en: "Phone",        sq: "Telefon",    fr: "Téléphone"   } },
                   { key: "city",         label: { de: "Stadt",         en: "City",         sq: "Qyteti",     fr: "Ville"       } },
@@ -1288,14 +1310,14 @@ export default function ProviderDashboard() {
                   </div>
                   <div className="text-lg font-bold text-primary">
                     {profileLoaded
-                      ? `${Math.min(100, Math.round(([profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website, profileForm.hourlyRate].filter(Boolean).length / 6) * 100))}%`
+                      ? `${Math.min(100, Math.round(([user?.accountSubtype === "company" ? profileForm.companyName : profileForm.fullName, profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website, profileForm.hourlyRate].filter(Boolean).length / 7) * 100))}%`
                       : "—"}
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-2">
                     {profileLoaded && (
                       <div
                         className="h-full bg-primary rounded-full"
-                        style={{ width: `${Math.min(100, Math.round(([profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website, profileForm.hourlyRate].filter(Boolean).length / 6) * 100))}%` }}
+                        style={{ width: `${Math.min(100, Math.round(([user?.accountSubtype === "company" ? profileForm.companyName : profileForm.fullName, profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website, profileForm.hourlyRate].filter(Boolean).length / 7) * 100))}%` }}
                       />
                     )}
                   </div>
@@ -1441,6 +1463,36 @@ export default function ProviderDashboard() {
                   {l.navProfile}
                 </h3>
                 <div className="grid gap-4">
+                  {/* Name fields — conditional on account subtype */}
+                  {user?.accountSubtype === "company" ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-xs mb-1 block">{l.profileCompanyName}</Label>
+                        <Input
+                          value={profileForm.companyName}
+                          onChange={e => setProfileForm(prev => ({ ...prev, companyName: e.target.value }))}
+                          placeholder="Muster GmbH"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs mb-1 block">{l.profileContactName}</Label>
+                        <Input
+                          value={profileForm.contactName}
+                          onChange={e => setProfileForm(prev => ({ ...prev, contactName: e.target.value }))}
+                          placeholder="Max Muster"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label className="text-xs mb-1 block">{l.profileFullName}</Label>
+                      <Input
+                        value={profileForm.fullName}
+                        onChange={e => setProfileForm(prev => ({ ...prev, fullName: e.target.value }))}
+                        placeholder="Max Muster"
+                      />
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs mb-1 block">{l.profileCity}</Label>
