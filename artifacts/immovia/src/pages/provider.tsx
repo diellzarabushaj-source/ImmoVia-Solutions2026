@@ -8,9 +8,6 @@ import { ProjectCard } from "@/components/project/ProjectCard";
 import { useCreateRegistrationCheckout, useCreatePackageCheckout } from "@workspace/api-client-react";
 import {
   billingApi,
-  offerCostFor,
-  type CreditBalance,
-  type ImmoTransaction,
   type ProviderOffer,
   type ProviderProject,
   type AppStats,
@@ -478,9 +475,7 @@ export default function ProviderDashboard() {
 
   const l = L[language] ?? L.de;
 
-  const [balance, setBalance] = useState<CreditBalance | null>(null);
   const [appStats, setAppStats] = useState<AppStats | null>(null);
-  const [transactions, setTransactions] = useState<ImmoTransaction[]>([]);
   const [projects, setProjects] = useState<ProviderProject[]>([]);
   const [offers, setOffers] = useState<ProviderOffer[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
@@ -553,18 +548,14 @@ export default function ProviderDashboard() {
 
   const refreshAll = async () => {
     try {
-      const [b, stats, txs, pjs, ofs, ps, invs] = await Promise.all([
-        billingApi.balance(),
+      const [stats, pjs, ofs, ps, invs] = await Promise.all([
         billingApi.appStats(),
-        billingApi.transactions(),
         billingApi.providerProjects(),
         billingApi.providerOffers(),
         billingApi.payments(),
         billingApi.invoices(),
       ]);
-      setBalance(b);
       setAppStats(stats);
-      setTransactions(txs);
       setProjects(pjs);
       setOffers(ofs);
       setPayments(ps);
@@ -802,10 +793,8 @@ export default function ProviderDashboard() {
     );
   }
 
-  const cost = offerProject ? offerCostFor(offerProject.size, offerType) : 0;
-  const afterBalance = balance ? balance.total - cost : 0;
-  const canSend = balance ? balance.total >= cost && offerMessage.trim().length >= 5 : false;
-  const atLimit = appStats ? appStats.usedThisMonth >= appStats.appLimit : false;
+  const atLimit = appStats ? (appStats.appLimit !== -1 && appStats.usedThisMonth >= appStats.appLimit) : false;
+  const canSend = offerMessage.trim().length >= 5 && !atLimit;
 
   const openOfferModal = (project: ProviderProject) => {
     setOfferProject(project);
@@ -1964,41 +1953,6 @@ export default function ProviderDashboard() {
                 </Card>
               </div>
 
-              {/* Transaction history */}
-              <Card className="mt-6">
-                <div className="p-4 border-b">
-                  <h3 className="font-bold">{t.provider.history}</h3>
-                </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t.provider.colDate}</TableHead>
-                      <TableHead>{t.provider.colType}</TableHead>
-                      <TableHead>{t.provider.colAmount}</TableHead>
-                      <TableHead>{t.provider.colNote}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {transactions.map((tx) => (
-                      <TableRow key={tx.id}>
-                        <TableCell className="text-xs">{format(new Date(tx.createdAt), "MMM d, HH:mm")}</TableCell>
-                        <TableCell><Badge variant="outline">{tx.type}</Badge></TableCell>
-                        <TableCell className={tx.amount < 0 ? "text-red-600" : "text-green-700"}>
-                          {tx.amount > 0 ? "+" : ""}{tx.amount}
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{tx.note}</TableCell>
-                      </TableRow>
-                    ))}
-                    {transactions.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center text-sm text-muted-foreground h-24">
-                          {t.provider.noTransactions}
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </Card>
             </div>
           )}
 

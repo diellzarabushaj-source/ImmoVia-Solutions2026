@@ -4,7 +4,6 @@ export interface SubscriptionPlan {
   name: string;
   priceCents: number;
   yearlyPriceCents: number;
-  monthlyCredits: number;
   featured: boolean;
   features: string[];
   sortOrder: number;
@@ -15,39 +14,10 @@ export interface SubscriptionPlan {
   stripePriceYearly: string | null;
 }
 
-export interface ImmocreditPack {
-  id: number;
-  slug: string;
-  name: string;
-  priceCents: number;
-  credits: number;
-  sortOrder: number;
-}
-
-export interface CreditBalance {
-  monthly: number;
-  purchased: number;
-  total: number;
-  usedThisMonth: number;
-}
-
-export interface ImmoTransaction {
-  id: number;
-  userId: number;
-  type: string;
-  bucket: string;
-  amount: number;
-  balanceAfterMonthly: number;
-  balanceAfterPurchased: number;
-  note: string | null;
-  createdAt: string;
-}
-
 export interface ProviderOffer {
   id: number;
   projectId: number;
   type: "normal" | "highlighted" | "top";
-  creditsSpent: number;
   message: string;
   priceEstimate: string | null;
   status: string;
@@ -85,7 +55,6 @@ export interface OfferWithProvider {
   projectId: number;
   providerUserId: number;
   type: string;
-  creditsSpent: number;
   message: string;
   priceEstimate: string | null;
   status: string;
@@ -150,14 +119,11 @@ async function jsonFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const billingApi = {
   plans: () => jsonFetch<SubscriptionPlan[]>("/plans"),
-  packs: () => jsonFetch<ImmocreditPack[]>("/packs"),
-  balance: () => jsonFetch<CreditBalance>("/provider/balance"),
   providerMe: () =>
     jsonFetch<{ subscription: { id: number; planId: number; status: string; currentPeriodStart: string; currentPeriodEnd: string } | null; plan: SubscriptionPlan | null }>(
       "/provider/me",
     ),
   appStats: () => jsonFetch<AppStats>("/provider/app-stats"),
-  transactions: () => jsonFetch<ImmoTransaction[]>("/provider/transactions"),
   payments: () => jsonFetch<PaymentRow[]>("/billing/payments"),
   invoices: () => jsonFetch<InvoiceRow[]>("/billing/invoices"),
   stripeCheckout: (planId: number) =>
@@ -173,11 +139,6 @@ export const billingApi = {
         ? `/stripe/subscription/sync?session_id=${encodeURIComponent(sessionId)}`
         : "/stripe/subscription/sync",
     ),
-  buyPack: (packId: number) =>
-    jsonFetch<{ pack: ImmocreditPack; payment: unknown; creditsAdded: number }>("/billing/buy-pack", {
-      method: "POST",
-      body: JSON.stringify({ packId }),
-    }),
   cancel: () => jsonFetch<{ ok: boolean }>("/billing/cancel", { method: "POST" }),
   providerProjects: () => jsonFetch<ProviderProject[]>("/provider/projects"),
   providerOffers: () => jsonFetch<ProviderOffer[]>("/provider/offers"),
@@ -188,7 +149,7 @@ export const billingApi = {
     projectId: number,
     body: { type: "normal" | "highlighted" | "top"; message: string; priceEstimate?: string },
   ) =>
-    jsonFetch<{ offer: { id: number }; cost: number; balanceAfter: CreditBalance }>(
+    jsonFetch<{ offer: { id: number } }>(
       `/projects/${projectId}/offers`,
       { method: "POST", body: JSON.stringify(body) },
     ),
@@ -200,9 +161,3 @@ export const billingApi = {
       { method: "POST" },
     ),
 };
-
-export function offerCostFor(size: string | null | undefined, type: "normal" | "highlighted" | "top"): number {
-  const sizeCosts: Record<string, number> = { small: 2, medium: 5, large: 10, premium: 20 };
-  const surcharge: Record<string, number> = { normal: 0, highlighted: 3, top: 7 };
-  return (sizeCosts[size ?? "medium"] ?? 5) + (surcharge[type] ?? 0);
-}

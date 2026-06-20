@@ -10,7 +10,6 @@ import {
   companiesTable,
 } from "@workspace/db";
 import { slugForPriceId } from "./stripeClient";
-import { grantMonthlyCredits } from "./credits";
 import { logger } from "./logger";
 
 function customerIdOf(value: string | { id: string } | null | undefined): string | undefined {
@@ -124,18 +123,13 @@ export async function activateSubscription(sub: Stripe.Subscription): Promise<st
     providerRef: sub.id,
   });
 
-  // Do not grant credits or record a paid invoice until Stripe confirms the charge.
+  // Do not record a paid invoice until Stripe confirms the charge.
   if (!isEntitled) {
     logger.info(
       { userId, plan: plan.slug, subscription: sub.id, status: sub.status },
       "Recorded Stripe subscription (not yet entitled)",
     );
     return plan.slug;
-  }
-
-  if (plan.monthlyCredits !== 0) {
-    const credits = plan.monthlyCredits === -1 ? 999 : plan.monthlyCredits;
-    await grantMonthlyCredits(userId, credits, end, `Stripe: ${plan.slug}`);
   }
 
   // Record the initial subscription payment (keyed by subscription id for idempotency).

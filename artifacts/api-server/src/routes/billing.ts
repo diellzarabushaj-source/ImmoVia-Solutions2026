@@ -3,33 +3,27 @@ import { and, desc, eq, gte, sql } from "drizzle-orm";
 import {
   db,
   subscriptionPlansTable,
-  immocreditPacksTable,
   subscriptionsTable,
   paymentsTable,
   invoicesTable,
-  immocreditTransactionsTable,
   offersTable,
   contactUnlocksTable,
 } from "@workspace/db";
 import { getUnlockStats } from "../lib/planGating";
 import { requireProvider } from "../middlewares/requireProvider";
 import { paymentProvider } from "../payments";
-import {
-  addPurchasedCredits,
-  getBalance,
-  rollSubscriptionCycle,
-} from "../lib/credits";
+import { rollSubscriptionCycle } from "../lib/credits";
 
 const router: IRouter = Router();
 
 export const PLAN_APP_LIMITS: Record<string, number> = {
   free: 2,
-  basic: 10,
-  pro: 35,
+  basic: 20,
+  pro: 50,
   premium: -1, // -1 = unlimited
   // legacy slugs kept for backward compat
-  starter: 10,
-  professional: 30,
+  starter: 20,
+  professional: 50,
   founding: 10,
 };
 
@@ -64,14 +58,6 @@ router.get("/plans", async (_req, res): Promise<void> => {
   res.json(plans);
 });
 
-router.get("/packs", async (_req, res): Promise<void> => {
-  const packs = await db
-    .select()
-    .from(immocreditPacksTable)
-    .orderBy(immocreditPacksTable.sortOrder);
-  res.json(packs);
-});
-
 // Provider state
 router.get("/provider/me", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;
@@ -91,24 +77,6 @@ router.get("/provider/me", requireProvider, async (req, res): Promise<void> => {
     plan = p ?? null;
   }
   res.json({ subscription: sub ?? null, plan });
-});
-
-router.get("/provider/balance", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.userId!;
-  await rollSubscriptionCycle(userId);
-  const balance = await getBalance(userId);
-  res.json(balance);
-});
-
-router.get("/provider/transactions", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.userId!;
-  const rows = await db
-    .select()
-    .from(immocreditTransactionsTable)
-    .where(eq(immocreditTransactionsTable.userId, userId))
-    .orderBy(desc(immocreditTransactionsTable.id))
-    .limit(100);
-  res.json(rows);
 });
 
 router.get("/provider/app-stats", requireProvider, async (req, res): Promise<void> => {
@@ -187,52 +155,6 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
 // NOTE: The legacy POST /billing/subscribe endpoint was removed before launch.
 // It activated paid plans via a mock provider without a real charge. Paid plans
 // now activate ONLY through verified Stripe Checkout + webhook (see routes/stripe.ts).
-
-router.post("/billing/buy-pack", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.userId!;
-  const body = req.body as Record<string, unknown>;
-  const packId = typeof body.packId === "number" ? body.packId : null;
-  if (!packId) {
-    res.status(400).json({ error: "packId required" });
-    return;
-  }
-  const [pack] = await db
-    .select()
-    .from(immocreditPacksTable)
-    .where(eq(immocreditPacksTable.id, packId));
-  if (!pack) {
-    res.status(404).json({ error: "Pack not found" });
-    return;
-  }
-
-  const result = await paymentProvider.chargeOnce({
-    userId,
-    packSlug: pack.slug,
-    priceCents: pack.priceCents,
-  });
-
-  const [payment] = await db
-    .insert(paymentsTable)
-    .values({
-      userId,
-      kind: "pack",
-      refSlug: pack.slug,
-      amountCents: pack.priceCents,
-      currency: "CHF",
-      providerRef: result.providerRef,
-      status: "succeeded",
-    })
-    .returning();
-  if (payment) {
-    await db.insert(invoicesTable).values({
-      paymentId: payment.id,
-      number: `INV-${payment.id.toString().padStart(6, "0")}`,
-    });
-    await addPurchasedCredits(userId, pack.credits, payment.id, `Pack: ${pack.slug}`);
-  }
-
-  res.json({ pack, payment, creditsAdded: pack.credits });
-});
 
 router.post("/billing/cancel", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;

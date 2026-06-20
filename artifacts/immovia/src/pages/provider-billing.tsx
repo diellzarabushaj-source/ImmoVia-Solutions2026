@@ -25,7 +25,7 @@ const LABELS: Record<string, Record<string, string>> = {
     syncSuccess: "Abonnement erfolgreich aktiviert!",
     syncFailed: "Synchronisierung fehlgeschlagen.",
     noProvider: "Kein Provider-Zugang",
-    creditsLeft: "Credits verbleibend",
+    offersLeft: "Verbleibende Angebote",
     unlimited: "Unbegrenzt",
     period: "Abrechnungszeitraum",
     contactVisible: "Kontaktdaten sichtbar",
@@ -46,7 +46,7 @@ const LABELS: Record<string, Record<string, string>> = {
     syncSuccess: "Subscription activated successfully!",
     syncFailed: "Sync failed.",
     noProvider: "No provider access",
-    creditsLeft: "Credits remaining",
+    offersLeft: "Offers remaining",
     unlimited: "Unlimited",
     period: "Billing period",
     contactVisible: "Contact details visible",
@@ -67,7 +67,7 @@ const LABELS: Record<string, Record<string, string>> = {
     syncSuccess: "Abonimi u aktivizua me sukses!",
     syncFailed: "Sinkronizimi dështoi.",
     noProvider: "Nuk ka qasje si ofruese",
-    creditsLeft: "Kredite të mbetura",
+    offersLeft: "Oferta të mbetura",
     unlimited: "Pa limit",
     period: "Periudha e faturimit",
     contactVisible: "Kontaktet të dukshme",
@@ -88,7 +88,7 @@ const LABELS: Record<string, Record<string, string>> = {
     syncSuccess: "Abonnement activé avec succès !",
     syncFailed: "La synchronisation a échoué.",
     noProvider: "Pas d'accès prestataire",
-    creditsLeft: "Crédits restants",
+    offersLeft: "Offres restantes",
     unlimited: "Illimité",
     period: "Période de facturation",
     contactVisible: "Coordonnées visibles",
@@ -181,8 +181,8 @@ export default function ProviderBilling() {
   }
 
   const currentPlan = plans.find(p => p.slug === stats?.planSlug);
-  const creditsDisplay =
-    stats?.appLimit === -1 ? L.unlimited : String((stats?.appLimit ?? 0) - (stats?.usedThisMonth ?? 0));
+  const offersDisplay =
+    stats?.appLimit === -1 ? L.unlimited : String(Math.max(0, (stats?.appLimit ?? 0) - (stats?.usedThisMonth ?? 0)));
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-2xl">
@@ -234,8 +234,8 @@ export default function ProviderBilling() {
 
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <div className="text-muted-foreground text-xs mb-0.5">{L.creditsLeft}</div>
-                <div className="font-semibold">{creditsDisplay}</div>
+                <div className="text-muted-foreground text-xs mb-0.5">{L.offersLeft}</div>
+                <div className="font-semibold">{offersDisplay}</div>
               </div>
               {stats.periodEnd && (
                 <div>

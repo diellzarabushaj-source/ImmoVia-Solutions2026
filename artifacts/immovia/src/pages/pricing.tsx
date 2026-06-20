@@ -172,7 +172,6 @@ export default function Pricing() {
         {displayedPlans.map((plan) => {
           const isCurrentlyLoading = loading === plan.id;
           const isPremium = plan.slug === "premium";
-          const creditsDisplay = plan.monthlyCredits === -1 ? unlimitedLabel : String(plan.monthlyCredits);
 
           return (
             <Card
@@ -212,11 +211,6 @@ export default function Pricing() {
                 <span className="text-muted-foreground text-sm">{perMonth}</span>
               </div>
 
-              {/* Credits */}
-              <div className="flex items-baseline gap-1.5 mb-5 mt-1">
-                <span className={`text-lg font-bold ${isPremium ? "text-amber-600" : "text-primary"}`}>{creditsDisplay}</span>
-                <span className="text-xs text-muted-foreground">{creditsLabel}</span>
-              </div>
 
               {/* Features */}
               <ul className="space-y-2 text-sm mb-6 flex-1">

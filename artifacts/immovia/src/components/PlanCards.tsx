@@ -11,39 +11,37 @@ interface PlanCardsProps {
 export const PLAN_CONFIG: Record<PlanType, {
   icon: React.ReactNode;
   monthlyChf: number;
-  monthlyCredits: number;
   badge: Record<string, string>;
   features: Record<string, string[]>;
 }> = {
   basic: {
     icon: <Zap className="w-5 h-5 text-blue-500" />,
     monthlyChf: 49,
-    monthlyCredits: 20,
     badge: { sq: "Bazë", en: "Basic", de: "Basic", fr: "De base" },
     features: {
       sq: [
-        "20 ImmoCredits/muaj",
+        "20 oferta/muaj",
         "Insinjë Basic Provider",
         "Vetëm mesazhe brenda platformës",
         "Sheh vetëm qytetin e projektit",
         "Renditje normale në listë",
       ],
       en: [
-        "20 ImmoCredits/month",
+        "20 offers/month",
         "Basic Provider badge",
         "Platform messages only — no phone or email",
         "Only sees project city, no private data",
         "Normal ranking in directory",
       ],
       de: [
-        "20 ImmoCredits/Monat",
+        "20 Angebote/Monat",
         "Basic Provider Abzeichen",
         "Nur In-Plattform-Messaging — kein Telefon/E-Mail",
         "Nur Stadtangabe sichtbar, keine privaten Daten",
         "Normale Platzierung im Verzeichnis",
       ],
       fr: [
-        "20 ImmoCredits/mois",
+        "20 offres/mois",
         "Badge Basic Provider",
         "Messagerie plateforme seulement — pas de téléphone/e-mail",
         "Voit seulement la ville du projet",
@@ -54,32 +52,31 @@ export const PLAN_CONFIG: Record<PlanType, {
   professional: {
     icon: <Star className="w-5 h-5 text-primary" />,
     monthlyChf: 99,
-    monthlyCredits: 60,
     badge: { sq: "Profesional", en: "Professional", de: "Professional", fr: "Professionnel" },
     features: {
       sq: [
-        "60 ImmoCredits/muaj",
+        "50 oferta/muaj",
         "Insinjë Professional Provider",
         "Deri 50 zhbllokime kontakti/muaj",
         "Sheh telefon dhe të dhëna private",
         "Renditje më e lartë se Basic",
       ],
       en: [
-        "60 ImmoCredits/month",
+        "50 offers/month",
         "Professional Provider badge",
         "Up to 50 contact unlocks per month",
         "See client phone number & private data",
         "Higher ranking than Basic in directory",
       ],
       de: [
-        "60 ImmoCredits/Monat",
+        "50 Angebote/Monat",
         "Professional Provider Abzeichen",
         "Bis zu 50 Kontakt-Unlocks/Monat",
         "Telefonnummer & private Daten sichtbar",
         "Höhere Platzierung als Basic-Anbieter",
       ],
       fr: [
-        "60 ImmoCredits/mois",
+        "50 offres/mois",
         "Badge Professional Provider",
         "Jusqu'à 50 déblocages de contacts/mois",
         "Téléphone et données privées visibles",
@@ -90,11 +87,10 @@ export const PLAN_CONFIG: Record<PlanType, {
   premium: {
     icon: <Crown className="w-5 h-5 text-amber-500" />,
     monthlyChf: 149,
-    monthlyCredits: 150,
     badge: { sq: "Premium", en: "Premium", de: "Premium", fr: "Premium" },
     features: {
       sq: [
-        "150 ImmoCredits/muaj",
+        "Oferta të pakufizuara",
         "Insinjë Premium Partner",
         "Zhbllokime të pakufizuara të kontakteve",
         "Vendi i parë në listë & profil i theksuar",
@@ -102,7 +98,7 @@ export const PLAN_CONFIG: Record<PlanType, {
         "Klientët shohin numrin tuaj të telefonit",
       ],
       en: [
-        "150 ImmoCredits/month",
+        "Unlimited offers",
         "Premium Partner badge",
         "Unlimited contact unlocks",
         "First in lists & featured profile",
@@ -110,7 +106,7 @@ export const PLAN_CONFIG: Record<PlanType, {
         "Project posters can see your phone number",
       ],
       de: [
-        "150 ImmoCredits/Monat",
+        "Unbegrenzte Angebote",
         "Premium Partner Abzeichen",
         "Unbegrenzte Kontakt-Unlocks",
         "Erstplatzierung & hervorgehobenes Profil",
@@ -118,7 +114,7 @@ export const PLAN_CONFIG: Record<PlanType, {
         "Auftraggeber sehen Ihre Telefonnummer",
       ],
       fr: [
-        "150 ImmoCredits/mois",
+        "Offres illimitées",
         "Badge Premium Partner",
         "Déblocages de contacts illimités",
         "Première position & profil mis en avant",
@@ -131,15 +127,14 @@ export const PLAN_CONFIG: Record<PlanType, {
 
 const STRINGS: Record<string, {
   perMonth: string;
-  credits: string;
   mostPopular: string;
   select: string;
   selected: string;
 }> = {
-  sq: { perMonth: "/muaj", credits: "ImmoCredits/muaj", mostPopular: "Më i zgjedhur", select: "Zgjidhni", selected: "Zgjedhur" },
-  en: { perMonth: "/month", credits: "ImmoCredits/month", mostPopular: "Most popular", select: "Select", selected: "Selected" },
-  de: { perMonth: "/Monat", credits: "ImmoCredits/Monat", mostPopular: "Beliebteste Wahl", select: "Wählen", selected: "Gewählt" },
-  fr: { perMonth: "/mois", credits: "ImmoCredits/mois", mostPopular: "Le plus populaire", select: "Choisir", selected: "Sélectionné" },
+  sq: { perMonth: "/muaj", mostPopular: "Më i zgjedhur", select: "Zgjidhni", selected: "Zgjedhur" },
+  en: { perMonth: "/month", mostPopular: "Most popular", select: "Select", selected: "Selected" },
+  de: { perMonth: "/Monat", mostPopular: "Beliebteste Wahl", select: "Wählen", selected: "Gewählt" },
+  fr: { perMonth: "/mois", mostPopular: "Le plus populaire", select: "Choisir", selected: "Sélectionné" },
 };
 
 export function PlanCards({ selected, onSelect }: PlanCardsProps) {
@@ -204,12 +199,6 @@ export function PlanCards({ selected, onSelect }: PlanCardsProps) {
             <div className="mb-1">
               <span className="text-3xl font-bold text-foreground">CHF {cfg.monthlyChf}</span>
               <span className="text-muted-foreground text-sm">{s.perMonth}</span>
-            </div>
-
-            {/* ImmoCredits */}
-            <div className={["flex items-baseline gap-1.5 mb-5", isPremium ? "text-amber-600" : "text-primary"].join(" ")}>
-              <span className="text-lg font-bold">{cfg.monthlyCredits}</span>
-              <span className="text-xs">{s.credits}</span>
             </div>
 
             {/* Features */}

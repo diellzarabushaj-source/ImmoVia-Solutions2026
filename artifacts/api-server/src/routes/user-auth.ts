@@ -11,7 +11,6 @@ import {
 } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { generateUniqueSlug } from "../lib/slug";
-import { grantMonthlyCredits } from "../lib/credits";
 
 const router: IRouter = Router();
 
@@ -224,7 +223,6 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
           currentPeriodStart: now,
           currentPeriodEnd: periodEnd,
         });
-        await grantMonthlyCredits(newUser.id, freePlan.monthlyCredits, periodEnd, `New signup: ${freePlan.slug}`);
       }
     } catch (err) {
       req.log.warn({ err }, "Failed to create free subscription for new service provider");

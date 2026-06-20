@@ -3,15 +3,17 @@ import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { db, offersTable, projectsTable, usersTable, subscriptionsTable, subscriptionPlansTable, companiesTable, conversationsTable, convMessagesTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { requireProvider } from "../middlewares/requireProvider";
-import {
-  PROJECT_SIZE_OFFER_CAP,
-  offerCost,
-  spendCredits,
-  getBalance,
-  rollSubscriptionCycle,
-} from "../lib/credits";
+import { rollSubscriptionCycle } from "../lib/credits";
+import { PLAN_APP_LIMITS } from "./billing";
 import { sendNewOfferNotification, sendOfferAcceptedNotification } from "../lib/email";
 import { createNotification } from "../lib/notify";
+
+const PROJECT_SIZE_OFFER_CAP: Record<string, number> = {
+  small: 5,
+  medium: 8,
+  large: 12,
+  premium: 15,
+};
 
 const router: IRouter = Router();
 
@@ -83,10 +85,7 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
 
   await rollSubscriptionCycle(userId);
 
-  // Monthly application limit check
-  const PLAN_APP_LIMITS: Record<string, number> = {
-    free: 2, starter: 10, professional: 30, premium: 100, founding: 10,
-  };
+  // Monthly offer limit check
   const [activeSub] = await db
     .select()
     .from(subscriptionsTable)
@@ -114,14 +113,6 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
   const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, projectId));
   if (!project) {
     res.status(404).json({ error: "Project not found" });
-    return;
-  }
-  const cost = offerCost(project.size, type);
-  const balance = await getBalance(userId);
-  if (balance.total < cost) {
-    res
-      .status(402)
-      .json({ error: "Insufficient credits", required: cost, available: balance.total });
     return;
   }
 
@@ -165,7 +156,7 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
       projectId,
       providerUserId: userId,
       type,
-      creditsSpent: cost,
+      creditsSpent: 0,
       message,
       priceEstimate,
       status: "sent",
@@ -175,15 +166,6 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
     res.status(500).json({ error: "Failed to create offer" });
     return;
   }
-  await spendCredits({
-    userId,
-    amount: cost,
-    offerId: offer.id,
-    projectId,
-    note: `Offer ${type} on project #${projectId}`,
-  });
-  const balanceAfter = await getBalance(userId);
-
   // Create conversation thread so the offer message appears in Messages
   try {
     if (project.ownerUserId) {
@@ -299,7 +281,7 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
     }
   })();
 
-  res.status(201).json({ offer, cost, balanceAfter });
+  res.status(201).json({ offer });
 });
 
 router.post("/offers/:id/accept", requireAuth, async (req, res): Promise<void> => {
