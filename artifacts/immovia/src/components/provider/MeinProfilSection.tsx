@@ -19,6 +19,11 @@ import {
   User,
   ExternalLink,
   AlignLeft,
+  Eye,
+  EyeOff,
+  Lock,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 
 const L: Record<string, Record<string, string>> = {
@@ -54,6 +59,21 @@ const L: Record<string, Record<string, string>> = {
     bio: "Über mich",
     noAbout: "Noch keine Beschreibung. Klicken Sie auf Bearbeiten, um sich vorzustellen.",
     contact: "Kontakt",
+    visibilityTitle: "Sichtbarkeit für Besucher",
+    visibilityDesc: "Was andere auf Ihrem öffentlichen Profil sehen können:",
+    fieldCity: "Ort / Stadt",
+    fieldAbout: "Über mich (Beschreibung)",
+    fieldPhone: "Telefonnummer",
+    fieldEmail: "E-Mail-Adresse",
+    fieldWebsite: "Webseite",
+    fieldServices: "Leistungen",
+    visibleAll: "Für alle sichtbar",
+    visibleRegistered: "Sichtbar für angemeldete Nutzer",
+    blurredNonRegistered: "Verschwommen für nicht angemeldete Nutzer",
+    hiddenBasic: "Verborgen (Basic-Tarif)",
+    visiblePlan: "Sichtbar (Pro/Premium)",
+    upgradeHint: "Wechseln Sie auf Pro oder Premium, um Kontaktdaten zu zeigen.",
+    upgradePlan: "Plan upgraden",
   },
   en: {
     title: "Profile Preview",
@@ -87,6 +107,21 @@ const L: Record<string, Record<string, string>> = {
     bio: "About",
     noAbout: "No description yet. Click Edit to introduce yourself.",
     contact: "Contact",
+    visibilityTitle: "Visitor Visibility",
+    visibilityDesc: "What others can see on your public profile:",
+    fieldCity: "City / Location",
+    fieldAbout: "About (description)",
+    fieldPhone: "Phone number",
+    fieldEmail: "Email address",
+    fieldWebsite: "Website",
+    fieldServices: "Services",
+    visibleAll: "Visible to everyone",
+    visibleRegistered: "Visible to registered users",
+    blurredNonRegistered: "Blurred for non-registered visitors",
+    hiddenBasic: "Hidden (Basic plan)",
+    visiblePlan: "Visible (Pro/Premium)",
+    upgradeHint: "Upgrade to Pro or Premium to show your contact details.",
+    upgradePlan: "Upgrade plan",
   },
   sq: {
     title: "Pamja e Profilit",
@@ -120,6 +155,21 @@ const L: Record<string, Record<string, string>> = {
     bio: "Rreth meje",
     noAbout: "Asnjë përshkrim ende. Klikoni Edito për t'u prezantuar.",
     contact: "Kontakti",
+    visibilityTitle: "Dukshmëria për Vizitorët",
+    visibilityDesc: "Çfarë mund të shohin të tjerët në profilin tuaj publik:",
+    fieldCity: "Qyteti / Vendndodhja",
+    fieldAbout: "Rreth meje (përshkrimi)",
+    fieldPhone: "Numri i telefonit",
+    fieldEmail: "Adresa e emailit",
+    fieldWebsite: "Faqja web",
+    fieldServices: "Shërbimet",
+    visibleAll: "E dukshme për të gjithë",
+    visibleRegistered: "E dukshme për përdoruesit e regjistruar",
+    blurredNonRegistered: "E turbullt për vizitorët jo të regjistruar",
+    hiddenBasic: "E fshehur (Plani Basic)",
+    visiblePlan: "E dukshme (Pro/Premium)",
+    upgradeHint: "Kaloni në Pro ose Premium për të shfaqur të dhënat e kontaktit.",
+    upgradePlan: "Ndrysho planin",
   },
   fr: {
     title: "Aperçu du profil",
@@ -153,6 +203,21 @@ const L: Record<string, Record<string, string>> = {
     bio: "À propos",
     noAbout: "Aucune description pour l'instant. Cliquez sur Modifier pour vous présenter.",
     contact: "Contact",
+    visibilityTitle: "Visibilité pour les visiteurs",
+    visibilityDesc: "Ce que les autres peuvent voir sur votre profil public :",
+    fieldCity: "Ville / Localisation",
+    fieldAbout: "À propos (description)",
+    fieldPhone: "Numéro de téléphone",
+    fieldEmail: "Adresse e-mail",
+    fieldWebsite: "Site web",
+    fieldServices: "Services",
+    visibleAll: "Visible par tous",
+    visibleRegistered: "Visible par les utilisateurs inscrits",
+    blurredNonRegistered: "Flouté pour les visiteurs non inscrits",
+    hiddenBasic: "Masqué (Plan Basic)",
+    visiblePlan: "Visible (Pro/Premium)",
+    upgradeHint: "Passez à Pro ou Premium pour afficher vos coordonnées.",
+    upgradePlan: "Changer de plan",
   },
 };
 
@@ -203,6 +268,13 @@ interface ReviewStats {
   count: number;
 }
 
+interface BillingStats {
+  planSlug: string;
+  planName: string;
+  contactVisible: boolean;
+  badge: string;
+}
+
 function StarRating({ value, max = 5 }: { value: number; max?: number }) {
   return (
     <div className="flex items-center gap-0.5">
@@ -245,16 +317,19 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
 
   const [data, setData] = useState<ProfileData | null>(null);
   const [reviews, setReviews] = useState<ReviewStats | null>(null);
+  const [billing, setBilling] = useState<BillingStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<{ imageUrl: string; title?: string | null } | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/provider/profile")
-      .then(r => r.ok ? r.json() as Promise<ProfileData> : Promise.reject())
-      .then(d => {
+    Promise.all([
+      fetch("/api/provider/profile").then(r => r.ok ? r.json() as Promise<ProfileData> : Promise.reject()),
+      fetch("/api/billing/provider/app-stats").then(r => r.ok ? r.json() as Promise<BillingStats> : Promise.resolve(null)).catch(() => null),
+    ])
+      .then(([d, b]) => {
         setData(d);
-        // Fetch reviews if we have a user ID
+        setBilling(b);
         if (d.user.id) {
           fetch(`/api/reviews/by-provider/${d.user.id}`)
             .then(rr => rr.ok ? rr.json() as Promise<ReviewStats> : Promise.reject())
@@ -346,6 +421,11 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
                     <BadgeCheck className="w-3.5 h-3.5" />
                     {l.verified}
+                  </span>
+                )}
+                {billing?.badge && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">
+                    {billing.badge}
                   </span>
                 )}
               </div>
@@ -443,6 +523,120 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
           </p>
         ) : (
           <p className="text-sm text-muted-foreground italic">{l.noAbout}</p>
+        )}
+      </Card>
+
+      {/* ── VISIBILITY PANEL ── */}
+      <Card className="p-5 border-primary/20 bg-primary/[0.02]">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-sm font-semibold flex items-center gap-2">
+            <Eye className="w-4 h-4 text-primary" />
+            {l.visibilityTitle}
+          </h4>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">{l.visibilityDesc}</p>
+        <div className="space-y-2.5 text-sm">
+          {/* City — always visible */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <MapPin className="w-3.5 h-3.5 shrink-0" />
+              {l.fieldCity}
+            </span>
+            <span className="flex items-center gap-1 text-emerald-700 text-xs font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              {l.visibleAll}
+            </span>
+          </div>
+          {/* About — blurred for non-registered */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <AlignLeft className="w-3.5 h-3.5 shrink-0" />
+              {l.fieldAbout}
+            </span>
+            <span className="flex items-center gap-1 text-amber-600 text-xs font-medium">
+              <AlertCircle className="w-3.5 h-3.5" />
+              {l.blurredNonRegistered}
+            </span>
+          </div>
+          {/* Services — first 2 visible, rest blurred for non-registered */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <Tag className="w-3.5 h-3.5 shrink-0" />
+              {l.fieldServices}
+            </span>
+            <span className="flex items-center gap-1 text-amber-600 text-xs font-medium">
+              <AlertCircle className="w-3.5 h-3.5" />
+              {l.blurredNonRegistered}
+            </span>
+          </div>
+          {/* Phone */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <Phone className="w-3.5 h-3.5 shrink-0" />
+              {l.fieldPhone}
+            </span>
+            {billing?.contactVisible ? (
+              <span className="flex items-center gap-1 text-emerald-700 text-xs font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {l.visiblePlan}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-muted-foreground text-xs font-medium">
+                <Lock className="w-3.5 h-3.5" />
+                {l.hiddenBasic}
+              </span>
+            )}
+          </div>
+          {/* Email */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <Mail className="w-3.5 h-3.5 shrink-0" />
+              {l.fieldEmail}
+            </span>
+            {billing?.contactVisible ? (
+              <span className="flex items-center gap-1 text-emerald-700 text-xs font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {l.visiblePlan}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-muted-foreground text-xs font-medium">
+                <Lock className="w-3.5 h-3.5" />
+                {l.hiddenBasic}
+              </span>
+            )}
+          </div>
+          {/* Website */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <Globe className="w-3.5 h-3.5 shrink-0" />
+              {l.fieldWebsite}
+            </span>
+            {billing?.contactVisible ? (
+              <span className="flex items-center gap-1 text-emerald-700 text-xs font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {l.visiblePlan}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-muted-foreground text-xs font-medium">
+                <Lock className="w-3.5 h-3.5" />
+                {l.hiddenBasic}
+              </span>
+            )}
+          </div>
+        </div>
+        {/* Upgrade hint if on Basic */}
+        {billing && !billing.contactVisible && (
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <p className="text-xs text-muted-foreground mb-2">{l.upgradeHint}</p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs border-primary/30 text-primary hover:bg-primary/8"
+              onClick={() => onNavigate("abonnement")}
+            >
+              {l.upgradePlan}
+            </Button>
+          </div>
         )}
       </Card>
 

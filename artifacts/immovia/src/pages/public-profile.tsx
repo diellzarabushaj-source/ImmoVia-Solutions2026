@@ -85,6 +85,54 @@ function StarRating({ value, max = 5 }: { value: number; max?: number }) {
   );
 }
 
+// Blurred bio — shows first ~120 chars clearly, blurs the rest for non-registered visitors
+function BioGated({
+  bio,
+  meta,
+  tProfile,
+}: {
+  bio: string;
+  meta: ProfileMeta | null;
+  tProfile: { registerToSeeContact: string; contactLoginCta: string };
+}) {
+  const [, setLocation] = useLocation();
+  if (meta?.viewerAuthenticated) {
+    return (
+      <p className="text-sm leading-relaxed text-foreground/80" data-testid="profile-bio">
+        {bio}
+      </p>
+    );
+  }
+  const preview = bio.slice(0, 120);
+  const rest = bio.slice(120);
+  return (
+    <div className="relative">
+      <p className="text-sm leading-relaxed text-foreground/80" data-testid="profile-bio">
+        {preview}
+        {rest && (
+          <span
+            className="select-none pointer-events-none"
+            style={{ filter: "blur(4px)" }}
+          >
+            {rest}
+          </span>
+        )}
+      </p>
+      {rest && (
+        <>
+          <div className="absolute bottom-5 left-0 right-0 h-8 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
+          <button
+            onClick={() => setLocation("/sign-up")}
+            className="text-xs text-primary underline underline-offset-2 hover:text-primary/80 font-medium mt-1 block"
+          >
+            {tProfile.registerToSeeContact}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 // Blurred services row — shows first 2 clearly, blurs the rest for non-registered visitors
 function ServicesGated({
   serviceTypes,
@@ -518,11 +566,9 @@ export default function PublicProfilePage() {
               />
             )}
 
-            {/* Bio */}
+            {/* Bio — blurred for non-registered */}
             {u.bio && (
-              <p className="text-sm leading-relaxed text-foreground/80" data-testid="profile-bio">
-                {u.bio}
-              </p>
+              <BioGated bio={u.bio} meta={meta} tProfile={t.publicProfile} />
             )}
           </div>
         </div>
