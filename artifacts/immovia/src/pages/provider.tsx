@@ -1008,10 +1008,6 @@ export default function ProviderDashboard() {
   const navItems: Array<{ id: Section; label: string; icon: React.ReactNode; badge?: number }> = [
     { id: "uebersicht", label: l.navOverview, icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: "meinprofil", label: l.navMyProfile, icon: <Eye className="w-4 h-4" /> },
-    { id: "profil", label: l.navProfile, icon: <User className="w-4 h-4" /> },
-    { id: "profilbild", label: l.navProfilbild, icon: <Camera className="w-4 h-4" /> },
-    { id: "leistungen", label: l.navLeistungen, icon: <Tag className="w-4 h-4" /> },
-    { id: "preise", label: l.navPreise, icon: <CircleDollarSign className="w-4 h-4" /> },
     { id: "projekte", label: l.navProjects, icon: <Search className="w-4 h-4" />, badge: projects.length || undefined },
     { id: "bewerbungen", label: l.navApplications, icon: <FileText className="w-4 h-4" />, badge: offers.length || undefined },
     { id: "nachrichten", label: l.navMessages, icon: <MessageSquare className="w-4 h-4" /> },
