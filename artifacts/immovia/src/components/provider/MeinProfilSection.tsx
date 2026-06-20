@@ -18,6 +18,7 @@ import {
   Camera,
   User,
   ExternalLink,
+  AlignLeft,
 } from "lucide-react";
 
 const L: Record<string, Record<string, string>> = {
@@ -51,6 +52,7 @@ const L: Record<string, Record<string, string>> = {
     individual: "Einzelperson",
     company: "Unternehmen",
     bio: "Über mich",
+    noAbout: "Noch keine Beschreibung. Klicken Sie auf Bearbeiten, um sich vorzustellen.",
     contact: "Kontakt",
   },
   en: {
@@ -83,6 +85,7 @@ const L: Record<string, Record<string, string>> = {
     individual: "Individual",
     company: "Company",
     bio: "About",
+    noAbout: "No description yet. Click Edit to introduce yourself.",
     contact: "Contact",
   },
   sq: {
@@ -115,6 +118,7 @@ const L: Record<string, Record<string, string>> = {
     individual: "Individ",
     company: "Kompani",
     bio: "Rreth meje",
+    noAbout: "Asnjë përshkrim ende. Klikoni Edito për t'u prezantuar.",
     contact: "Kontakti",
   },
   fr: {
@@ -147,6 +151,7 @@ const L: Record<string, Record<string, string>> = {
     individual: "Particulier",
     company: "Entreprise",
     bio: "À propos",
+    noAbout: "Aucune description pour l'instant. Cliquez sur Modifier pour vous présenter.",
     contact: "Contact",
   },
 };
@@ -368,11 +373,6 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
               </div>
             )}
 
-            {/* Bio */}
-            {u.bio && (
-              <p className="text-sm leading-relaxed mb-4 text-foreground/80">{u.bio}</p>
-            )}
-
             {/* Contact grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               {u.city && (
@@ -427,6 +427,24 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
           </div>
         </Card>
       )}
+
+      {/* ── ABOUT ── */}
+      <Card className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-sm font-semibold flex items-center gap-2">
+            <AlignLeft className="w-4 h-4 text-primary" />
+            {l.bio}
+          </h4>
+          <EditButton label={l.editProfile} onClick={() => onNavigate("profil")} />
+        </div>
+        {(u.bio || c?.description) ? (
+          <p className="text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">
+            {u.bio || c?.description}
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground italic">{l.noAbout}</p>
+        )}
+      </Card>
 
       {/* ── SERVICES ── */}
       <Card className="p-5">
