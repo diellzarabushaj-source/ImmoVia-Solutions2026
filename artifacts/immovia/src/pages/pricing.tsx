@@ -87,6 +87,20 @@ const MOST_POPULAR: Record<string, string> = {
   fr: "Le plus populaire",
 };
 
+const PAGE_TITLE: Record<string, string> = {
+  de: "Paket wählen",
+  en: "Choose Your Plan",
+  sq: "Zgjidhni Paketën",
+  fr: "Choisir un forfait",
+};
+
+const PAGE_SUBTITLE: Record<string, string> = {
+  de: "Wählen Sie das passende Paket für Ihr Unternehmen, bevor Sie fortfahren.",
+  en: "Select the level that fits your business before continuing.",
+  sq: "Zgjidhni nivelin që i përshtatet biznesit tuaj para se të vazhdoni.",
+  fr: "Sélectionnez le niveau adapté à votre activité avant de continuer.",
+};
+
 export default function Pricing() {
   const { t, language } = useLanguage();
   usePageMeta({
@@ -184,8 +198,17 @@ export default function Pricing() {
     return formatCHF(plan.priceCents);
   }
 
+  const pageTitle = PAGE_TITLE[language] ?? PAGE_TITLE.en;
+  const pageSubtitle = PAGE_SUBTITLE[language] ?? PAGE_SUBTITLE.en;
+
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
+      {/* Page heading */}
+      <div className="text-center mb-10">
+        <h1 className="text-3xl md:text-4xl font-serif font-bold mb-3">{pageTitle}</h1>
+        <p className="text-muted-foreground text-base max-w-xl mx-auto">{pageSubtitle}</p>
+      </div>
+
       {cancelled && (
         <div className="max-w-3xl mx-auto mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm" data-testid="pricing-cancelled">
           {CANCELLED_NOTICE[language] ?? CANCELLED_NOTICE.de}
