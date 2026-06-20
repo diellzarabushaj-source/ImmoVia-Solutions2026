@@ -200,6 +200,118 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
   res.json(result);
 });
 
+router.get("/billing/registration-receipt", requireProvider, async (req, res): Promise<void> => {
+  const userId = req.userId!;
+  const [user] = await db
+    .select({ email: usersTable.email, fullName: usersTable.fullName })
+    .from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (!user) { res.status(404).send("Not found"); return; }
+
+  const [company] = await db
+    .select({
+      companyName: companiesTable.companyName,
+      contactName: companiesTable.contactName,
+      city: companiesTable.city,
+      phone: companiesTable.phone,
+      registrationFeePaid: companiesTable.registrationFeePaid,
+      createdAt: companiesTable.createdAt,
+    })
+    .from(companiesTable).where(eq(companiesTable.email, user.email)).limit(1);
+
+  if (!company?.registrationFeePaid) { res.status(404).send("Not found"); return; }
+
+  const issuedAt = company.createdAt instanceof Date ? company.createdAt : new Date(company.createdAt as string);
+  const dateStr = issuedAt.toLocaleDateString("de-CH", { year: "numeric", month: "long", day: "numeric" });
+
+  const html = `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<title>Quittung REG-001 – ImmoVia</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,sans-serif;color:#1a2a3a;background:#fff;padding:48px 56px;max-width:760px;margin:auto}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:48px}
+  .brand{font-size:26px;font-weight:800;color:#1e3a5f;letter-spacing:-0.5px}
+  .brand span{color:#3b82f6}
+  .meta{text-align:right;font-size:13px;color:#64748b}
+  .meta strong{display:block;font-size:18px;font-weight:700;color:#1a2a3a;margin-bottom:4px}
+  h2{font-size:20px;font-weight:700;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #e2e8f0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:40px}
+  .label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#94a3b8;margin-bottom:4px}
+  .value{font-size:14px;font-weight:500;color:#1a2a3a}
+  table{width:100%;border-collapse:collapse;margin-bottom:32px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#94a3b8;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0}
+  td{padding:14px 12px;border:1px solid #e2e8f0;font-size:14px}
+  .amount-row td{font-weight:700;font-size:16px;background:#f0f7ff}
+  .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;background:#dcfce7;color:#166534}
+  .footer{margin-top:48px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center}
+  @media print{body{padding:24px 32px} .no-print{display:none}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="brand">Immo<span>Via</span><div style="font-size:11px;font-weight:400;color:#64748b;margin-top:2px">immovia365.ch</div></div>
+  <div class="meta"><strong>Quittung / Ricevuta</strong>REG-001 &nbsp;·&nbsp; ${dateStr}</div>
+</div>
+
+<h2>Einmalgebühr Registrierung / One-time Registration Fee</h2>
+
+<div class="grid">
+  <div>
+    <div class="label">Auftragnehmer / Provider</div>
+    <div class="value">${company.companyName}</div>
+    <div class="value" style="color:#64748b">${company.contactName}</div>
+    <div class="value" style="color:#64748b">${company.city}</div>
+    <div class="value" style="color:#64748b">${user.email}</div>
+  </div>
+  <div>
+    <div class="label">Ausgestellt von / Issued by</div>
+    <div class="value">ImmoVia365 GmbH</div>
+    <div class="value" style="color:#64748b">Zürich, Schweiz</div>
+    <div class="value" style="color:#64748b">immovia365.ch</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Beschreibung / Description</th>
+      <th style="text-align:right">Betrag / Amount</th>
+      <th style="text-align:center">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Einmalige Registrierungsgebühr – Aktivierung Dienstleisterprofil<br/><span style="color:#64748b;font-size:12px">One-time registration fee – Provider profile activation</span></td>
+      <td style="text-align:right">CHF&nbsp;149.00</td>
+      <td style="text-align:center"><span class="badge">Bezahlt / Paid</span></td>
+    </tr>
+    <tr class="amount-row">
+      <td><strong>Total</strong></td>
+      <td style="text-align:right">CHF&nbsp;149.00</td>
+      <td style="text-align:center"><span class="badge">Bezahlt / Paid</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="no-print" style="margin-bottom:32px">
+  <button onclick="window.print()" style="padding:10px 24px;background:#1e3a5f;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">
+    Drucken / Print (PDF speichern)
+  </button>
+</div>
+
+<div class="footer">
+  ImmoVia365 &nbsp;·&nbsp; Zürich, Schweiz &nbsp;·&nbsp; immovia365.ch<br/>
+  Dieses Dokument dient als Zahlungsbestätigung. &nbsp;·&nbsp; This document serves as proof of payment.
+</div>
+</body>
+</html>`;
+
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send(html);
+});
+
 router.get("/billing/stripe-invoices", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;
   const [user] = await db.select({ stripeCustomerId: usersTable.stripeCustomerId }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
