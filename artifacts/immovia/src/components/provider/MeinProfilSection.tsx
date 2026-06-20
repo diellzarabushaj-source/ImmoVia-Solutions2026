@@ -67,6 +67,10 @@ const L: Record<string, Record<string, string>> = {
     fieldEmail: "E-Mail-Adresse",
     fieldWebsite: "Webseite",
     fieldServices: "Leistungen",
+    serviceArea: "Einsatzregion",
+    noServiceArea: "Keine Region angegeben.",
+    specializations: "Spezialisierungen",
+    noSpecializations: "Keine Spezialisierungen angegeben.",
     visibleAll: "Für alle sichtbar",
     visibleRegistered: "Sichtbar für angemeldete Nutzer",
     blurredNonRegistered: "Verschwommen für nicht angemeldete Nutzer",
@@ -115,6 +119,10 @@ const L: Record<string, Record<string, string>> = {
     fieldEmail: "Email address",
     fieldWebsite: "Website",
     fieldServices: "Services",
+    serviceArea: "Service area",
+    noServiceArea: "No service area specified.",
+    specializations: "Specializations",
+    noSpecializations: "No specializations listed.",
     visibleAll: "Visible to everyone",
     visibleRegistered: "Visible to registered users",
     blurredNonRegistered: "Blurred for non-registered visitors",
@@ -163,6 +171,10 @@ const L: Record<string, Record<string, string>> = {
     fieldEmail: "Adresa e emailit",
     fieldWebsite: "Faqja web",
     fieldServices: "Shërbimet",
+    serviceArea: "Zona e shërbimit",
+    noServiceArea: "Asnjë zonë e specifikuar.",
+    specializations: "Specializime",
+    noSpecializations: "Asnjë specializim i shtuar.",
     visibleAll: "E dukshme për të gjithë",
     visibleRegistered: "E dukshme për përdoruesit e regjistruar",
     blurredNonRegistered: "E turbullt për vizitorët jo të regjistruar",
@@ -211,6 +223,10 @@ const L: Record<string, Record<string, string>> = {
     fieldEmail: "Adresse e-mail",
     fieldWebsite: "Site web",
     fieldServices: "Services",
+    serviceArea: "Zone de service",
+    noServiceArea: "Aucune zone de service spécifiée.",
+    specializations: "Spécialisations",
+    noSpecializations: "Aucune spécialisation renseignée.",
     visibleAll: "Visible par tous",
     visibleRegistered: "Visible par les utilisateurs inscrits",
     blurredNonRegistered: "Flouté pour les visiteurs non inscrits",
@@ -250,6 +266,9 @@ interface ProfileData {
     priceUnit?: string | null;
     priceNote?: string | null;
     priceIsPublic?: boolean | null;
+    serviceTypes?: string[] | null;
+    serviceArea?: string | null;
+    specializations?: string[] | null;
   } | null;
   portfolio: Array<{ id: number; imageUrl: string; title?: string | null; description?: string | null }>;
 }
@@ -649,16 +668,53 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
           </h4>
           <EditButton label={l.editServices} onClick={() => onNavigate("leistungen")} />
         </div>
-        {u.serviceTypes && u.serviceTypes.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {u.serviceTypes.map(s => (
-              <span key={s} className="text-xs px-2.5 py-1 rounded-full bg-muted text-foreground/80">
-                {s}
-              </span>
-            ))}
+        {(() => {
+          const svcTypes = c?.serviceTypes ?? u.serviceTypes;
+          return svcTypes && svcTypes.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {svcTypes.map(s => (
+                <span key={s} className="text-xs px-2.5 py-1 rounded-full bg-muted text-foreground/80">
+                  {s}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{l.noServices}</p>
+          );
+        })()}
+
+        {/* Service area */}
+        <div className="mt-4 pt-3 border-t border-border/60">
+          <div className="flex items-center gap-2 mb-1">
+            <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">{l.serviceArea}</span>
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">{l.noServices}</p>
+          {c?.serviceArea ? (
+            <p className="text-sm text-foreground/80">{c.serviceArea}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">{l.noServiceArea}</p>
+          )}
+        </div>
+
+        {/* Specializations */}
+        {((c?.specializations && c.specializations.length > 0) || true) && (
+          <div className="mt-3 pt-3 border-t border-border/60">
+            <div className="flex items-center gap-2 mb-2">
+              <Tag className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground">{l.specializations}</span>
+            </div>
+            {c?.specializations && c.specializations.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {c.specializations.map(s => (
+                  <span key={s} className="text-xs px-2.5 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary/80">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">{l.noSpecializations}</p>
+            )}
+          </div>
         )}
       </Card>
 
