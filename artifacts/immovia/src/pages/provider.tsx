@@ -870,45 +870,66 @@ export default function ProviderDashboard() {
 
   const planSlug = appStats?.planSlug ?? "free";
 
-  const VISIBILITY_TABLE: Array<{
-    row: string;
-    free: string;
-    starter: string;
-    professional: string;
-    premium: string;
-    founding: string;
-  }> = [
+  // Normalise legacy slugs so the highlight always works
+  const normalisedPlanSlug =
+    planSlug === "pro" ? "professional" :
+    planSlug === "starter" ? "basic" :
+    planSlug === "founding" ? "basic" :
+    planSlug;
+
+  const VIS_COLS = ["free", "basic", "professional", "premium"] as const;
+  type VisCol = typeof VIS_COLS[number];
+
+  const COL_LABELS: Record<VisCol, string> = {
+    free: "Free",
+    basic: "Basic",
+    professional: "Professional",
+    premium: "Premium",
+  };
+
+  const IMMOCREDITS_ROW = language === "de"
+    ? "ImmoCredits / Monat"
+    : language === "fr"
+    ? "ImmoCredits / mois"
+    : language === "sq"
+    ? "ImmoCredits / muaj"
+    : "ImmoCredits / month";
+
+  const VISIBILITY_TABLE: Array<{ row: string } & Record<VisCol, string>> = [
+    {
+      row: IMMOCREDITS_ROW,
+      free: "2",
+      basic: "20",
+      professional: "50",
+      premium: l.visValueUnlimited,
+    },
     {
       row: l.visRowContacts,
       free: l.visValueFree,
-      starter: l.visValueVisible,
+      basic: l.visValueFree,
       professional: l.visValueVisible,
       premium: l.visValueVisible,
-      founding: l.visValueVisible,
     },
     {
       row: l.visRowBadge,
-      free: "Basic Dienstleister",
-      starter: "Aktiver Dienstleister",
-      professional: "Verifizierter Dienstleister",
-      premium: "Top Dienstleister",
-      founding: "Founding Dienstleister",
+      free: "—",
+      basic: language === "de" ? "Basic Anbieter" : language === "fr" ? "Badge Basic" : language === "sq" ? "Insinjë Basic" : "Basic Provider",
+      professional: language === "de" ? "Professional Anbieter" : language === "fr" ? "Badge Professional" : language === "sq" ? "Insinjë Professional" : "Professional Provider",
+      premium: language === "de" ? "Premium Partner" : "Premium Partner",
     },
     {
       row: l.visRowRanking,
       free: l.visValueStandard,
-      starter: l.visValueStandard,
+      basic: l.visValueStandard,
       professional: l.visValuePriority,
       premium: l.visValuePriority,
-      founding: l.visValueStandard,
     },
     {
       row: l.visRowPortfolio,
       free: l.visValueBasic,
-      starter: l.visValueFull,
+      basic: l.visValueFull,
       professional: l.visValueFull,
       premium: l.visValueUnlimited,
-      founding: l.visValueFull,
     },
   ];
 
@@ -1842,32 +1863,35 @@ export default function ProviderDashboard() {
                     <thead>
                       <tr className="border-b bg-muted/40">
                         <th className="text-left px-4 py-3 font-semibold text-muted-foreground w-40"></th>
-                        {["free", "starter", "professional", "premium", "founding"].map(slug => (
-                          <th key={slug} className={`px-4 py-3 text-center font-semibold ${slug === planSlug ? "bg-primary/5 text-primary" : "text-muted-foreground"}`}>
-                            <div>{slug === "free" ? "Free" : slug === "starter" ? "Starter" : slug === "professional" ? "Professional" : slug === "premium" ? "Premium" : "Founding"}</div>
-                            {slug === planSlug && (
-                              <div className="text-xs font-normal mt-0.5 bg-primary text-white rounded-full px-1.5 py-0.5 inline-block">
-                                {l.currentPlan}
-                              </div>
-                            )}
-                          </th>
-                        ))}
+                        {VIS_COLS.map(slug => {
+                          const isCurrent = slug === normalisedPlanSlug;
+                          return (
+                            <th key={slug} className={`px-4 py-3 text-center font-semibold transition-colors ${isCurrent ? "bg-primary/8 text-primary border-b-2 border-primary" : "text-muted-foreground"}`}>
+                              <div className="font-bold">{COL_LABELS[slug]}</div>
+                              {isCurrent && (
+                                <div className="text-[10px] font-semibold mt-1 bg-primary text-white rounded-full px-2 py-0.5 inline-block tracking-wide uppercase">
+                                  {l.currentPlan}
+                                </div>
+                              )}
+                            </th>
+                          );
+                        })}
                       </tr>
                     </thead>
                     <tbody>
                       {VISIBILITY_TABLE.map((row, i) => (
                         <tr key={i} className="border-b last:border-0 hover:bg-muted/20">
                           <td className="px-4 py-3 font-medium text-foreground">{row.row}</td>
-                          {(["free", "starter", "professional", "premium", "founding"] as const).map(slug => {
+                          {VIS_COLS.map(slug => {
                             const val = row[slug];
-                            const isCurrent = slug === planSlug;
-                            const isHidden = val === l.visValueFree;
+                            const isCurrent = slug === normalisedPlanSlug;
+                            const isHidden = val === l.visValueFree || val === "—";
                             return (
-                              <td key={slug} className={`px-4 py-3 text-center ${isCurrent ? "bg-primary/5" : ""}`}>
+                              <td key={slug} className={`px-4 py-3 text-center transition-colors ${isCurrent ? "bg-primary/5" : ""}`}>
                                 {isHidden ? (
                                   <span className="text-muted-foreground text-xs">{val}</span>
                                 ) : (
-                                  <span className={`text-xs font-medium ${isCurrent ? "text-primary" : "text-foreground"}`}>
+                                  <span className={`text-xs font-medium ${isCurrent ? "text-primary font-semibold" : "text-foreground"}`}>
                                     {val}
                                   </span>
                                 )}
@@ -1881,19 +1905,19 @@ export default function ProviderDashboard() {
                 </div>
               </Card>
 
-              {planSlug === "free" && (
+              {(normalisedPlanSlug === "free" || normalisedPlanSlug === "basic") && (
                 <Card className="mt-4 p-4 bg-amber-50 border-amber-200">
                   <div className="flex items-center justify-between gap-4">
                     <div className="text-sm text-amber-800">
                       <span className="font-semibold">{l.contactHidden}.</span>
                       {" "}
                       {language === "de"
-                        ? "Upgraden Sie auf Starter oder höher, um Ihre Kontaktdaten sichtbar zu machen."
+                        ? "Upgraden Sie auf Professional oder Premium, um Ihre Kontaktdaten sichtbar zu machen."
                         : language === "fr"
-                        ? "Passez à Starter ou supérieur pour rendre vos coordonnées visibles."
+                        ? "Passez à Professional ou Premium pour rendre vos coordonnées visibles."
                         : language === "sq"
-                        ? "Ndrysho planin te Starter ose më lart për të shfaqur kontaktet."
-                        : "Upgrade to Starter or higher to make your contact details visible."}
+                        ? "Ndrysho planin te Professional ose Premium për të shfaqur kontaktet."
+                        : "Upgrade to Professional or Premium to make your contact details visible."}
                     </div>
                     <Link href="/pricing">
                       <Button size="sm" className="flex-shrink-0">
