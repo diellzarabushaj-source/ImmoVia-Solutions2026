@@ -887,22 +887,7 @@ export default function ProviderDashboard() {
     premium: "Premium",
   };
 
-  const IMMOCREDITS_ROW = language === "de"
-    ? "ImmoCredits / Monat"
-    : language === "fr"
-    ? "ImmoCredits / mois"
-    : language === "sq"
-    ? "ImmoCredits / muaj"
-    : "ImmoCredits / month";
-
   const VISIBILITY_TABLE: Array<{ row: string } & Record<VisCol, string>> = [
-    {
-      row: IMMOCREDITS_ROW,
-      free: "2",
-      basic: "20",
-      professional: "50",
-      premium: l.visValueUnlimited,
-    },
     {
       row: l.visRowContacts,
       free: l.visValueFree,

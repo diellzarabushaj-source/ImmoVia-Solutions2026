@@ -20,28 +20,28 @@ export const PLAN_CONFIG: Record<PlanType, {
     badge: { sq: "Bazë", en: "Basic", de: "Basic", fr: "De base" },
     features: {
       sq: [
-        "20 ImmoCredits/muaj",
+        "20 aplikime/muaj",
         "Insinjë Basic Provider",
         "Vetëm mesazhe brenda platformës",
         "Sheh vetëm qytetin e projektit",
         "Renditje normale në listë",
       ],
       en: [
-        "20 ImmoCredits/month",
+        "20 applications/month",
         "Basic Provider badge",
         "Platform messages only — no phone or email",
         "Only sees project city, no private data",
         "Normal ranking in directory",
       ],
       de: [
-        "20 ImmoCredits/Monat",
+        "20 Bewerbungen/Monat",
         "Basic Provider Abzeichen",
         "Nur In-Plattform-Messaging — kein Telefon/E-Mail",
         "Nur Stadtangabe sichtbar, keine privaten Daten",
         "Normale Platzierung im Verzeichnis",
       ],
       fr: [
-        "20 ImmoCredits/mois",
+        "20 candidatures/mois",
         "Badge Basic Provider",
         "Messagerie plateforme seulement — pas de téléphone/e-mail",
         "Voit seulement la ville du projet",
@@ -55,28 +55,28 @@ export const PLAN_CONFIG: Record<PlanType, {
     badge: { sq: "Profesional", en: "Professional", de: "Professional", fr: "Professionnel" },
     features: {
       sq: [
-        "50 ImmoCredits/muaj",
+        "50 aplikime/muaj",
         "Insinjë Professional Provider",
         "Deri 50 zhbllokime kontakti/muaj",
         "Sheh telefon dhe të dhëna private",
         "Renditje më e lartë se Basic",
       ],
       en: [
-        "50 ImmoCredits/month",
+        "50 applications/month",
         "Professional Provider badge",
         "Up to 50 contact unlocks per month",
         "See client phone number & private data",
         "Higher ranking than Basic in directory",
       ],
       de: [
-        "50 ImmoCredits/Monat",
+        "50 Bewerbungen/Monat",
         "Professional Provider Abzeichen",
         "Bis zu 50 Kontakt-Unlocks/Monat",
         "Telefonnummer & private Daten sichtbar",
         "Höhere Platzierung als Basic-Anbieter",
       ],
       fr: [
-        "50 ImmoCredits/mois",
+        "50 candidatures/mois",
         "Badge Professional Provider",
         "Jusqu'à 50 déblocages de contacts/mois",
         "Téléphone et données privées visibles",
@@ -90,7 +90,7 @@ export const PLAN_CONFIG: Record<PlanType, {
     badge: { sq: "Premium", en: "Premium", de: "Premium", fr: "Premium" },
     features: {
       sq: [
-        "ImmoCredits të pakufizuara",
+        "Aplikime të pakufizuara",
         "Insinjë Premium Partner",
         "Zhbllokime të pakufizuara të kontakteve",
         "Vendi i parë në listë & profil i theksuar",
@@ -98,7 +98,7 @@ export const PLAN_CONFIG: Record<PlanType, {
         "Klientët shohin numrin tuaj të telefonit",
       ],
       en: [
-        "Unlimited ImmoCredits",
+        "Unlimited applications",
         "Premium Partner badge",
         "Unlimited contact unlocks",
         "First in lists & featured profile",
@@ -106,7 +106,7 @@ export const PLAN_CONFIG: Record<PlanType, {
         "Project posters can see your phone number",
       ],
       de: [
-        "Unbegrenzte ImmoCredits",
+        "Unbegrenzte Bewerbungen",
         "Premium Partner Abzeichen",
         "Unbegrenzte Kontakt-Unlocks",
         "Erstplatzierung & hervorgehobenes Profil",
@@ -114,7 +114,7 @@ export const PLAN_CONFIG: Record<PlanType, {
         "Auftraggeber sehen Ihre Telefonnummer",
       ],
       fr: [
-        "ImmoCredits illimités",
+        "Candidatures illimitées",
         "Badge Premium Partner",
         "Déblocages de contacts illimités",
         "Première position & profil mis en avant",
