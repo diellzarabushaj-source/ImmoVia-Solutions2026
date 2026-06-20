@@ -1517,42 +1517,6 @@ export default function ProviderDashboard() {
                   </Button>
                 </div>
               </Card>
-
-              {/* Portfolio gallery */}
-              <Card className="p-6">
-                <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">
-                  <Images className="w-4 h-4 text-primary" />
-                  {l.portfolioTitle}
-                </h3>
-                <p className="text-xs text-muted-foreground mb-4">{l.portfolioHint}</p>
-                {portfolioItems.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                    {portfolioItems.map(item => (
-                      <div key={item.id} className="relative group aspect-video rounded-xl overflow-hidden border border-border">
-                        <img src={item.imageUrl} alt="Portfolio" className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => removePortfolioPhoto(item.id)}
-                          className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {portfolioItems.length === 0 && (
-                  <div className="text-sm text-muted-foreground text-center py-6 bg-muted/30 rounded-xl mb-4">
-                    {l.portfolioEmpty}
-                  </div>
-                )}
-                <PhotoUploader
-                  label={l.portfolioAdd}
-                  hint=""
-                  multiple
-                  value={portfolioObjectPaths}
-                  onChange={handlePortfolioChange}
-                />
-              </Card>
             </div>
             );
           })()}
