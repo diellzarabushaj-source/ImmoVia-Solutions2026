@@ -3,6 +3,7 @@ import { motion, useMotionValue, useSpring, useTransform, useScroll } from "fram
 import { Link, useSearch, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useListCompanies, useListProjects } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,27 @@ const SERVICE_ICONS: Record<string, React.ElementType> = {
 
 export default function Home() {
   const { t, language } = useLanguage();
-  usePageMeta({ title: "ImmoVia365", description: t.hero.subtitle });
+  usePageMeta({
+    title: "Renovation & Bau in der Schweiz | ImmoVia365",
+    description: "Geprüfte Dienstleister für Renovierung, Bau, Reinigung, Umzug und Gebäudeservices in der Schweiz. Zürich, Bern, Basel, Luzern und mehr — kostenlos Angebote einholen.",
+  });
+  useStructuredData([
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Was ist ImmoVia365?", "acceptedAnswer": { "@type": "Answer", "text": "ImmoVia365 ist eine Schweizer Online-Plattform, die Privatpersonen und Unternehmen mit geprüften Handwerkern und Dienstleistern für Renovierungen, Umzüge, Reinigung und Bauprojekte verbindet." } },
+        { "@type": "Question", "name": "In welchen Schweizer Städten ist ImmoVia365 verfügbar?", "acceptedAnswer": { "@type": "Answer", "text": "ImmoVia365 ist in der gesamten Schweiz verfügbar, mit besonderem Fokus auf Zürich, Bern, Basel, Luzern, Genf, Lausanne, Winterthur und St. Gallen." } },
+        { "@type": "Question", "name": "Wie finde ich einen Handwerker für mein Projekt?", "acceptedAnswer": { "@type": "Answer", "text": "Tragen Sie Ihr Projekt auf ImmoVia365 ein, und geprüfte Dienstleister aus Ihrer Region können Ihr Angebot einsehen und sich bei Ihnen melden. Sie können auch im Dienstleister-Verzeichnis direkt nach Anbietern in Ihrer Stadt suchen." } },
+        { "@type": "Question", "name": "Ist die Registrierung für Auftraggeber kostenlos?", "acceptedAnswer": { "@type": "Answer", "text": "Ja, das Einreichen eines Projekts ist für Auftraggeber kostenlos. Dienstleister zahlen eine einmalige Registrierungsgebühr und können zwischen verschiedenen Abonnement-Paketen wählen." } }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` }]
+    }
+  ]);
   const { user } = useAuth();
   const search = useSearch();
   const [, navigate] = useLocation();

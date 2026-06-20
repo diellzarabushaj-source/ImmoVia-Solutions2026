@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import {
   billingApi,
   type SubscriptionPlan,
@@ -87,7 +88,29 @@ const MOST_POPULAR: Record<string, string> = {
 
 export default function Pricing() {
   const { t, language } = useLanguage();
-  usePageMeta({ title: `${t.pricing.title} — ImmoVia365`, description: t.pricing.subtitle ?? undefined });
+  usePageMeta({
+    title: "Preise & Pakete für Dienstleister | ImmoVia365",
+    description: "Wählen Sie das passende Abo für Ihr Handwerker- oder Dienstleistungsunternehmen. Zugang zu Renovierungsanfragen in der ganzen Schweiz — monatlich kündbar.",
+  });
+  useStructuredData([
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Für wen sind die ImmoVia365-Pakete gedacht?", "acceptedAnswer": { "@type": "Answer", "text": "Die Pakete sind für Handwerker, Baufirmen, Reinigungsunternehmen und andere Dienstleister gedacht, die Renovierungsanfragen aus der Schweiz erhalten möchten." } },
+        { "@type": "Question", "name": "Kann ich das Abo jederzeit kündigen?", "acceptedAnswer": { "@type": "Answer", "text": "Ja, alle Abonnements sind monatlich kündbar. Nach der Kündigung läuft der Zugang bis zum Ende des bezahlten Zeitraums weiter." } },
+        { "@type": "Question", "name": "Was sind ImmoCredits?", "acceptedAnswer": { "@type": "Answer", "text": "ImmoCredits sind Punkte, mit denen Dienstleister Kontaktdaten von Auftraggebern freischalten können. Je nach Paket erhalten Sie monatlich unterschiedliche Mengen an ImmoCredits." } }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+        { "@type": "ListItem", "position": 2, "name": "Preise", "item": `${APP_URL}/pricing` }
+      ]
+    }
+  ]);
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);

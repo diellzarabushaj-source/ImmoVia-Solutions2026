@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRoute, Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,6 +89,18 @@ export default function PublicProfilePage() {
       : null,
     description: data?.user.bio ? data.user.bio.slice(0, 160) : null,
   });
+  useStructuredData(data?.user ? {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": data.user.fullName,
+    "description": data.user.bio ?? undefined,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": data.user.city ?? undefined,
+      "addressCountry": "CH"
+    },
+    "url": `${APP_URL}/company/${slug}`
+  } : null);
   const [lightbox, setLightbox] = useState<PortfolioItem | null>(null);
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
 

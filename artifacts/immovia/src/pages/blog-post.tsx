@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { isSanityConfigured, urlFor, fetchBlogPost } from "@/lib/sanity";
 import type { BlogPostFull, SanityImageRef } from "@/lib/sanity";
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { resolveCategoryLabel, type Lang } from "@/lib/categories";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -95,6 +97,22 @@ export default function BlogPost() {
   const [post, setPost] = useState<BlogPostFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  usePageMeta({
+    title: post ? `${post.title} | ImmoVia365` : null,
+    description: post?.excerpt ? post.excerpt.slice(0, 160) : null,
+  });
+  useStructuredData(post ? {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "description": post.excerpt ?? "",
+    "datePublished": post.publishedAt ?? undefined,
+    "author": { "@type": "Organization", "name": "ImmoVia365" },
+    "publisher": { "@type": "Organization", "name": "ImmoVia365", "url": `${APP_URL}/` },
+    "url": `${APP_URL}/blog/${slug}`,
+    "mainEntityOfPage": `${APP_URL}/blog/${slug}`
+  } : null);
 
   useEffect(() => {
     if (!slug) return;

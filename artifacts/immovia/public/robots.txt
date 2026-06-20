@@ -1,2 +1,16 @@
 User-agent: *
 Allow: /
+
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /billing
+Disallow: /billing/
+Disallow: /payment
+Disallow: /payment/
+Disallow: /sign-in
+Disallow: /sign-up
+
+Sitemap: https://immovia365.ch/sitemap.xml

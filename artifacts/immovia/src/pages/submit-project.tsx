@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { useAuth, isProjectPoster } from "@/contexts/AuthContext";
 import { useCreateProject } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +36,18 @@ import { PhotoUploader } from "@/components/photo-uploader";
 
 export default function SubmitProject() {
   const { t, language } = useLanguage();
+  usePageMeta({
+    title: "Projekt einreichen | ImmoVia365",
+    description: "Beschreiben Sie Ihr Renovierungs- oder Bauprojekt und finden Sie geprüfte Dienstleister in der Schweiz. Kostenlos und unverbindlich.",
+  });
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+      { "@type": "ListItem", "position": 2, "name": "Projekt einreichen", "item": `${APP_URL}/submit-project` }
+    ]
+  });
   const { categories } = useCategories("project");
   const { user, loading: authLoading } = useAuth();
   const [, setLocation] = useLocation();

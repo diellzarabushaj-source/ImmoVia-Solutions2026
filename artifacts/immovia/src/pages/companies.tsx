@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearch, Link, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useListCompanies } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
@@ -44,7 +45,18 @@ export default function Companies() {
   const { t, language } = useLanguage();
   const { categories } = useCategories("service");
   const { user } = useAuth();
-  usePageMeta({ title: `${t.companies.title} — ImmoVia365`, description: t.companies.subtitle ?? undefined });
+  usePageMeta({
+    title: "Geprüfte Dienstleister in der Schweiz | ImmoVia365",
+    description: "Finden Sie geprüfte Handwerker und Dienstleister für Renovierung, Bau, Reinigung, Umzug und mehr. Jetzt Angebote in Zürich, Bern, Basel und weiteren Schweizer Städten einholen.",
+  });
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+      { "@type": "ListItem", "position": 2, "name": "Dienstleister", "item": `${APP_URL}/companies` }
+    ]
+  });
   const search = useSearch();
   const params = new URLSearchParams(search);
   const [, navigate] = useLocation();

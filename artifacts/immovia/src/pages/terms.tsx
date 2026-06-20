@@ -1,4 +1,6 @@
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { Shield } from "lucide-react";
 
 const content = {
@@ -194,6 +196,19 @@ const content = {
 
 export default function Terms() {
   const { language } = useLanguage();
+  usePageMeta({
+    title: "Nutzungsbedingungen | ImmoVia365",
+    description: "Lesen Sie die Nutzungsbedingungen von ImmoVia365. Durch die Nutzung der Plattform stimmen Sie diesen Bedingungen zu.",
+    noindex: false,
+  });
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+      { "@type": "ListItem", "position": 2, "name": "Nutzungsbedingungen", "item": `${APP_URL}/terms` }
+    ]
+  });
   const c = content[language] ?? content.en;
 
   return (

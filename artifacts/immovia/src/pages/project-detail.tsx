@@ -3,6 +3,7 @@ import { useRoute, Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { useCategories } from "@/hooks/useCategories";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -102,6 +103,15 @@ export default function ProjectDetail() {
       : null,
     description: project?.description ? project.description.slice(0, 160) : null,
   });
+  useStructuredData(project ? {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+      { "@type": "ListItem", "position": 2, "name": "Projekte", "item": `${APP_URL}/projects` },
+      { "@type": "ListItem", "position": 3, "name": project.projectType, "item": `${APP_URL}/projects/${project.id}` }
+    ]
+  } : null);
   const [fetchStatus, setFetchStatus] = useState<"loading" | "ready" | "notfound">("loading");
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 

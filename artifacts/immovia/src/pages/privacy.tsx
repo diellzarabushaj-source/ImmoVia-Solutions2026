@@ -1,4 +1,6 @@
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { Lock } from "lucide-react";
 
 const content = {
@@ -226,6 +228,19 @@ const content = {
 
 export default function Privacy() {
   const { language } = useLanguage();
+  usePageMeta({
+    title: "Datenschutzrichtlinie | ImmoVia365",
+    description: "Erfahren Sie, wie ImmoVia365 Ihre persönlichen Daten gemäß DSGVO und Schweizer Datenschutzgesetz (DSG) schützt und verarbeitet.",
+    noindex: false,
+  });
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+      { "@type": "ListItem", "position": 2, "name": "Datenschutz", "item": `${APP_URL}/privacy` }
+    ]
+  });
   const c = content[language] ?? content.en;
 
   return (

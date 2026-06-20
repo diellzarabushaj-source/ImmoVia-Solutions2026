@@ -3,6 +3,7 @@ import { useRoute, Link, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { useCategories } from "@/hooks/useCategories";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -106,6 +107,19 @@ export default function CompanyProfile() {
     title: company ? `${company.companyName} — ${company.city} | ImmoVia365` : null,
     description: company?.description ? company.description.slice(0, 160) : null,
   });
+  useStructuredData(company ? {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": company.companyName,
+    "description": company.description ?? undefined,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": company.city,
+      "addressCountry": "CH"
+    },
+    "url": `${APP_URL}/companies/${company.id}`,
+    "areaServed": company.city
+  } : null);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [galleryErrors, setGalleryErrors] = useState<Set<number>>(new Set());
 

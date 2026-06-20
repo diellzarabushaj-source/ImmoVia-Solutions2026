@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +12,18 @@ import { Mail, Phone, MapPin, Clock, CheckCircle2, Send, Quote } from "lucide-re
 
 export default function Contact() {
   const { t } = useLanguage();
-  usePageMeta({ title: `${t.contact.title} — ImmoVia365` });
+  usePageMeta({
+    title: "Kontakt | ImmoVia365",
+    description: "Kontaktieren Sie das ImmoVia365-Team. Wir helfen Ihnen bei Fragen zu Projekten, Dienstleistungen und Ihrer Registrierung als Handwerker in der Schweiz.",
+  });
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+      { "@type": "ListItem", "position": 2, "name": "Kontakt", "item": `${APP_URL}/contact` }
+    ]
+  });
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 

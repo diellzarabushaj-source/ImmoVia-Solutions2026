@@ -4,9 +4,9 @@ import { useLocation } from "wouter";
 const APP_URL = (
   import.meta.env.VITE_APP_URL || window.location.origin
 ).replace(/\/$/, "");
-const DEFAULT_TITLE = "ImmoVia365";
+const DEFAULT_TITLE = "ImmoVia365 — Renovierung & Bauprojekte in der Schweiz";
 const DEFAULT_DESCRIPTION =
-  "ImmoVia365 — the platform connecting homeowners with vetted renovation and construction professionals across Albania, Kosovo, Germany, and Switzerland.";
+  "ImmoVia365 verbindet Projektbesitzer mit geprüften Dienstleistern für Renovation, Bau, Reinigung, Umzug, Architektur und Gebäudeservices in der Schweiz — Zürich, Bern, Basel, Luzern und mehr.";
 const DEFAULT_OG_IMAGE = `${APP_URL}/og-share.png`;
 
 export interface PageMetaOptions {

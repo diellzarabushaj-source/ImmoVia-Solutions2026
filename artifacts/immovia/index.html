@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>ImmoVia365</title>
-    <meta name="description" content="ImmoVia365 — Professional renovation and construction services connecting homeowners with vetted contractors across Albania, Germany, and Switzerland." />
+    <title>ImmoVia365 — Renovierung &amp; Bauprojekte in der Schweiz</title>
+    <meta name="description" content="ImmoVia365 verbindet Projektbesitzer mit geprüften Dienstleistern für Renovation, Bau, Reinigung, Umzug, Architektur und Gebäudeservices in der Schweiz — Zürich, Bern, Basel, Luzern und mehr." />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#0D1535" />
+
+    <!-- Sitemap autodiscovery -->
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
 
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -17,21 +20,58 @@
     <link rel="manifest" href="/site.webmanifest" />
 
     <!-- OpenGraph -->
-    <meta property="og:title" content="ImmoVia365 — Renovation &amp; Construction Services" />
-    <meta property="og:description" content="Connect with vetted contractors for your renovation or construction project across Albania, Germany, and Switzerland." />
+    <meta property="og:title" content="ImmoVia365 — Renovierung &amp; Bauprojekte in der Schweiz" />
+    <meta property="og:description" content="ImmoVia365 verbindet Projektbesitzer mit geprüften Dienstleistern für Renovation, Bau, Reinigung, Umzug und Gebäudeservices in der Schweiz." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="%VITE_APP_URL%/" />
     <meta property="og:image" content="%VITE_APP_URL%/og-share.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="ImmoVia365 — Professional renovation and construction services" />
+    <meta property="og:image:alt" content="ImmoVia365 — Renovierung &amp; Bauprojekte in der Schweiz" />
+    <meta property="og:locale" content="de_CH" />
 
     <!-- Twitter / X Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ImmoVia365 — Renovation &amp; Construction Services" />
-    <meta name="twitter:description" content="Connect with vetted contractors for your renovation or construction project across Albania, Germany, and Switzerland." />
+    <meta name="twitter:title" content="ImmoVia365 — Renovierung &amp; Bauprojekte in der Schweiz" />
+    <meta name="twitter:description" content="ImmoVia365 verbindet Projektbesitzer mit geprüften Dienstleistern für Renovation, Bau, Reinigung, Umzug und Gebäudeservices in der Schweiz." />
     <meta name="twitter:image" content="%VITE_APP_URL%/og-share.png" />
-    <meta name="twitter:image:alt" content="ImmoVia365 — Professional renovation and construction services" />
+    <meta name="twitter:image:alt" content="ImmoVia365 — Renovierung &amp; Bauprojekte in der Schweiz" />
+
+    <!-- Site-wide JSON-LD: Organization + WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "ImmoVia365",
+          "url": "https://immovia365.ch",
+          "logo": "https://immovia365.ch/logo-color.png",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "availableLanguage": ["de", "en", "sq", "fr"]
+          },
+          "sameAs": [],
+          "areaServed": ["CH", "DE", "AL"],
+          "description": "ImmoVia365 ist die Schweizer Plattform, die Renovierungsprojekte mit geprüften Dienstleistern verbindet."
+        },
+        {
+          "@type": "WebSite",
+          "name": "ImmoVia365",
+          "url": "https://immovia365.ch",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://immovia365.ch/companies?city={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

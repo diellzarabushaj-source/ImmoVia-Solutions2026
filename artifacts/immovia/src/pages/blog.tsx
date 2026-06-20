@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { urlFor, fetchBlogList } from "@/lib/sanity";
 import type { BlogPostSummary, SanityImageRef } from "@/lib/sanity";
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { resolveCategoryLabel, type Lang } from "@/lib/categories";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -102,6 +104,18 @@ function SkeletonCard() {
 
 export default function Blog() {
   const { t, language } = useLanguage();
+  usePageMeta({
+    title: "Renovierungstipps & News | ImmoVia365 Blog",
+    description: "Entdecken Sie Ratgeber, Renovierungstipps und Neuigkeiten rund um Bau, Renovierung und Handwerksleistungen in der Schweiz.",
+  });
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": `${APP_URL}/blog` }
+    ]
+  });
   const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

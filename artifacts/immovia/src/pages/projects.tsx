@@ -3,6 +3,7 @@ import { Link, useSearch, useLocation } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { useListProjects } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,7 +34,18 @@ export default function Projects() {
   const [providerStats, setProviderStats] = useState<AppStats | null>(null);
   const [unlocking, setUnlocking] = useState<Set<number>>(new Set());
   const queryClient = useQueryClient();
-  usePageMeta({ title: `${t.listings.title ?? "Browse Projects"} — ImmoVia365`, description: t.listings.subtitle ?? undefined });
+  usePageMeta({
+    title: "Renovierungsprojekte in der Schweiz | ImmoVia365",
+    description: "Entdecken Sie aktuelle Renovierungs- und Bauprojekte aus der ganzen Schweiz. Als geprüfter Dienstleister können Sie direkt auf Anfragen reagieren.",
+  });
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+      { "@type": "ListItem", "position": 2, "name": "Projekte", "item": `${APP_URL}/projects` }
+    ]
+  });
   const search = useSearch();
   const [, navigate] = useLocation();
 

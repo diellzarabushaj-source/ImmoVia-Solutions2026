@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLanguage } from "@/lib/language-context";
+import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { useCreateCompany } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,6 +135,18 @@ const L = {
 
 export default function RegisterCompany() {
   const { t, language } = useLanguage();
+  usePageMeta({
+    title: "Als Dienstleister registrieren | ImmoVia365",
+    description: "Registrieren Sie Ihr Unternehmen auf ImmoVia365 und erhalten Sie Anfragen von Auftraggebern für Renovierung, Bau und weitere Handwerksleistungen in der Schweiz.",
+  });
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+      { "@type": "ListItem", "position": 2, "name": "Dienstleister registrieren", "item": `${APP_URL}/register-company` }
+    ]
+  });
   const lang = (language || "en") as keyof typeof L;
   const l = L[lang] ?? L.en;
   const { categories } = useCategories("service");
