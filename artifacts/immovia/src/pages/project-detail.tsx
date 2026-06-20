@@ -29,11 +29,13 @@ import {
   Mail,
   Unlock,
   Star,
+  Eye,
+  ShieldCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { resolvePhotoSrc } from "@/lib/display";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
-import { billingApi, type AppStats } from "@/lib/billing-api";
+import { billingApi, type AppStats, type UnlockedByResponse } from "@/lib/billing-api";
 
 interface Project {
   id: number;
@@ -92,6 +94,7 @@ export default function ProjectDetail() {
   const [stats, setStats] = useState<AppStats | null>(null);
   const [unlockLoading, setUnlockLoading] = useState(false);
   const [unlockError, setUnlockError] = useState<string | null>(null);
+  const [unlockedBy, setUnlockedBy] = useState<UnlockedByResponse | null>(null);
 
   usePageMeta({
     title: project
@@ -123,6 +126,12 @@ export default function ProjectDetail() {
     if (!isProvider) return;
     billingApi.appStats().then(setStats).catch(() => setStats(null));
   }, [isProvider]);
+
+  useEffect(() => {
+    if (!id || !user) return;
+    setUnlockedBy(null);
+    billingApi.unlockedBy(Number(id)).then(setUnlockedBy).catch(() => setUnlockedBy(null));
+  }, [id, user]);
 
   const UNLOCK_STRINGS: Record<string, {
     unlockBtn: (r: number) => string; unlockingBtn: string; limitReached: string;
@@ -168,6 +177,40 @@ export default function ProjectDetail() {
     },
   };
   const us = UNLOCK_STRINGS[language] ?? UNLOCK_STRINGS.en;
+
+  const POSTER_STRINGS: Record<string, {
+    panelTitle: (n: number) => string;
+    revealedBadge: string;
+    anonLabel: string;
+    noneYet: string;
+  }> = {
+    sq: {
+      panelTitle: (n) => n === 1 ? "1 ofrues ka parë kontaktin tuaj" : `${n} ofrues kanë parë kontaktin tuaj`,
+      revealedBadge: "Premium",
+      anonLabel: "Ofruesi anonim (Professional)",
+      noneYet: "Asnjë ofrues nuk ka parë kontaktin tuaj ende.",
+    },
+    en: {
+      panelTitle: (n) => n === 1 ? "1 provider viewed your contact" : `${n} providers viewed your contact`,
+      revealedBadge: "Premium",
+      anonLabel: "Anonymous provider (Professional)",
+      noneYet: "No provider has viewed your contact yet.",
+    },
+    de: {
+      panelTitle: (n) => n === 1 ? "1 Anbieter hat Ihre Kontaktdaten gesehen" : `${n} Anbieter haben Ihre Kontaktdaten gesehen`,
+      revealedBadge: "Premium",
+      anonLabel: "Anonymer Anbieter (Professional)",
+      noneYet: "Noch kein Anbieter hat Ihre Kontaktdaten gesehen.",
+    },
+    fr: {
+      panelTitle: (n) => n === 1 ? "1 prestataire a vu vos coordonnées" : `${n} prestataires ont vu vos coordonnées`,
+      revealedBadge: "Premium",
+      anonLabel: "Prestataire anonyme (Professionnel)",
+      noneYet: "Aucun prestataire n'a encore consulté vos coordonnées.",
+    },
+  };
+  const ps = POSTER_STRINGS[language] ?? POSTER_STRINGS.en;
+
   const hasContacts = Boolean(project?.phone || project?.email);
   const planSlug = stats?.planSlug ?? "";
 
@@ -430,6 +473,47 @@ export default function ProjectDetail() {
                 </div>
               </motion.div>
             )}
+            {/* "Who unlocked your contact" — shown only to the project owner */}
+            {unlockedBy !== null && (
+              <motion.div
+                className="bg-white rounded-2xl border border-border shadow-sm p-5"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-primary" />
+                  {ps.panelTitle(unlockedBy.total)}
+                </h2>
+                {unlockedBy.total === 0 ? (
+                  <p className="text-xs text-muted-foreground">{ps.noneYet}</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {unlockedBy.providers.map((p, i) => (
+                      <li key={i} className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          {p.isRevealed
+                            ? <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                            : <User className="w-3.5 h-3.5 text-primary/60" />
+                          }
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-foreground truncate">
+                            {p.isRevealed ? p.name : ps.anonLabel}
+                          </p>
+                        </div>
+                        {p.isRevealed && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200 shrink-0">
+                            {ps.revealedBadge}
+                          </Badge>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </motion.div>
+            )}
+
             <motion.div
               className="bg-white rounded-2xl border border-border shadow-sm p-6 lg:sticky lg:top-24"
               initial={{ opacity: 0, y: 16 }}

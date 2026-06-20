@@ -281,6 +281,72 @@ router.post("/projects/:id/unlock", requireProvider, async (req, res): Promise<v
   res.json({ phone: row.phone, email: row.email, fullName: row.fullName });
 });
 
+// GET /projects/:id/unlocked-by — project owner sees which providers unlocked their contact
+// Premium providers are revealed by name; Pro providers appear anonymous.
+router.get("/projects/:id/unlocked-by", async (req, res): Promise<void> => {
+  const params = GetProjectParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const localUserId = await getLocalUserId(req);
+  if (!localUserId) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const [project] = await db
+    .select({ id: projectsTable.id, ownerUserId: projectsTable.ownerUserId })
+    .from(projectsTable)
+    .where(eq(projectsTable.id, params.data.id))
+    .limit(1);
+
+  if (!project) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  if (project.ownerUserId !== localUserId) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  const unlocks = await db
+    .select({
+      unlockedAt: contactUnlocksTable.unlockedAt,
+      fullName: usersTable.fullName,
+      companyName: usersTable.companyName,
+      accountSubtype: usersTable.accountSubtype,
+      planSlug: subscriptionPlansTable.slug,
+    })
+    .from(contactUnlocksTable)
+    .innerJoin(usersTable, eq(contactUnlocksTable.providerUserId, usersTable.id))
+    .leftJoin(
+      subscriptionsTable,
+      and(
+        eq(subscriptionsTable.userId, contactUnlocksTable.providerUserId),
+        eq(subscriptionsTable.status, "active"),
+      ),
+    )
+    .leftJoin(subscriptionPlansTable, eq(subscriptionsTable.planId, subscriptionPlansTable.id))
+    .where(eq(contactUnlocksTable.projectId, params.data.id))
+    .orderBy(desc(contactUnlocksTable.unlockedAt));
+
+  const providers = unlocks.map(u => {
+    const isPremium = u.planSlug === "premium";
+    const displayName = u.accountSubtype === "company" ? (u.companyName ?? u.fullName) : u.fullName;
+    return {
+      isRevealed: isPremium,
+      name: isPremium ? displayName : null,
+      planSlug: u.planSlug ?? "pro",
+      unlockedAt: u.unlockedAt,
+    };
+  });
+
+  res.json({ total: providers.length, providers });
+});
+
 router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateProjectParams.safeParse(req.params);
   if (!params.success) {

@@ -131,6 +131,18 @@ async function jsonFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface UnlockedByEntry {
+  isRevealed: boolean;
+  name: string | null;
+  planSlug: string;
+  unlockedAt: string;
+}
+
+export interface UnlockedByResponse {
+  total: number;
+  providers: UnlockedByEntry[];
+}
+
 export const billingApi = {
   plans: () => jsonFetch<SubscriptionPlan[]>("/plans"),
   providerMe: () =>
@@ -178,4 +190,6 @@ export const billingApi = {
       `/projects/${projectId}/unlock`,
       { method: "POST" },
     ),
+  unlockedBy: (projectId: number) =>
+    jsonFetch<UnlockedByResponse>(`/projects/${projectId}/unlocked-by`),
 };
