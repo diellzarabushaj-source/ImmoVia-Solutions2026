@@ -30,6 +30,8 @@ import Pricing from "@/pages/pricing";
 import ProviderBilling from "@/pages/provider-billing";
 import PaymentSuccess from "@/pages/payment-success";
 import RegistrationPaymentSuccess from "@/pages/registration-payment-success";
+import ProviderOnboarding from "@/pages/provider-onboarding";
+import PackagePaymentSuccess from "@/pages/package-payment-success";
 import ProviderDashboard from "@/pages/provider";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
@@ -171,6 +173,8 @@ function Router() {
         <Route path="/projects/:id" component={ProjectDetail} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/registration-payment-success" component={RegistrationPaymentSuccess} />
+        <Route path="/provider-onboarding" component={ProviderOnboarding} />
+        <Route path="/package-payment-success" component={PackagePaymentSuccess} />
         <Route path="/chat" component={Chat} />
         <Route path="/contact" component={Contact} />
         <Route path="/login" component={Login} />

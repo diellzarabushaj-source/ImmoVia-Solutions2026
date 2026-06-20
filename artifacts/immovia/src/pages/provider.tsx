@@ -5,7 +5,7 @@ import { useLanguage } from "@/lib/language-context";
 import NotificationBell from "@/components/NotificationBell";
 import { useCategories } from "@/hooks/useCategories";
 import { ProjectCard } from "@/components/project/ProjectCard";
-import { useCreateRegistrationCheckout } from "@workspace/api-client-react";
+import { useCreateRegistrationCheckout, useCreatePackageCheckout } from "@workspace/api-client-react";
 import {
   billingApi,
   offerCostFor,
@@ -527,12 +527,14 @@ export default function ProviderDashboard() {
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  const [registrationGate, setRegistrationGate] = useState<"checking" | "unpaid" | "paid" | "error">("checking");
+  const [registrationGate, setRegistrationGate] = useState<"checking" | "package_unpaid" | "unpaid" | "paid" | "error">("checking");
   const [gateFetchTrigger, setGateFetchTrigger] = useState(0);
   const [gateCompanyId, setGateCompanyId] = useState<number | null>(null);
+  const [gateCompanyPlan, setGateCompanyPlan] = useState<string>("basic");
   const [gatePaymentLoading, setGatePaymentLoading] = useState(false);
   const [gatePaymentError, setGatePaymentError] = useState<string | null>(null);
   const createGateCheckout = useCreateRegistrationCheckout();
+  const createPackageGateCheckout = useCreatePackageCheckout();
 
   const toggleThread = (offerId: number) => {
     setOpenThreads((prev) => {
@@ -580,9 +582,13 @@ export default function ProviderDashboard() {
     if (!user || !isServiceProvider(user)) return;
     fetch("/api/provider/profile")
       .then(r => r.ok ? r.json() : Promise.reject(new Error("not_ok")))
-      .then((d: { company?: { id: number; registrationFeePaid?: boolean | null } | null }) => {
-        if (!d.company) { setLocation("/register-company"); return; }
-        if (d.company.registrationFeePaid) {
+      .then((d: { company?: { id: number; registrationFeePaid?: boolean | null; packagePaid?: boolean | null; planType?: string | null } | null }) => {
+        if (!d.company) { setLocation("/provider-onboarding"); return; }
+        if (!d.company.packagePaid) {
+          setGateCompanyId(d.company.id);
+          setGateCompanyPlan(d.company.planType ?? "basic");
+          setRegistrationGate("package_unpaid");
+        } else if (d.company.registrationFeePaid) {
           setRegistrationGate("paid");
         } else {
           setGateCompanyId(d.company.id);
@@ -706,15 +712,15 @@ export default function ProviderDashboard() {
     );
   }
 
-  if (registrationGate === "unpaid") {
-    const handleGatePay = async () => {
+  if (registrationGate === "package_unpaid") {
+    const handlePackagePay = async () => {
       if (!gateCompanyId) return;
       setGatePaymentLoading(true);
       setGatePaymentError(null);
       try {
-        const result = await createGateCheckout.mutateAsync({
+        const result = await createPackageGateCheckout.mutateAsync({
           id: gateCompanyId,
-          data: { email: user.email ?? "" },
+          data: { email: user.email ?? "", planType: gateCompanyPlan },
         });
         if (result.url) window.location.href = result.url;
       } catch {
@@ -723,6 +729,9 @@ export default function ProviderDashboard() {
       }
     };
 
+    const planLabel = gateCompanyPlan === "professional" ? "Professional" : gateCompanyPlan === "premium" ? "Premium" : "Basic";
+    const planPrice = gateCompanyPlan === "premium" ? 149 : gateCompanyPlan === "professional" ? 99 : 49;
+
     return (
       <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
         <div className="w-full max-w-md">
@@ -730,20 +739,34 @@ export default function ProviderDashboard() {
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <CreditCard className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-serif font-bold mb-2">{l.gateTitle}</h2>
-            <p className="text-muted-foreground text-sm">{l.gateSub}</p>
+            <h2 className="text-2xl font-serif font-bold mb-2">
+              {language === "sq" ? "Aktivizoni Paketën Tuaj" :
+               language === "de" ? "Paket aktivieren" :
+               language === "fr" ? "Activer votre forfait" :
+               "Activate Your Plan"}
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              {language === "sq" ? `Keni zgjedhur paketën ${planLabel}. Plotësoni pagesën mujore për të aktivizuar profilin tuaj.` :
+               language === "de" ? `Sie haben das ${planLabel}-Paket gewählt. Schliessen Sie die monatliche Zahlung ab, um Ihr Profil zu aktivieren.` :
+               language === "fr" ? `Vous avez choisi le forfait ${planLabel}. Finalisez le paiement mensuel pour activer votre profil.` :
+               `You chose the ${planLabel} plan. Complete the monthly payment to activate your profile.`}
+            </p>
           </div>
 
           <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm mb-4">
             <div className="bg-[#1a3a6e] text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 opacity-80" />
-                <span className="text-sm font-semibold uppercase tracking-wide">{l.gateTitle}</span>
+                <span className="text-sm font-semibold uppercase tracking-wide">{planLabel}</span>
               </div>
-              <span className="text-xl font-bold">CHF 149</span>
+              <span className="text-xl font-bold">CHF {planPrice}<span className="text-sm font-normal opacity-70">/mo</span></span>
             </div>
             <div className="px-6 py-5 space-y-3">
-              {[l.gateFeat1, l.gateFeat2, l.gateFeat3].map((feat, i) => (
+              {[
+                language === "sq" ? "Listim në drejtorinë e kontraktorëve" : language === "de" ? "Aufnahme ins Auftragnehmerverzeichnis" : language === "fr" ? "Référencement dans l'annuaire" : "Listed in the contractor directory",
+                language === "sq" ? "Qasje në projekte dhe oferta" : language === "de" ? "Zugang zu Projekten und Angeboten" : language === "fr" ? "Accès aux projets et aux offres" : "Access to projects and quotes",
+                language === "sq" ? "Mbështetje me prioritet" : language === "de" ? "Priorisierter Support" : language === "fr" ? "Support prioritaire" : "Priority support",
+              ].map((feat, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
                   <p className="text-sm text-foreground">{feat}</p>
@@ -759,14 +782,17 @@ export default function ProviderDashboard() {
           <Button
             size="lg"
             className="w-full bg-[#1a3a6e] hover:bg-[#0f2044]"
-            onClick={handleGatePay}
+            onClick={() => void handlePackagePay()}
             disabled={gatePaymentLoading}
           >
             {gatePaymentLoading ? (
               <span className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" /> {l.gateOpening}
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {language === "sq" ? "Po hapet Stripe..." : language === "de" ? "Stripe wird geöffnet..." : language === "fr" ? "Ouverture de Stripe..." : "Opening Stripe..."}
               </span>
-            ) : l.gateBtn}
+            ) : (
+              language === "sq" ? `Paguani CHF ${planPrice}/muaj` : language === "de" ? `CHF ${planPrice}/Monat bezahlen` : language === "fr" ? `Payer CHF ${planPrice}/mois` : `Pay CHF ${planPrice}/month`
+            )}
           </Button>
           <p className="text-xs text-center text-muted-foreground mt-3 flex items-center justify-center gap-1">
             <ShieldCheck className="w-3 h-3" /> {l.gateSecure}
@@ -889,8 +915,73 @@ export default function ProviderDashboard() {
     },
   ];
 
+  const handleGatePay = async () => {
+    if (!gateCompanyId) return;
+    setGatePaymentLoading(true);
+    setGatePaymentError(null);
+    try {
+      const result = await createGateCheckout.mutateAsync({
+        id: gateCompanyId,
+        data: { email: user.email ?? "" },
+      });
+      if (result.url) window.location.href = result.url;
+    } catch {
+      setGatePaymentError(l.gateError);
+      setGatePaymentLoading(false);
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <>
+      {registrationGate === "unpaid" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CreditCard className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-serif font-bold mb-2 text-white">{l.gateTitle}</h2>
+              <p className="text-blue-100 text-sm">{l.gateSub}</p>
+            </div>
+            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-2xl mb-4">
+              <div className="bg-[#1a3a6e] text-white px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 opacity-80" />
+                  <span className="text-sm font-semibold uppercase tracking-wide">{l.gateTitle}</span>
+                </div>
+                <span className="text-xl font-bold">CHF 149</span>
+              </div>
+              <div className="px-6 py-5 space-y-3">
+                {[l.gateFeat1, l.gateFeat2, l.gateFeat3].map((feat, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
+                    <p className="text-sm text-foreground">{feat}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {gatePaymentError && (
+              <p className="text-sm text-red-400 text-center mb-3">{gatePaymentError}</p>
+            )}
+            <Button
+              size="lg"
+              className="w-full bg-[#1a3a6e] hover:bg-[#0f2044]"
+              onClick={() => void handleGatePay()}
+              disabled={gatePaymentLoading}
+            >
+              {gatePaymentLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> {l.gateOpening}
+                </span>
+              ) : l.gateBtn}
+            </Button>
+            <p className="text-xs text-center text-blue-200 mt-3 flex items-center justify-center gap-1">
+              <ShieldCheck className="w-3 h-3" /> {l.gateSecure}
+            </p>
+          </div>
+        </div>
+      )}
+      <div className={`container mx-auto px-4 py-8 max-w-7xl${registrationGate === "unpaid" ? " blur-sm pointer-events-none select-none" : ""}`}>
       {success && (
         <div className="mb-4 p-3 rounded bg-green-50 border border-green-200 text-green-800 text-sm">
           {success}
@@ -2189,5 +2280,6 @@ export default function ProviderDashboard() {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 }

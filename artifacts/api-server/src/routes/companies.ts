@@ -14,6 +14,10 @@ import {
   CreateRegistrationCheckoutBody,
   VerifyRegistrationPaymentParams,
   VerifyRegistrationPaymentBody,
+  CreatePackageCheckoutParams,
+  CreatePackageCheckoutBody,
+  VerifyPackagePaymentParams,
+  VerifyPackagePaymentBody,
 } from "@workspace/api-zod";
 import { getAuth } from "@clerk/express";
 import { requireAdmin } from "../middlewares/requireAdmin";
@@ -21,7 +25,7 @@ import { sendNewCompanyNotification, sendProviderApprovedNotification, sendProvi
 import { createNotification } from "../lib/notify";
 import { usersTable } from "@workspace/db";
 import type { Request } from "express";
-import { getStripeClient, getRegistrationFeePriceId } from "../lib/stripeClient";
+import { getStripeClient, getRegistrationFeePriceId, priceIdForSlug } from "../lib/stripeClient";
 
 const router: IRouter = Router();
 
@@ -253,8 +257,9 @@ router.post("/companies/:id/registration-checkout", async (req, res): Promise<vo
     line_items: [{ price: priceId, quantity: 1 }],
     customer_email: body.data.email,
     metadata: { companyId: String(company.id) },
+    allow_promotion_codes: true,
     success_url: `${origin}/registration-payment-success?company_id=${company.id}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/register-company?cancelled=1`,
+    cancel_url: `${origin}/provider?cancelled=1`,
   });
 
   await db
@@ -307,6 +312,85 @@ router.post("/companies/:id/registration-payment/verify", async (req, res): Prom
     res.json({ paid: false, reason: session.payment_status });
   } catch (err) {
     req.log.error({ err }, "Failed to verify registration payment");
+    res.json({ paid: false, reason: "verification_error" });
+  }
+});
+
+router.post("/companies/:id/package-checkout", async (req, res): Promise<void> => {
+  const params = CreatePackageCheckoutParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+
+  const body = CreatePackageCheckoutBody.safeParse(req.body);
+  if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
+
+  const [company] = await db
+    .select()
+    .from(companiesTable)
+    .where(eq(companiesTable.id, params.data.id));
+
+  if (!company) { res.status(404).json({ error: "Company not found" }); return; }
+
+  if (company.packagePaid) { res.status(400).json({ error: "Package already paid" }); return; }
+
+  const slug = body.data.planType.toLowerCase().replace("professional", "pro");
+  const priceId = priceIdForSlug(slug);
+  if (!priceId) {
+    req.log.error({ slug }, "No Stripe price ID configured for plan slug");
+    res.status(500).json({ error: "Package payment not configured for this plan. Contact support." });
+    return;
+  }
+
+  const stripe = getStripeClient();
+  const origin = (req.headers.origin as string) || `https://${req.headers.host}`;
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    line_items: [{ price: priceId, quantity: 1 }],
+    customer_email: body.data.email,
+    metadata: { companyId: String(company.id) },
+    success_url: `${origin}/package-payment-success?company_id=${company.id}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/provider?cancelled=1`,
+  });
+
+  await db
+    .update(companiesTable)
+    .set({ stripePackageSessionId: session.id })
+    .where(eq(companiesTable.id, company.id));
+
+  res.json({ url: session.url });
+});
+
+router.post("/companies/:id/package-payment/verify", async (req, res): Promise<void> => {
+  const params = VerifyPackagePaymentParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+
+  const body = VerifyPackagePaymentBody.safeParse(req.body);
+  if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
+
+  const [company] = await db
+    .select()
+    .from(companiesTable)
+    .where(eq(companiesTable.id, params.data.id));
+
+  if (!company) { res.status(404).json({ error: "Company not found" }); return; }
+
+  if (company.packagePaid) { res.json({ paid: true }); return; }
+
+  try {
+    const stripe = getStripeClient();
+    const session = await stripe.checkout.sessions.retrieve(body.data.sessionId);
+    const isPaid = session.status === "complete" || session.payment_status === "paid";
+    if (isPaid && session.metadata?.companyId === String(company.id)) {
+      await db
+        .update(companiesTable)
+        .set({ packagePaid: true, stripePackageSessionId: session.id })
+        .where(eq(companiesTable.id, company.id));
+      res.json({ paid: true });
+      return;
+    }
+    res.json({ paid: false, reason: session.payment_status ?? session.status });
+  } catch (err) {
+    req.log.error({ err }, "Failed to verify package payment");
     res.json({ paid: false, reason: "verification_error" });
   }
 });

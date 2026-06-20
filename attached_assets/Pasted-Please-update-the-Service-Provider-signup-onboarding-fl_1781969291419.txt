@@ -1,0 +1,90 @@
+Please update the Service Provider signup/onboarding flow exactly like this.
+
+Important:
+- The signup flow must be consistent from every Service Provider signup button.
+- Every Service Provider signup button should lead to the same onboarding flow.
+- Do not create different signup windows or different signup logic.
+
+Service Provider flow:
+
+1. Package selection first
+- When Service Provider clicks signup, first show package selection:
+  - Basic
+  - Professional
+  - Premium
+- User must choose one package before continuing.
+
+2. Signup with Clerk
+- After package selection, continue with the existing Clerk signup/signin flow.
+- Email verification must stay handled by Clerk.
+- Do not create a custom email verification system.
+
+3. Profile questions step-by-step
+After Clerk email verification, ask profile questions one by one, like a smooth onboarding/chat-style form.
+Each question should appear separately and user can continue with Enter/Next.
+
+Collect:
+- First name
+- Last name
+- Phone number
+- Individual or company
+- If company: company name
+- City
+- Services/categories
+- Short description
+
+Categories:
+- Load categories from admin-managed categories.
+- If provider cannot find a category, allow them to suggest a new one.
+- Suggested categories stay pending until admin approves them.
+
+4. Stripe Checkout for selected package
+- After profile questions, redirect to Stripe Checkout for the selected package.
+- Use Stripe webhook confirmation before marking the package active.
+- Do not activate only from frontend redirect.
+
+5. Locked provider dashboard
+- After package checkout, send provider to the Service Provider dashboard.
+- Dashboard should be visible but locked/blurred.
+- Provider can see the dashboard layout but cannot use features yet.
+
+6. One-time registration fee box
+- On the locked dashboard, show a clear activation box:
+  “To activate your Service Provider account, please pay the CHF 149 one-time registration fee.”
+- Add button: “Pay CHF 149 registration fee”.
+
+7. Registration fee payment
+- Redirect to Stripe Checkout for the CHF 149 one-time registration fee.
+- Add allow_promotion_codes: true.
+- Use Stripe webhook confirmation.
+- After successful payment:
+  - registrationFeePaid = true
+  - providerStatus = active
+  - selectedPackage = active
+  - unlock the dashboard
+
+8. Active dashboard
+- After payment, provider can use the dashboard based on their selected package:
+  - Basic
+  - Professional
+  - Premium
+
+Admin logic:
+- Admin approval is not required for provider to work after payment.
+- Admin verification only gives a “Verified” badge.
+- Admin can still verify, ban, suspend, or reject providers.
+- Banned/suspended/rejected providers cannot use provider features.
+
+Backend rules:
+- Enforce locked dashboard/payment/package status from backend, not only frontend.
+- Provider cannot use provider features until:
+  - Clerk email is verified
+  - selected package payment is confirmed
+  - CHF 149 registration fee is paid
+  - provider is not banned/suspended/rejected
+
+Do not break Project Poster signup, login, project posting, messages, offers, payments, or admin dashboard.
+
+Keep UI clean, professional, step-based, mobile-friendly, and consistent with ImmoVia365.
+
+Run validation and explain exactly what files/routes were changed.

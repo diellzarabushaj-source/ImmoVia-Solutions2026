@@ -145,6 +145,16 @@ export interface Company {
      * @nullable
      */
   planType?: string | null;
+  /**
+     * Whether the package subscription payment has been completed
+     * @nullable
+     */
+  packagePaid?: boolean | null;
+  /**
+     * Stripe Checkout session ID for the package subscription
+     * @nullable
+     */
+  stripePackageSessionId?: string | null;
   createdAt: string;
 }
 
@@ -179,6 +189,25 @@ export interface CompanyUpdate {
   description?: string;
   /** Toggle home page carousel inclusion */
   featuredOnHome?: boolean;
+}
+
+export interface PackageCheckoutInput {
+  email: string;
+  /** basic | professional | premium */
+  planType: string;
+}
+
+export interface PackageCheckoutUrl {
+  url: string;
+}
+
+export interface PackageVerifyInput {
+  sessionId: string;
+}
+
+export interface PackageVerifyResult {
+  paid: boolean;
+  reason?: string;
 }
 
 export interface RegistrationCheckoutInput {

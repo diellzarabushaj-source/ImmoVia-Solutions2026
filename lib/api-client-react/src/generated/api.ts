@@ -42,6 +42,10 @@ import type {
   ListCategoriesParams,
   ListCompaniesParams,
   ListProjectsParams,
+  PackageCheckoutInput,
+  PackageCheckoutUrl,
+  PackageVerifyInput,
+  PackageVerifyResult,
   Project,
   ProjectInput,
   ProjectUpdate,
@@ -1034,6 +1038,150 @@ export const useVerifyRegistrationPayment = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getVerifyRegistrationPaymentMutationOptions(options));
+    }
+
+export const getCreatePackageCheckoutUrl = (id: number,) => {
+
+
+
+
+  return `/api/companies/${id}/package-checkout`
+}
+
+/**
+ * @summary Create a Stripe Checkout session for the selected plan subscription
+ */
+export const createPackageCheckout = async (id: number,
+    packageCheckoutInput: PackageCheckoutInput, options?: RequestInit): Promise<PackageCheckoutUrl> => {
+
+  return customFetch<PackageCheckoutUrl>(getCreatePackageCheckoutUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      packageCheckoutInput,)
+  }
+);}
+
+
+
+
+export const getCreatePackageCheckoutMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackageCheckout>>, TError,{id: number;data: BodyType<PackageCheckoutInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPackageCheckout>>, TError,{id: number;data: BodyType<PackageCheckoutInput>}, TContext> => {
+
+const mutationKey = ['createPackageCheckout'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPackageCheckout>>, {id: number;data: BodyType<PackageCheckoutInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createPackageCheckout(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePackageCheckoutMutationResult = NonNullable<Awaited<ReturnType<typeof createPackageCheckout>>>
+    export type CreatePackageCheckoutMutationBody = BodyType<PackageCheckoutInput>
+    export type CreatePackageCheckoutMutationError = ErrorType<void>
+
+    /**
+ * @summary Create a Stripe Checkout session for the selected plan subscription
+ */
+export const useCreatePackageCheckout = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackageCheckout>>, TError,{id: number;data: BodyType<PackageCheckoutInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPackageCheckout>>,
+        TError,
+        {id: number;data: BodyType<PackageCheckoutInput>},
+        TContext
+      > => {
+      return useMutation(getCreatePackageCheckoutMutationOptions(options));
+    }
+
+export const getVerifyPackagePaymentUrl = (id: number,) => {
+
+
+
+
+  return `/api/companies/${id}/package-payment/verify`
+}
+
+/**
+ * @summary Verify package payment and mark company package as active
+ */
+export const verifyPackagePayment = async (id: number,
+    packageVerifyInput: PackageVerifyInput, options?: RequestInit): Promise<PackageVerifyResult> => {
+
+  return customFetch<PackageVerifyResult>(getVerifyPackagePaymentUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      packageVerifyInput,)
+  }
+);}
+
+
+
+
+export const getVerifyPackagePaymentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyPackagePayment>>, TError,{id: number;data: BodyType<PackageVerifyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyPackagePayment>>, TError,{id: number;data: BodyType<PackageVerifyInput>}, TContext> => {
+
+const mutationKey = ['verifyPackagePayment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyPackagePayment>>, {id: number;data: BodyType<PackageVerifyInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  verifyPackagePayment(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyPackagePaymentMutationResult = NonNullable<Awaited<ReturnType<typeof verifyPackagePayment>>>
+    export type VerifyPackagePaymentMutationBody = BodyType<PackageVerifyInput>
+    export type VerifyPackagePaymentMutationError = ErrorType<void>
+
+    /**
+ * @summary Verify package payment and mark company package as active
+ */
+export const useVerifyPackagePayment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyPackagePayment>>, TError,{id: number;data: BodyType<PackageVerifyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyPackagePayment>>,
+        TError,
+        {id: number;data: BodyType<PackageVerifyInput>},
+        TContext
+      > => {
+      return useMutation(getVerifyPackagePaymentMutationOptions(options));
     }
 
 export const getGetAdminStatsUrl = () => {

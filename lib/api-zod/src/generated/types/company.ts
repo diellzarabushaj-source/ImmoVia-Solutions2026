@@ -58,5 +58,15 @@ export interface Company {
      * @nullable
      */
   planType?: string | null;
+  /**
+     * Whether the package subscription payment has been completed
+     * @nullable
+     */
+  packagePaid?: boolean | null;
+  /**
+     * Stripe Checkout session ID for the package subscription
+     * @nullable
+     */
+  stripePackageSessionId?: string | null;
   createdAt: Date;
 }

@@ -39,6 +39,8 @@ export const companiesTable = pgTable("companies", {
   registrationFeePaid: boolean("registration_fee_paid").default(false),
   stripeRegistrationSessionId: text("stripe_registration_session_id"),
   planType: text("plan_type"),
+  packagePaid: boolean("package_paid").default(false),
+  stripePackageSessionId: text("stripe_package_session_id"),
 });
 
 export const insertCompanySchema = createInsertSchema(companiesTable).omit({

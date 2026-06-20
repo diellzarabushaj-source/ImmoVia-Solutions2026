@@ -195,6 +195,8 @@ export const ListCompaniesResponseItem = zod.object({
   "registrationFeePaid": zod.boolean().nullish().describe('Whether the one-time CHF 149 registration fee has been paid'),
   "stripeRegistrationSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the registration fee'),
   "planType": zod.string().nullish().describe('basic | professional | premium'),
+  "packagePaid": zod.boolean().nullish().describe('Whether the package subscription payment has been completed'),
+  "stripePackageSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the package subscription'),
   "createdAt": zod.coerce.date()
 })
 export const ListCompaniesResponse = zod.array(ListCompaniesResponseItem)
@@ -257,6 +259,8 @@ export const GetCompanyResponse = zod.object({
   "registrationFeePaid": zod.boolean().nullish().describe('Whether the one-time CHF 149 registration fee has been paid'),
   "stripeRegistrationSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the registration fee'),
   "planType": zod.string().nullish().describe('basic | professional | premium'),
+  "packagePaid": zod.boolean().nullish().describe('Whether the package subscription payment has been completed'),
+  "stripePackageSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the package subscription'),
   "createdAt": zod.coerce.date()
 })
 
@@ -295,6 +299,8 @@ export const UpdateCompanyResponse = zod.object({
   "registrationFeePaid": zod.boolean().nullish().describe('Whether the one-time CHF 149 registration fee has been paid'),
   "stripeRegistrationSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the registration fee'),
   "planType": zod.string().nullish().describe('basic | professional | premium'),
+  "packagePaid": zod.boolean().nullish().describe('Whether the package subscription payment has been completed'),
+  "stripePackageSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the package subscription'),
   "createdAt": zod.coerce.date()
 })
 
@@ -335,6 +341,40 @@ export const VerifyRegistrationPaymentBody = zod.object({
 })
 
 export const VerifyRegistrationPaymentResponse = zod.object({
+  "paid": zod.boolean(),
+  "reason": zod.string().optional()
+})
+
+
+/**
+ * @summary Create a Stripe Checkout session for the selected plan subscription
+ */
+export const CreatePackageCheckoutParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreatePackageCheckoutBody = zod.object({
+  "email": zod.string(),
+  "planType": zod.string().describe('basic | professional | premium')
+})
+
+export const CreatePackageCheckoutResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
+ * @summary Verify package payment and mark company package as active
+ */
+export const VerifyPackagePaymentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const VerifyPackagePaymentBody = zod.object({
+  "sessionId": zod.string()
+})
+
+export const VerifyPackagePaymentResponse = zod.object({
   "paid": zod.boolean(),
   "reason": zod.string().optional()
 })
