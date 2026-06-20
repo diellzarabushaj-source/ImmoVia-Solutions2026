@@ -84,6 +84,7 @@ import { MessagingSystem } from "@/components/MessagingSystem";
 import { PhotoUploader } from "@/components/photo-uploader";
 import ProfilbildSection from "@/components/provider/ProfilbildSection";
 import MeinProfilSection from "@/components/provider/MeinProfilSection";
+import GalerieSection from "@/components/provider/GalerieSection";
 import LeistungenSection from "@/components/provider/LeistungenSection";
 import PreiseSection from "@/components/provider/PreiseSection";
 import { format } from "date-fns";
@@ -511,6 +512,7 @@ const L: Record<string, Record<string, string>> = {
 type Section =
   | "uebersicht"
   | "meinprofil"
+  | "galerie"
   | "profil"
   | "profilbild"
   | "leistungen"
@@ -557,7 +559,7 @@ export default function ProviderDashboard() {
   const [browseView, setBrowseView] = useState<"grid" | "list">("grid");
   const [galleryProject, setGalleryProject] = useState<ProviderProject | null>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const VALID_SECTIONS: Section[] = ["uebersicht","meinprofil","profil","profilbild","leistungen","preise","projekte","bewerbungen","angebote","nachrichten","plan","sichtbarkeit","bewertungen","rechnungen","einstellungen"];
+  const VALID_SECTIONS: Section[] = ["uebersicht","meinprofil","galerie","profil","profilbild","leistungen","preise","projekte","bewerbungen","angebote","nachrichten","plan","sichtbarkeit","bewertungen","rechnungen","einstellungen"];
   const [activeSection, setActiveSection] = useState<Section>(() => {
     const tab = new URLSearchParams(search).get("tab") as Section | null;
     return (tab && VALID_SECTIONS.includes(tab)) ? tab : "uebersicht";
@@ -1562,6 +1564,11 @@ export default function ProviderDashboard() {
           {/* ── MEIN PROFIL (VORSCHAU) ── */}
           {activeSection === "meinprofil" && (
             <MeinProfilSection language={language} onNavigate={(s) => setActiveSection(s as Section)} />
+          )}
+
+          {/* ── PORTFOLIO / GALERIE ── */}
+          {activeSection === "galerie" && (
+            <GalerieSection language={language} />
           )}
 
           {/* ── PROFILBILD & LOGO ── */}

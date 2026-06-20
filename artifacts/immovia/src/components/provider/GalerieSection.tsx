@@ -1,120 +1,95 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Plus, X, Star, Images } from "lucide-react";
+import { Loader2, Plus, X, Star, Images, Pencil, Check } from "lucide-react";
 import { PhotoUploader } from "@/components/photo-uploader";
-
-const CATS = [
-  "Renovierung & Umbau", "Neubau & Bauarbeiten", "Innenarchitektur",
-  "Fassadenarbeiten", "Sanitär & Badezimmer", "Elektroinstallation",
-  "Maler & Gipser", "Boden & Platten", "Heizung & Energie",
-  "Küche & Schreinerarbeiten", "Garten & Aussenbereich", "Dach & Spenglerei",
-  "Sonstiges",
-];
 
 const L: Record<string, Record<string, string>> = {
   de: {
-    title: "Galerie & Portfolio",
-    add: "Projektfoto hinzufügen",
-    empty: "Noch keine Portfolio-Bilder vorhanden.",
-    emptyHint: "Fügen Sie Fotos Ihrer Arbeiten hinzu, um Ihr Profil attraktiver zu machen.",
+    title: "Portfolio",
+    subtitle: "Fügen Sie Fotos Ihrer Projekte hinzu. Klicken Sie auf einen Titel oder eine Beschreibung, um sie direkt zu bearbeiten.",
+    add: "Foto hinzufügen",
+    empty: "Noch keine Portfolio-Fotos.",
+    emptyHint: "Zeigen Sie Ihre besten Projekte und überzeugen Sie potenzielle Kunden.",
     imageLabel: "Foto hochladen",
-    itemTitle: "Titel",
-    itemTitlePlaceholder: "z.B. Badezimmer-Renovierung Zürich",
-    description: "Kurzbeschreibung",
-    descPlaceholder: "Beschreiben Sie das Projekt kurz...",
-    category: "Kategorie",
-    city: "Stadt",
-    cityPlaceholder: "z.B. Zürich",
-    date: "Projektdatum",
-    isBeforeAfter: "Vorher/Nachher",
-    isFeatured: "Als Titelbild verwenden",
+    captionTitle: "Titel (optional)",
+    captionTitlePlaceholder: "z.B. Badezimmer-Renovierung Zürich",
+    captionDesc: "Beschreibung (optional)",
+    captionDescPlaceholder: "Kurze Beschreibung des Projekts…",
     save: "Hinzufügen",
     cancel: "Abbrechen",
-    delete: "Löschen",
-    featured: "Titelbild",
-    saving: "Speichern...",
+    saving: "Speichern…",
     deleteConfirm: "Bild löschen?",
-    portfolioTitle: "Arbeitsbeispiele & Portfolio",
+    featured: "Titelbild",
+    clickToEdit: "Klicken zum Bearbeiten",
+    noCaption: "Kein Titel — klicken zum Hinzufügen",
+    saved: "Gespeichert",
   },
   en: {
-    title: "Gallery & Portfolio",
-    add: "Add project photo",
+    title: "Portfolio",
+    subtitle: "Add photos of your projects. Click any title or description to edit it inline.",
+    add: "Add photo",
     empty: "No portfolio photos yet.",
-    emptyHint: "Add photos of your work to make your profile more attractive.",
+    emptyHint: "Show your best work and win over potential clients.",
     imageLabel: "Upload photo",
-    itemTitle: "Title",
-    itemTitlePlaceholder: "e.g. Bathroom renovation Zurich",
-    description: "Short description",
-    descPlaceholder: "Briefly describe the project...",
-    category: "Category",
-    city: "City",
-    cityPlaceholder: "e.g. Zurich",
-    date: "Project date",
-    isBeforeAfter: "Before/After",
-    isFeatured: "Use as featured photo",
+    captionTitle: "Title (optional)",
+    captionTitlePlaceholder: "e.g. Bathroom renovation Zurich",
+    captionDesc: "Description (optional)",
+    captionDescPlaceholder: "Short description of the project…",
     save: "Add",
     cancel: "Cancel",
-    delete: "Delete",
-    featured: "Featured",
-    saving: "Saving...",
+    saving: "Saving…",
     deleteConfirm: "Delete photo?",
-    portfolioTitle: "Work examples & Portfolio",
+    featured: "Featured",
+    clickToEdit: "Click to edit",
+    noCaption: "No title — click to add",
+    saved: "Saved",
   },
   sq: {
-    title: "Galeria & Portofoli",
-    add: "Shto foto projekti",
+    title: "Portofoli",
+    subtitle: "Shto foto nga projektet tuaja. Klikoni mbi titull ose përshkrim për t'i redaktuar drejtpërdrejt.",
+    add: "Shto foto",
     empty: "Ende asnjë foto portofoli.",
-    emptyHint: "Shto foto nga punimet tuaja për të bërë profilin tuaj më tërheqës.",
+    emptyHint: "Trego punimet tuaja më të mira dhe bindo klientët e mundshëm.",
     imageLabel: "Ngarko foto",
-    itemTitle: "Titulli",
-    itemTitlePlaceholder: "p.sh. Rinovim banio Tiranë",
-    description: "Përshkrim i shkurtër",
-    descPlaceholder: "Përshkruani projektin shkurtimisht...",
-    category: "Kategoria",
-    city: "Qyteti",
-    cityPlaceholder: "p.sh. Tiranë",
-    date: "Data e projektit",
-    isBeforeAfter: "Para/Pas",
-    isFeatured: "Përdor si fotografi kryesore",
+    captionTitle: "Titulli (opsional)",
+    captionTitlePlaceholder: "p.sh. Rinovim banio Tiranë",
+    captionDesc: "Përshkrimi (opsional)",
+    captionDescPlaceholder: "Përshkrim i shkurtër i projektit…",
     save: "Shto",
     cancel: "Anulo",
-    delete: "Fshi",
-    featured: "Kryesore",
-    saving: "Duke ruajtur...",
+    saving: "Duke ruajtur…",
     deleteConfirm: "Fshi foton?",
-    portfolioTitle: "Shembuj punimesh & Portofoli",
+    featured: "Kryesore",
+    clickToEdit: "Kliko për të redaktuar",
+    noCaption: "Pa titull — kliko për të shtuar",
+    saved: "U ruajt",
   },
   fr: {
-    title: "Galerie & Portfolio",
-    add: "Ajouter une photo de projet",
+    title: "Portfolio",
+    subtitle: "Ajoutez des photos de vos projets. Cliquez sur un titre ou une description pour les modifier en ligne.",
+    add: "Ajouter une photo",
     empty: "Pas encore de photos de portfolio.",
-    emptyHint: "Ajoutez des photos de vos travaux pour rendre votre profil plus attractif.",
+    emptyHint: "Montrez vos meilleurs travaux et convainquez vos clients potentiels.",
     imageLabel: "Télécharger une photo",
-    itemTitle: "Titre",
-    itemTitlePlaceholder: "ex. Rénovation salle de bain Zurich",
-    description: "Courte description",
-    descPlaceholder: "Décrivez brièvement le projet...",
-    category: "Catégorie",
-    city: "Ville",
-    cityPlaceholder: "ex. Zurich",
-    date: "Date du projet",
-    isBeforeAfter: "Avant/Après",
-    isFeatured: "Utiliser comme photo vedette",
+    captionTitle: "Titre (optionnel)",
+    captionTitlePlaceholder: "ex. Rénovation salle de bain Zurich",
+    captionDesc: "Description (optionnel)",
+    captionDescPlaceholder: "Brève description du projet…",
     save: "Ajouter",
     cancel: "Annuler",
-    delete: "Supprimer",
-    featured: "Vedette",
-    saving: "Enregistrement...",
+    saving: "Enregistrement…",
     deleteConfirm: "Supprimer la photo ?",
-    portfolioTitle: "Exemples de travaux & Portfolio",
+    featured: "Vedette",
+    clickToEdit: "Cliquez pour modifier",
+    noCaption: "Sans titre — cliquez pour ajouter",
+    saved: "Enregistré",
   },
 };
 
@@ -123,10 +98,6 @@ interface PortfolioItem {
   imageUrl: string;
   title?: string | null;
   description?: string | null;
-  category?: string | null;
-  city?: string | null;
-  isBeforeAfter?: boolean | null;
-  projectDate?: string | null;
   isFeatured?: boolean | null;
   sortOrder: number;
 }
@@ -135,17 +106,87 @@ interface Props {
   language: string;
 }
 
-const DEFAULT_FORM = {
-  imageUrl: "",
-  imagePath: "",
-  title: "",
-  description: "",
-  category: "",
-  city: "",
-  projectDate: "",
-  isBeforeAfter: false,
-  isFeatured: false,
-};
+interface InlineEditProps {
+  value: string | null | undefined;
+  placeholder: string;
+  multiline?: boolean;
+  onSave: (val: string) => Promise<void>;
+  className?: string;
+  emptyLabel: string;
+}
+
+function InlineEdit({ value, placeholder, multiline, onSave, className = "", emptyLabel }: InlineEditProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value ?? "");
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
+
+  useEffect(() => { setDraft(value ?? ""); }, [value]);
+
+  const start = () => {
+    setDraft(value ?? "");
+    setEditing(true);
+    setTimeout(() => ref.current?.focus(), 0);
+  };
+
+  const commit = async () => {
+    if (draft === (value ?? "")) { setEditing(false); return; }
+    setSaving(true);
+    try { await onSave(draft); } finally { setSaving(false); setEditing(false); }
+  };
+
+  const onKey = (e: React.KeyboardEvent) => {
+    if (!multiline && e.key === "Enter") { e.preventDefault(); void commit(); }
+    if (e.key === "Escape") { setDraft(value ?? ""); setEditing(false); }
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-start gap-1.5">
+        {multiline ? (
+          <textarea
+            ref={ref as React.RefObject<HTMLTextAreaElement>}
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onBlur={() => void commit()}
+            onKeyDown={onKey}
+            placeholder={placeholder}
+            rows={2}
+            className={`flex-1 text-sm resize-none rounded-md border border-primary/40 bg-transparent px-2 py-1 outline-none focus:border-primary ${className}`}
+          />
+        ) : (
+          <input
+            ref={ref as React.RefObject<HTMLInputElement>}
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onBlur={() => void commit()}
+            onKeyDown={onKey}
+            placeholder={placeholder}
+            className={`flex-1 text-sm rounded-md border border-primary/40 bg-transparent px-2 py-1 outline-none focus:border-primary ${className}`}
+          />
+        )}
+        {saving
+          ? <Loader2 className="w-3.5 h-3.5 mt-1.5 shrink-0 animate-spin text-primary" />
+          : <Check className="w-3.5 h-3.5 mt-1.5 shrink-0 text-primary cursor-pointer" onClick={() => void commit()} />
+        }
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={start}
+      title={placeholder}
+      className={`group/ie w-full text-left flex items-start gap-1 hover:bg-muted/60 rounded px-1 -mx-1 transition-colors ${className}`}
+    >
+      {value
+        ? <span className="flex-1 text-sm leading-snug">{value}</span>
+        : <span className="flex-1 text-sm text-muted-foreground/50 italic">{emptyLabel}</span>
+      }
+      <Pencil className="w-3 h-3 mt-0.5 shrink-0 text-muted-foreground/0 group-hover/ie:text-muted-foreground/50 transition-colors" />
+    </button>
+  );
+}
 
 export default function GalerieSection({ language }: Props) {
   const l = L[language] ?? L.de;
@@ -153,9 +194,13 @@ export default function GalerieSection({ language }: Props) {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ ...DEFAULT_FORM });
+  const [imageUrl, setImageUrl] = useState("");
+  const [imagePath, setImagePath] = useState("");
+  const [newTitle, setNewTitle] = useState("");
+  const [newDesc, setNewDesc] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [lightbox, setLightbox] = useState<PortfolioItem | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -171,237 +216,235 @@ export default function GalerieSection({ language }: Props) {
   useEffect(() => { void load(); }, [load]);
 
   const openAdd = () => {
-    setForm({ ...DEFAULT_FORM });
+    setImageUrl(""); setImagePath(""); setNewTitle(""); setNewDesc("");
     setOpen(true);
   };
 
   const addItem = async () => {
-    if (!form.imageUrl) return;
+    if (!imageUrl) return;
     setSaving(true);
     try {
       const r = await fetch("/api/provider/portfolio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          imageUrl: form.imageUrl,
-          title: form.title || null,
-          description: form.description || null,
-          category: form.category || null,
-          city: form.city || null,
-          projectDate: form.projectDate || null,
-          isBeforeAfter: form.isBeforeAfter,
-          isFeatured: form.isFeatured,
+          imageUrl,
+          title: newTitle || null,
+          description: newDesc || null,
         }),
       });
-      if (r.ok) {
-        setOpen(false);
-        await load();
-      }
+      if (r.ok) { setOpen(false); await load(); }
     } catch { /* ignore */ } finally {
       setSaving(false);
     }
+  };
+
+  const patchItem = async (id: number, updates: Partial<Pick<PortfolioItem, "title" | "description" | "isFeatured">>) => {
+    // optimistic update
+    setItems(prev => prev.map(it => it.id === id ? { ...it, ...updates } : it));
+    await fetch(`/api/provider/portfolio/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
   };
 
   const deleteItem = async (id: number) => {
     setDeleting(id);
     try {
       await fetch(`/api/provider/portfolio/${id}`, { method: "DELETE" });
-      await load();
+      setItems(prev => prev.filter(it => it.id !== id));
     } catch { /* ignore */ } finally {
       setDeleting(null);
     }
   };
 
-  const toggleFeatured = async (item: PortfolioItem) => {
-    try {
-      await fetch(`/api/provider/portfolio/${item.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isFeatured: !item.isFeatured }),
-      });
-      await load();
-    } catch { /* ignore */ }
-  };
-
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-serif font-bold">{l.title}</h2>
-        <Button onClick={openAdd} size="sm">
-          <Plus className="w-4 h-4 mr-1" />
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-serif font-bold">{l.title}</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">{l.subtitle}</p>
+        </div>
+        <Button onClick={openAdd} size="sm" className="shrink-0">
+          <Plus className="w-4 h-4 mr-1.5" />
           {l.add}
         </Button>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-16">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
       ) : items.length === 0 ? (
         <Card className="p-10 text-center">
-          <Images className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
-          <p className="text-sm font-medium text-muted-foreground">{l.empty}</p>
-          <p className="text-xs text-muted-foreground/70 mt-1 mb-4">{l.emptyHint}</p>
+          <Images className="w-12 h-12 mx-auto mb-3 text-muted-foreground/25" />
+          <p className="text-sm font-medium">{l.empty}</p>
+          <p className="text-xs text-muted-foreground mt-1 mb-5">{l.emptyHint}</p>
           <Button onClick={openAdd} size="sm">
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="w-4 h-4 mr-1.5" />
             {l.add}
           </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {items.map(item => (
-            <Card key={item.id} className="overflow-hidden group">
-              <div className="relative aspect-video bg-muted">
-                <img src={item.imageUrl} alt={item.title ?? ""} className="w-full h-full object-cover" />
+            <Card key={item.id} className="overflow-hidden flex flex-col group/card">
+              {/* Photo */}
+              <div
+                className="relative aspect-video bg-muted cursor-zoom-in overflow-hidden"
+                onClick={() => setLightbox(item)}
+              >
+                <img
+                  src={item.imageUrl}
+                  alt={item.title ?? ""}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover/card:scale-[1.03]"
+                />
+                {/* Hover overlay controls */}
+                <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/20 transition-colors" />
+                {/* Featured star */}
+                <button
+                  onClick={e => { e.stopPropagation(); void patchItem(item.id, { isFeatured: !item.isFeatured }); }}
+                  title={l.featured}
+                  className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center transition-all opacity-0 group-hover/card:opacity-100 backdrop-blur-sm"
+                >
+                  <Star className={`w-3.5 h-3.5 ${item.isFeatured ? "fill-amber-400 text-amber-400" : "text-white"}`} />
+                </button>
+                {/* Delete */}
+                <button
+                  onClick={e => { e.stopPropagation(); void deleteItem(item.id); }}
+                  title={l.deleteConfirm}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/40 hover:bg-red-500/80 flex items-center justify-center transition-all opacity-0 group-hover/card:opacity-100 backdrop-blur-sm"
+                  disabled={deleting === item.id}
+                >
+                  {deleting === item.id
+                    ? <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+                    : <X className="w-3.5 h-3.5 text-white" />
+                  }
+                </button>
+                {/* Featured badge */}
                 {item.isFeatured && (
-                  <div className="absolute top-2 left-2">
-                    <Badge className="bg-amber-100 text-amber-800 border-amber-200 gap-1 text-xs">
-                      <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                      {l.featured}
-                    </Badge>
-                  </div>
-                )}
-                {item.isBeforeAfter && (
-                  <div className="absolute top-2 right-2">
-                    <Badge variant="secondary" className="text-xs">{l.isBeforeAfter}</Badge>
+                  <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-amber-400/90 text-amber-900 text-xs font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                    <Star className="w-3 h-3 fill-amber-700 text-amber-700" />
+                    {l.featured}
                   </div>
                 )}
               </div>
-              <div className="p-3">
-                {item.title && <p className="text-sm font-semibold line-clamp-1">{item.title}</p>}
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {item.category && <Badge variant="outline" className="text-xs">{item.category}</Badge>}
-                  {item.city && <Badge variant="outline" className="text-xs">{item.city}</Badge>}
-                  {item.projectDate && <span className="text-xs text-muted-foreground">{item.projectDate}</span>}
-                </div>
-                {item.description && <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{item.description}</p>}
-                <div className="flex gap-2 mt-3">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 text-xs"
-                    onClick={() => toggleFeatured(item)}
-                  >
-                    <Star className={`w-3 h-3 mr-1 ${item.isFeatured ? "fill-amber-400 text-amber-400" : ""}`} />
-                    {item.isFeatured ? "Titelbild" : "Featured"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-destructive border-destructive/30 hover:bg-destructive/5 text-xs"
-                    onClick={() => deleteItem(item.id)}
-                    disabled={deleting === item.id}
-                  >
-                    {deleting === item.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
-                  </Button>
-                </div>
+
+              {/* Caption — inline editable */}
+              <div className="p-3 flex-1 flex flex-col gap-1.5">
+                <InlineEdit
+                  value={item.title}
+                  placeholder={l.captionTitlePlaceholder}
+                  emptyLabel={l.noCaption}
+                  className="font-semibold"
+                  onSave={async (val) => { await patchItem(item.id, { title: val || null }); }}
+                />
+                <InlineEdit
+                  value={item.description}
+                  placeholder={l.captionDescPlaceholder}
+                  multiline
+                  emptyLabel="…"
+                  className="text-muted-foreground"
+                  onSave={async (val) => { await patchItem(item.id, { description: val || null }); }}
+                />
               </div>
             </Card>
           ))}
+
+          {/* Add card */}
+          <button
+            onClick={openAdd}
+            className="aspect-video sm:aspect-auto rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/4 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary transition-colors min-h-[160px]"
+          >
+            <Plus className="w-6 h-6" />
+            <span className="text-sm font-medium">{l.add}</span>
+          </button>
         </div>
       )}
 
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <div
+            className="max-w-3xl w-full rounded-2xl overflow-hidden bg-card shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <img src={lightbox.imageUrl} alt="" className="w-full max-h-[65vh] object-contain bg-black" />
+            {(lightbox.title || lightbox.description) && (
+              <div className="px-5 py-4">
+                {lightbox.title && <p className="font-semibold">{lightbox.title}</p>}
+                {lightbox.description && <p className="text-sm text-muted-foreground mt-1">{lightbox.description}</p>}
+              </div>
+            )}
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add photo dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{l.add}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-1">
             <div>
-              <Label className="text-xs mb-1 block">{l.imageLabel}</Label>
-              {form.imageUrl ? (
+              <Label className="text-xs mb-1.5 block">{l.imageLabel}</Label>
+              {imageUrl ? (
                 <div className="space-y-2">
-                  <div className="relative aspect-video rounded-lg overflow-hidden border border-border">
-                    <img src={form.imageUrl} alt="" className="w-full h-full object-cover" />
+                  <div className="relative aspect-video rounded-xl overflow-hidden border border-border">
+                    <img src={imageUrl} alt="" className="w-full h-full object-cover" />
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => setForm(f => ({ ...f, imageUrl: "", imagePath: "" }))}>
-                    <X className="w-3.5 h-3.5 mr-1" /> {l.delete}
+                  <Button size="sm" variant="outline" onClick={() => { setImageUrl(""); setImagePath(""); }}>
+                    <X className="w-3.5 h-3.5 mr-1" /> {l.cancel}
                   </Button>
                 </div>
               ) : (
                 <PhotoUploader
                   label={l.imageLabel}
                   hint=""
-                  value={form.imagePath ? [form.imagePath] : []}
+                  value={imagePath ? [imagePath] : []}
                   onChange={(paths) => {
                     if (paths[0]) {
-                      setForm(f => ({ ...f, imagePath: paths[0], imageUrl: `/api/storage${paths[0]}` }));
+                      setImagePath(paths[0]);
+                      setImageUrl(`/api/storage${paths[0]}`);
                     }
                   }}
                 />
               )}
             </div>
             <div>
-              <Label className="text-xs mb-1 block">{l.itemTitle}</Label>
+              <Label className="text-xs mb-1.5 block">{l.captionTitle}</Label>
               <Input
-                value={form.title}
-                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                placeholder={l.itemTitlePlaceholder}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs mb-1 block">{l.category}</Label>
-                <select
-                  value={form.category}
-                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                  className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="">—</option>
-                  {CATS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <Label className="text-xs mb-1 block">{l.city}</Label>
-                <Input
-                  value={form.city}
-                  onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                  placeholder={l.cityPlaceholder}
-                />
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs mb-1 block">{l.date}</Label>
-              <Input
-                value={form.projectDate}
-                onChange={e => setForm(f => ({ ...f, projectDate: e.target.value }))}
-                placeholder="2024-03"
-                type="month"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                placeholder={l.captionTitlePlaceholder}
               />
             </div>
             <div>
-              <Label className="text-xs mb-1 block">{l.description}</Label>
+              <Label className="text-xs mb-1.5 block">{l.captionDesc}</Label>
               <Textarea
-                value={form.description}
-                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                placeholder={l.descPlaceholder}
+                value={newDesc}
+                onChange={e => setNewDesc(e.target.value)}
+                placeholder={l.captionDescPlaceholder}
                 rows={3}
               />
-            </div>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.isBeforeAfter}
-                  onChange={e => setForm(f => ({ ...f, isBeforeAfter: e.target.checked }))}
-                  className="w-4 h-4 accent-primary"
-                />
-                <span className="text-sm">{l.isBeforeAfter}</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.isFeatured}
-                  onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked }))}
-                  className="w-4 h-4 accent-primary"
-                />
-                <span className="text-sm">{l.isFeatured}</span>
-              </label>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>{l.cancel}</Button>
-            <Button onClick={addItem} disabled={!form.imageUrl || saving}>
+            <Button onClick={() => void addItem()} disabled={!imageUrl || saving}>
               {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {l.save}
+              {saving ? l.saving : l.save}
             </Button>
           </DialogFooter>
         </DialogContent>

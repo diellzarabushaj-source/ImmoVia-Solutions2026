@@ -28,6 +28,7 @@ const L: Record<string, Record<string, string>> = {
     editPhoto: "Foto & Logo bearbeiten",
     editServices: "Leistungen bearbeiten",
     editPricing: "Preise bearbeiten",
+    editPortfolio: "Portfolio bearbeiten",
     viewPublic: "Öffentliches Profil anzeigen",
     noPhoto: "Kein Foto",
     verified: "Verifiziert",
@@ -59,6 +60,7 @@ const L: Record<string, Record<string, string>> = {
     editPhoto: "Edit photo & logo",
     editServices: "Edit services",
     editPricing: "Edit pricing",
+    editPortfolio: "Edit portfolio",
     viewPublic: "View public profile",
     noPhoto: "No photo",
     verified: "Verified",
@@ -90,6 +92,7 @@ const L: Record<string, Record<string, string>> = {
     editPhoto: "Edito foton & logon",
     editServices: "Edito shërbimet",
     editPricing: "Edito çmimet",
+    editPortfolio: "Edito portofolin",
     viewPublic: "Shiko profilin publik",
     noPhoto: "Pa foto",
     verified: "I verifikuar",
@@ -121,6 +124,7 @@ const L: Record<string, Record<string, string>> = {
     editPhoto: "Modifier la photo & le logo",
     editServices: "Modifier les services",
     editPricing: "Modifier les tarifs",
+    editPortfolio: "Modifier le portfolio",
     viewPublic: "Voir le profil public",
     noPhoto: "Pas de photo",
     verified: "Vérifié",
@@ -482,6 +486,7 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
       <Card className="p-5">
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-sm font-semibold">{l.portfolio}</h4>
+          <EditButton label={l.editPortfolio} onClick={() => onNavigate("galerie")} />
         </div>
         {data.portfolio.length === 0 ? (
           <p className="text-sm text-muted-foreground">{l.noPortfolio}</p>
