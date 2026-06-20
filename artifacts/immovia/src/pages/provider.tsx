@@ -1241,21 +1241,23 @@ export default function ProviderDashboard() {
                   />
                 </div>
               </div>
-              {/* Unlocks row */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-muted-foreground">{l.unlocksThisMonth}</span>
-                  <span className="text-xs font-medium">
-                    {appStats.contactUnlocksUsed} / {appStats.contactUnlocksLimit === -1 ? "∞" : appStats.contactUnlocksLimit}
-                  </span>
+              {/* Unlocks row — only show when plan has an unlock quota */}
+              {(appStats.contactUnlocksLimit === -1 || appStats.contactUnlocksLimit > 0) && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">{l.unlocksThisMonth}</span>
+                    <span className="text-xs font-medium">
+                      {appStats.contactUnlocksUsed} / {appStats.contactUnlocksLimit === -1 ? "∞" : appStats.contactUnlocksLimit}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all bg-sky-500"
+                      style={{ width: appStats.contactUnlocksLimit === -1 ? "0%" : `${Math.min(100, (appStats.contactUnlocksUsed / appStats.contactUnlocksLimit) * 100)}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all bg-sky-500"
-                    style={{ width: appStats.contactUnlocksLimit === -1 ? "0%" : `${Math.min(100, (appStats.contactUnlocksUsed / appStats.contactUnlocksLimit) * 100)}%` }}
-                  />
-                </div>
-              </div>
+              )}
             </div>
           )}
         </aside>
@@ -1438,21 +1440,23 @@ export default function ProviderDashboard() {
                       />
                     </div>
                   </div>
-                  {/* Unlocks row */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-medium">{l.unlocksThisMonth}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {appStats.contactUnlocksUsed} / {appStats.contactUnlocksLimit === -1 ? "∞" : appStats.contactUnlocksLimit} {l.planUnlocksPerMonth}
-                      </span>
+                  {/* Unlocks row — only show when plan has an unlock quota */}
+                  {(appStats.contactUnlocksLimit === -1 || appStats.contactUnlocksLimit > 0) && (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-sm font-medium">{l.unlocksThisMonth}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {appStats.contactUnlocksUsed} / {appStats.contactUnlocksLimit === -1 ? "∞" : appStats.contactUnlocksLimit} {l.planUnlocksPerMonth}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all bg-sky-500"
+                          style={{ width: appStats.contactUnlocksLimit === -1 ? "0%" : `${Math.min(100, (appStats.contactUnlocksUsed / appStats.contactUnlocksLimit) * 100)}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all bg-sky-500"
-                        style={{ width: appStats.contactUnlocksLimit === -1 ? "0%" : `${Math.min(100, (appStats.contactUnlocksUsed / appStats.contactUnlocksLimit) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
+                  )}
                 </Card>
               )}
 
