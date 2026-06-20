@@ -94,14 +94,14 @@ function CompanyAvatar({ name, profilePhoto, workerType, size = "xl" }: { name: 
 
 export default function CompanyProfile() {
   const [, params] = useRoute("/companies/:id");
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { categories } = useCategories("service");
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const id = params?.id;
 
   const [company, setCompany] = useState<Company | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "notfound">("loading");
+  const [status, setStatus] = useState<"loading" | "ready" | "notfound" | "ratelimited" | "error">("loading");
 
   usePageMeta({
     title: company ? `${company.companyName} — ${company.city} | ImmoVia365` : null,
@@ -149,18 +149,62 @@ export default function CompanyProfile() {
     setStatus("loading");
     fetch(`/api/companies/${id}`)
       .then(async r => {
-        if (!r.ok) { setStatus("notfound"); return; }
+        if (r.status === 429) { setStatus("ratelimited"); return; }
+        if (r.status === 404) { setStatus("notfound"); return; }
+        if (!r.ok) { setStatus("error"); return; }
         const data = await r.json() as Company;
         setCompany(data);
         setStatus("ready");
       })
-      .catch(() => setStatus("notfound"));
+      .catch(() => setStatus("error"));
   }, [id]);
 
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (status === "ratelimited") {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center max-w-md">
+        <h1 className="text-xl font-bold mb-2">
+          {language === "sq" ? "Shumë kërkesa" : language === "de" ? "Zu viele Anfragen" : language === "fr" ? "Trop de requêtes" : "Too many requests"}
+        </h1>
+        <p className="text-muted-foreground text-sm mb-6">
+          {language === "sq" ? "Ju lutem prisni disa sekonda dhe provoni sërisht." : language === "de" ? "Bitte warten Sie kurz und versuchen Sie es erneut." : language === "fr" ? "Veuillez patienter quelques secondes et réessayer." : "Please wait a moment and try again."}
+        </p>
+        <div className="flex gap-3 justify-center">
+          <Button onClick={() => setStatus("loading")} variant="default">
+            {language === "sq" ? "Provo Sërisht" : language === "de" ? "Erneut versuchen" : language === "fr" ? "Réessayer" : "Try Again"}
+          </Button>
+          <Link href="/companies">
+            <Button variant="outline"><ArrowLeft className="w-4 h-4 mr-2" />{t.publicProfile.backToCompanies}</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center max-w-md">
+        <h1 className="text-xl font-bold mb-2">
+          {language === "sq" ? "Gabim gjatë ngarkimit" : language === "de" ? "Ladefehler" : language === "fr" ? "Erreur de chargement" : "Loading error"}
+        </h1>
+        <p className="text-muted-foreground text-sm mb-6">
+          {language === "sq" ? "Profili nuk mund të ngarkohet. Provoni sërisht." : language === "de" ? "Das Profil konnte nicht geladen werden. Bitte versuchen Sie es erneut." : language === "fr" ? "Le profil n'a pas pu être chargé. Veuillez réessayer." : "The profile could not be loaded. Please try again."}
+        </p>
+        <div className="flex gap-3 justify-center">
+          <Button onClick={() => setStatus("loading")} variant="default">
+            {language === "sq" ? "Provo Sërisht" : language === "de" ? "Erneut versuchen" : language === "fr" ? "Réessayer" : "Try Again"}
+          </Button>
+          <Link href="/companies">
+            <Button variant="outline"><ArrowLeft className="w-4 h-4 mr-2" />{t.publicProfile.backToCompanies}</Button>
+          </Link>
+        </div>
       </div>
     );
   }
