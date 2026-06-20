@@ -170,14 +170,6 @@ export default function Pricing() {
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
-      {/* Header */}
-      <div className="max-w-3xl mx-auto text-center mb-10">
-        <h1 className="text-3xl md:text-5xl font-serif font-bold mb-4" data-testid="heading-pricing">
-          {t.pricing.title}
-        </h1>
-        <p className="text-muted-foreground text-lg">{t.pricing.subtitle}</p>
-      </div>
-
       {cancelled && (
         <div className="max-w-3xl mx-auto mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm" data-testid="pricing-cancelled">
           {CANCELLED_NOTICE[language] ?? CANCELLED_NOTICE.de}
