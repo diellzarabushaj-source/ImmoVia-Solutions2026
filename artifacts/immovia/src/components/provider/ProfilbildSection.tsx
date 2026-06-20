@@ -1,8 +1,5 @@
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, User, Building2, ImageIcon } from "lucide-react";
-import { PhotoUploader } from "@/components/photo-uploader";
+import { useState, useEffect, useRef } from "react";
+import { Loader2, User, Building2, ImageIcon, Camera } from "lucide-react";
 
 const L: Record<string, Record<string, string>> = {
   de: {
@@ -10,70 +7,167 @@ const L: Record<string, Record<string, string>> = {
     titleCompany: "Firmenlogo",
     titleCombined: "Profilbild & Logo",
     profilePic: "Profilbild",
-    profilePicHint: "Empfohlen: quadratisches Format (JPG, PNG, max. 5 MB)",
+    profilePicHint: "Klicken zum Ändern — JPG, PNG, max. 5 MB",
     logo: "Firmenlogo",
-    logoHint: "Empfohlen: quadratisches Format (JPG, PNG, max. 5 MB)",
+    logoHint: "Klicken zum Ändern — JPG, PNG, max. 5 MB",
     cover: "Titelbild",
-    coverHint: "Grosses Bannerbild für Ihr öffentliches Profil. Empfohlen: breites Format (JPG, PNG, max. 5 MB)",
-    save: "Bilder speichern",
-    saved: "Bilder erfolgreich gespeichert.",
-    error: "Fehler beim Speichern.",
-    upload: "Bild hochladen",
-    change: "Bild ändern",
-    remove: "Entfernen",
+    coverHint: "Klicken zum Ändern — Breites Format, JPG/PNG, max. 5 MB",
+    saved: "Gespeichert.",
+    error: "Fehler beim Hochladen.",
+    typeError: "Nur Bilddateien erlaubt.",
+    sizeError: "Maximale Dateigrösse: 5 MB.",
   },
   en: {
     titleIndividual: "Profile Photo",
     titleCompany: "Company Logo",
     titleCombined: "Profile Photo & Logo",
     profilePic: "Profile photo",
-    profilePicHint: "Recommended: square format (JPG, PNG, max 5 MB)",
+    profilePicHint: "Click to change — JPG, PNG, max 5 MB",
     logo: "Company logo",
-    logoHint: "Recommended: square format (JPG, PNG, max 5 MB)",
+    logoHint: "Click to change — JPG, PNG, max 5 MB",
     cover: "Cover image",
-    coverHint: "Large banner for your public profile. Recommended: wide format (JPG, PNG, max 5 MB)",
-    save: "Save images",
-    saved: "Images saved successfully.",
-    error: "Error saving.",
-    upload: "Upload image",
-    change: "Change image",
-    remove: "Remove",
+    coverHint: "Click to change — wide format, JPG/PNG, max 5 MB",
+    saved: "Saved.",
+    error: "Upload failed.",
+    typeError: "Only image files are allowed.",
+    sizeError: "Maximum file size: 5 MB.",
   },
   sq: {
     titleIndividual: "Foto Profili",
     titleCompany: "Logo e Kompanisë",
     titleCombined: "Foto & Logo",
     profilePic: "Foto profili",
-    profilePicHint: "Format katrori rekomandohet (JPG, PNG, max 5 MB)",
+    profilePicHint: "Klikoni për të ndryshuar — JPG, PNG, max 5 MB",
     logo: "Logo e kompanisë",
-    logoHint: "Format katrori rekomandohet (JPG, PNG, max 5 MB)",
+    logoHint: "Klikoni për të ndryshuar — JPG, PNG, max 5 MB",
     cover: "Foto kryesore",
-    coverHint: "Foto e madhe për profilin publik. Format i gjerë rekomandohet (JPG, PNG, max 5 MB)",
-    save: "Ruaj fotografitë",
-    saved: "Fotografitë u ruajtën me sukses.",
-    error: "Gabim gjatë ruajtjes.",
-    upload: "Ngarko foto",
-    change: "Ndrysho foton",
-    remove: "Hiq",
+    coverHint: "Klikoni për të ndryshuar — format i gjerë, JPG/PNG, max 5 MB",
+    saved: "U ruajt.",
+    error: "Ngarkimi dështoi.",
+    typeError: "Lejohen vetëm skedarë imazhi.",
+    sizeError: "Madhësia maksimale: 5 MB.",
   },
   fr: {
     titleIndividual: "Photo de profil",
     titleCompany: "Logo de l'entreprise",
     titleCombined: "Photo & Logo",
     profilePic: "Photo de profil",
-    profilePicHint: "Format carré recommandé (JPG, PNG, max 5 Mo)",
+    profilePicHint: "Cliquez pour changer — JPG, PNG, max 5 Mo",
     logo: "Logo de l'entreprise",
-    logoHint: "Format carré recommandé (JPG, PNG, max 5 Mo)",
+    logoHint: "Cliquez pour changer — JPG, PNG, max 5 Mo",
     cover: "Image de couverture",
-    coverHint: "Grande bannière pour votre profil public. Format large recommandé (JPG, PNG, max 5 Mo)",
-    save: "Enregistrer les images",
-    saved: "Images enregistrées avec succès.",
-    error: "Erreur lors de l'enregistrement.",
-    upload: "Télécharger une image",
-    change: "Changer l'image",
-    remove: "Supprimer",
+    coverHint: "Cliquez pour changer — format large, JPG/PNG, max 5 Mo",
+    saved: "Enregistré.",
+    error: "Échec du téléchargement.",
+    typeError: "Seules les images sont autorisées.",
+    sizeError: "Taille maximale : 5 Mo.",
   },
 };
+
+interface ClickableImageProps {
+  currentUrl: string;
+  label: string;
+  hint: string;
+  icon: React.ReactNode;
+  tall?: boolean;
+  onUploaded: (url: string) => void;
+  errorTypeMsg: string;
+  errorSizeMsg: string;
+  errorUploadMsg: string;
+}
+
+function ClickableImage({
+  currentUrl,
+  label,
+  hint,
+  icon,
+  tall,
+  onUploaded,
+  errorTypeMsg,
+  errorSizeMsg,
+  errorUploadMsg,
+}: ClickableImageProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) { setError(errorTypeMsg); return; }
+    if (file.size > 5 * 1024 * 1024) { setError(errorSizeMsg); return; }
+    setError(null);
+    setUploading(true);
+    try {
+      const res = await fetch("/api/storage/uploads/request-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+      });
+      if (!res.ok) throw new Error();
+      const { uploadURL, objectPath } = await res.json() as { uploadURL: string; objectPath: string };
+      const put = await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!put.ok) throw new Error();
+      onUploaded(`/api/storage${objectPath}`);
+    } catch {
+      setError(errorUploadMsg);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const containerClass = tall
+    ? "relative w-full h-36 rounded-xl overflow-hidden bg-muted border border-border cursor-pointer group"
+    : "relative w-28 h-28 rounded-2xl overflow-hidden bg-muted border border-border cursor-pointer group";
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        {icon}
+        {label}
+      </div>
+      <p className="text-xs text-muted-foreground">{hint}</p>
+
+      <button
+        type="button"
+        className={`${containerClass} focus:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+        onClick={() => !uploading && inputRef.current?.click()}
+      >
+        {currentUrl ? (
+          <img src={currentUrl} alt={label} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            {tall
+              ? <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
+              : <User className="w-10 h-10 text-muted-foreground/30" />}
+          </div>
+        )}
+
+        {uploading ? (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 text-white animate-spin" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+            <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+        )}
+      </button>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) void handleFile(file);
+        }}
+      />
+
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
+  );
+}
 
 interface Props {
   language: string;
@@ -85,17 +179,13 @@ export default function ProfilbildSection({ language, accountSubtype }: Props) {
 
   const isCompany = accountSubtype === "company";
   const isIndividual = accountSubtype === "individual";
-
-  // Title depends on subtype; fall back to combined if unknown
   const sectionTitle = isCompany ? l.titleCompany : isIndividual ? l.titleIndividual : l.titleCombined;
 
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>("");
-  const [logoUrl, setLogoUrl] = useState<string>("");
-  const [coverUrl, setCoverUrl] = useState<string>("");
-
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
     if (loaded) return;
@@ -110,147 +200,90 @@ export default function ProfilbildSection({ language, accountSubtype }: Props) {
       .catch(() => setLoaded(true));
   }, [loaded]);
 
-  const save = async () => {
-    setSaving(true);
-    setMsg(null);
+  const autosave = async (patch: Record<string, string>) => {
+    setSaveMsg(null);
     try {
-      const body: Record<string, string> = {};
-      if (profilePhotoUrl) body.profilePhoto = profilePhotoUrl;
-      if (logoUrl) body.logoUrl = logoUrl;
-      if (coverUrl) body.coverImageUrl = coverUrl;
       const r = await fetch("/api/provider/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(patch),
       });
       if (!r.ok) throw new Error();
-      setMsg({ type: "ok", text: l.saved });
+      setSaveMsg({ type: "ok", text: l.saved });
+      setTimeout(() => setSaveMsg(null), 3000);
     } catch {
-      setMsg({ type: "err", text: l.error });
-    } finally {
-      setSaving(false);
+      setSaveMsg({ type: "err", text: l.error });
     }
   };
 
-  const ImageCard = ({
-    label,
-    hint,
-    icon,
-    currentUrl,
-    onUploaded,
-    onRemove,
-    tall,
-  }: {
-    label: string;
-    hint: string;
-    icon: React.ReactNode;
-    currentUrl: string;
-    onUploaded: (url: string) => void;
-    onRemove: () => void;
-    tall?: boolean;
-  }) => (
-    <Card className="p-5">
-      <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">{icon}{label}</h3>
-      <p className="text-xs text-muted-foreground mb-4">{hint}</p>
-      {currentUrl ? (
-        <div className="space-y-3">
-          <div className={`relative rounded-xl overflow-hidden border border-border bg-muted/20 ${tall ? "h-36 w-full" : "w-28 h-28"}`}>
-            <img src={currentUrl} alt={label} className="w-full h-full object-cover" />
-          </div>
-          <div className="flex gap-2">
-            <PhotoUploader
-              label={l.change}
-              hint=""
-              value={[]}
-              onChange={(paths) => {
-                if (paths[0]) onUploaded(`/api/storage${paths[0]}`);
-              }}
-            />
-            <Button size="sm" variant="outline" onClick={onRemove} className="text-destructive border-destructive/30 hover:bg-destructive/5">
-              {l.remove}
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <PhotoUploader
-          label={l.upload}
-          hint=""
-          value={[]}
-          onChange={(paths) => {
-            if (paths[0]) onUploaded(`/api/storage${paths[0]}`);
-          }}
-        />
-      )}
-    </Card>
-  );
-
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <h2 className="text-xl font-serif font-bold">{sectionTitle}</h2>
 
-      {/* Show only the relevant primary image based on subtype */}
       {isCompany ? (
-        <ImageCard
+        <ClickableImage
           label={l.logo}
           hint={l.logoHint}
           icon={<Building2 className="w-4 h-4 text-primary" />}
           currentUrl={logoUrl}
-          onUploaded={(url) => setLogoUrl(url)}
-          onRemove={() => setLogoUrl("")}
+          errorTypeMsg={l.typeError}
+          errorSizeMsg={l.sizeError}
+          errorUploadMsg={l.error}
+          onUploaded={(url) => { setLogoUrl(url); void autosave({ logoUrl: url }); }}
         />
       ) : isIndividual ? (
-        <ImageCard
+        <ClickableImage
           label={l.profilePic}
           hint={l.profilePicHint}
           icon={<User className="w-4 h-4 text-primary" />}
           currentUrl={profilePhotoUrl}
-          onUploaded={(url) => setProfilePhotoUrl(url)}
-          onRemove={() => setProfilePhotoUrl("")}
+          errorTypeMsg={l.typeError}
+          errorSizeMsg={l.sizeError}
+          errorUploadMsg={l.error}
+          onUploaded={(url) => { setProfilePhotoUrl(url); void autosave({ profilePhoto: url }); }}
         />
       ) : (
-        /* Subtype not yet set — show both so nothing is hidden */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ImageCard
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ClickableImage
             label={l.profilePic}
             hint={l.profilePicHint}
             icon={<User className="w-4 h-4 text-primary" />}
             currentUrl={profilePhotoUrl}
-            onUploaded={(url) => setProfilePhotoUrl(url)}
-            onRemove={() => setProfilePhotoUrl("")}
+            errorTypeMsg={l.typeError}
+            errorSizeMsg={l.sizeError}
+            errorUploadMsg={l.error}
+            onUploaded={(url) => { setProfilePhotoUrl(url); void autosave({ profilePhoto: url }); }}
           />
-          <ImageCard
+          <ClickableImage
             label={l.logo}
             hint={l.logoHint}
             icon={<Building2 className="w-4 h-4 text-primary" />}
             currentUrl={logoUrl}
-            onUploaded={(url) => setLogoUrl(url)}
-            onRemove={() => setLogoUrl("")}
+            errorTypeMsg={l.typeError}
+            errorSizeMsg={l.sizeError}
+            errorUploadMsg={l.error}
+            onUploaded={(url) => { setLogoUrl(url); void autosave({ logoUrl: url }); }}
           />
         </div>
       )}
 
-      <ImageCard
+      <ClickableImage
         label={l.cover}
         hint={l.coverHint}
         icon={<ImageIcon className="w-4 h-4 text-primary" />}
         currentUrl={coverUrl}
-        onUploaded={(url) => setCoverUrl(url)}
-        onRemove={() => setCoverUrl("")}
         tall
+        errorTypeMsg={l.typeError}
+        errorSizeMsg={l.sizeError}
+        errorUploadMsg={l.error}
+        onUploaded={(url) => { setCoverUrl(url); void autosave({ coverImageUrl: url }); }}
       />
 
-      {msg && (
-        <div className={`p-3 rounded-lg text-sm ${msg.type === "ok" ? "bg-green-50 text-green-800 border border-green-200" : "bg-destructive/10 text-destructive"}`}>
-          {msg.text}
+      {saveMsg && (
+        <div className={`p-3 rounded-lg text-sm ${saveMsg.type === "ok" ? "bg-green-50 text-green-800 border border-green-200" : "bg-destructive/10 text-destructive"}`}>
+          {saveMsg.text}
         </div>
       )}
-
-      <div className="flex justify-end">
-        <Button onClick={save} disabled={saving}>
-          {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-          {l.save}
-        </Button>
-      </div>
     </div>
   );
 }
