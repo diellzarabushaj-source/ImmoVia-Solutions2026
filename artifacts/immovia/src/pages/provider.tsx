@@ -85,6 +85,7 @@ import { PhotoUploader } from "@/components/photo-uploader";
 import ProfilbildSection from "@/components/provider/ProfilbildSection";
 import MeinProfilSection from "@/components/provider/MeinProfilSection";
 import GalerieSection from "@/components/provider/GalerieSection";
+import BewertungenSection from "@/components/provider/BewertungenSection";
 import LeistungenSection from "@/components/provider/LeistungenSection";
 import PreiseSection from "@/components/provider/PreiseSection";
 import { format } from "date-fns";
@@ -2067,13 +2068,7 @@ export default function ProviderDashboard() {
 
           {/* ── BEWERTUNGEN ── */}
           {activeSection === "bewertungen" && (
-            <div>
-              <h2 className="text-xl font-serif font-bold mb-6">{l.navReviews}</h2>
-              <Card className="p-8 text-center text-muted-foreground">
-                <Star className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
-                <p>{l.reviewsComingSoon}</p>
-              </Card>
-            </div>
+            <BewertungenSection language={language} />
           )}
 
           {/* ── RECHNUNGEN ── */}

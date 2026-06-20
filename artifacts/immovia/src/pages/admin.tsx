@@ -23,6 +23,7 @@ import {
   Loader2,
   ChevronRight,
   ShieldOff,
+  Star,
 } from "lucide-react";
 
 import { AdminOverview } from "./admin/overview";
@@ -33,6 +34,7 @@ import { AdminUsers } from "./admin/users";
 import { AdminApplications } from "./admin/applications";
 import { AdminCategories } from "./admin/categories";
 import { AdminReports } from "./admin/reports";
+import { AdminReviews } from "./admin/reviews";
 import { AdminSettings } from "./admin/settings";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -82,6 +84,7 @@ function buildNavGroups(t: ReturnType<typeof useLanguage>["t"]): NavGroup[] {
       items: [
         { path: "/admin/categories", label: t.admin.navCategories, sublabel: t.admin.navCategoriesSub, icon: Tag },
         { path: "/admin/reports", label: t.admin.navReports, sublabel: t.admin.navReportsSub, icon: Flag, badge: true },
+        { path: "/admin/reviews", label: t.admin.navReviews, sublabel: t.admin.navReviewsSub, icon: Star },
         { path: "/admin/settings", label: t.admin.navSettings, sublabel: t.admin.navSettingsSub, icon: Settings },
       ],
     },
@@ -327,6 +330,7 @@ function AdminShell({ onLogout }: { onLogout: () => void }) {
     if (location.startsWith("/admin/applications")) return <AdminApplications />;
     if (location.startsWith("/admin/categories")) return <AdminCategories />;
     if (location.startsWith("/admin/reports")) return <AdminReports />;
+    if (location.startsWith("/admin/reviews")) return <AdminReviews />;
     if (location.startsWith("/admin/settings")) return <AdminSettings />;
     return <AdminOverview />;
   };
