@@ -80,6 +80,9 @@ export interface InvoiceRow {
   paymentId: number;
   number: string;
   issuedAt: string;
+  kind?: string;
+  amountCents?: number;
+  status?: string;
 }
 
 export interface AppStats {

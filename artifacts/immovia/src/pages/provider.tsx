@@ -168,6 +168,8 @@ const L: Record<string, Record<string, string>> = {
     noInvoices: "Asnjë faturë ende.",
     downloadPdf: "Shkarko",
     paymentHistory: "Historiku i pagesave",
+    registrationFeeLabel: "Tarifë regjistrimi",
+    paidStatus: "Paguar",
     nextBilling: "Faturimi tjetër",
     periodEnd: "Fundi i periudhës",
     gateTitle: "Tarifa e Regjistrimit",
@@ -257,6 +259,8 @@ const L: Record<string, Record<string, string>> = {
     noInvoices: "No invoices yet.",
     downloadPdf: "Download",
     paymentHistory: "Payment history",
+    registrationFeeLabel: "Registration fee",
+    paidStatus: "Paid",
     nextBilling: "Next billing",
     periodEnd: "Period end",
     gateTitle: "Registration Fee",
@@ -346,6 +350,8 @@ const L: Record<string, Record<string, string>> = {
     noInvoices: "Noch keine Rechnungen.",
     downloadPdf: "Herunterladen",
     paymentHistory: "Zahlungsverlauf",
+    registrationFeeLabel: "Registrierungsgebühr",
+    paidStatus: "Bezahlt",
     nextBilling: "Nächste Abrechnung",
     periodEnd: "Periodenende",
     gateTitle: "Registrierungsgebühr",
@@ -435,6 +441,8 @@ const L: Record<string, Record<string, string>> = {
     noInvoices: "Pas encore de factures.",
     downloadPdf: "Télécharger",
     paymentHistory: "Historique des paiements",
+    registrationFeeLabel: "Frais d'inscription",
+    paidStatus: "Payé",
     nextBilling: "Prochaine facturation",
     periodEnd: "Fin de période",
     gateTitle: "Frais d'inscription",
@@ -1938,12 +1946,21 @@ export default function ProviderDashboard() {
                   <h3 className="font-bold mb-3">{l.invoicesTitle}</h3>
                   <div className="space-y-2">
                     {invoices.map((inv) => (
-                      <div key={inv.id} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
+                      <div key={`${inv.id}-${inv.kind ?? ""}`} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
                         <div>
-                          <div className="font-medium">{inv.number}</div>
+                          <div className="font-medium">
+                            {inv.kind === "registration" ? l.registrationFeeLabel : inv.number}
+                          </div>
                           <div className="text-xs text-muted-foreground">{format(new Date(inv.issuedAt), "MMM d, yyyy")}</div>
                         </div>
-                        <Button size="sm" variant="ghost" disabled>{l.downloadPdf}</Button>
+                        {inv.kind === "registration" ? (
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{formatCHF(inv.amountCents ?? 0)}</span>
+                            <Badge className="text-[10px] bg-green-100 text-green-800 hover:bg-green-100">{l.paidStatus}</Badge>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="ghost" disabled>{l.downloadPdf}</Button>
+                        )}
                       </div>
                     ))}
                     {invoices.length === 0 && (

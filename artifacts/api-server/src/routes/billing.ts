@@ -8,6 +8,8 @@ import {
   invoicesTable,
   offersTable,
   contactUnlocksTable,
+  usersTable,
+  companiesTable,
 } from "@workspace/db";
 import { getUnlockStats } from "../lib/planGating";
 import { requireProvider } from "../middlewares/requireProvider";
@@ -143,13 +145,36 @@ router.get("/billing/payments", requireProvider, async (req, res): Promise<void>
 
 router.get("/billing/invoices", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;
-  const payments = await db
-    .select()
-    .from(paymentsTable)
-    .where(eq(paymentsTable.userId, userId));
+  const [payments, user] = await Promise.all([
+    db.select().from(paymentsTable).where(eq(paymentsTable.userId, userId)),
+    db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1).then((r) => r[0]),
+  ]);
   const paymentIds = new Set(payments.map((p) => p.id));
   const allInvoices = await db.select().from(invoicesTable).orderBy(desc(invoicesTable.id));
-  res.json(allInvoices.filter((i) => paymentIds.has(i.paymentId)));
+  const regularInvoices = allInvoices.filter((i) => paymentIds.has(i.paymentId));
+
+  const result: Array<typeof regularInvoices[number] & { kind?: string; amountCents?: number; status?: string }> = [...regularInvoices];
+
+  if (user) {
+    const [company] = await db
+      .select({ registrationFeePaid: companiesTable.registrationFeePaid, createdAt: companiesTable.createdAt })
+      .from(companiesTable)
+      .where(eq(companiesTable.email, user.email))
+      .limit(1);
+    if (company?.registrationFeePaid) {
+      result.unshift({
+        id: 0,
+        paymentId: 0,
+        number: "REG-001",
+        issuedAt: company.createdAt instanceof Date ? company.createdAt : new Date(company.createdAt as string),
+        kind: "registration",
+        amountCents: 14900,
+        status: "paid",
+      });
+    }
+  }
+
+  res.json(result);
 });
 
 // NOTE: The legacy POST /billing/subscribe endpoint was removed before launch.
