@@ -1685,14 +1685,14 @@ export default function ProviderDashboard() {
                         <ProjectCard
                           key={p.id}
                           project={p}
-                          onClick={() => setDetailProject(p)}
+                          onClick={() => setLocation(`/projects/${p.id}`)}
                           footer={
                             <div className="flex gap-2 pt-3 border-t border-border/40">
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="flex-1"
-                                onClick={(e) => { e.stopPropagation(); setDetailProject(p); }}
+                                onClick={(e) => { e.stopPropagation(); setLocation(`/projects/${p.id}`); }}
                                 data-testid={`button-view-project-${p.id}`}
                               >
                                 {t.provider.viewDetails}
@@ -1720,14 +1720,14 @@ export default function ProviderDashboard() {
                       <ProjectCard
                         key={p.id}
                         project={p}
-                        onClick={() => setDetailProject(p)}
+                        onClick={() => setLocation(`/projects/${p.id}`)}
                         footer={
                           <div className="flex gap-2 pt-3 border-t border-border/40">
                             <Button
                               size="sm"
                               variant="outline"
                               className="flex-1"
-                              onClick={(e) => { e.stopPropagation(); setDetailProject(p); }}
+                              onClick={(e) => { e.stopPropagation(); setLocation(`/projects/${p.id}`); }}
                               data-testid={`button-view-project-${p.id}`}
                             >
                               {t.provider.viewDetails}
