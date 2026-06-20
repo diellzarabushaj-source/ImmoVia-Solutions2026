@@ -1558,7 +1558,7 @@ export default function ProviderDashboard() {
 
           {/* ── PROFILBILD & LOGO ── */}
           {activeSection === "profilbild" && (
-            <ProfilbildSection language={language} />
+            <ProfilbildSection language={language} accountSubtype={user?.accountSubtype} />
           )}
 
           {/* ── LEISTUNGEN & KATEGORIEN ── */}

@@ -6,11 +6,13 @@ import { PhotoUploader } from "@/components/photo-uploader";
 
 const L: Record<string, Record<string, string>> = {
   de: {
-    title: "Profilbild & Logo",
+    titleIndividual: "Profilbild",
+    titleCompany: "Firmenlogo",
+    titleCombined: "Profilbild & Logo",
     profilePic: "Profilbild",
-    profilePicHint: "Für Einzelanbieter. Empfohlen: quadratisches Format (JPG, PNG, max. 5 MB)",
+    profilePicHint: "Empfohlen: quadratisches Format (JPG, PNG, max. 5 MB)",
     logo: "Firmenlogo",
-    logoHint: "Für Unternehmen. Empfohlen: quadratisches Format (JPG, PNG, max. 5 MB)",
+    logoHint: "Empfohlen: quadratisches Format (JPG, PNG, max. 5 MB)",
     cover: "Titelbild",
     coverHint: "Grosses Bannerbild für Ihr öffentliches Profil. Empfohlen: breites Format (JPG, PNG, max. 5 MB)",
     save: "Bilder speichern",
@@ -21,11 +23,13 @@ const L: Record<string, Record<string, string>> = {
     remove: "Entfernen",
   },
   en: {
-    title: "Profile Photo & Logo",
+    titleIndividual: "Profile Photo",
+    titleCompany: "Company Logo",
+    titleCombined: "Profile Photo & Logo",
     profilePic: "Profile photo",
-    profilePicHint: "For individual providers. Recommended: square format (JPG, PNG, max 5 MB)",
+    profilePicHint: "Recommended: square format (JPG, PNG, max 5 MB)",
     logo: "Company logo",
-    logoHint: "For companies. Recommended: square format (JPG, PNG, max 5 MB)",
+    logoHint: "Recommended: square format (JPG, PNG, max 5 MB)",
     cover: "Cover image",
     coverHint: "Large banner for your public profile. Recommended: wide format (JPG, PNG, max 5 MB)",
     save: "Save images",
@@ -36,11 +40,13 @@ const L: Record<string, Record<string, string>> = {
     remove: "Remove",
   },
   sq: {
-    title: "Foto & Logo",
+    titleIndividual: "Foto Profili",
+    titleCompany: "Logo e Kompanisë",
+    titleCombined: "Foto & Logo",
     profilePic: "Foto profili",
-    profilePicHint: "Për ofrues individual. Format katrori rekomandohet (JPG, PNG, max 5 MB)",
+    profilePicHint: "Format katrori rekomandohet (JPG, PNG, max 5 MB)",
     logo: "Logo e kompanisë",
-    logoHint: "Për kompanitë. Format katrori rekomandohet (JPG, PNG, max 5 MB)",
+    logoHint: "Format katrori rekomandohet (JPG, PNG, max 5 MB)",
     cover: "Foto kryesore",
     coverHint: "Foto e madhe për profilin publik. Format i gjerë rekomandohet (JPG, PNG, max 5 MB)",
     save: "Ruaj fotografitë",
@@ -51,11 +57,13 @@ const L: Record<string, Record<string, string>> = {
     remove: "Hiq",
   },
   fr: {
-    title: "Photo & Logo",
+    titleIndividual: "Photo de profil",
+    titleCompany: "Logo de l'entreprise",
+    titleCombined: "Photo & Logo",
     profilePic: "Photo de profil",
-    profilePicHint: "Pour les prestataires individuels. Format carré recommandé (JPG, PNG, max 5 Mo)",
+    profilePicHint: "Format carré recommandé (JPG, PNG, max 5 Mo)",
     logo: "Logo de l'entreprise",
-    logoHint: "Pour les entreprises. Format carré recommandé (JPG, PNG, max 5 Mo)",
+    logoHint: "Format carré recommandé (JPG, PNG, max 5 Mo)",
     cover: "Image de couverture",
     coverHint: "Grande bannière pour votre profil public. Format large recommandé (JPG, PNG, max 5 Mo)",
     save: "Enregistrer les images",
@@ -69,14 +77,17 @@ const L: Record<string, Record<string, string>> = {
 
 interface Props {
   language: string;
+  accountSubtype?: string | null;
 }
 
-export default function ProfilbildSection({ language }: Props) {
+export default function ProfilbildSection({ language, accountSubtype }: Props) {
   const l = L[language] ?? L.de;
 
-  const [profilePhotoPath, setProfilePhotoPath] = useState<string>("");
-  const [logoPath, setLogoPath] = useState<string>("");
-  const [coverPath, setCoverPath] = useState<string>("");
+  const isCompany = accountSubtype === "company";
+  const isIndividual = accountSubtype === "individual";
+
+  // Title depends on subtype; fall back to combined if unknown
+  const sectionTitle = isCompany ? l.titleCompany : isIndividual ? l.titleIndividual : l.titleCombined;
 
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>("");
   const [logoUrl, setLogoUrl] = useState<string>("");
@@ -175,17 +186,10 @@ export default function ProfilbildSection({ language }: Props) {
 
   return (
     <div className="space-y-5">
-      <h2 className="text-xl font-serif font-bold">{l.title}</h2>
+      <h2 className="text-xl font-serif font-bold">{sectionTitle}</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ImageCard
-          label={l.profilePic}
-          hint={l.profilePicHint}
-          icon={<User className="w-4 h-4 text-primary" />}
-          currentUrl={profilePhotoUrl}
-          onUploaded={(url) => setProfilePhotoUrl(url)}
-          onRemove={() => setProfilePhotoUrl("")}
-        />
+      {/* Show only the relevant primary image based on subtype */}
+      {isCompany ? (
         <ImageCard
           label={l.logo}
           hint={l.logoHint}
@@ -194,7 +198,36 @@ export default function ProfilbildSection({ language }: Props) {
           onUploaded={(url) => setLogoUrl(url)}
           onRemove={() => setLogoUrl("")}
         />
-      </div>
+      ) : isIndividual ? (
+        <ImageCard
+          label={l.profilePic}
+          hint={l.profilePicHint}
+          icon={<User className="w-4 h-4 text-primary" />}
+          currentUrl={profilePhotoUrl}
+          onUploaded={(url) => setProfilePhotoUrl(url)}
+          onRemove={() => setProfilePhotoUrl("")}
+        />
+      ) : (
+        /* Subtype not yet set — show both so nothing is hidden */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ImageCard
+            label={l.profilePic}
+            hint={l.profilePicHint}
+            icon={<User className="w-4 h-4 text-primary" />}
+            currentUrl={profilePhotoUrl}
+            onUploaded={(url) => setProfilePhotoUrl(url)}
+            onRemove={() => setProfilePhotoUrl("")}
+          />
+          <ImageCard
+            label={l.logo}
+            hint={l.logoHint}
+            icon={<Building2 className="w-4 h-4 text-primary" />}
+            currentUrl={logoUrl}
+            onUploaded={(url) => setLogoUrl(url)}
+            onRemove={() => setLogoUrl("")}
+          />
+        </div>
+      )}
 
       <ImageCard
         label={l.cover}
