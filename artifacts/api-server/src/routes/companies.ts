@@ -37,7 +37,7 @@ function redactContact<T extends { email: string; phone: string }>(company: T): 
 }
 
 router.get("/companies", async (req, res): Promise<void> => {
-  const { city, type, status, workerType } = req.query;
+  const { city, type, status, workerType, featuredOnHome } = req.query;
   const conditions = [];
   if (typeof city === "string" && city.trim()) {
     conditions.push(ilike(companiesTable.city, `%${city.trim()}%`));
@@ -50,6 +50,9 @@ router.get("/companies", async (req, res): Promise<void> => {
   }
   if (typeof workerType === "string" && workerType.trim()) {
     conditions.push(eq(companiesTable.workerType, workerType.trim()));
+  }
+  if (featuredOnHome === "true") {
+    conditions.push(eq(companiesTable.featuredOnHome, true));
   }
   const companies = await db
     .select()
@@ -138,9 +141,10 @@ router.patch("/companies/:id", requireAdmin, async (req, res): Promise<void> => 
     return;
   }
 
-  const updateData: Record<string, string> = {};
+  const updateData: Record<string, unknown> = {};
   if (parsed.data.status != null) updateData.status = parsed.data.status;
   if (parsed.data.description != null) updateData.description = parsed.data.description;
+  if (parsed.data.featuredOnHome != null) updateData.featuredOnHome = parsed.data.featuredOnHome;
 
   const [company] = await db
     .update(companiesTable)

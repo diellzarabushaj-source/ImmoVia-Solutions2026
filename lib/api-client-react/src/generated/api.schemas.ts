@@ -125,6 +125,11 @@ export interface Company {
   profilePhoto?: string | null;
   /** pending | approved | rejected */
   status: string;
+  /**
+     * Admin-controlled: show this provider in the home page carousel
+     * @nullable
+     */
+  featuredOnHome?: boolean | null;
   createdAt: string;
 }
 
@@ -155,6 +160,8 @@ export interface CompanyInput {
 export interface CompanyUpdate {
   status?: string;
   description?: string;
+  /** Toggle home page carousel inclusion */
+  featuredOnHome?: boolean;
 }
 
 export interface CountByLabel {
@@ -407,6 +414,10 @@ status?: string;
  * Filter by worker type (individual | company)
  */
 workerType?: string;
+/**
+ * Filter to featured companies only ("true")
+ */
+featuredOnHome?: string;
 };
 
 export type ListCategoriesParams = {

@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import {
   MoreHorizontal, CheckCircle2, XCircle, Clock, Trash2, Loader2,
-  Plus, Building2, Search, PauseCircle, ExternalLink
+  Plus, Building2, Search, PauseCircle, ExternalLink, Star
 } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -141,9 +141,10 @@ type Company = {
   website?: string | null;
   status: string;
   createdAt: string;
+  featuredOnHome?: boolean | null;
 };
 
-function CompanyDrawer({ company, onClose, onAction }: { company: Company; onClose: () => void; onAction: (id: number, status: string) => void }) {
+function CompanyDrawer({ company, onClose, onAction, onToggleFeatured }: { company: Company; onClose: () => void; onAction: (id: number, status: string) => void; onToggleFeatured: (id: number, current: boolean) => void }) {
   const { t } = useLanguage();
   const { categories } = useCategories("service");
   return (
@@ -193,6 +194,25 @@ function CompanyDrawer({ company, onClose, onAction }: { company: Company; onClo
           </div>
 
           <div className="pt-4 border-t space-y-3">
+            {/* Featured on Home toggle */}
+            <div className="flex items-center justify-between p-3 rounded-lg border border-amber-200 bg-amber-50">
+              <div className="flex items-center gap-2">
+                <Star className={`h-4 w-4 ${company.featuredOnHome ? "fill-amber-400 text-amber-400" : "text-amber-300"}`} />
+                <div>
+                  <p className="text-xs font-semibold text-gray-800">Featured on Home</p>
+                  <p className="text-xs text-gray-500">Shfaqet në karusel të faqes kryesore</p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant={company.featuredOnHome ? "default" : "outline"}
+                className={company.featuredOnHome ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500 h-7 text-xs" : "border-amber-300 text-amber-700 hover:bg-amber-50 h-7 text-xs"}
+                onClick={() => { onToggleFeatured(company.id, !!company.featuredOnHome); onClose(); }}
+              >
+                {company.featuredOnHome ? "Hiq nga karusel" : "Shto në karusel"}
+              </Button>
+            </div>
+
             <div className="flex items-center justify-between">
               <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{t.admin.setStatus}</p>
               {company.status === "approved" && (
@@ -254,6 +274,10 @@ export function AdminCompanies() {
     updateCompany.mutate({ id, data: { status } }, { onSuccess: invalidate });
   };
 
+  const handleToggleFeatured = (id: number, current: boolean) => {
+    updateCompany.mutate({ id, data: { featuredOnHome: !current } }, { onSuccess: invalidate });
+  };
+
   const handleDelete = () => {
     if (deleteTarget === null) return;
     deleteCompany.mutate({ id: deleteTarget }, { onSuccess: invalidate });
@@ -309,12 +333,13 @@ export function AdminCompanies() {
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colLocation}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.date}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">Karusel</TableHead>
               <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={8} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
             {!isLoading && filtered.map((company) => (
               <TableRow key={company.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setDrawerCompany(company as Company)}>
@@ -343,6 +368,15 @@ export function AdminCompanies() {
                 <TableCell className="text-sm">{company.city}</TableCell>
                 <TableCell className="text-xs text-gray-500">{format(new Date(company.createdAt), "MMM d, yyyy")}</TableCell>
                 <TableCell><StatusBadge status={company.status} /></TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <button
+                    title={company.featuredOnHome ? "Hiq nga karusel" : "Shto në karusel"}
+                    onClick={() => handleToggleFeatured(company.id, !!company.featuredOnHome)}
+                    className={`p-1.5 rounded transition-colors ${company.featuredOnHome ? "text-amber-500 hover:text-amber-600" : "text-gray-300 hover:text-amber-400"}`}
+                  >
+                    <Star className={`h-4 w-4 ${company.featuredOnHome ? "fill-amber-400" : ""}`} />
+                  </button>
+                </TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -379,7 +413,7 @@ export function AdminCompanies() {
               </TableRow>
             ))}
             {!isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={8} className="h-24 text-center text-gray-400">{t.admin.noCompaniesFound}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="h-24 text-center text-gray-400">{t.admin.noCompaniesFound}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -392,6 +426,7 @@ export function AdminCompanies() {
           company={drawerCompany}
           onClose={() => setDrawerCompany(null)}
           onAction={(id, status) => { handleAction(id, status); setDrawerCompany(null); }}
+          onToggleFeatured={(id, current) => { handleToggleFeatured(id, current); setDrawerCompany(null); }}
         />
       )}
 

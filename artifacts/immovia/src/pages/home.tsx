@@ -79,6 +79,7 @@ export default function Home() {
   const [, navigate] = useLocation();
   const { categories: serviceCategories } = useCategories("service");
   const { data: companies, isLoading: isLoadingCompanies } = useListCompanies();
+  const { data: featuredCompanies, isLoading: isLoadingFeatured } = useListCompanies({ featuredOnHome: "true" });
   const { data: projects, isLoading: isLoadingProjects } = useListProjects();
   const [listingTypeFilter, setListingTypeFilter] = useState(() => new URLSearchParams(search).get("type") ?? "");
   const [listingCityFilter, setListingCityFilter] = useState(() => new URLSearchParams(search).get("city") ?? "");
@@ -117,12 +118,13 @@ export default function Home() {
     () => companies?.filter(c => c.status === "approved").slice(0, 6) ?? [],
     [companies]
   );
-  const carouselCompanies = useMemo(
-    () => (!isLoadingCompanies && previewCompanies.length > 0)
-      ? [...previewCompanies, ...previewCompanies, ...previewCompanies, ...previewCompanies]
-      : null,
-    [isLoadingCompanies, previewCompanies]
-  );
+  const carouselCompanies = useMemo(() => {
+    if (isLoadingFeatured) return null;
+    const base = (featuredCompanies ?? []).filter(c => c.status === "approved");
+    if (base.length === 0) return null;
+    const times = Math.max(4, Math.ceil(8 / base.length));
+    return Array.from({ length: times }, () => base).flat();
+  }, [isLoadingFeatured, featuredCompanies]);
   const hasListingFilter = !!(listingTypeFilter || listingCityFilter || listingSizeFilter || listingBudgetFilter);
   const previewProjects = useMemo(() => {
     let list = (projects ?? []).filter(p => p.status === "open");

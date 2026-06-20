@@ -38,5 +38,10 @@ export interface Company {
   profilePhoto?: string | null;
   /** pending | approved | rejected */
   status: string;
+  /**
+     * Admin-controlled: show this provider in the home page carousel
+     * @nullable
+     */
+  featuredOnHome?: boolean | null;
   createdAt: Date;
 }

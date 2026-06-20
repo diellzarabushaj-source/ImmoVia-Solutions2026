@@ -170,7 +170,8 @@ export const ListCompaniesQueryParams = zod.object({
   "city": zod.coerce.string().optional().describe('Filter by city (case-insensitive partial match)'),
   "type": zod.coerce.string().optional().describe('Filter by service type'),
   "status": zod.coerce.string().optional().describe('Filter by status (pending | approved | rejected)'),
-  "workerType": zod.coerce.string().optional().describe('Filter by worker type (individual | company)')
+  "workerType": zod.coerce.string().optional().describe('Filter by worker type (individual | company)'),
+  "featuredOnHome": zod.coerce.string().optional().describe('Filter to featured companies only (\"true\")')
 })
 
 export const ListCompaniesResponseItem = zod.object({
@@ -190,6 +191,7 @@ export const ListCompaniesResponseItem = zod.object({
   "hourlyRate": zod.number().nullish().describe('Hourly rate in EUR (for individual workers only)'),
   "profilePhoto": zod.string().nullish().describe('Object path of the profile photo'),
   "status": zod.string().describe('pending | approved | rejected'),
+  "featuredOnHome": zod.boolean().nullish().describe('Admin-controlled: show this provider in the home page carousel'),
   "createdAt": zod.coerce.date()
 })
 export const ListCompaniesResponse = zod.array(ListCompaniesResponseItem)
@@ -247,6 +249,7 @@ export const GetCompanyResponse = zod.object({
   "hourlyRate": zod.number().nullish().describe('Hourly rate in EUR (for individual workers only)'),
   "profilePhoto": zod.string().nullish().describe('Object path of the profile photo'),
   "status": zod.string().describe('pending | approved | rejected'),
+  "featuredOnHome": zod.boolean().nullish().describe('Admin-controlled: show this provider in the home page carousel'),
   "createdAt": zod.coerce.date()
 })
 
@@ -260,7 +263,8 @@ export const UpdateCompanyParams = zod.object({
 
 export const UpdateCompanyBody = zod.object({
   "status": zod.string().optional(),
-  "description": zod.string().optional()
+  "description": zod.string().optional(),
+  "featuredOnHome": zod.boolean().optional().describe('Toggle home page carousel inclusion')
 })
 
 export const UpdateCompanyResponse = zod.object({
@@ -280,6 +284,7 @@ export const UpdateCompanyResponse = zod.object({
   "hourlyRate": zod.number().nullish().describe('Hourly rate in EUR (for individual workers only)'),
   "profilePhoto": zod.string().nullish().describe('Object path of the profile photo'),
   "status": zod.string().describe('pending | approved | rejected'),
+  "featuredOnHome": zod.boolean().nullish().describe('Admin-controlled: show this provider in the home page carousel'),
   "createdAt": zod.coerce.date()
 })
 

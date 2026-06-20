@@ -196,6 +196,12 @@ paths:
           schema:
             type: string
           description: Filter by worker type (individual | company)
+        - name: featuredOnHome
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter to featured companies only ("true")
       responses:
         "200":
           description: List of companies
@@ -895,6 +901,9 @@ components:
         status:
           type: string
           description: "pending | approved | rejected"
+        featuredOnHome:
+          type: ["boolean", "null"]
+          description: "Admin-controlled: show this provider in the home page carousel"
         createdAt:
           type: string
           format: date-time
@@ -952,6 +961,9 @@ components:
           type: string
         description:
           type: string
+        featuredOnHome:
+          type: boolean
+          description: "Toggle home page carousel inclusion"
 
     AdminStats:
       type: object

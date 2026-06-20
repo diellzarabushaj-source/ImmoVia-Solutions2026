@@ -9,4 +9,6 @@
 export interface CompanyUpdate {
   status?: string;
   description?: string;
+  /** Toggle home page carousel inclusion */
+  featuredOnHome?: boolean;
 }

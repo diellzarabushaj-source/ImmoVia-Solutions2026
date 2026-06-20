@@ -23,4 +23,8 @@ status?: string;
  * Filter by worker type (individual | company)
  */
 workerType?: string;
+/**
+ * Filter to featured companies only ("true")
+ */
+featuredOnHome?: string;
 };
