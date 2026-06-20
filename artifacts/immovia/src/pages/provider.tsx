@@ -76,6 +76,7 @@ import {
   Send,
   LogOut,
   CheckCircle2,
+  Save,
 } from "lucide-react";
 import MessageThread from "@/components/MessageThread";
 import { MessagingSystem } from "@/components/MessagingSystem";
@@ -145,6 +146,12 @@ const L: Record<string, Record<string, string>> = {
     settingsSubCompany: "Kompani",
     settingsLanguage: "Gjuha",
     settingsLanguageHint: "Zgjidhni gjuhën e panelit tuaj",
+    settingsPersonalInfo: "Të dhëna personale",
+    settingsCompanyInfo: "Të dhëna të kompanisë",
+    settingsYearsExp: "Vite përvojë",
+    settingsCompanyName: "Emri i kompanisë",
+    settingsContactName: "Personi i kontaktit",
+    settingsCompanyDesc: "Rreth kompanisë",
     settingsSession: "Sesioni",
     settingsLogout: "Dil nga llogaria",
     settingsLogoutHint: "Dilni nga llogaria juaj në mënyrë të sigurt",
@@ -236,6 +243,12 @@ const L: Record<string, Record<string, string>> = {
     settingsSubCompany: "Company",
     settingsLanguage: "Language",
     settingsLanguageHint: "Choose your dashboard language",
+    settingsPersonalInfo: "Personal information",
+    settingsCompanyInfo: "Company information",
+    settingsYearsExp: "Years of experience",
+    settingsCompanyName: "Company name",
+    settingsContactName: "Contact person",
+    settingsCompanyDesc: "About the company",
     settingsSession: "Session",
     settingsLogout: "Log out",
     settingsLogoutHint: "Sign out of your account securely",
@@ -327,6 +340,12 @@ const L: Record<string, Record<string, string>> = {
     settingsSubCompany: "Unternehmen",
     settingsLanguage: "Sprache",
     settingsLanguageHint: "Wählen Sie die Sprache Ihres Dashboards",
+    settingsPersonalInfo: "Persönliche Angaben",
+    settingsCompanyInfo: "Unternehmensangaben",
+    settingsYearsExp: "Jahre Erfahrung",
+    settingsCompanyName: "Unternehmensname",
+    settingsContactName: "Kontaktperson",
+    settingsCompanyDesc: "Über das Unternehmen",
     settingsSession: "Sitzung",
     settingsLogout: "Abmelden",
     settingsLogoutHint: "Melden Sie sich sicher von Ihrem Konto ab",
@@ -418,6 +437,12 @@ const L: Record<string, Record<string, string>> = {
     settingsSubCompany: "Entreprise",
     settingsLanguage: "Langue",
     settingsLanguageHint: "Choisissez la langue de votre tableau de bord",
+    settingsPersonalInfo: "Informations personnelles",
+    settingsCompanyInfo: "Informations sur l'entreprise",
+    settingsYearsExp: "Années d'expérience",
+    settingsCompanyName: "Nom de l'entreprise",
+    settingsContactName: "Personne de contact",
+    settingsCompanyDesc: "À propos de l'entreprise",
     settingsSession: "Session",
     settingsLogout: "Se déconnecter",
     settingsLogoutHint: "Déconnectez-vous de votre compte en toute sécurité",
@@ -529,6 +554,14 @@ export default function ProviderDashboard() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
+
+  const [settingsForm, setSettingsForm] = useState({
+    fullName: "", phone: "", city: "", bio: "", website: "",
+    yearsExperience: "", companyName: "", contactName: "", description: "",
+  });
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsMsg, setSettingsMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   const [registrationGate, setRegistrationGate] = useState<"checking" | "package_unpaid" | "unpaid" | "paid" | "error">("checking");
   const [gateFetchTrigger, setGateFetchTrigger] = useState(0);
@@ -645,6 +678,76 @@ export default function ProviderDashboard() {
       setProfileMsg({ type: "err", text: l.profileError });
     } finally {
       setProfileSaving(false);
+    }
+  };
+
+  const loadSettings = async () => {
+    if (settingsLoaded) return;
+    try {
+      const r = await fetch("/api/provider/profile");
+      if (!r.ok) return;
+      const d = await r.json() as {
+        user: {
+          fullName?: string | null;
+          phone?: string | null;
+          city?: string | null;
+          bio?: string | null;
+          website?: string | null;
+          yearsExperience?: number | null;
+        };
+        company?: {
+          companyName?: string | null;
+          contactName?: string | null;
+          description?: string | null;
+          phone?: string | null;
+          city?: string | null;
+          website?: string | null;
+        } | null;
+      };
+      setSettingsForm({
+        fullName: d.user.fullName ?? "",
+        phone: d.user.phone ?? d.company?.phone ?? "",
+        city: d.user.city ?? d.company?.city ?? "",
+        bio: d.user.bio ?? "",
+        website: d.user.website ?? d.company?.website ?? "",
+        yearsExperience: d.user.yearsExperience != null ? String(d.user.yearsExperience) : "",
+        companyName: d.company?.companyName ?? "",
+        contactName: d.company?.contactName ?? "",
+        description: d.company?.description ?? "",
+      });
+      setSettingsLoaded(true);
+    } catch { /* ignore */ }
+  };
+
+  const saveSettings = async () => {
+    setSettingsSaving(true);
+    setSettingsMsg(null);
+    try {
+      const payload: Record<string, unknown> = {
+        fullName: settingsForm.fullName,
+        phone: settingsForm.phone,
+        city: settingsForm.city,
+        bio: settingsForm.bio,
+        website: settingsForm.website,
+      };
+      if (settingsForm.yearsExperience !== "") payload.yearsExperience = Number(settingsForm.yearsExperience);
+      if (user?.accountSubtype === "company") {
+        payload.companyName = settingsForm.companyName;
+        payload.contactName = settingsForm.contactName;
+        payload.description = settingsForm.description;
+      }
+      const r = await fetch("/api/provider/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) throw new Error();
+      setSettingsMsg({ type: "ok", text: l.profileSaved });
+      setSettingsLoaded(false);
+    } catch {
+      setSettingsMsg({ type: "err", text: l.profileError });
+    } finally {
+      setSettingsSaving(false);
     }
   };
 
@@ -1990,40 +2093,165 @@ export default function ProviderDashboard() {
           )}
 
           {/* ── EINSTELLUNGEN ── */}
+          {activeSection === "einstellungen" && (() => { void loadSettings(); return null; })()}
           {activeSection === "einstellungen" && (
             <div>
               <h2 className="text-xl font-serif font-bold mb-6">{l.navSettings}</h2>
               <div className="space-y-5 max-w-2xl">
-                {/* Account */}
+                {/* Account — read-only meta */}
                 <Card className="p-6">
                   <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
                     <User className="w-4 h-4 text-primary" />
                     {l.settingsAccount}
                   </h3>
-                  <div className="grid gap-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="settings-name" className="text-xs mb-1 block">{l.settingsName}</Label>
-                        <Input id="settings-name" value={user.fullName} readOnly className="bg-muted/40" />
-                      </div>
+                  <div className="grid gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <Label htmlFor="settings-email" className="text-xs mb-1 block">{l.settingsEmail}</Label>
                         <Input id="settings-email" value={user.email} readOnly className="bg-muted/40" />
                       </div>
-                    </div>
-                    <div>
-                      <Label className="text-xs mb-1.5 block">{l.settingsRole}</Label>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-primary/10 text-primary border-primary/20 gap-1 hover:bg-primary/10">
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          {l.settingsRoleProvider}
-                        </Badge>
-                        {user.accountSubtype && (
-                          <Badge variant="outline">
-                            {user.accountSubtype === "company" ? l.settingsSubCompany : l.settingsSubIndividual}
+                      <div>
+                        <Label className="text-xs mb-1 block">{l.settingsRole}</Label>
+                        <div className="flex items-center gap-2 h-10">
+                          <Badge className="bg-primary/10 text-primary border-primary/20 gap-1 hover:bg-primary/10">
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            {l.settingsRoleProvider}
                           </Badge>
-                        )}
+                          {user.accountSubtype && (
+                            <Badge variant="outline">
+                              {user.accountSubtype === "company" ? l.settingsSubCompany : l.settingsSubIndividual}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Personal / Company editable fields */}
+                <Card className="p-6">
+                  <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-primary" />
+                    {user.accountSubtype === "company" ? l.settingsCompanyInfo : l.settingsPersonalInfo}
+                  </h3>
+                  <div className="grid gap-4">
+                    {/* Full name — always editable */}
+                    <div>
+                      <Label htmlFor="sf-name" className="text-xs mb-1 block">{l.settingsName}</Label>
+                      <Input
+                        id="sf-name"
+                        value={settingsForm.fullName}
+                        onChange={(e) => setSettingsForm(f => ({ ...f, fullName: e.target.value }))}
+                        maxLength={150}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="sf-phone" className="text-xs mb-1 block">{l.profilePhone}</Label>
+                        <Input
+                          id="sf-phone"
+                          value={settingsForm.phone}
+                          onChange={(e) => setSettingsForm(f => ({ ...f, phone: e.target.value }))}
+                          maxLength={50}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="sf-city" className="text-xs mb-1 block">{l.profileCity}</Label>
+                        <Input
+                          id="sf-city"
+                          value={settingsForm.city}
+                          onChange={(e) => setSettingsForm(f => ({ ...f, city: e.target.value }))}
+                          maxLength={100}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Individual-only: bio + years of experience */}
+                    {user.accountSubtype !== "company" && (
+                      <>
+                        <div>
+                          <Label htmlFor="sf-bio" className="text-xs mb-1 block">{l.profileBio}</Label>
+                          <textarea
+                            id="sf-bio"
+                            rows={3}
+                            maxLength={1000}
+                            value={settingsForm.bio}
+                            onChange={(e) => setSettingsForm(f => ({ ...f, bio: e.target.value }))}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="sf-years" className="text-xs mb-1 block">{l.settingsYearsExp}</Label>
+                          <Input
+                            id="sf-years"
+                            type="number"
+                            min={0}
+                            max={60}
+                            value={settingsForm.yearsExperience}
+                            onChange={(e) => setSettingsForm(f => ({ ...f, yearsExperience: e.target.value }))}
+                            className="max-w-[160px]"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Company-only: company name, contact name, website, description */}
+                    {user.accountSubtype === "company" && (
+                      <>
+                        <div>
+                          <Label htmlFor="sf-cname" className="text-xs mb-1 block">{l.settingsCompanyName}</Label>
+                          <Input
+                            id="sf-cname"
+                            value={settingsForm.companyName}
+                            onChange={(e) => setSettingsForm(f => ({ ...f, companyName: e.target.value }))}
+                            maxLength={200}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="sf-contact" className="text-xs mb-1 block">{l.settingsContactName}</Label>
+                          <Input
+                            id="sf-contact"
+                            value={settingsForm.contactName}
+                            onChange={(e) => setSettingsForm(f => ({ ...f, contactName: e.target.value }))}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="sf-web" className="text-xs mb-1 block">{l.profileWebsite}</Label>
+                          <Input
+                            id="sf-web"
+                            value={settingsForm.website}
+                            onChange={(e) => setSettingsForm(f => ({ ...f, website: e.target.value }))}
+                            maxLength={200}
+                            placeholder="https://"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="sf-desc" className="text-xs mb-1 block">{l.settingsCompanyDesc}</Label>
+                          <textarea
+                            id="sf-desc"
+                            rows={4}
+                            maxLength={2000}
+                            value={settingsForm.description}
+                            onChange={(e) => setSettingsForm(f => ({ ...f, description: e.target.value }))}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Save row */}
+                    <div className="flex items-center gap-3 pt-1">
+                      <Button onClick={() => void saveSettings()} disabled={settingsSaving}>
+                        {settingsSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                        {l.profileSave}
+                      </Button>
+                      {settingsMsg && (
+                        <p className={`text-sm ${settingsMsg.type === "ok" ? "text-green-600" : "text-destructive"}`}>
+                          {settingsMsg.text}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </Card>

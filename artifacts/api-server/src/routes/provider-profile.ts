@@ -41,6 +41,7 @@ router.patch("/provider/profile", requireContractor, async (req, res): Promise<v
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
 
   const userUpdates: Record<string, unknown> = {};
+  if (typeof body.fullName === "string" && body.fullName.trim().length >= 2) userUpdates.fullName = body.fullName.trim().slice(0, 150);
   if (typeof body.bio === "string") userUpdates.bio = body.bio.slice(0, 1000);
   if (typeof body.phone === "string") userUpdates.phone = body.phone.slice(0, 50);
   if (typeof body.city === "string") userUpdates.city = body.city.slice(0, 100);
