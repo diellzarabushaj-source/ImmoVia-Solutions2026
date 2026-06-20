@@ -89,6 +89,8 @@ import BewertungenSection from "@/components/provider/BewertungenSection";
 import LeistungenSection from "@/components/provider/LeistungenSection";
 import PreiseSection from "@/components/provider/PreiseSection";
 import { format } from "date-fns";
+import { PlanCards } from "@/components/PlanCards";
+import type { PlanType } from "@/components/PlanCards";
 
 function formatCHF(cents: number): string {
   if (cents === 0) return "CHF 0";
@@ -885,12 +887,11 @@ export default function ProviderDashboard() {
       }
     };
 
-    const planLabel = gateCompanyPlan === "professional" ? "Professional" : gateCompanyPlan === "premium" ? "Premium" : "Basic";
     const planPrice = gateCompanyPlan === "premium" ? 149 : gateCompanyPlan === "professional" ? 99 : 49;
 
     return (
       <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-2xl">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <CreditCard className="w-8 h-8" />
@@ -902,44 +903,27 @@ export default function ProviderDashboard() {
                "Activate Your Plan"}
             </h2>
             <p className="text-muted-foreground text-sm">
-              {language === "sq" ? `Keni zgjedhur paketën ${planLabel}. Plotësoni pagesën mujore për të aktivizuar profilin tuaj.` :
-               language === "de" ? `Sie haben das ${planLabel}-Paket gewählt. Schliessen Sie die monatliche Zahlung ab, um Ihr Profil zu aktivieren.` :
-               language === "fr" ? `Vous avez choisi le forfait ${planLabel}. Finalisez le paiement mensuel pour activer votre profil.` :
-               `You chose the ${planLabel} plan. Complete the monthly payment to activate your profile.`}
+              {language === "sq" ? "Zgjidhni paketën dhe plotësoni pagesën mujore për të aktivizuar profilin tuaj." :
+               language === "de" ? "Wählen Sie Ihr Paket und schliessen Sie die monatliche Zahlung ab, um Ihr Profil zu aktivieren." :
+               language === "fr" ? "Choisissez votre forfait et finalisez le paiement mensuel pour activer votre profil." :
+               "Choose your plan and complete the monthly payment to activate your profile."}
             </p>
           </div>
 
-          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm mb-4">
-            <div className="bg-[#1a3a6e] text-white px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 opacity-80" />
-                <span className="text-sm font-semibold uppercase tracking-wide">{planLabel}</span>
-              </div>
-              <span className="text-xl font-bold">CHF {planPrice}<span className="text-sm font-normal opacity-70">/mo</span></span>
-            </div>
-            <div className="px-6 py-5 space-y-3">
-              {[
-                language === "sq" ? "Listim në drejtorinë e kontraktorëve" : language === "de" ? "Aufnahme ins Auftragnehmerverzeichnis" : language === "fr" ? "Référencement dans l'annuaire" : "Listed in the contractor directory",
-                language === "sq" ? "Qasje në projekte dhe oferta" : language === "de" ? "Zugang zu Projekten und Angeboten" : language === "fr" ? "Accès aux projets et aux offres" : "Access to projects and quotes",
-                language === "sq" ? "Mbështetje me prioritet" : language === "de" ? "Priorisierter Support" : language === "fr" ? "Support prioritaire" : "Priority support",
-              ].map((feat, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
-                  <p className="text-sm text-foreground">{feat}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <PlanCards
+            selected={gateCompanyPlan as PlanType}
+            onSelect={(pt) => setGateCompanyPlan(pt)}
+          />
 
           {gatePaymentError && (
-            <p className="text-sm text-red-600 text-center mb-3">{gatePaymentError}</p>
+            <p className="text-sm text-red-600 text-center mb-3 mt-4">{gatePaymentError}</p>
           )}
 
           <Button
             size="lg"
-            className="w-full bg-[#1a3a6e] hover:bg-[#0f2044]"
+            className="w-full bg-[#1a3a6e] hover:bg-[#0f2044] mt-4"
             onClick={() => void handlePackagePay()}
-            disabled={gatePaymentLoading}
+            disabled={gatePaymentLoading || !gateCompanyPlan}
           >
             {gatePaymentLoading ? (
               <span className="flex items-center gap-2">
