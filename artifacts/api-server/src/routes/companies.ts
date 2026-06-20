@@ -21,7 +21,7 @@ import {
 } from "@workspace/api-zod";
 import { getAuth } from "@clerk/express";
 import { requireAdmin } from "../middlewares/requireAdmin";
-import { sendNewCompanyNotification, sendProviderApprovedNotification, sendProviderSuspendedNotification } from "../lib/email";
+import { sendNewCompanyNotification, sendProviderApprovedNotification, sendProviderSuspendedNotification, sendCompanyRejectedNotification } from "../lib/email";
 import { createNotification } from "../lib/notify";
 import { usersTable } from "@workspace/db";
 import type { Request } from "express";
@@ -175,7 +175,7 @@ router.patch("/companies/:id", requireAdmin, async (req, res): Promise<void> => 
     void (async () => {
       try {
         const [providerUser] = await db
-          .select({ id: usersTable.id, email: usersTable.email, fullName: usersTable.fullName })
+          .select({ id: usersTable.id, email: usersTable.email, fullName: usersTable.fullName, language: usersTable.language })
           .from(usersTable)
           .where(eq(usersTable.email, company.email))
           .limit(1);
@@ -193,8 +193,23 @@ router.patch("/companies/:id", requireAdmin, async (req, res): Promise<void> => 
             providerEmail: providerUser.email,
             providerName: providerUser.fullName,
             companyName: company.companyName,
+            language: providerUser.language,
           });
-        } else if (newStatus === "suspended" || newStatus === "rejected") {
+        } else if (newStatus === "rejected") {
+          await createNotification({
+            recipientUserId: providerUser.id,
+            type: "provider_suspended",
+            title: "Regjistrimi nuk u aprovua",
+            message: `Aplikimi i kompanisë (${company.companyName}) nuk u aprovua.`,
+            relatedCompanyId: company.id,
+          });
+          await sendCompanyRejectedNotification({
+            providerEmail: providerUser.email,
+            providerName: providerUser.fullName,
+            companyName: company.companyName,
+            language: providerUser.language,
+          });
+        } else if (newStatus === "suspended") {
           await createNotification({
             recipientUserId: providerUser.id,
             type: "provider_suspended",
@@ -206,6 +221,7 @@ router.patch("/companies/:id", requireAdmin, async (req, res): Promise<void> => 
             providerEmail: providerUser.email,
             providerName: providerUser.fullName,
             companyName: company.companyName,
+            language: providerUser.language,
           });
         }
       } catch (err) {

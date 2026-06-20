@@ -401,6 +401,7 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
                 projectType: project.projectType,
                 city: project.city,
                 projectId: project.id,
+                language: clientUser.language,
               });
             } else if (isRejected) {
               await createNotification({
@@ -415,6 +416,7 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
                 clientName: clientUser.fullName,
                 projectType: project.projectType,
                 city: project.city,
+                language: clientUser.language,
               });
             }
           }
@@ -425,7 +427,7 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
           void (async () => {
             try {
               const premiumUsers = await db
-                .select({ email: usersTable.email, fullName: usersTable.fullName })
+                .select({ email: usersTable.email, fullName: usersTable.fullName, language: usersTable.language })
                 .from(subscriptionsTable)
                 .innerJoin(subscriptionPlansTable, eq(subscriptionsTable.planId, subscriptionPlansTable.id))
                 .innerJoin(usersTable, eq(subscriptionsTable.userId, usersTable.id))
@@ -436,6 +438,7 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
                 await sendPremiumProjectNotification({
                   recipientEmail: u.email,
                   recipientName: u.fullName ?? "Provider",
+                  language: u.language,
                   projectType: project.projectType,
                   city: project.city,
                   projectId: project.id,

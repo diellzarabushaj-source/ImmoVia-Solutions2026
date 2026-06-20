@@ -5,7 +5,7 @@ import { requireAuth } from "../middlewares/requireAuth";
 import { requireProvider } from "../middlewares/requireProvider";
 import { rollSubscriptionCycle } from "../lib/credits";
 import { PLAN_APP_LIMITS } from "./billing";
-import { sendNewOfferNotification, sendOfferAcceptedNotification } from "../lib/email";
+import { sendNewOfferNotification, sendOfferAcceptedNotification, sendOfferRejectedNotification } from "../lib/email";
 import { createNotification } from "../lib/notify";
 
 const PROJECT_SIZE_OFFER_CAP: Record<string, number> = {
@@ -343,6 +343,72 @@ router.post("/offers/:id/accept", requireAuth, async (req, res): Promise<void> =
       }
     } catch (err) {
       req.log.error({ err }, "Failed to send offer accepted notification");
+    }
+  })();
+
+  res.json({ ok: true });
+});
+
+// Client: reject a provider's offer
+router.post("/offers/:id/reject", requireAuth, async (req, res): Promise<void> => {
+  const offerId = Number(req.params.id);
+  if (!Number.isFinite(offerId)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+  const userId = req.userId!;
+  const [offer] = await db.select().from(offersTable).where(eq(offersTable.id, offerId));
+  if (!offer) {
+    res.status(404).json({ error: "Offer not found" });
+    return;
+  }
+  const [project] = await db
+    .select()
+    .from(projectsTable)
+    .where(eq(projectsTable.id, offer.projectId));
+  if (!project || project.ownerUserId !== userId) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  if (offer.status !== "pending") {
+    res.status(409).json({ error: "Offer is no longer pending" });
+    return;
+  }
+  await db.update(offersTable).set({ status: "rejected" }).where(eq(offersTable.id, offerId));
+
+  // Notify provider that their offer was rejected (fire-and-forget)
+  void (async () => {
+    try {
+      const [providerUser] = await db
+        .select({ email: usersTable.email, fullName: usersTable.fullName, language: usersTable.language })
+        .from(usersTable)
+        .where(eq(usersTable.id, offer.providerUserId))
+        .limit(1);
+      const [clientUser] = await db
+        .select({ fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+      if (providerUser && clientUser) {
+        await createNotification({
+          recipientUserId: offer.providerUserId,
+          type: "offer_accepted",
+          title: "Ihr Angebot wurde nicht ausgewählt",
+          message: `${clientUser.fullName} hat ein anderes Angebot für das Projekt (${project.projectType} in ${project.city}) gewählt.`,
+          relatedProjectId: project.id,
+        });
+        await sendOfferRejectedNotification({
+          providerEmail: providerUser.email,
+          providerName: providerUser.fullName,
+          clientName: clientUser.fullName,
+          projectType: project.projectType,
+          city: project.city,
+          offerId,
+          language: providerUser.language,
+        });
+      }
+    } catch (err) {
+      req.log.error({ err }, "Failed to send offer rejected notification");
     }
   })();
 
