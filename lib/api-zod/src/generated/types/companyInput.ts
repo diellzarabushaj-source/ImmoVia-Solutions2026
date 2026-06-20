@@ -28,4 +28,6 @@ export interface CompanyInput {
   hourlyRate?: number;
   /** Object path of the profile photo */
   profilePhoto?: string;
+  /** basic | professional | premium */
+  planType?: string;
 }

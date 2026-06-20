@@ -194,6 +194,7 @@ export const ListCompaniesResponseItem = zod.object({
   "featuredOnHome": zod.boolean().nullish().describe('Admin-controlled: show this provider in the home page carousel'),
   "registrationFeePaid": zod.boolean().nullish().describe('Whether the one-time CHF 149 registration fee has been paid'),
   "stripeRegistrationSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the registration fee'),
+  "planType": zod.string().nullish().describe('basic | professional | premium'),
   "createdAt": zod.coerce.date()
 })
 export const ListCompaniesResponse = zod.array(ListCompaniesResponseItem)
@@ -223,7 +224,8 @@ export const CreateCompanyBody = zod.object({
   "yearsExperience": zod.number().optional(),
   "workerType": zod.string().optional().describe('individual | company'),
   "hourlyRate": zod.number().optional().describe('Hourly rate in EUR (for individual workers only)'),
-  "profilePhoto": zod.string().optional().describe('Object path of the profile photo')
+  "profilePhoto": zod.string().optional().describe('Object path of the profile photo'),
+  "planType": zod.string().optional().describe('basic | professional | premium')
 })
 
 
@@ -254,6 +256,7 @@ export const GetCompanyResponse = zod.object({
   "featuredOnHome": zod.boolean().nullish().describe('Admin-controlled: show this provider in the home page carousel'),
   "registrationFeePaid": zod.boolean().nullish().describe('Whether the one-time CHF 149 registration fee has been paid'),
   "stripeRegistrationSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the registration fee'),
+  "planType": zod.string().nullish().describe('basic | professional | premium'),
   "createdAt": zod.coerce.date()
 })
 
@@ -291,6 +294,7 @@ export const UpdateCompanyResponse = zod.object({
   "featuredOnHome": zod.boolean().nullish().describe('Admin-controlled: show this provider in the home page carousel'),
   "registrationFeePaid": zod.boolean().nullish().describe('Whether the one-time CHF 149 registration fee has been paid'),
   "stripeRegistrationSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the registration fee'),
+  "planType": zod.string().nullish().describe('basic | professional | premium'),
   "createdAt": zod.coerce.date()
 })
 

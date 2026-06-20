@@ -53,5 +53,10 @@ export interface Company {
      * @nullable
      */
   stripeRegistrationSessionId?: string | null;
+  /**
+     * basic | professional | premium
+     * @nullable
+     */
+  planType?: string | null;
   createdAt: Date;
 }

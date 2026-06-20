@@ -140,6 +140,11 @@ export interface Company {
      * @nullable
      */
   stripeRegistrationSessionId?: string | null;
+  /**
+     * basic | professional | premium
+     * @nullable
+     */
+  planType?: string | null;
   createdAt: string;
 }
 
@@ -165,6 +170,8 @@ export interface CompanyInput {
   hourlyRate?: number;
   /** Object path of the profile photo */
   profilePhoto?: string;
+  /** basic | professional | premium */
+  planType?: string;
 }
 
 export interface CompanyUpdate {

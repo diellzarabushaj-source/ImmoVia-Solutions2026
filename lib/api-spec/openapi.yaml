@@ -964,6 +964,9 @@ components:
         stripeRegistrationSessionId:
           type: ["string", "null"]
           description: "Stripe Checkout session ID for the registration fee"
+        planType:
+          type: ["string", "null"]
+          description: "basic | professional | premium"
         createdAt:
           type: string
           format: date-time
@@ -1013,6 +1016,9 @@ components:
         profilePhoto:
           type: string
           description: "Object path of the profile photo"
+        planType:
+          type: string
+          description: "basic | professional | premium"
 
     CompanyUpdate:
       type: object
