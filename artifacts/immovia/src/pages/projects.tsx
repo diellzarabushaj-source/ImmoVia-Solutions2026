@@ -83,7 +83,7 @@ export default function Projects() {
     if (next !== searchRef.current) navigate(`?${next}`, { replace: true });
   }, [searchTerm, typeFilter, cityFilter, sizeFilter, budgetFilter, sortBy, navigate]);
 
-  const { data: projects, isLoading, isError } = useListProjects();
+  const { data: projects, isLoading, isError, refetch } = useListProjects();
 
   const open = useMemo(
     () => (projects ?? []).filter(p => p.status === "open"),
@@ -339,8 +339,11 @@ export default function Projects() {
 
         {/* Error */}
         {isError && (
-          <div className="text-center py-16 bg-destructive/5 rounded-2xl text-destructive">
-            <p>{t.common.error}</p>
+          <div className="text-center py-16 bg-destructive/5 rounded-2xl border border-destructive/20">
+            <p className="text-destructive font-medium mb-4">{t.common.error}</p>
+            <Button variant="outline" size="sm" onClick={() => void refetch()}>
+              {language === "sq" ? "Provo Sërisht" : language === "de" ? "Erneut versuchen" : language === "fr" ? "Réessayer" : "Try Again"}
+            </Button>
           </div>
         )}
 
