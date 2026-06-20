@@ -11,6 +11,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Shield, Zap, Star, Award, BadgeCheck } from "lucide-react";
+import { PLAN_CONFIG, type PlanType } from "@/components/PlanCards";
 
 function formatCHF(cents: number): string {
   if (cents === 0) return "CHF 0";
@@ -163,6 +164,21 @@ export default function Pricing() {
 
   const displayedPlans = plans.filter(p => ["basic", "pro", "premium"].includes(p.slug));
 
+  function slugToPlanType(slug: string): PlanType | null {
+    if (slug === "basic") return "basic";
+    if (slug === "pro" || slug === "professional") return "professional";
+    if (slug === "premium") return "premium";
+    return null;
+  }
+
+  function getPlanFeatures(plan: SubscriptionPlan): string[] {
+    const planType = slugToPlanType(plan.slug);
+    if (planType) {
+      return PLAN_CONFIG[planType].features[language] ?? PLAN_CONFIG[planType].features.en;
+    }
+    return plan.features;
+  }
+
   function displayPrice(plan: SubscriptionPlan): string {
     if (plan.priceCents === 0) return "CHF 0";
     return formatCHF(plan.priceCents);
@@ -229,9 +245,9 @@ export default function Pricing() {
 
               {/* Features */}
               <ul className="space-y-2 text-sm mb-6 flex-1">
-                {plan.features.map((f, i) => (
+                {getPlanFeatures(plan).map((f, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                    <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${plan.slug === "premium" ? "text-amber-500" : "text-primary"}`} />
                     <span>{f}</span>
                   </li>
                 ))}

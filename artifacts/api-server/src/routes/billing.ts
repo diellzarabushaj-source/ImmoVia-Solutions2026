@@ -45,12 +45,12 @@ export const PLAN_CONTACT_VISIBLE: Record<string, boolean> = {
 export const PLAN_BADGES: Record<string, string> = {
   free: "",
   basic: "Basic Provider",
-  pro: "Pro Provider",
+  pro: "Professional Provider",
   premium: "Premium Partner",
   // legacy
-  starter: "Aktiver Anbieter",
-  professional: "Verifizierter Anbieter",
-  founding: "Founding Anbieter",
+  starter: "Basic Provider",
+  professional: "Professional Provider",
+  founding: "Basic Provider",
 };
 
 // Public catalogs

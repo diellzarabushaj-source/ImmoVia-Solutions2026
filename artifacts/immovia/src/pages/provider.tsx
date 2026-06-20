@@ -1031,11 +1031,10 @@ export default function ProviderDashboard() {
     planSlug === "founding" ? "basic" :
     planSlug;
 
-  const VIS_COLS = ["free", "basic", "professional", "premium"] as const;
+  const VIS_COLS = ["basic", "professional", "premium"] as const;
   type VisCol = typeof VIS_COLS[number];
 
   const COL_LABELS: Record<VisCol, string> = {
-    free: "Free",
     basic: "Basic",
     professional: "Professional",
     premium: "Premium",
@@ -1044,28 +1043,24 @@ export default function ProviderDashboard() {
   const VISIBILITY_TABLE: Array<{ row: string } & Record<VisCol, string>> = [
     {
       row: l.visRowContacts,
-      free: l.visValueFree,
       basic: l.visValueFree,
       professional: l.visValueVisible,
       premium: l.visValueVisible,
     },
     {
       row: l.visRowBadge,
-      free: "—",
       basic: language === "de" ? "Basic Anbieter" : language === "fr" ? "Badge Basic" : language === "sq" ? "Insinjë Basic" : "Basic Provider",
       professional: language === "de" ? "Professional Anbieter" : language === "fr" ? "Badge Professional" : language === "sq" ? "Insinjë Professional" : "Professional Provider",
       premium: language === "de" ? "Premium Partner" : "Premium Partner",
     },
     {
       row: l.visRowRanking,
-      free: l.visValueStandard,
       basic: l.visValueStandard,
       professional: l.visValuePriority,
       premium: l.visValuePriority,
     },
     {
       row: l.visRowPortfolio,
-      free: l.visValueBasic,
       basic: l.visValueFull,
       professional: l.visValueFull,
       premium: l.visValueUnlimited,
@@ -2041,7 +2036,7 @@ export default function ProviderDashboard() {
                 </div>
               </Card>
 
-              {(normalisedPlanSlug === "free" || normalisedPlanSlug === "basic") && (
+              {normalisedPlanSlug === "basic" && (
                 <Card className="mt-4 p-4 bg-amber-50 border-amber-200">
                   <div className="flex items-center justify-between gap-4">
                     <div className="text-sm text-amber-800">
