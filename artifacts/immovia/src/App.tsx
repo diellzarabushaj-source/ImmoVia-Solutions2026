@@ -33,6 +33,7 @@ import RegistrationPaymentSuccess from "@/pages/registration-payment-success";
 import ProviderOnboarding from "@/pages/provider-onboarding";
 import PackagePaymentSuccess from "@/pages/package-payment-success";
 import SignupComplete from "@/pages/signup-complete";
+import ProviderWelcome from "@/pages/provider-welcome";
 import ProviderDashboard from "@/pages/provider";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
@@ -186,6 +187,7 @@ function Router() {
         <Route path="/dashboard/profile" component={Profile} />
         <Route path="/dashboard/portfolio" component={Portfolio} />
         <Route path="/company/:slug" component={PublicProfile} />
+        <Route path="/provider-welcome" component={ProviderWelcome} />
         <Route path="/provider" component={ProviderDashboard} />
         <Route path="/provider/billing" component={ProviderBilling} />
         <Route path="/payment/success" component={PaymentSuccess} />
