@@ -144,8 +144,8 @@ export default function CompanyProfile() {
       .catch(() => {});
   }, [user]);
 
-  // Premium & Professional SPs can see the provider's website
-  const canSeeWebsite = viewerPlanSlug === "premium" || (viewerPlanSlug != null && viewerPlanSlug.includes("pro"));
+  // Only Premium (top plan) can see the provider's website
+  const canSeeWebsite = viewerPlanSlug === "premium";
 
   const openChat = () => {
     if (!user) { setLocation("/sign-in"); return; }
@@ -517,10 +517,10 @@ export default function CompanyProfile() {
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           <Globe className="w-4 h-4 flex-shrink-0" />
                           <span className="text-xs bg-primary/8 text-primary px-2 py-0.5 rounded-full font-medium">
-                            {language === "de" ? "Premium / Professional"
-                              : language === "fr" ? "Premium / Professionnel"
-                              : language === "sq" ? "Premium / Professional"
-                              : "Premium / Professional"}
+                            {language === "de" ? "Nur Premium"
+                              : language === "fr" ? "Premium uniquement"
+                              : language === "sq" ? "Vetëm Premium"
+                              : "Premium only"}
                           </span>
                         </div>
                       ) : null
