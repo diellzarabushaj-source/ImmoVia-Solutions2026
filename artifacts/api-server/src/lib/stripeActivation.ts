@@ -7,6 +7,7 @@ import {
   subscriptionsTable,
   paymentsTable,
   invoicesTable,
+  companiesTable,
 } from "@workspace/db";
 import { slugForPriceId } from "./stripeClient";
 import { grantMonthlyCredits } from "./credits";
@@ -159,6 +160,18 @@ export async function activateSubscription(sub: Stripe.Subscription): Promise<st
   }
 
   logger.info({ userId, plan: plan.slug, subscription: sub.id }, "Activated Stripe subscription");
+
+  // Sync planType on the provider's company directory entry (linked by user email) so
+  // that the directory sort order reflects the live subscription state.
+  try {
+    const [user] = await db.select({ email: usersTable.email }).from(usersTable).where(eq(usersTable.id, userId));
+    if (user?.email) {
+      await db.update(companiesTable).set({ planType: plan.slug }).where(eq(companiesTable.email, user.email));
+    }
+  } catch (syncErr) {
+    logger.warn({ syncErr }, "Failed to sync planType on company profile");
+  }
+
   return plan.slug;
 }
 

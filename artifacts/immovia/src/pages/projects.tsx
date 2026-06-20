@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Link, useSearch, useLocation } from "wouter";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useListProjects } from "@workspace/api-client-react";
@@ -10,7 +10,9 @@ import {
   Search, MapPin, Clock, FileText, X, ArrowUpDown,
   ChevronDown, Lock, Hammer, Paintbrush, Zap, Wrench,
   ChefHat, Layers, Sofa, Leaf, HelpCircle, Briefcase,
+  Phone, Unlock,
 } from "lucide-react";
+import { billingApi, type AppStats } from "@/lib/billing-api";
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
 import { useCategories } from "@/hooks/useCategories";
@@ -25,6 +27,8 @@ export default function Projects() {
   const { t, language } = useLanguage();
   const { categories } = useCategories("project");
   const { user } = useAuth();
+  const isProvider = isServiceProvider(user);
+  const [providerStats, setProviderStats] = useState<AppStats | null>(null);
   usePageMeta({ title: `${t.listings.title ?? "Browse Projects"} — ImmoVia365`, description: t.listings.subtitle ?? undefined });
   const search = useSearch();
   const [, navigate] = useLocation();
@@ -107,6 +111,12 @@ export default function Projects() {
 
   // Reset to page 1 when filters or sort changes
   useEffect(() => { setPage(1); }, [searchTerm, typeFilter, cityFilter, sizeFilter, budgetFilter, sortBy]);
+
+  // Fetch Pro/Premium unlock stats for service providers
+  useEffect(() => {
+    if (!isProvider) return;
+    billingApi.appStats().then(setProviderStats).catch(() => undefined);
+  }, [isProvider]);
 
   const totalPages = user ? Math.ceil(displayList.length / ITEMS_PER_PAGE) : 1;
   const paginatedList = user ? displayList.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE) : displayList.slice(0, 6);
@@ -329,6 +339,24 @@ export default function Projects() {
           </motion.div>
         )}
 
+        {/* Pro unlock quota banner */}
+        {isProvider && providerStats && providerStats.planSlug === "pro" && (
+          <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 mb-5 text-sm">
+            <Unlock className="h-4 w-4 text-primary flex-shrink-0" />
+            <span className="text-foreground/80">
+              <span className="font-semibold text-primary">
+                {providerStats.contactUnlocksUsed} / {providerStats.contactUnlocksLimit}
+              </span>
+              {" "}{"contact unlocks used this month"}
+            </span>
+            {providerStats.contactUnlocksUsed >= providerStats.contactUnlocksLimit && (
+              <Link href="/billing" className="ml-auto text-xs font-medium text-primary underline underline-offset-2">
+                {"Upgrade"}
+              </Link>
+            )}
+          </div>
+        )}
+
         {/* Project grid */}
         {!isLoading && !isError && displayList.length > 0 && (
           <div className="relative">
@@ -339,7 +367,9 @@ export default function Projects() {
               variants={{ animate: { transition: { staggerChildren: 0.05 } } }}
             >
               <AnimatePresence>
-                {visibleProjects.map((project) => (
+                {visibleProjects.map((project) => {
+                  const contactUnlocked = isProvider && Boolean(project.phone || project.email);
+                  return (
                   <motion.div
                     key={project.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -347,9 +377,18 @@ export default function Projects() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <ProjectCard project={project} />
+                    <ProjectCard
+                      project={project}
+                      footer={contactUnlocked ? (
+                        <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
+                          <Phone className="w-3 h-3" />
+                          <span>{"Contact visible"}</span>
+                        </div>
+                      ) : undefined}
+                    />
                   </motion.div>
-                ))}
+                  );
+                })}
               </AnimatePresence>
             </motion.div>
 

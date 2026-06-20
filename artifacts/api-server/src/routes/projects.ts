@@ -15,7 +15,8 @@ import {
 import { requireAdmin } from "../middlewares/requireAdmin";
 import { sendNewProjectNotification, sendProjectConfirmationToClient, sendProjectPublishedNotification, sendProjectRejectedNotification, sendPremiumProjectNotification } from "../lib/email";
 import { createNotification, getUserEmail } from "../lib/notify";
-import { isAuthenticated, canViewContactDetails, canViewProjectContacts, getLocalUserId, getUnlockStats, getProviderPlanSlug, PRO_UNLOCK_LIMIT } from "../lib/planGating";
+import { isAuthenticated, isAdminSession, canViewProjectContacts, getLocalUserId, getUnlockStats, getProviderPlanSlug, getUnlockedProjectIds, PRO_UNLOCK_LIMIT } from "../lib/planGating";
+import { requireProvider } from "../middlewares/requireProvider";
 
 const router: IRouter = Router();
 
@@ -75,9 +76,22 @@ router.get("/projects", async (req, res): Promise<void> => {
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(sql`${projectsTable.createdAt} desc`);
   const authed = isAuthenticated(req);
-  const canContact = await canViewContactDetails(req);
-  const projects = rows.map(r => withPoster(r.project, r, authed));
-  const payload = canContact ? projects : projects.map(redactContact);
+  const projectsList = rows.map(r => withPoster(r.project, r, authed));
+  let payload: typeof projectsList;
+  if (isAdminSession(req)) {
+    payload = projectsList;
+  } else {
+    const userId = await getLocalUserId(req);
+    const planSlug = userId ? await getProviderPlanSlug(userId) : "free";
+    if (planSlug === "premium") {
+      payload = projectsList;
+    } else if (planSlug === "pro" && userId) {
+      const unlockedIds = await getUnlockedProjectIds(userId);
+      payload = projectsList.map(p => (unlockedIds.has(p.id) ? p : redactContact(p)));
+    } else {
+      payload = projectsList.map(redactContact);
+    }
+  }
   res.json(ListProjectsResponse.parse(payload));
 });
 
@@ -175,18 +189,14 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
 });
 
 // POST /projects/:id/unlock — Professional providers unlock a project's contact details
-router.post("/projects/:id/unlock", async (req, res): Promise<void> => {
+router.post("/projects/:id/unlock", requireProvider, async (req, res): Promise<void> => {
   const params = GetProjectParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const userId = await getLocalUserId(req);
-  if (!userId) {
-    res.status(401).json({ error: "Authentication required" });
-    return;
-  }
+  const userId = req.userId!;
 
   const [row] = await db
     .select()
@@ -277,30 +287,51 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
   }
 
   // Notify client when admin changes project status
-  if (parsed.data.status && project.ownerUserId) {
+  if (parsed.data.status) {
     void (async () => {
       try {
-        const clientUser = await getUserEmail(project.ownerUserId!);
-        if (!clientUser) return;
         const newStatus = parsed.data.status!;
         const isPublished = newStatus === "open";
         const isRejected = newStatus === "cancelled" || newStatus === "archived";
+        // Owner notifications — only when the project has a linked account
+        if (project.ownerUserId) {
+          const clientUser = await getUserEmail(project.ownerUserId);
+          if (clientUser) {
+            if (isPublished) {
+              await createNotification({
+                recipientUserId: project.ownerUserId,
+                type: "project_published",
+                title: "Ihr Projekt wurde veröffentlicht",
+                message: `Ihr Projekt (${project.projectType} in ${project.city}) ist jetzt aktiv. Dienstleister können nun Angebote einreichen.`,
+                relatedProjectId: project.id,
+              });
+              await sendProjectPublishedNotification({
+                clientEmail: clientUser.email,
+                clientName: clientUser.fullName,
+                projectType: project.projectType,
+                city: project.city,
+                projectId: project.id,
+              });
+            } else if (isRejected) {
+              await createNotification({
+                recipientUserId: project.ownerUserId,
+                type: "project_rejected",
+                title: "Projektanfrage abgelehnt",
+                message: `Ihr Projekt (${project.projectType} in ${project.city}) konnte leider nicht veröffentlicht werden.`,
+                relatedProjectId: project.id,
+              });
+              await sendProjectRejectedNotification({
+                clientEmail: clientUser.email,
+                clientName: clientUser.fullName,
+                projectType: project.projectType,
+                city: project.city,
+              });
+            }
+          }
+        }
+        // Premium priority notifications fire on any publish, regardless of whether the
+        // project poster has a linked account.
         if (isPublished) {
-          await createNotification({
-            recipientUserId: project.ownerUserId!,
-            type: "project_published",
-            title: "Ihr Projekt wurde veröffentlicht",
-            message: `Ihr Projekt (${project.projectType} in ${project.city}) ist jetzt aktiv. Dienstleister können nun Angebote einreichen.`,
-            relatedProjectId: project.id,
-          });
-          await sendProjectPublishedNotification({
-            clientEmail: clientUser.email,
-            clientName: clientUser.fullName,
-            projectType: project.projectType,
-            city: project.city,
-            projectId: project.id,
-          });
-          // Priority notification: alert all active Premium providers about the new project
           void (async () => {
             try {
               const premiumUsers = await db
@@ -324,20 +355,6 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
               req.log.error({ notifyErr }, "Failed to send premium project notifications");
             }
           })();
-        } else if (isRejected) {
-          await createNotification({
-            recipientUserId: project.ownerUserId!,
-            type: "project_rejected",
-            title: "Projektanfrage abgelehnt",
-            message: `Ihr Projekt (${project.projectType} in ${project.city}) konnte leider nicht veröffentlicht werden.`,
-            relatedProjectId: project.id,
-          });
-          await sendProjectRejectedNotification({
-            clientEmail: clientUser.email,
-            clientName: clientUser.fullName,
-            projectType: project.projectType,
-            city: project.city,
-          });
         }
       } catch (err) {
         req.log.error({ err }, "Failed to send project status notification");

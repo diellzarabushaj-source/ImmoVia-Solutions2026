@@ -133,3 +133,12 @@ export async function getUnlockStats(
   const used = row?.used ?? 0;
   return { used, limit: PRO_UNLOCK_LIMIT, canUnlock: used < PRO_UNLOCK_LIMIT };
 }
+
+/** Returns the set of project IDs a Pro provider has already unlocked. */
+export async function getUnlockedProjectIds(userId: number): Promise<Set<number>> {
+  const rows = await db
+    .select({ projectId: contactUnlocksTable.projectId })
+    .from(contactUnlocksTable)
+    .where(eq(contactUnlocksTable.providerUserId, userId));
+  return new Set(rows.map(r => r.projectId));
+}
