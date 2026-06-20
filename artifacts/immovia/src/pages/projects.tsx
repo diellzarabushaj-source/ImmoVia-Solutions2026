@@ -13,6 +13,8 @@ import {
   Phone, Unlock,
 } from "lucide-react";
 import { billingApi, type AppStats } from "@/lib/billing-api";
+import { useQueryClient } from "@tanstack/react-query";
+import { getListProjectsQueryKey } from "@workspace/api-client-react";
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
 import { useCategories } from "@/hooks/useCategories";
@@ -29,6 +31,8 @@ export default function Projects() {
   const { user } = useAuth();
   const isProvider = isServiceProvider(user);
   const [providerStats, setProviderStats] = useState<AppStats | null>(null);
+  const [unlocking, setUnlocking] = useState<Set<number>>(new Set());
+  const queryClient = useQueryClient();
   usePageMeta({ title: `${t.listings.title ?? "Browse Projects"} — ImmoVia365`, description: t.listings.subtitle ?? undefined });
   const search = useSearch();
   const [, navigate] = useLocation();
@@ -117,6 +121,19 @@ export default function Projects() {
     if (!isProvider) return;
     billingApi.appStats().then(setProviderStats).catch(() => undefined);
   }, [isProvider]);
+
+  const handleUnlock = useCallback(async (projectId: number) => {
+    setUnlocking(prev => new Set(prev).add(projectId));
+    try {
+      await billingApi.unlockProjectContact(projectId);
+      await queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
+      billingApi.appStats().then(setProviderStats).catch(() => undefined);
+    } catch {
+      // ignore — project detail page will show the full error with context
+    } finally {
+      setUnlocking(prev => { const s = new Set(prev); s.delete(projectId); return s; });
+    }
+  }, [queryClient]);
 
   const totalPages = user ? Math.ceil(displayList.length / ITEMS_PER_PAGE) : 1;
   const paginatedList = user ? displayList.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE) : displayList.slice(0, 6);
@@ -369,6 +386,39 @@ export default function Projects() {
               <AnimatePresence>
                 {visibleProjects.map((project) => {
                   const contactUnlocked = isProvider && Boolean(project.phone || project.email);
+                  const isProPlan = providerStats?.planSlug === "pro";
+                  const remaining = isProPlan
+                    ? Math.max(0, (providerStats?.contactUnlocksLimit ?? 0) - (providerStats?.contactUnlocksUsed ?? 0))
+                    : 0;
+                  const isUnlocking = unlocking.has(project.id);
+
+                  let cardFooter: React.ReactNode;
+                  if (contactUnlocked) {
+                    cardFooter = (
+                      <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
+                        <Phone className="w-3 h-3" />
+                        <span>{"Contact visible"}</span>
+                      </div>
+                    );
+                  } else if (isProvider && isProPlan) {
+                    cardFooter = (
+                      <button
+                        disabled={remaining <= 0 || isUnlocking}
+                        onClick={e => { e.preventDefault(); e.stopPropagation(); void handleUnlock(project.id); }}
+                        className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                      >
+                        <Lock className="w-3 h-3" />
+                        <span>
+                          {isUnlocking
+                            ? "Unlocking…"
+                            : remaining <= 0
+                              ? "Limit reached"
+                              : `Unlock Contact (${remaining} remaining)`}
+                        </span>
+                      </button>
+                    );
+                  }
+
                   return (
                   <motion.div
                     key={project.id}
@@ -377,15 +427,7 @@ export default function Projects() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <ProjectCard
-                      project={project}
-                      footer={contactUnlocked ? (
-                        <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
-                          <Phone className="w-3 h-3" />
-                          <span>{"Contact visible"}</span>
-                        </div>
-                      ) : undefined}
-                    />
+                    <ProjectCard project={project} footer={cardFooter} />
                   </motion.div>
                   );
                 })}

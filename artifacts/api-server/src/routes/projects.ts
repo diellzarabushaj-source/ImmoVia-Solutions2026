@@ -160,6 +160,30 @@ router.post("/projects", async (req, res): Promise<void> => {
     timeline: parsed.data.timeline ?? null,
   });
 
+  // Immediately notify Premium-plan providers about the new project request
+  void (async () => {
+    try {
+      const premiumUsers = await db
+        .select({ email: usersTable.email, fullName: usersTable.fullName })
+        .from(subscriptionsTable)
+        .innerJoin(subscriptionPlansTable, eq(subscriptionsTable.planId, subscriptionPlansTable.id))
+        .innerJoin(usersTable, eq(subscriptionsTable.userId, usersTable.id))
+        .where(and(eq(subscriptionsTable.status, "active"), eq(subscriptionPlansTable.slug, "premium")));
+      for (const u of premiumUsers) {
+        if (!u.email) continue;
+        await sendPremiumProjectNotification({
+          recipientEmail: u.email,
+          recipientName: u.fullName ?? "Provider",
+          projectType: project.projectType,
+          city: project.city,
+          projectId: project.id,
+        });
+      }
+    } catch (notifyErr) {
+      req.log.warn({ notifyErr }, "Failed to send premium new-project notifications");
+    }
+  })();
+
   res.status(201).json(GetProjectResponse.parse(project));
 });
 

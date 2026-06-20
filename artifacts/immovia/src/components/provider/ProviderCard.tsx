@@ -22,6 +22,7 @@ export interface ProviderCardData {
   rating?: number | null;
   reviewCount?: number | null;
   plan?: string | null;
+  planType?: string | null;
   status?: string | null;
 }
 
@@ -54,7 +55,8 @@ export function ProviderCard({
   const services = provider.serviceTypes ?? [];
   const rating = provider.rating ?? null;
 
-  const isPremiumPlan = provider.plan === "premium";
+  const planBadge = provider.plan ?? provider.planType;
+  const isPremiumPlan = planBadge === "premium";
   const inner = (
     <div className={`bg-white rounded-2xl transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group h-full hover:-translate-y-0.5 ${isPremiumPlan ? "border-2 border-amber-400/70 shadow-md ring-1 ring-amber-200/40 hover:shadow-xl hover:border-amber-400" : "border border-border shadow-sm hover:shadow-lg hover:border-primary/30"}`}>
       <div className="p-4 flex gap-3 items-start border-b border-border/50">
@@ -126,19 +128,19 @@ export function ProviderCard({
               <span>{t.companies?.contractBased ?? "Contract-based"}</span>
             </div>
           )}
-          {provider.plan && (
+          {planBadge && (
             <Badge
               variant="outline"
               className={`text-[10px] flex-shrink-0 flex items-center gap-0.5 ${
-                provider.plan === "premium"
+                planBadge === "premium"
                   ? "border-amber-400 text-amber-700 bg-amber-50 font-semibold"
-                  : provider.plan === "pro"
+                  : planBadge === "pro"
                     ? "capitalize border-primary/40 text-primary bg-primary/5"
                     : "capitalize border-primary/30 text-primary"
               }`}
             >
-              {provider.plan === "premium" && <Star className="w-2.5 h-2.5 fill-current" />}
-              {provider.plan === "premium" ? "Premium Partner" : provider.plan}
+              {planBadge === "premium" && <Star className="w-2.5 h-2.5 fill-current" />}
+              {planBadge === "premium" ? "Premium Partner" : planBadge}
             </Badge>
           )}
         </div>
