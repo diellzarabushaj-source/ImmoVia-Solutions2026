@@ -398,6 +398,35 @@ export default function CompanyProfile() {
                 <div className="rounded-xl bg-muted/40 border-2 border-dashed border-border p-10 text-center text-muted-foreground text-sm">
                   {t.publicProfile.noPortfolio}
                 </div>
+              ) : !user ? (
+                /* Blur gate — non-logged-in visitors */
+                <div className="relative">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 blur-sm pointer-events-none select-none" aria-hidden="true">
+                    {GALLERY_PLACEHOLDERS.map((src, i) => (
+                      <div key={i} className="aspect-[4/3] rounded-xl overflow-hidden bg-muted border border-border">
+                        <img
+                          src={src}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={() => setGalleryErrors(prev => new Set(prev).add(i))}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                    <div className="bg-white/95 backdrop-blur-sm border border-border rounded-2xl px-8 py-7 text-center shadow-lg max-w-xs mx-auto">
+                      <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                        <Image className="w-5 h-5 text-primary" />
+                      </div>
+                      <p className="text-sm font-semibold text-foreground mb-4">{t.publicProfile.galleryGateTitle}</p>
+                      <Link href="/signup">
+                        <Button size="sm" className="w-full">
+                          {t.publicProfile.galleryGateCta}
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {GALLERY_PLACEHOLDERS.map((src, i) => (
