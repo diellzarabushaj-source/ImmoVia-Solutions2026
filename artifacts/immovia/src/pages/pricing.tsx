@@ -4,60 +4,10 @@ import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
-import {
-  billingApi,
-  type SubscriptionPlan,
-} from "@/lib/billing-api";
-import { Card } from "@/components/ui/card";
+import { billingApi, type SubscriptionPlan } from "@/lib/billing-api";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2, Shield, Zap, Star, Award, BadgeCheck } from "lucide-react";
-import { PLAN_CONFIG, type PlanType } from "@/components/PlanCards";
-
-function formatCHF(cents: number): string {
-  if (cents === 0) return "CHF 0";
-  return `CHF ${(cents / 100).toFixed(0)}`;
-}
-
-const PLAN_ICONS: Record<string, React.ReactNode> = {
-  free: <Shield className="w-5 h-5 text-slate-400" />,
-  basic: <Zap className="w-5 h-5 text-blue-500" />,
-  pro: <Star className="w-5 h-5 text-primary" />,
-  premium: <Award className="w-5 h-5 text-amber-500" />,
-};
-
-const PLAN_ACCENT: Record<string, string> = {
-  free: "border-border bg-white",
-  basic: "border-blue-200 bg-white",
-  pro: "border-primary/40 border-2 shadow-xl bg-white",
-  premium: "border-amber-300 border-2 bg-white",
-};
-
-const PLAN_BADGE_COLOR: Record<string, string> = {
-  basic: "bg-blue-100 text-blue-700",
-  pro: "bg-primary/10 text-primary",
-  premium: "bg-amber-100 text-amber-700",
-};
-
-const APPS_LABEL: Record<string, string> = {
-  de: "Bewerbungen/Monat",
-  en: "Applications/month",
-  sq: "Aplikime/muaj",
-  fr: "Candidatures/mois",
-};
-
-const REDIRECTING_LABEL: Record<string, string> = {
-  de: "Weiterleitung zur Kasse…",
-  en: "Redirecting to checkout…",
-  sq: "Po ridrejtoheni te arka…",
-  fr: "Redirection vers le paiement…",
-};
-
-const UNLIMITED_LABEL: Record<string, string> = {
-  de: "Unbegrenzt",
-  en: "Unlimited",
-  sq: "Pa limit",
-  fr: "Illimité",
-};
+import { Loader2, ArrowRight } from "lucide-react";
+import { PlanCards, PLAN_CONFIG, type PlanType } from "@/components/PlanCards";
 
 const CANCELLED_NOTICE: Record<string, string> = {
   de: "Zahlung abgebrochen. Es wurde nichts belastet.",
@@ -66,25 +16,11 @@ const CANCELLED_NOTICE: Record<string, string> = {
   fr: "Paiement annulé. Vous n'avez pas été débité.",
 };
 
-const PER_MONTH_LABEL: Record<string, string> = {
-  de: "/Monat",
-  en: "/month",
-  sq: "/muaj",
-  fr: "/mois",
-};
-
-const SUBSCRIBE_CTA: Record<string, string> = {
-  de: "Jetzt abonnieren",
-  en: "Subscribe now",
-  sq: "Abonohu tani",
-  fr: "S'abonner",
-};
-
-const MOST_POPULAR: Record<string, string> = {
-  de: "Beliebteste Wahl",
-  en: "Most popular",
-  sq: "Më i zgjedhur",
-  fr: "Le plus populaire",
+const REDIRECTING_LABEL: Record<string, string> = {
+  de: "Weiterleitung zur Kasse…",
+  en: "Redirecting to checkout…",
+  sq: "Po ridrejtoheni te arka…",
+  fr: "Redirection vers le paiement…",
 };
 
 const PAGE_TITLE: Record<string, string> = {
@@ -99,6 +35,34 @@ const PAGE_SUBTITLE: Record<string, string> = {
   en: "Select the level that fits your business before continuing.",
   sq: "Zgjidhni nivelin që i përshtatet biznesit tuaj para se të vazhdoni.",
   fr: "Sélectionnez le niveau adapté à votre activité avant de continuer.",
+};
+
+const CONFIRM_BTN: Record<string, string> = {
+  de: "Bestätigen & Weiter",
+  en: "Confirm & Continue",
+  sq: "Konfirmo dhe Vazhdo",
+  fr: "Confirmer & Continuer",
+};
+
+const ALREADY_ACCOUNT: Record<string, string> = {
+  de: "Bereits ein Konto?",
+  en: "Already have an account?",
+  sq: "Keni tashmë llogari?",
+  fr: "Déjà un compte ?",
+};
+
+const SIGN_IN: Record<string, string> = {
+  de: "Anmelden",
+  en: "Sign in",
+  sq: "Hyni",
+  fr: "Se connecter",
+};
+
+const SELECT_PLAN_HINT: Record<string, string> = {
+  de: "Bitte wählen Sie ein Paket aus.",
+  en: "Please select a plan to continue.",
+  sq: "Ju lutemi zgjidhni një paketë për të vazhduar.",
+  fr: "Veuillez sélectionner un forfait pour continuer.",
 };
 
 export default function Pricing() {
@@ -126,10 +90,12 @@ export default function Pricing() {
       ]
     }
   ]);
+
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [loading, setLoading] = useState<number | null>(null);
+  const [selectedPlanType, setSelectedPlanType] = useState<PlanType | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cancelled, setCancelled] = useState(false);
 
@@ -144,9 +110,11 @@ export default function Pricing() {
 
   const isProvider = isServiceProvider(user);
 
-  const handlePlanCta = async (plan: SubscriptionPlan) => {
-    // Guard against double-clicks while any checkout is already loading.
-    if (loading !== null) return;
+  const slugForPlanType = (pt: PlanType): string =>
+    pt === "professional" ? "pro" : pt;
+
+  const handleConfirm = async () => {
+    if (!selectedPlanType || loading) return;
     setError(null);
 
     if (!user) {
@@ -158,51 +126,30 @@ export default function Pricing() {
       return;
     }
 
-    // Paid plan — redirect to Stripe Checkout
-    setLoading(plan.id);
+    const dbSlug = slugForPlanType(selectedPlanType);
+    const plan = plans.find(p => p.slug === dbSlug);
+    if (!plan) return;
+
+    setLoading(true);
     try {
       const { url } = await billingApi.stripeCheckout(plan.id);
       window.location.href = url;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Checkout failed");
-      setLoading(null);
+      setLoading(false);
     }
   };
-
-  const appsLabel = APPS_LABEL[language] ?? APPS_LABEL.de;
-  const unlimitedLabel = UNLIMITED_LABEL[language] ?? UNLIMITED_LABEL.de;
-  const perMonth = PER_MONTH_LABEL[language] ?? PER_MONTH_LABEL.de;
-  const subscribeCta = SUBSCRIBE_CTA[language] ?? SUBSCRIBE_CTA.de;
-  const redirectingLabel = REDIRECTING_LABEL[language] ?? REDIRECTING_LABEL.de;
-  const mostPopular = MOST_POPULAR[language] ?? MOST_POPULAR.de;
-
-  const displayedPlans = plans.filter(p => ["basic", "pro", "premium"].includes(p.slug));
-
-  function slugToPlanType(slug: string): PlanType | null {
-    if (slug === "basic") return "basic";
-    if (slug === "pro" || slug === "professional") return "professional";
-    if (slug === "premium") return "premium";
-    return null;
-  }
-
-  function getPlanFeatures(plan: SubscriptionPlan): string[] {
-    const planType = slugToPlanType(plan.slug);
-    if (planType) {
-      return PLAN_CONFIG[planType].features[language] ?? PLAN_CONFIG[planType].features.en;
-    }
-    return plan.features;
-  }
-
-  function displayPrice(plan: SubscriptionPlan): string {
-    if (plan.priceCents === 0) return "CHF 0";
-    return formatCHF(plan.priceCents);
-  }
 
   const pageTitle = PAGE_TITLE[language] ?? PAGE_TITLE.en;
   const pageSubtitle = PAGE_SUBTITLE[language] ?? PAGE_SUBTITLE.en;
 
+  // Pre-select the "professional" plan (most popular) on first load
+  useEffect(() => {
+    setSelectedPlanType("professional");
+  }, []);
+
   return (
-    <div className="container mx-auto px-4 py-12 md:py-16">
+    <div className="container mx-auto px-4 py-12 md:py-16 max-w-5xl">
       {/* Page heading */}
       <div className="text-center mb-10">
         <h1 className="text-3xl md:text-4xl font-serif font-bold mb-3">{pageTitle}</h1>
@@ -210,87 +157,60 @@ export default function Pricing() {
       </div>
 
       {cancelled && (
-        <div className="max-w-3xl mx-auto mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm" data-testid="pricing-cancelled">
-          {CANCELLED_NOTICE[language] ?? CANCELLED_NOTICE.de}
+        <div className="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm" data-testid="pricing-cancelled">
+          {CANCELLED_NOTICE[language] ?? CANCELLED_NOTICE.en}
         </div>
       )}
 
       {error && (
-        <div className="max-w-3xl mx-auto mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm" data-testid="pricing-error">
+        <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm" data-testid="pricing-error">
           {error}
         </div>
       )}
 
-      {/* Plans grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-        {displayedPlans.map((plan) => {
-          const isCurrentlyLoading = loading === plan.id;
-          const isPremium = plan.slug === "premium";
+      {/* Plan cards — select to highlight */}
+      <PlanCards selected={selectedPlanType} onSelect={setSelectedPlanType} />
 
-          return (
-            <Card
-              key={plan.id}
-              className={`p-6 flex flex-col relative cursor-pointer transition-all duration-200 hover:-translate-y-1.5 hover:shadow-2xl hover:border-primary ${isCurrentlyLoading ? "opacity-70" : ""} ${PLAN_ACCENT[plan.slug] ?? "border-border"}`}
-              onClick={() => void handlePlanCta(plan)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); void handlePlanCta(plan); } }}
-              aria-busy={isCurrentlyLoading}
-              data-testid={`plan-${plan.slug}`}
+      {/* Confirm & Continue */}
+      <div className="mt-8 flex flex-col items-center gap-4">
+        <Button
+          size="lg"
+          className="w-full max-w-sm text-base font-semibold gap-2"
+          disabled={!selectedPlanType || loading}
+          onClick={() => void handleConfirm()}
+          data-testid="confirm-plan-btn"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {REDIRECTING_LABEL[language] ?? REDIRECTING_LABEL.en}
+            </>
+          ) : (
+            <>
+              {CONFIRM_BTN[language] ?? CONFIRM_BTN.en}
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </Button>
+
+        {!selectedPlanType && (
+          <p className="text-xs text-muted-foreground">
+            {SELECT_PLAN_HINT[language] ?? SELECT_PLAN_HINT.en}
+          </p>
+        )}
+
+        {!user && (
+          <p className="text-sm text-muted-foreground">
+            {ALREADY_ACCOUNT[language] ?? ALREADY_ACCOUNT.en}{" "}
+            <button
+              onClick={() => setLocation("/signin")}
+              className="text-primary font-semibold hover:underline"
             >
-              {plan.featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">
-                  {mostPopular}
-                </span>
-              )}
-
-              {/* Plan header */}
-              <div className="flex items-center gap-2 mb-2">
-                {PLAN_ICONS[plan.slug]}
-                <h3 className="text-base font-bold">{plan.name}</h3>
-              </div>
-
-              {plan.badge && (
-                <div className="mb-3">
-                  <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${PLAN_BADGE_COLOR[plan.slug] ?? "bg-muted"}`}>
-                    <BadgeCheck className="w-3 h-3" />
-                    {plan.badge}
-                  </span>
-                </div>
-              )}
-
-              {/* Price */}
-              <div className="mb-1">
-                <span className="text-3xl font-bold">{displayPrice(plan)}</span>
-                <span className="text-muted-foreground text-sm">{perMonth}</span>
-              </div>
-
-
-              {/* Features */}
-              <ul className="space-y-2 text-sm mb-6 flex-1">
-                {getPlanFeatures(plan).map((f, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${plan.slug === "premium" ? "text-amber-500" : "text-primary"}`} />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                className="w-full"
-                variant={plan.featured ? "default" : "outline"}
-                onClick={(e) => { e.stopPropagation(); void handlePlanCta(plan); }}
-                disabled={loading !== null}
-                data-testid={`button-plan-${plan.slug}`}
-              >
-                {isCurrentlyLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {isCurrentlyLoading ? redirectingLabel : subscribeCta}
-              </Button>
-            </Card>
-          );
-        })}
+              {SIGN_IN[language] ?? SIGN_IN.en}
+            </button>
+          </p>
+        )}
       </div>
-
     </div>
   );
 }
