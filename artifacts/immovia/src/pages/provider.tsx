@@ -165,6 +165,8 @@ const L: Record<string, Record<string, string>> = {
     settingsLogoutHint: "Dilni nga llogaria juaj në mënyrë të sigurt",
     profileSoon: "Redaktimi i detajuar i profilit vjen së shpejti.",
     planAppsPerMonth: "aplikime / muaj",
+    unlocksThisMonth: "Unlocks këtë muaj",
+    planUnlocksPerMonth: "unlocks / muaj",
     navMessages: "Mesazhet",
     profilePhoto: "Foto e profilit",
     profileFullName: "Emri dhe Mbiemri",
@@ -271,6 +273,8 @@ const L: Record<string, Record<string, string>> = {
     settingsLogoutHint: "Sign out of your account securely",
     profileSoon: "Detailed profile editing coming soon.",
     planAppsPerMonth: "applications / month",
+    unlocksThisMonth: "Unlocks this month",
+    planUnlocksPerMonth: "unlocks / month",
     navMessages: "Messages",
     profilePhoto: "Profile photo",
     profileFullName: "Full name",
@@ -377,6 +381,8 @@ const L: Record<string, Record<string, string>> = {
     settingsLogoutHint: "Melden Sie sich sicher von Ihrem Konto ab",
     profileSoon: "Detaillierte Profilbearbeitung folgt bald.",
     planAppsPerMonth: "Bewerbungen / Monat",
+    unlocksThisMonth: "Entsperrungen diesen Monat",
+    planUnlocksPerMonth: "Entsperrungen / Monat",
     navMessages: "Nachrichten",
     profilePhoto: "Profilfoto",
     profileFullName: "Vollständiger Name",
@@ -483,6 +489,8 @@ const L: Record<string, Record<string, string>> = {
     settingsLogoutHint: "Déconnectez-vous de votre compte en toute sécurité",
     profileSoon: "Modification détaillée du profil bientôt disponible.",
     planAppsPerMonth: "candidatures / mois",
+    unlocksThisMonth: "Déverrouillages ce mois",
+    planUnlocksPerMonth: "déverrouillages / mois",
     navMessages: "Messages",
     profilePhoto: "Photo de profil",
     profileFullName: "Nom complet",
@@ -1213,19 +1221,40 @@ export default function ProviderDashboard() {
 
           {/* Plan badge on desktop */}
           {appStats && (
-            <div className="hidden lg:block mt-6 p-3 rounded-xl bg-muted/50 border border-border">
-              <div className="text-xs text-muted-foreground mb-1">{l.currentPlan}</div>
-              <div className="font-semibold text-sm">{appStats.planName}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {appStats.appLimit === -1
-                  ? `${appStats.usedThisMonth} / ∞ ${l.applications}`
-                  : `${appStats.usedThisMonth}/${appStats.appLimit} ${l.applications}`}
+            <div className="hidden lg:block mt-6 p-3 rounded-xl bg-muted/50 border border-border space-y-3">
+              <div>
+                <div className="text-xs text-muted-foreground mb-0.5">{l.currentPlan}</div>
+                <div className="font-semibold text-sm">{appStats.planName}</div>
               </div>
-              <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${atLimit ? "bg-destructive" : "bg-primary"}`}
-                  style={{ width: appStats.appLimit === -1 ? "0%" : `${Math.min(100, (appStats.usedThisMonth / appStats.appLimit) * 100)}%` }}
-                />
+              {/* Applications row */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-muted-foreground">{l.applications}</span>
+                  <span className="text-xs font-medium">
+                    {appStats.usedThisMonth} / {appStats.appLimit === -1 ? "∞" : appStats.appLimit}
+                  </span>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${atLimit ? "bg-destructive" : "bg-primary"}`}
+                    style={{ width: appStats.appLimit === -1 ? "0%" : `${Math.min(100, (appStats.usedThisMonth / appStats.appLimit) * 100)}%` }}
+                  />
+                </div>
+              </div>
+              {/* Unlocks row */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-muted-foreground">{l.unlocksThisMonth}</span>
+                  <span className="text-xs font-medium">
+                    {appStats.contactUnlocksUsed} / {appStats.contactUnlocksLimit === -1 ? "∞" : appStats.contactUnlocksLimit}
+                  </span>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all bg-sky-500"
+                    style={{ width: appStats.contactUnlocksLimit === -1 ? "0%" : `${Math.min(100, (appStats.contactUnlocksUsed / appStats.contactUnlocksLimit) * 100)}%` }}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -1391,20 +1420,38 @@ export default function ProviderDashboard() {
                 </Card>
               </div>
 
-              {/* Application usage bar */}
+              {/* Usage stats card */}
               {appStats && (
-                <Card className="p-4 mb-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">{l.appsThisMonth}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {appStats.usedThisMonth} / {appStats.appLimit} {l.planAppsPerMonth}
-                    </span>
+                <Card className="p-4 mb-5 space-y-4">
+                  {/* Applications row */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium">{l.appsThisMonth}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {appStats.usedThisMonth} / {appStats.appLimit === -1 ? "∞" : appStats.appLimit} {l.planAppsPerMonth}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${atLimit ? "bg-destructive" : "bg-primary"}`}
+                        style={{ width: appStats.appLimit === -1 ? "0%" : `${Math.min(100, (appStats.usedThisMonth / appStats.appLimit) * 100)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${atLimit ? "bg-destructive" : "bg-primary"}`}
-                      style={{ width: `${Math.min(100, (appStats.usedThisMonth / appStats.appLimit) * 100)}%` }}
-                    />
+                  {/* Unlocks row */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium">{l.unlocksThisMonth}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {appStats.contactUnlocksUsed} / {appStats.contactUnlocksLimit === -1 ? "∞" : appStats.contactUnlocksLimit} {l.planUnlocksPerMonth}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all bg-sky-500"
+                        style={{ width: appStats.contactUnlocksLimit === -1 ? "0%" : `${Math.min(100, (appStats.contactUnlocksUsed / appStats.contactUnlocksLimit) * 100)}%` }}
+                      />
+                    </div>
                   </div>
                 </Card>
               )}

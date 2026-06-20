@@ -21,7 +21,7 @@ import { getStripeClient } from "../lib/stripeClient";
 const router: IRouter = Router();
 
 export const PLAN_APP_LIMITS: Record<string, number> = {
-  free: 2,
+  free: 0,
   basic: 20,
   pro: 50,
   premium: -1, // -1 = unlimited

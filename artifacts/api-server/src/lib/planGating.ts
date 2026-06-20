@@ -11,7 +11,7 @@ import type { Request } from "express";
 
 /** Monthly unlock limit per plan. -1 = unlimited. */
 export const PLAN_UNLOCK_LIMITS: Record<string, number> = {
-  free: 5,
+  free: 0,
   basic: 20,
   pro: 50,
   premium: -1, // unlimited
