@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Loader2, User, Building2, ImageIcon, Camera } from "lucide-react";
+import { Loader2, User, Building2, ImageIcon, Camera, Trash2, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const L: Record<string, Record<string, string>> = {
   de: {
@@ -71,6 +72,10 @@ interface ClickableImageProps {
   icon: React.ReactNode;
   tall?: boolean;
   onUploaded: (url: string) => void;
+  onRemove: () => void;
+  uploadLabel: string;
+  changeLabel: string;
+  removeLabel: string;
   errorTypeMsg: string;
   errorSizeMsg: string;
   errorUploadMsg: string;
@@ -83,6 +88,10 @@ function ClickableImage({
   icon,
   tall,
   onUploaded,
+  onRemove,
+  uploadLabel,
+  changeLabel,
+  removeLabel,
   errorTypeMsg,
   errorSizeMsg,
   errorUploadMsg,
@@ -151,6 +160,27 @@ function ClickableImage({
           </div>
         )}
       </button>
+
+      {/* Action buttons below image */}
+      <div className="flex gap-2 flex-wrap">
+        {currentUrl ? (
+          <>
+            <Button type="button" size="sm" variant="outline" disabled={uploading} onClick={() => !uploading && inputRef.current?.click()}>
+              <Camera className="w-3.5 h-3.5 mr-1.5" />
+              {changeLabel}
+            </Button>
+            <Button type="button" size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/5" onClick={onRemove}>
+              <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+              {removeLabel}
+            </Button>
+          </>
+        ) : (
+          <Button type="button" size="sm" variant="outline" disabled={uploading} onClick={() => !uploading && inputRef.current?.click()}>
+            <Upload className="w-3.5 h-3.5 mr-1.5" />
+            {uploadLabel}
+          </Button>
+        )}
+      </div>
 
       <input
         ref={inputRef}
@@ -226,10 +256,10 @@ export default function ProfilbildSection({ language, accountSubtype }: Props) {
           hint={l.logoHint}
           icon={<Building2 className="w-4 h-4 text-primary" />}
           currentUrl={logoUrl}
-          errorTypeMsg={l.typeError}
-          errorSizeMsg={l.sizeError}
-          errorUploadMsg={l.error}
+          uploadLabel={l.upload} changeLabel={l.change} removeLabel={l.remove}
+          errorTypeMsg={l.typeError} errorSizeMsg={l.sizeError} errorUploadMsg={l.error}
           onUploaded={(url) => { setLogoUrl(url); void autosave({ logoUrl: url }); }}
+          onRemove={() => { setLogoUrl(""); void autosave({ logoUrl: "" }); }}
         />
       ) : isIndividual ? (
         <ClickableImage
@@ -237,10 +267,10 @@ export default function ProfilbildSection({ language, accountSubtype }: Props) {
           hint={l.profilePicHint}
           icon={<User className="w-4 h-4 text-primary" />}
           currentUrl={profilePhotoUrl}
-          errorTypeMsg={l.typeError}
-          errorSizeMsg={l.sizeError}
-          errorUploadMsg={l.error}
+          uploadLabel={l.upload} changeLabel={l.change} removeLabel={l.remove}
+          errorTypeMsg={l.typeError} errorSizeMsg={l.sizeError} errorUploadMsg={l.error}
           onUploaded={(url) => { setProfilePhotoUrl(url); void autosave({ profilePhoto: url }); }}
+          onRemove={() => { setProfilePhotoUrl(""); void autosave({ profilePhoto: "" }); }}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -249,20 +279,20 @@ export default function ProfilbildSection({ language, accountSubtype }: Props) {
             hint={l.profilePicHint}
             icon={<User className="w-4 h-4 text-primary" />}
             currentUrl={profilePhotoUrl}
-            errorTypeMsg={l.typeError}
-            errorSizeMsg={l.sizeError}
-            errorUploadMsg={l.error}
+            uploadLabel={l.upload} changeLabel={l.change} removeLabel={l.remove}
+            errorTypeMsg={l.typeError} errorSizeMsg={l.sizeError} errorUploadMsg={l.error}
             onUploaded={(url) => { setProfilePhotoUrl(url); void autosave({ profilePhoto: url }); }}
+            onRemove={() => { setProfilePhotoUrl(""); void autosave({ profilePhoto: "" }); }}
           />
           <ClickableImage
             label={l.logo}
             hint={l.logoHint}
             icon={<Building2 className="w-4 h-4 text-primary" />}
             currentUrl={logoUrl}
-            errorTypeMsg={l.typeError}
-            errorSizeMsg={l.sizeError}
-            errorUploadMsg={l.error}
+            uploadLabel={l.upload} changeLabel={l.change} removeLabel={l.remove}
+            errorTypeMsg={l.typeError} errorSizeMsg={l.sizeError} errorUploadMsg={l.error}
             onUploaded={(url) => { setLogoUrl(url); void autosave({ logoUrl: url }); }}
+            onRemove={() => { setLogoUrl(""); void autosave({ logoUrl: "" }); }}
           />
         </div>
       )}
@@ -273,10 +303,10 @@ export default function ProfilbildSection({ language, accountSubtype }: Props) {
         icon={<ImageIcon className="w-4 h-4 text-primary" />}
         currentUrl={coverUrl}
         tall
-        errorTypeMsg={l.typeError}
-        errorSizeMsg={l.sizeError}
-        errorUploadMsg={l.error}
+        uploadLabel={l.upload} changeLabel={l.change} removeLabel={l.remove}
+        errorTypeMsg={l.typeError} errorSizeMsg={l.sizeError} errorUploadMsg={l.error}
         onUploaded={(url) => { setCoverUrl(url); void autosave({ coverImageUrl: url }); }}
+        onRemove={() => { setCoverUrl(""); void autosave({ coverImageUrl: "" }); }}
       />
 
       {saveMsg && (

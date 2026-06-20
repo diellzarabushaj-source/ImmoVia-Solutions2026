@@ -78,6 +78,8 @@ import {
   LogOut,
   CheckCircle2,
   Save,
+  Trash2,
+  Upload,
 } from "lucide-react";
 import MessageThread from "@/components/MessageThread";
 import { MessagingSystem } from "@/components/MessagingSystem";
@@ -1503,20 +1505,51 @@ export default function ProviderDashboard() {
                       }
                     }}
                   />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {language === "de" ? "Profilfoto ändern"
-                        : language === "fr" ? "Changer la photo de profil"
-                        : language === "sq" ? "Ndrysho foton e profilit"
-                        : "Change profile photo"}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {language === "de" ? "Auf das Bild klicken, um ein neues hochzuladen"
-                        : language === "fr" ? "Cliquez sur l'image pour en télécharger une nouvelle"
-                        : language === "sq" ? "Klikoni mbi foto për të ngarkuar një të re"
-                        : "Click the image to upload a new one"}
-                    </p>
-                    {profilePhotoError && <p className="text-xs text-destructive mt-1">{profilePhotoError}</p>}
+                  <div className="flex flex-col gap-2">
+                    {profileForm.profilePhoto ? (
+                      <>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => !profilePhotoUploading && profilePhotoInputRef.current?.click()}
+                          disabled={profilePhotoUploading}
+                        >
+                          <Camera className="w-3.5 h-3.5 mr-1.5" />
+                          {language === "de" ? "Foto ändern" : language === "fr" ? "Changer" : language === "sq" ? "Ndrysho foton" : "Change photo"}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="text-destructive border-destructive/30 hover:bg-destructive/5"
+                          onClick={async () => {
+                            setProfileForm(prev => ({ ...prev, profilePhoto: "" }));
+                            setProfilePhotoPath("");
+                            await fetch("/api/provider/profile", {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ profilePhoto: "" }),
+                            });
+                          }}
+                        >
+                          <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                          {language === "de" ? "Entfernen" : language === "fr" ? "Supprimer" : language === "sq" ? "Hiq foton" : "Remove photo"}
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => !profilePhotoUploading && profilePhotoInputRef.current?.click()}
+                        disabled={profilePhotoUploading}
+                      >
+                        <Upload className="w-3.5 h-3.5 mr-1.5" />
+                        {language === "de" ? "Foto hochladen" : language === "fr" ? "Télécharger" : language === "sq" ? "Ngarko foto" : "Upload photo"}
+                      </Button>
+                    )}
+                    {profilePhotoError && <p className="text-xs text-destructive">{profilePhotoError}</p>}
                   </div>
                 </div>
               </Card>
