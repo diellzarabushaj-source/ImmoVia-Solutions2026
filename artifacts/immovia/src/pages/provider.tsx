@@ -82,7 +82,6 @@ import MessageThread from "@/components/MessageThread";
 import { MessagingSystem } from "@/components/MessagingSystem";
 import { PhotoUploader } from "@/components/photo-uploader";
 import ProfilbildSection from "@/components/provider/ProfilbildSection";
-import GalerieSection from "@/components/provider/GalerieSection";
 import LeistungenSection from "@/components/provider/LeistungenSection";
 import PreiseSection from "@/components/provider/PreiseSection";
 import { format } from "date-fns";
@@ -507,7 +506,6 @@ type Section =
   | "uebersicht"
   | "profil"
   | "profilbild"
-  | "galerie"
   | "leistungen"
   | "preise"
   | "projekte"
@@ -552,7 +550,7 @@ export default function ProviderDashboard() {
   const [browseView, setBrowseView] = useState<"grid" | "list">("grid");
   const [galleryProject, setGalleryProject] = useState<ProviderProject | null>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const VALID_SECTIONS: Section[] = ["uebersicht","profil","profilbild","galerie","leistungen","preise","projekte","bewerbungen","angebote","nachrichten","plan","sichtbarkeit","bewertungen","rechnungen","einstellungen"];
+  const VALID_SECTIONS: Section[] = ["uebersicht","profil","profilbild","leistungen","preise","projekte","bewerbungen","angebote","nachrichten","plan","sichtbarkeit","bewertungen","rechnungen","einstellungen"];
   const [activeSection, setActiveSection] = useState<Section>(() => {
     const tab = new URLSearchParams(search).get("tab") as Section | null;
     return (tab && VALID_SECTIONS.includes(tab)) ? tab : "uebersicht";
@@ -1002,7 +1000,6 @@ export default function ProviderDashboard() {
     { id: "uebersicht", label: l.navOverview, icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: "profil", label: l.navProfile, icon: <User className="w-4 h-4" /> },
     { id: "profilbild", label: l.navProfilbild, icon: <Camera className="w-4 h-4" /> },
-    { id: "galerie", label: l.navGalerie, icon: <Images className="w-4 h-4" /> },
     { id: "leistungen", label: l.navLeistungen, icon: <Tag className="w-4 h-4" /> },
     { id: "preise", label: l.navPreise, icon: <CircleDollarSign className="w-4 h-4" /> },
     { id: "projekte", label: l.navProjects, icon: <Search className="w-4 h-4" />, badge: projects.length || undefined },
@@ -1346,13 +1343,6 @@ export default function ProviderDashboard() {
                     {language === "de" ? "gesendete Angebote" : language === "fr" ? "offres envoyées" : language === "sq" ? "ofertat e dërguara" : "offers sent"}
                   </div>
                 </Card>
-                <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("galerie")}>
-                  <div className="text-xs text-muted-foreground mb-1">{l.navGalerie}</div>
-                  <div className="text-lg font-bold">{portfolioItems.length}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {language === "de" ? "Portfolio-Bilder" : language === "fr" ? "photos de portfolio" : language === "sq" ? "foto portofoli" : "portfolio photos"}
-                  </div>
-                </Card>
                 <Card className={`p-4 hover:border-primary/30 cursor-pointer transition-colors ${appStats?.contactVisible ? "bg-green-50/60 border-green-200" : "bg-muted/30"}`} onClick={() => setActiveSection("sichtbarkeit")}>
                   <div className="text-xs text-muted-foreground mb-1">{l.visibility}</div>
                   <div className="flex items-center gap-1.5 mt-1">
@@ -1404,10 +1394,6 @@ export default function ProviderDashboard() {
                 <Button variant="outline" onClick={() => setActiveSection("profil")}>
                   <User className="w-4 h-4 mr-2" />
                   {l.navProfile}
-                </Button>
-                <Button variant="outline" onClick={() => setActiveSection("galerie")}>
-                  <Images className="w-4 h-4 mr-2" />
-                  {l.navGalerie}
                 </Button>
                 {!appStats?.contactVisible && (
                   <Link href="/pricing">
@@ -1570,11 +1556,6 @@ export default function ProviderDashboard() {
           {/* ── PROFILBILD & LOGO ── */}
           {activeSection === "profilbild" && (
             <ProfilbildSection language={language} />
-          )}
-
-          {/* ── GALERIE & PORTFOLIO ── */}
-          {activeSection === "galerie" && (
-            <GalerieSection language={language} />
           )}
 
           {/* ── LEISTUNGEN & KATEGORIEN ── */}
