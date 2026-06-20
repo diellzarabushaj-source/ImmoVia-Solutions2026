@@ -9,18 +9,18 @@ import {
 import { getAuth } from "@clerk/express";
 import type { Request } from "express";
 
-/** Monthly unlock limit per plan (applies to all paid plans) */
+/** Monthly unlock limit per plan. -1 = unlimited. */
 export const PLAN_UNLOCK_LIMITS: Record<string, number> = {
   free: 5,
   basic: 20,
-  pro: 20,
-  premium: 20,
+  pro: 50,
+  premium: -1, // unlimited
   starter: 20,
-  professional: 20,
+  professional: 50,
   founding: 5,
 };
 /** @deprecated use PLAN_UNLOCK_LIMITS */
-export const PRO_UNLOCK_LIMIT = 20;
+export const PRO_UNLOCK_LIMIT = 50;
 
 /** Returns true for admin sessions, otherwise false. */
 export function isAdminSession(req: Request): boolean {

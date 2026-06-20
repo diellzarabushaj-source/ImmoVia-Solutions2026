@@ -23,11 +23,11 @@ const router: IRouter = Router();
 export const PLAN_APP_LIMITS: Record<string, number> = {
   free: 2,
   basic: 20,
-  pro: 20,
-  premium: 20,
+  pro: 50,
+  premium: -1, // -1 = unlimited
   // legacy slugs kept for backward compat
   starter: 20,
-  professional: 20,
+  professional: 50,
   founding: 10,
 };
 
