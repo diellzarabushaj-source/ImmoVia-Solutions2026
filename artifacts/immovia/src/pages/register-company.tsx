@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
-import { useCreateCompany } from "@workspace/api-client-react";
+import { useCreateCompany, useCreateRegistrationCheckout } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,7 +19,7 @@ import {
   FormMessage,
   FormDescription
 } from "@/components/ui/form";
-import { CheckCircle2, User, Building2 } from "lucide-react";
+import { CheckCircle2, User, Building2, CreditCard, ShieldCheck, Loader2 } from "lucide-react";
 import type { Lang } from "@/lib/categories";
 import { useCategories } from "@/hooks/useCategories";
 import { validateOtherTag, otherTagErrorMessage, sanitizeOtherTag, buildCustomServiceTag } from "@/lib/validateOtherTag";
@@ -29,9 +29,12 @@ export default function RegisterCompany() {
   const { t, language } = useLanguage();
   const { categories } = useCategories("service");
   const [, setLocation] = useLocation();
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  
+  const [submittedCompany, setSubmittedCompany] = useState<{ id: number; email: string } | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
   const createCompany = useCreateCompany();
+  const createCheckout = useCreateRegistrationCheckout();
   const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
   const [otherTagErrors, setOtherTagErrors] = useState<Record<string, string>>({});
 
@@ -91,10 +94,33 @@ export default function RegisterCompany() {
     createCompany.mutate({
       data: { ...values, customServiceTags } as never
     }, {
-      onSuccess: () => {
-        setIsSubmitted(true);
+      onSuccess: (company) => {
+        setSubmittedCompany({ id: company.id, email: values.email });
       }
     });
+  };
+
+  const handlePayNow = async () => {
+    if (!submittedCompany) return;
+    setPaymentLoading(true);
+    setPaymentError(null);
+    try {
+      const result = await createCheckout.mutateAsync({
+        id: submittedCompany.id,
+        data: { email: submittedCompany.email },
+      });
+      if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch {
+      setPaymentError(
+        language === "sq" ? "Ndodhi një gabim. Ju lutemi provoni përsëri." :
+        language === "de" ? "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut." :
+        language === "fr" ? "Une erreur s'est produite. Veuillez réessayer." :
+        "An error occurred. Please try again."
+      );
+      setPaymentLoading(false);
+    }
   };
 
   const servicesList = categories.map(cat => ({
@@ -102,92 +128,112 @@ export default function RegisterCompany() {
     label: cat.label,
   }));
 
-  if (isSubmitted) {
+  if (submittedCompany) {
+    const headline: Record<string, string> = {
+      sq: "Aplikimi u regjistrua!",
+      en: "Application submitted!",
+      de: "Bewerbung eingereicht!",
+      fr: "Candidature soumise\u00a0!",
+    };
     const subtext: Record<string, string> = {
-      sq: "Aplikimi juaj u pranua dhe është duke u shqyrtuar. Do t'ju kontaktojmë së shpejti.",
-      en: "Your application has been received and is under review. We will contact you shortly.",
-      de: "Ihre Bewerbung wurde erhalten und wird geprüft. Wir melden uns in Kürze bei Ihnen.",
-      fr: "Votre candidature a été reçue et est en cours d'examen. Nous vous contacterons prochainement.",
+      sq: "Hapi i fundit: paguani tarifën e regjistrimit prej CHF\u00a0149 për të aktivizuar profilin tuaj.",
+      en: "One last step: pay the CHF\u00a0149 registration fee to activate your profile.",
+      de: "Letzter Schritt: Zahlen Sie die Registrierungsgebühr von CHF\u00a0149, um Ihr Profil zu aktivieren.",
+      fr: "Dernière étape\u00a0: payez les CHF\u00a0149 de frais d'inscription pour activer votre profil.",
     };
-    const nextStepsLabel: Record<string, string> = {
-      sq: "Hapat e Ardhshëm",
-      en: "Next Steps",
-      de: "Nächste Schritte",
-      fr: "Prochaines étapes",
-    };
-    const nextSteps: Record<string, string[]> = {
+    const featureItems: Record<string, string[]> = {
       sq: [
-        "Ekipi ynë do ta shqyrtojë profilin tuaj brenda 48 orëve.",
-        "Pasi të miratohet, kompania juaj do të jetë e dukshme në drejtori.",
-        "Klientët mund t'ju kontaktojnë dhe mund të dërgoni oferta për projekte.",
+        "Profili juaj shfaqet në drejtorinë e kontraktorëve",
+        "Klientët mund t'ju kontaktojnë drejtpërdrejt",
+        "Merrni njoftime për projekte të reja",
       ],
       en: [
-        "Our team will review your profile within 48 hours.",
-        "Once approved, your company will be visible in the directory.",
-        "Clients can contact you and you can submit offers on projects.",
+        "Your profile appears in the contractor directory",
+        "Clients can contact you directly",
+        "Receive notifications for new projects",
       ],
       de: [
-        "Unser Team prüft Ihr Profil innerhalb von 48 Stunden.",
-        "Nach Genehmigung wird Ihre Firma im Verzeichnis sichtbar sein.",
-        "Kunden können Sie kontaktieren und Sie können Angebote auf Projekte einreichen.",
+        "Ihr Profil erscheint im Verzeichnis",
+        "Kunden können Sie direkt kontaktieren",
+        "Benachrichtigungen über neue Projekte erhalten",
       ],
       fr: [
-        "Notre équipe examinera votre profil dans les 48 heures.",
-        "Une fois approuvée, votre société sera visible dans l'annuaire.",
-        "Les clients pourront vous contacter et vous pourrez soumettre des offres sur des projets.",
+        "Votre profil apparaît dans l'annuaire",
+        "Les clients peuvent vous contacter directement",
+        "Recevez des notifications pour les nouveaux projets",
       ],
     };
-    const steps = nextSteps[language] ?? nextSteps.de;
+    const payLabel: Record<string, string> = {
+      sq: "Paguaj CHF 149 tani",
+      en: "Pay CHF 149 now",
+      de: "Jetzt CHF 149 bezahlen",
+      fr: "Payer CHF 149 maintenant",
+    };
+    const secureLabel: Record<string, string> = {
+      sq: "Pagesë e sigurt me Stripe",
+      en: "Secure payment via Stripe",
+      de: "Sichere Zahlung über Stripe",
+      fr: "Paiement sécurisé via Stripe",
+    };
+    const features = featureItems[language] ?? featureItems.en;
 
     return (
       <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
         <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 16 }}
-          className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 shadow-sm"
-        >
-          <CheckCircle2 className="w-12 h-12" />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="text-center max-w-lg"
+          className="w-full max-w-md"
         >
-          <h2 className="text-3xl font-serif font-bold mb-3">{t.companyForm.success}</h2>
-          <p className="text-muted-foreground text-sm mb-10">
-            {subtext[language] ?? subtext.de}
-          </p>
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-serif font-bold mb-2">{headline[language] ?? headline.en}</h2>
+            <p className="text-muted-foreground text-sm">{subtext[language] ?? subtext.en}</p>
+          </div>
 
-          <div className="bg-card border border-border rounded-xl p-6 mb-8 text-left">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-              {nextStepsLabel[language] ?? nextStepsLabel.de}
-            </h3>
-            <div className="space-y-3">
-              {steps.map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    {i + 1}
-                  </div>
-                  <p className="text-sm text-foreground leading-relaxed">{step}</p>
+          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm mb-4">
+            <div className="bg-[#1a3a6e] text-white px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 opacity-80" />
+                <span className="text-sm font-semibold uppercase tracking-wide">
+                  {language === "sq" ? "Tarifë Regjistrimi" :
+                   language === "de" ? "Registrierungsgebühr" :
+                   language === "fr" ? "Frais d'inscription" :
+                   "Registration Fee"}
+                </span>
+              </div>
+              <span className="text-xl font-bold">CHF 149</span>
+            </div>
+            <div className="px-6 py-5 space-y-3">
+              {features.map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
+                  <p className="text-sm text-foreground">{item}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex gap-3 justify-center flex-wrap">
-            <Button variant="outline" onClick={() => setLocation("/companies")}>
-              {language === "sq" && "Shiko Firmat"}
-              {language === "en" && "Browse Companies"}
-              {language === "de" && "Firmen entdecken"}
-              {language === "fr" && "Découvrir les entreprises"}
-            </Button>
-            <Button onClick={() => setLocation("/")}>
-              {t.nav.home}
-            </Button>
-          </div>
+          {paymentError && (
+            <p className="text-sm text-red-600 text-center mb-3">{paymentError}</p>
+          )}
+
+          <Button
+            size="lg"
+            className="w-full bg-[#1a3a6e] hover:bg-[#0f2044]"
+            onClick={handlePayNow}
+            disabled={paymentLoading}
+          >
+            {paymentLoading ? (
+              <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> {language === "sq" ? "Duke hapur..." : language === "de" ? "Öffnet..." : language === "fr" ? "Ouverture..." : "Opening..."}</span>
+            ) : (
+              payLabel[language] ?? payLabel.en
+            )}
+          </Button>
+          <p className="text-xs text-center text-muted-foreground mt-3 flex items-center justify-center gap-1">
+            <ShieldCheck className="w-3 h-3" /> {secureLabel[language] ?? secureLabel.en}
+          </p>
         </motion.div>
       </div>
     );

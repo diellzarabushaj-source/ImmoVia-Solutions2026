@@ -36,6 +36,8 @@ export const companiesTable = pgTable("companies", {
   logoUrl: text("logo_url"),
   customServiceTags: text("custom_service_tags").array(),
   featuredOnHome: boolean("featured_on_home").default(false),
+  registrationFeePaid: boolean("registration_fee_paid").default(false),
+  stripeRegistrationSessionId: text("stripe_registration_session_id"),
 });
 
 export const insertCompanySchema = createInsertSchema(companiesTable).omit({

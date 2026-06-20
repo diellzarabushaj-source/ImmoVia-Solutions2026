@@ -192,6 +192,8 @@ export const ListCompaniesResponseItem = zod.object({
   "profilePhoto": zod.string().nullish().describe('Object path of the profile photo'),
   "status": zod.string().describe('pending | approved | rejected'),
   "featuredOnHome": zod.boolean().nullish().describe('Admin-controlled: show this provider in the home page carousel'),
+  "registrationFeePaid": zod.boolean().nullish().describe('Whether the one-time CHF 149 registration fee has been paid'),
+  "stripeRegistrationSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the registration fee'),
   "createdAt": zod.coerce.date()
 })
 export const ListCompaniesResponse = zod.array(ListCompaniesResponseItem)
@@ -250,6 +252,8 @@ export const GetCompanyResponse = zod.object({
   "profilePhoto": zod.string().nullish().describe('Object path of the profile photo'),
   "status": zod.string().describe('pending | approved | rejected'),
   "featuredOnHome": zod.boolean().nullish().describe('Admin-controlled: show this provider in the home page carousel'),
+  "registrationFeePaid": zod.boolean().nullish().describe('Whether the one-time CHF 149 registration fee has been paid'),
+  "stripeRegistrationSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the registration fee'),
   "createdAt": zod.coerce.date()
 })
 
@@ -285,6 +289,8 @@ export const UpdateCompanyResponse = zod.object({
   "profilePhoto": zod.string().nullish().describe('Object path of the profile photo'),
   "status": zod.string().describe('pending | approved | rejected'),
   "featuredOnHome": zod.boolean().nullish().describe('Admin-controlled: show this provider in the home page carousel'),
+  "registrationFeePaid": zod.boolean().nullish().describe('Whether the one-time CHF 149 registration fee has been paid'),
+  "stripeRegistrationSessionId": zod.string().nullish().describe('Stripe Checkout session ID for the registration fee'),
   "createdAt": zod.coerce.date()
 })
 
@@ -294,6 +300,39 @@ export const UpdateCompanyResponse = zod.object({
  */
 export const DeleteCompanyParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Create a Stripe Checkout session for the CHF 149 registration fee
+ */
+export const CreateRegistrationCheckoutParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreateRegistrationCheckoutBody = zod.object({
+  "email": zod.string()
+})
+
+export const CreateRegistrationCheckoutResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
+ * @summary Verify registration fee payment and mark company as paid
+ */
+export const VerifyRegistrationPaymentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const VerifyRegistrationPaymentBody = zod.object({
+  "sessionId": zod.string()
+})
+
+export const VerifyRegistrationPaymentResponse = zod.object({
+  "paid": zod.boolean(),
+  "reason": zod.string().optional()
 })
 
 

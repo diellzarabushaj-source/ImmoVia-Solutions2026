@@ -45,6 +45,10 @@ import type {
   Project,
   ProjectInput,
   ProjectUpdate,
+  RegistrationCheckoutInput,
+  RegistrationCheckoutUrl,
+  RegistrationVerifyInput,
+  RegistrationVerifyResult,
   StatusUpdate,
   UploadUrlRequest,
   UploadUrlResponse
@@ -886,6 +890,150 @@ export const useDeleteCompany = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getDeleteCompanyMutationOptions(options));
+    }
+
+export const getCreateRegistrationCheckoutUrl = (id: number,) => {
+
+
+
+
+  return `/api/companies/${id}/registration-checkout`
+}
+
+/**
+ * @summary Create a Stripe Checkout session for the CHF 149 registration fee
+ */
+export const createRegistrationCheckout = async (id: number,
+    registrationCheckoutInput: RegistrationCheckoutInput, options?: RequestInit): Promise<RegistrationCheckoutUrl> => {
+
+  return customFetch<RegistrationCheckoutUrl>(getCreateRegistrationCheckoutUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      registrationCheckoutInput,)
+  }
+);}
+
+
+
+
+export const getCreateRegistrationCheckoutMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRegistrationCheckout>>, TError,{id: number;data: BodyType<RegistrationCheckoutInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createRegistrationCheckout>>, TError,{id: number;data: BodyType<RegistrationCheckoutInput>}, TContext> => {
+
+const mutationKey = ['createRegistrationCheckout'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createRegistrationCheckout>>, {id: number;data: BodyType<RegistrationCheckoutInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createRegistrationCheckout(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateRegistrationCheckoutMutationResult = NonNullable<Awaited<ReturnType<typeof createRegistrationCheckout>>>
+    export type CreateRegistrationCheckoutMutationBody = BodyType<RegistrationCheckoutInput>
+    export type CreateRegistrationCheckoutMutationError = ErrorType<void>
+
+    /**
+ * @summary Create a Stripe Checkout session for the CHF 149 registration fee
+ */
+export const useCreateRegistrationCheckout = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRegistrationCheckout>>, TError,{id: number;data: BodyType<RegistrationCheckoutInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createRegistrationCheckout>>,
+        TError,
+        {id: number;data: BodyType<RegistrationCheckoutInput>},
+        TContext
+      > => {
+      return useMutation(getCreateRegistrationCheckoutMutationOptions(options));
+    }
+
+export const getVerifyRegistrationPaymentUrl = (id: number,) => {
+
+
+
+
+  return `/api/companies/${id}/registration-payment/verify`
+}
+
+/**
+ * @summary Verify registration fee payment and mark company as paid
+ */
+export const verifyRegistrationPayment = async (id: number,
+    registrationVerifyInput: RegistrationVerifyInput, options?: RequestInit): Promise<RegistrationVerifyResult> => {
+
+  return customFetch<RegistrationVerifyResult>(getVerifyRegistrationPaymentUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      registrationVerifyInput,)
+  }
+);}
+
+
+
+
+export const getVerifyRegistrationPaymentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyRegistrationPayment>>, TError,{id: number;data: BodyType<RegistrationVerifyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyRegistrationPayment>>, TError,{id: number;data: BodyType<RegistrationVerifyInput>}, TContext> => {
+
+const mutationKey = ['verifyRegistrationPayment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyRegistrationPayment>>, {id: number;data: BodyType<RegistrationVerifyInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  verifyRegistrationPayment(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyRegistrationPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof verifyRegistrationPayment>>>
+    export type VerifyRegistrationPaymentMutationBody = BodyType<RegistrationVerifyInput>
+    export type VerifyRegistrationPaymentMutationError = ErrorType<void>
+
+    /**
+ * @summary Verify registration fee payment and mark company as paid
+ */
+export const useVerifyRegistrationPayment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyRegistrationPayment>>, TError,{id: number;data: BodyType<RegistrationVerifyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyRegistrationPayment>>,
+        TError,
+        {id: number;data: BodyType<RegistrationVerifyInput>},
+        TContext
+      > => {
+      return useMutation(getVerifyRegistrationPaymentMutationOptions(options));
     }
 
 export const getGetAdminStatsUrl = () => {

@@ -10,6 +10,10 @@ import {
   ListCompaniesResponse,
   GetCompanyResponse,
   UpdateCompanyResponse,
+  CreateRegistrationCheckoutParams,
+  CreateRegistrationCheckoutBody,
+  VerifyRegistrationPaymentParams,
+  VerifyRegistrationPaymentBody,
 } from "@workspace/api-zod";
 import { getAuth } from "@clerk/express";
 import { requireAdmin } from "../middlewares/requireAdmin";
@@ -17,6 +21,7 @@ import { sendNewCompanyNotification, sendProviderApprovedNotification, sendProvi
 import { createNotification } from "../lib/notify";
 import { usersTable } from "@workspace/db";
 import type { Request } from "express";
+import { getStripeClient, getRegistrationFeePriceId } from "../lib/stripeClient";
 
 const router: IRouter = Router();
 
@@ -202,6 +207,107 @@ router.patch("/companies/:id", requireAdmin, async (req, res): Promise<void> => 
   }
 
   res.json(UpdateCompanyResponse.parse(company));
+});
+
+router.post("/companies/:id/registration-checkout", async (req, res): Promise<void> => {
+  const params = CreateRegistrationCheckoutParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const body = CreateRegistrationCheckoutBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const [company] = await db
+    .select()
+    .from(companiesTable)
+    .where(eq(companiesTable.id, params.data.id));
+
+  if (!company) {
+    res.status(404).json({ error: "Company not found" });
+    return;
+  }
+
+  if (company.registrationFeePaid) {
+    res.status(400).json({ error: "Registration fee already paid" });
+    return;
+  }
+
+  const priceId = getRegistrationFeePriceId();
+  if (!priceId) {
+    req.log.error("STRIPE_REGISTRATION_FEE_PRICE_ID is not set");
+    res.status(500).json({ error: "Payment not configured" });
+    return;
+  }
+
+  const stripe = getStripeClient();
+  const origin = (req.headers.origin as string) || `https://${req.headers.host}`;
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    line_items: [{ price: priceId, quantity: 1 }],
+    customer_email: body.data.email,
+    metadata: { companyId: String(company.id) },
+    success_url: `${origin}/registration-payment-success?company_id=${company.id}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/register-company?cancelled=1`,
+  });
+
+  await db
+    .update(companiesTable)
+    .set({ stripeRegistrationSessionId: session.id })
+    .where(eq(companiesTable.id, company.id));
+
+  res.json({ url: session.url });
+});
+
+router.post("/companies/:id/registration-payment/verify", async (req, res): Promise<void> => {
+  const params = VerifyRegistrationPaymentParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const body = VerifyRegistrationPaymentBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const [company] = await db
+    .select()
+    .from(companiesTable)
+    .where(eq(companiesTable.id, params.data.id));
+
+  if (!company) {
+    res.status(404).json({ error: "Company not found" });
+    return;
+  }
+
+  if (company.registrationFeePaid) {
+    res.json({ paid: true });
+    return;
+  }
+
+  try {
+    const stripe = getStripeClient();
+    const session = await stripe.checkout.sessions.retrieve(body.data.sessionId);
+    if (session.payment_status === "paid" && session.metadata?.companyId === String(company.id)) {
+      await db
+        .update(companiesTable)
+        .set({ registrationFeePaid: true, stripeRegistrationSessionId: session.id })
+        .where(eq(companiesTable.id, company.id));
+      res.json({ paid: true });
+      return;
+    }
+    res.json({ paid: false, reason: session.payment_status });
+  } catch (err) {
+    req.log.error({ err }, "Failed to verify registration payment");
+    res.json({ paid: false, reason: "verification_error" });
+  }
 });
 
 router.delete("/companies/:id", requireAdmin, async (req, res): Promise<void> => {

@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import {
   MoreHorizontal, CheckCircle2, XCircle, Clock, Trash2, Loader2,
-  Plus, Building2, Search, PauseCircle, ExternalLink, Star
+  Plus, Building2, Search, PauseCircle, ExternalLink, Star, CreditCard
 } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -142,6 +142,7 @@ type Company = {
   status: string;
   createdAt: string;
   featuredOnHome?: boolean | null;
+  registrationFeePaid?: boolean | null;
 };
 
 function CompanyDrawer({ company, onClose, onAction, onToggleFeatured }: { company: Company; onClose: () => void; onAction: (id: number, status: string) => void; onToggleFeatured: (id: number, current: boolean) => void }) {
@@ -194,6 +195,24 @@ function CompanyDrawer({ company, onClose, onAction, onToggleFeatured }: { compa
           </div>
 
           <div className="pt-4 border-t space-y-3">
+            {/* Registration fee status */}
+            <div className={`flex items-center justify-between p-3 rounded-lg border ${company.registrationFeePaid ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}>
+              <div className="flex items-center gap-2">
+                <CreditCard className={`h-4 w-4 ${company.registrationFeePaid ? "text-green-600" : "text-red-500"}`} />
+                <div>
+                  <p className="text-xs font-semibold text-gray-800">Tarifa e Regjistrimit — CHF 149</p>
+                  <p className={`text-xs font-medium ${company.registrationFeePaid ? "text-green-700" : "text-red-600"}`}>
+                    {company.registrationFeePaid ? "E paguar" : "E papaguar"}
+                  </p>
+                </div>
+              </div>
+              {company.registrationFeePaid ? (
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+              ) : (
+                <XCircle className="h-5 w-5 text-red-400" />
+              )}
+            </div>
+
             {/* Featured on Home toggle */}
             <div className="flex items-center justify-between p-3 rounded-lg border border-amber-200 bg-amber-50">
               <div className="flex items-center gap-2">
@@ -333,13 +352,14 @@ export function AdminCompanies() {
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colLocation}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.date}</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">{t.admin.status}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600">CHF 149</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600">Karusel</TableHead>
               <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={9} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
             )}
             {!isLoading && filtered.map((company) => (
               <TableRow key={company.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setDrawerCompany(company as Company)}>
@@ -368,6 +388,17 @@ export function AdminCompanies() {
                 <TableCell className="text-sm">{company.city}</TableCell>
                 <TableCell className="text-xs text-gray-500">{format(new Date(company.createdAt), "MMM d, yyyy")}</TableCell>
                 <TableCell><StatusBadge status={company.status} /></TableCell>
+                <TableCell>
+                  {company.registrationFeePaid ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded px-2 py-0.5">
+                      <CreditCard className="h-3 w-3" /> Paguar
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded px-2 py-0.5">
+                      <CreditCard className="h-3 w-3" /> Pa paguar
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <button
                     title={company.featuredOnHome ? "Hiq nga karusel" : "Shto në karusel"}
@@ -413,7 +444,7 @@ export function AdminCompanies() {
               </TableRow>
             ))}
             {!isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={9} className="h-24 text-center text-gray-400">{t.admin.noCompaniesFound}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="h-24 text-center text-gray-400">{t.admin.noCompaniesFound}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>

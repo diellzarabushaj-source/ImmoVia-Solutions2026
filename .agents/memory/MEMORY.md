@@ -10,3 +10,4 @@
 - [Provider middleware role mismatch](provider-middleware-role-mismatch.md) — requireProvider/requireContractor must mirror frontend isServiceProvider() (3 conditions) or legacy users 403 on all API calls.
 - [Stripe v20 API breaking changes](stripe-v20-breaking-changes.md) — current_period_start/end removed; use start_date + billing_cycle_anchor; also pass {CHECKOUT_SESSION_ID} in success URL to avoid race conditions.
 - [Post-checkout confirmation page](post-checkout-confirmation.md) — success page requires session_id; the customer-wide sync fallback can falsely confirm an old sub as a fresh purchase.
+- [Orval named-schema vs inline conflict](orval-named-schema-conflict.md) — inline request/response bodies + path params cause TS2308 duplicate exports; fix with $ref to named schemas in components/schemas.

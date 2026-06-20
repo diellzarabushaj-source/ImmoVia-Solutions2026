@@ -130,6 +130,16 @@ export interface Company {
      * @nullable
      */
   featuredOnHome?: boolean | null;
+  /**
+     * Whether the one-time CHF 149 registration fee has been paid
+     * @nullable
+     */
+  registrationFeePaid?: boolean | null;
+  /**
+     * Stripe Checkout session ID for the registration fee
+     * @nullable
+     */
+  stripeRegistrationSessionId?: string | null;
   createdAt: string;
 }
 
@@ -162,6 +172,23 @@ export interface CompanyUpdate {
   description?: string;
   /** Toggle home page carousel inclusion */
   featuredOnHome?: boolean;
+}
+
+export interface RegistrationCheckoutInput {
+  email: string;
+}
+
+export interface RegistrationCheckoutUrl {
+  url: string;
+}
+
+export interface RegistrationVerifyInput {
+  sessionId: string;
+}
+
+export interface RegistrationVerifyResult {
+  paid: boolean;
+  reason?: string;
 }
 
 export interface CountByLabel {

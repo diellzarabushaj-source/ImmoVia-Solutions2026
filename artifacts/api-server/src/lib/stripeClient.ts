@@ -69,6 +69,11 @@ export function getWebhookSecret(): string {
   return secret;
 }
 
+/** Returns the one-time registration fee price ID (CHF 149). */
+export function getRegistrationFeePriceId(): string | undefined {
+  return process.env.STRIPE_REGISTRATION_FEE_PRICE_ID;
+}
+
 /** Maps an internal plan slug to its configured live Stripe price ID. */
 export function priceIdForSlug(slug: string): string | undefined {
   switch (slug) {

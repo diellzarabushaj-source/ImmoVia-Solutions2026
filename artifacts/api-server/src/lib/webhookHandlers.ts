@@ -7,6 +7,8 @@ import {
   recordInvoice,
 } from "./stripeActivation";
 import { logger } from "./logger";
+import { db, companiesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 export class WebhookHandlers {
   static async processWebhook(payload: Buffer, signature: string): Promise<void> {
@@ -31,6 +33,15 @@ export class WebhookHandlers {
               : session.subscription.id;
           const sub = await stripe.subscriptions.retrieve(subId);
           await activateSubscription(sub);
+        } else if (session.mode === "payment" && session.payment_status === "paid") {
+          const companyId = session.metadata?.companyId;
+          if (companyId) {
+            await db
+              .update(companiesTable)
+              .set({ registrationFeePaid: true, stripeRegistrationSessionId: session.id })
+              .where(eq(companiesTable.id, parseInt(companyId, 10)));
+            logger.info({ companyId }, "Registration fee paid via webhook");
+          }
         }
         break;
       }

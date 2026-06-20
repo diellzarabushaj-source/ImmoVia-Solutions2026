@@ -43,5 +43,15 @@ export interface Company {
      * @nullable
      */
   featuredOnHome?: boolean | null;
+  /**
+     * Whether the one-time CHF 149 registration fee has been paid
+     * @nullable
+     */
+  registrationFeePaid?: boolean | null;
+  /**
+     * Stripe Checkout session ID for the registration fee
+     * @nullable
+     */
+  stripeRegistrationSessionId?: string | null;
   createdAt: Date;
 }
