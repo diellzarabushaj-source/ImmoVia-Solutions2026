@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from "react";
+import { useEffect, useState, Fragment, useRef } from "react";
 import { Link, useLocation, useSearch } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
@@ -601,6 +601,9 @@ export default function ProviderDashboard() {
   const [portfolioItems, setPortfolioItems] = useState<Array<{ id: number; imageUrl: string }>>([]);
   const [portfolioObjectPaths, setPortfolioObjectPaths] = useState<string[]>([]);
   const [profilePhotoPath, setProfilePhotoPath] = useState<string>("");
+  const [profilePhotoUploading, setProfilePhotoUploading] = useState(false);
+  const [profilePhotoError, setProfilePhotoError] = useState<string | null>(null);
+  const profilePhotoInputRef = useRef<HTMLInputElement>(null);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -1433,32 +1436,87 @@ export default function ProviderDashboard() {
             <div>
               <h2 className="text-xl font-serif font-bold mb-6">{l.navProfile}</h2>
 
-              {/* Profile photo */}
+              {/* Profile photo — click avatar to change */}
               <Card className="p-6 mb-4">
                 <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
                   <User className="w-4 h-4 text-primary" />
                   {l.profilePhoto}
                 </h3>
-                <div className="flex items-start gap-5">
-                  <div className="w-24 h-24 rounded-2xl bg-muted border border-border overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <div className="flex items-center gap-5">
+                  <button
+                    type="button"
+                    className="relative w-24 h-24 rounded-2xl bg-muted border border-border overflow-hidden flex-shrink-0 flex items-center justify-center group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={() => !profilePhotoUploading && profilePhotoInputRef.current?.click()}
+                    aria-label={language === "de" ? "Profilfoto ändern" : language === "fr" ? "Changer la photo" : language === "sq" ? "Ndrysho foton" : "Change profile photo"}
+                  >
                     {profileForm.profilePhoto ? (
                       <img src={profileForm.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       <User className="w-10 h-10 text-muted-foreground/40" />
                     )}
-                  </div>
-                  <div className="flex-1">
-                    <PhotoUploader
-                      label=""
-                      hint={l.portfolioHint}
-                      value={profilePhotoPath ? [profilePhotoPath] : []}
-                      onChange={(paths) => {
-                        if (paths[0]) {
-                          setProfilePhotoPath(paths[0]);
-                          setProfileForm(prev => ({ ...prev, profilePhoto: `/api/storage${paths[0]}` }));
-                        }
-                      }}
-                    />
+                    {/* Hover overlay */}
+                    {profilePhotoUploading ? (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      </div>
+                    ) : (
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                        <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    )}
+                  </button>
+                  <input
+                    ref={profilePhotoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!file) return;
+                      if (!file.type.startsWith("image/")) { setProfilePhotoError("Only image files are allowed."); return; }
+                      if (file.size > 8 * 1024 * 1024) { setProfilePhotoError("Max file size is 8 MB."); return; }
+                      setProfilePhotoError(null);
+                      setProfilePhotoUploading(true);
+                      try {
+                        const res = await fetch("/api/storage/uploads/request-url", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+                        });
+                        if (!res.ok) throw new Error("Upload URL failed");
+                        const { uploadURL, objectPath } = await res.json() as { uploadURL: string; objectPath: string };
+                        const put = await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+                        if (!put.ok) throw new Error("Upload failed");
+                        setProfilePhotoPath(objectPath);
+                        setProfileForm(prev => ({ ...prev, profilePhoto: `/api/storage${objectPath}` }));
+                        // auto-save immediately
+                        await fetch("/api/provider/profile", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ profilePhoto: `/api/storage${objectPath}` }),
+                        });
+                      } catch {
+                        setProfilePhotoError("Upload failed. Please try again.");
+                      } finally {
+                        setProfilePhotoUploading(false);
+                      }
+                    }}
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {language === "de" ? "Profilfoto ändern"
+                        : language === "fr" ? "Changer la photo de profil"
+                        : language === "sq" ? "Ndrysho foton e profilit"
+                        : "Change profile photo"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === "de" ? "Auf das Bild klicken, um ein neues hochzuladen"
+                        : language === "fr" ? "Cliquez sur l'image pour en télécharger une nouvelle"
+                        : language === "sq" ? "Klikoni mbi foto për të ngarkuar një të re"
+                        : "Click the image to upload a new one"}
+                    </p>
+                    {profilePhotoError && <p className="text-xs text-destructive mt-1">{profilePhotoError}</p>}
                   </div>
                 </div>
               </Card>
