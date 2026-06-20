@@ -146,6 +146,8 @@ export default function CompanyProfile() {
 
   // Only Premium (top plan) can see the provider's website
   const canSeeWebsite = viewerPlanSlug === "premium";
+  // Professional + Premium can see contact info (email / phone)
+  const canSeeContact = viewerPlanSlug != null && (viewerPlanSlug === "premium" || viewerPlanSlug.includes("pro"));
 
   const openChat = () => {
     if (!user) { setLocation("/sign-in"); return; }
@@ -330,22 +332,32 @@ export default function CompanyProfile() {
             {/* CTA buttons */}
             <div className="flex flex-wrap gap-2 mt-6 pt-5 border-t border-border">
               {user ? (
-                <>
-                  <Button asChild>
-                    <a href={`mailto:${company.email}`}>
-                      <Mail className="w-4 h-4 mr-2" />
-                      {t.companies.contact}
-                    </a>
-                  </Button>
-                  {company.phone && (
-                    <Button asChild variant="outline">
-                      <a href={`tel:${company.phone}`}>
-                        <Phone className="w-4 h-4 mr-2" />
-                        {t.companies.call}
+                canSeeContact ? (
+                  <>
+                    <Button asChild>
+                      <a href={`mailto:${company.email}`}>
+                        <Mail className="w-4 h-4 mr-2" />
+                        {t.companies.contact}
                       </a>
                     </Button>
-                  )}
-                </>
+                    {company.phone && (
+                      <Button asChild variant="outline">
+                        <a href={`tel:${company.phone}`}>
+                          <Phone className="w-4 h-4 mr-2" />
+                          {t.companies.call}
+                        </a>
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-xs bg-primary/8 text-primary px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5" />
+                    {language === "de" ? "Professional / Premium erforderlich"
+                      : language === "fr" ? "Professional / Premium requis"
+                      : language === "sq" ? "Nevojitet Professional / Premium"
+                      : "Professional / Premium required"}
+                  </span>
+                )
               ) : (
                 <Button onClick={() => setLocation("/sign-in")}>
                   <Mail className="w-4 h-4 mr-2" />
@@ -489,18 +501,32 @@ export default function CompanyProfile() {
               {user ? (
                 <>
                   <div className="space-y-3 mb-5">
-                    <div className="flex items-start gap-3 text-sm">
-                      <Mail className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                      <a href={`mailto:${company.email}`} className="text-foreground/80 hover:text-primary break-all">
-                        {company.email}
-                      </a>
-                    </div>
-                    {company.phone && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                        <a href={`tel:${company.phone}`} className="text-foreground/80 hover:text-primary">
-                          {company.phone}
-                        </a>
+                    {canSeeContact ? (
+                      <>
+                        <div className="flex items-start gap-3 text-sm">
+                          <Mail className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <a href={`mailto:${company.email}`} className="text-foreground/80 hover:text-primary break-all">
+                            {company.email}
+                          </a>
+                        </div>
+                        {company.phone && (
+                          <div className="flex items-center gap-3 text-sm">
+                            <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                            <a href={`tel:${company.phone}`} className="text-foreground/80 hover:text-primary">
+                              {company.phone}
+                            </a>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-center">
+                        <p className="text-xs text-muted-foreground mb-1.5">
+                          {language === "de" ? "Kontaktdaten sichtbar ab"
+                            : language === "fr" ? "Coordonnées visibles à partir du plan"
+                            : language === "sq" ? "Të dhënat e kontaktit janë të dukshme nga"
+                            : "Contact details visible from"}
+                        </p>
+                        <span className="text-xs font-semibold text-primary">Professional / Premium</span>
                       </div>
                     )}
                     {company.website && (
