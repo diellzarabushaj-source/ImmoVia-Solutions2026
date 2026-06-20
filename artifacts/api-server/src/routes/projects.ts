@@ -234,12 +234,12 @@ router.post("/projects/:id/unlock", requireProvider, async (req, res): Promise<v
   }
 
   const slug = await getProviderPlanSlug(userId);
-  if (slug !== "pro" && slug !== "premium") {
-    res.status(403).json({ error: "Professional or Premium plan required to unlock contacts" });
+  if (!["basic", "pro", "professional", "starter", "premium"].includes(slug)) {
+    res.status(403).json({ error: "A paid plan is required to unlock contacts" });
     return;
   }
 
-  if (slug === "pro") {
+  if (slug !== "premium") {
     // Check if already unlocked first (doesn't count against limit)
     const [existing] = await db
       .select({ id: contactUnlocksTable.id })

@@ -151,8 +151,8 @@ export default function ProjectDetail() {
   }> = {
     sq: {
       unlockBtn: (r) => `Zhblloko Kontaktin (${r} mbetur)`, unlockingBtn: "Duke zhbllokuar...",
-      limitReached: "Kufiri mujor i arritur", upgradeTitle: "Kërkon plan Professional",
-      upgradeText: "Upgrade në Professional për të parë numrin e telefonit dhe të dhënat e kontaktit.",
+      limitReached: "Kufiri mujor i arritur", upgradeTitle: "Kërkohet plan i paguar",
+      upgradeText: "Aktivizoni Basic, Professional ose Premium për të parë numrin e telefonit dhe të dhënat e kontaktit.",
       upgradeBtn: "Shiko Planet", contactName: "Emri", contactPhone: "Telefon", contactEmail: "E-mail",
       registerOnly: "Vetëm ofruesit e shërbimit mund të shohin detajet e kontaktit.",
       remainingLabel: (u, l) => `${l - u} zhbllokime mbetur këtë muaj`,
@@ -160,8 +160,8 @@ export default function ProjectDetail() {
     },
     en: {
       unlockBtn: (r) => `Unlock Contact (${r} remaining)`, unlockingBtn: "Unlocking...",
-      limitReached: "Monthly unlock limit reached", upgradeTitle: "Professional plan required",
-      upgradeText: "Upgrade to Professional to see the client's phone number and contact details.",
+      limitReached: "Monthly unlock limit reached", upgradeTitle: "A paid plan is required",
+      upgradeText: "Activate Basic, Professional or Premium to see the client's phone number and contact details.",
       upgradeBtn: "View Plans", contactName: "Name", contactPhone: "Phone", contactEmail: "Email",
       registerOnly: "Only service providers can view contact details.",
       remainingLabel: (u, l) => `${l - u} unlocks remaining this month`,
@@ -169,8 +169,8 @@ export default function ProjectDetail() {
     },
     de: {
       unlockBtn: (r) => `Kontakt freischalten (${r} verbleibend)`, unlockingBtn: "Wird freigeschaltet...",
-      limitReached: "Monatliches Freischalt-Limit erreicht", upgradeTitle: "Professional-Abo erforderlich",
-      upgradeText: "Upgrade auf Professional, um Telefonnummer und Kontaktdaten zu sehen.",
+      limitReached: "Monatliches Freischalt-Limit erreicht", upgradeTitle: "Bezahltes Abo erforderlich",
+      upgradeText: "Aktivieren Sie Basic, Professional oder Premium, um Telefonnummer und Kontaktdaten zu sehen.",
       upgradeBtn: "Pläne ansehen", contactName: "Name", contactPhone: "Telefon", contactEmail: "E-Mail",
       registerOnly: "Nur Dienstleister können Kontaktdaten einsehen.",
       remainingLabel: (u, l) => `${l - u} Freischaltungen verbleibend`,
@@ -178,8 +178,8 @@ export default function ProjectDetail() {
     },
     fr: {
       unlockBtn: (r) => `Débloquer le contact (${r} restants)`, unlockingBtn: "Déverrouillage...",
-      limitReached: "Limite mensuelle atteinte", upgradeTitle: "Abonnement Professionnel requis",
-      upgradeText: "Passez à Professional pour voir le téléphone et les coordonnées du client.",
+      limitReached: "Limite mensuelle atteinte", upgradeTitle: "Un abonnement payant est requis",
+      upgradeText: "Activez Basic, Professionnel ou Premium pour voir le téléphone et les coordonnées du client.",
       upgradeBtn: "Voir les offres", contactName: "Nom", contactPhone: "Téléphone", contactEmail: "E-mail",
       registerOnly: "Seuls les prestataires peuvent voir les coordonnées.",
       remainingLabel: (u, l) => `${l - u} déblocages restants ce mois`,
@@ -576,14 +576,14 @@ export default function ProjectDetail() {
                       <Star className="w-3 h-3" />{us.unlimitedLabel}
                     </p>
                   )}
-                  {planSlug === "pro" && stats && stats.contactUnlocksLimit !== -1 && (
+                  {["basic", "pro"].includes(planSlug) && stats && stats.contactUnlocksLimit !== -1 && (
                     <p className="text-xs text-muted-foreground mt-1">
                       {us.remainingLabel(stats.contactUnlocksUsed, stats.contactUnlocksLimit)}
                     </p>
                   )}
                 </div>
-              ) : isProvider && planSlug === "pro" ? (
-                // Professional provider — unlock button
+              ) : isProvider && ["basic", "pro"].includes(planSlug) ? (
+                // Basic / Professional provider — unlock button
                 <div className="text-center">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                     <Lock className="w-6 h-6 text-primary" />
@@ -613,8 +613,8 @@ export default function ProjectDetail() {
                     </>
                   )}
                 </div>
-              ) : isProvider && stats && !["pro", "premium"].includes(planSlug) ? (
-                // Basic/free provider — upgrade prompt
+              ) : isProvider && stats && !["basic", "pro", "premium"].includes(planSlug) ? (
+                // No plan — upgrade prompt
                 <div className="text-center">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                     <Lock className="w-6 h-6 text-primary" />
@@ -679,7 +679,7 @@ export default function ProjectDetail() {
       {!hasContacts && (
         <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur border-t border-border shadow-lg">
           <div className="container mx-auto px-4 py-3" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-            {isProvider && planSlug === "pro" ? (
+            {isProvider && ["basic", "pro"].includes(planSlug) ? (
               <Button
                 className="w-full"
                 size="lg"
@@ -691,7 +691,7 @@ export default function ProjectDetail() {
                   : <><Unlock className="w-4 h-4 mr-2" />{stats && stats.contactUnlocksLimit !== -1 ? us.unlockBtn(stats.contactUnlocksLimit - stats.contactUnlocksUsed) : us.unlockBtn(50)}</>
                 }
               </Button>
-            ) : isProvider && stats && !["pro", "premium"].includes(planSlug) ? (
+            ) : isProvider && stats && !["basic", "pro", "premium"].includes(planSlug) ? (
               <Link href="/pricing">
                 <Button className="w-full" size="lg">
                   {us.upgradeBtn}<ArrowRight className="w-4 h-4 ml-2" />
