@@ -566,6 +566,11 @@ export default function ProviderDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  useEffect(() => {
+    if (!success) return;
+    const t = setTimeout(() => setSuccess(null), 5000);
+    return () => clearTimeout(t);
+  }, [success]);
   const [openThreads, setOpenThreads] = useState<Set<number>>(new Set());
   const [browseTypeFilter, setBrowseTypeFilter] = useState("");
   const [browseCityFilter, setBrowseCityFilter] = useState("");
@@ -1137,8 +1142,11 @@ export default function ProviderDashboard() {
       )}
       <div className={`container mx-auto px-4 py-8 max-w-7xl${registrationGate === "unpaid" ? " blur-sm pointer-events-none select-none" : ""}`}>
       {success && (
-        <div className="mb-4 p-3 rounded bg-green-50 border border-green-200 text-green-800 text-sm">
-          {success}
+        <div className="mb-4 p-3 rounded bg-green-50 border border-green-200 text-green-800 text-sm flex items-center justify-between gap-3">
+          <span>{success}</span>
+          <button onClick={() => setSuccess(null)} className="text-green-700 hover:text-green-900 flex-shrink-0">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
