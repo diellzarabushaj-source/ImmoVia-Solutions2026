@@ -1252,7 +1252,6 @@ export default function ProviderDashboard() {
                   { key: "city",         label: { de: "Stadt",         en: "City",         sq: "Qyteti",     fr: "Ville"       } },
                   { key: "profilePhoto", label: { de: "Profilfoto",    en: "Profile photo",sq: "Foto",       fr: "Photo"       } },
                   { key: "website",      label: { de: "Website",       en: "Website",      sq: "Website",    fr: "Site web"    } },
-                  { key: "hourlyRate",   label: { de: "Stundenansatz", en: "Hourly rate",  sq: "Tarifa",     fr: "Tarif"       } },
                 ] as const;
                 const lang4 = (["de","en","sq","fr"].includes(language) ? language : "de") as "de"|"en"|"sq"|"fr";
                 const done = fields.filter(f => Boolean(profileForm[f.key])).length;
@@ -1310,14 +1309,14 @@ export default function ProviderDashboard() {
                   </div>
                   <div className="text-lg font-bold text-primary">
                     {profileLoaded
-                      ? `${Math.min(100, Math.round(([user?.accountSubtype === "company" ? profileForm.companyName : profileForm.fullName, profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website, profileForm.hourlyRate].filter(Boolean).length / 7) * 100))}%`
+                      ? `${Math.min(100, Math.round(([user?.accountSubtype === "company" ? profileForm.companyName : profileForm.fullName, profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website].filter(Boolean).length / 6) * 100))}%`
                       : "—"}
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-2">
                     {profileLoaded && (
                       <div
                         className="h-full bg-primary rounded-full"
-                        style={{ width: `${Math.min(100, Math.round(([user?.accountSubtype === "company" ? profileForm.companyName : profileForm.fullName, profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website, profileForm.hourlyRate].filter(Boolean).length / 7) * 100))}%` }}
+                        style={{ width: `${Math.min(100, Math.round(([user?.accountSubtype === "company" ? profileForm.companyName : profileForm.fullName, profileForm.bio, profileForm.phone, profileForm.city, profileForm.profilePhoto, profileForm.website].filter(Boolean).length / 6) * 100))}%` }}
                       />
                     )}
                   </div>
@@ -1511,25 +1510,13 @@ export default function ProviderDashboard() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-xs mb-1 block">{l.profileWebsite}</Label>
-                      <Input
-                        value={profileForm.website}
-                        onChange={e => setProfileForm(prev => ({ ...prev, website: e.target.value }))}
-                        placeholder="https://meine-firma.de"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs mb-1 block">{l.profileHourlyRate}</Label>
-                      <Input
-                        type="number"
-                        value={profileForm.hourlyRate}
-                        onChange={e => setProfileForm(prev => ({ ...prev, hourlyRate: e.target.value }))}
-                        placeholder="75"
-                        min={0}
-                      />
-                    </div>
+                  <div>
+                    <Label className="text-xs mb-1 block">{l.profileWebsite}</Label>
+                    <Input
+                      value={profileForm.website}
+                      onChange={e => setProfileForm(prev => ({ ...prev, website: e.target.value }))}
+                      placeholder="https://meine-firma.de"
+                    />
                   </div>
                   <div>
                     <Label className="text-xs mb-1 block">{l.profileBio}</Label>
