@@ -864,7 +864,7 @@ export default function ProviderDashboard() {
     { id: "plan", label: l.navPlan, icon: <CreditCard className="w-4 h-4" /> },
     { id: "sichtbarkeit", label: l.navVisibility, icon: <Eye className="w-4 h-4" /> },
     { id: "bewertungen", label: l.navReviews, icon: <Star className="w-4 h-4" /> },
-    { id: "rechnungen", label: l.navInvoices, icon: <Receipt className="w-4 h-4" /> },
+    { id: "rechnungen", label: l.navInvoices, icon: <Receipt className="w-4 h-4" />, badge: appStats?.contactUnlocksUsed || undefined },
     { id: "einstellungen", label: l.navSettings, icon: <Settings className="w-4 h-4" /> },
   ];
 

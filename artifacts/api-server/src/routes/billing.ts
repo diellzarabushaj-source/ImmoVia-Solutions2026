@@ -10,6 +10,7 @@ import {
   contactUnlocksTable,
   usersTable,
   companiesTable,
+  projectsTable,
 } from "@workspace/db";
 import { getUnlockStats } from "../lib/planGating";
 import { requireProvider } from "../middlewares/requireProvider";
@@ -175,6 +176,40 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
   }
 
   res.json(result);
+});
+
+router.get("/billing/unlocked-contacts", requireProvider, async (req, res): Promise<void> => {
+  const userId = req.userId!;
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
+  const limit = 20;
+  const offset = (page - 1) * limit;
+
+  const [rows, countResult] = await Promise.all([
+    db
+      .select({
+        id: contactUnlocksTable.id,
+        projectId: contactUnlocksTable.projectId,
+        unlockedAt: contactUnlocksTable.unlockedAt,
+        projectType: projectsTable.projectType,
+        city: projectsTable.city,
+        fullName: projectsTable.fullName,
+        phone: projectsTable.phone,
+        email: projectsTable.email,
+      })
+      .from(contactUnlocksTable)
+      .innerJoin(projectsTable, eq(contactUnlocksTable.projectId, projectsTable.id))
+      .where(eq(contactUnlocksTable.providerUserId, userId))
+      .orderBy(desc(contactUnlocksTable.unlockedAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ total: sql<number>`count(*)::int` })
+      .from(contactUnlocksTable)
+      .where(eq(contactUnlocksTable.providerUserId, userId)),
+  ]);
+
+  const total = countResult[0]?.total ?? 0;
+  res.json({ items: rows, total, page, limit });
 });
 
 // NOTE: The legacy POST /billing/subscribe endpoint was removed before launch.

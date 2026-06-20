@@ -85,6 +85,17 @@ export interface InvoiceRow {
   status?: string;
 }
 
+export interface UnlockedContact {
+  id: number;
+  projectId: number;
+  unlockedAt: string;
+  projectType: string;
+  city: string;
+  fullName: string;
+  phone: string;
+  email: string;
+}
+
 export interface AppStats {
   planSlug: string;
   planName: string;
@@ -143,6 +154,10 @@ export const billingApi = {
         : "/stripe/subscription/sync",
     ),
   cancel: () => jsonFetch<{ ok: boolean }>("/billing/cancel", { method: "POST" }),
+  unlockedContacts: (page = 1) =>
+    jsonFetch<{ items: UnlockedContact[]; total: number; page: number; limit: number }>(
+      `/billing/unlocked-contacts?page=${page}`,
+    ),
   providerProjects: () => jsonFetch<ProviderProject[]>("/provider/projects"),
   providerOffers: () => jsonFetch<ProviderOffer[]>("/provider/offers"),
   myProjects: () => jsonFetch<ProviderProject[]>("/me/projects"),
