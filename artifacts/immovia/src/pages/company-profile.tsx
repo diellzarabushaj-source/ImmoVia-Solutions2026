@@ -4,7 +4,7 @@ import { useLanguage } from "@/lib/language-context";
 import { useCategories } from "@/hooks/useCategories";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -133,6 +133,19 @@ export default function CompanyProfile() {
   ] : null);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [galleryErrors, setGalleryErrors] = useState<Set<number>>(new Set());
+  const [viewerPlanSlug, setViewerPlanSlug] = useState<string | null>(null);
+
+  // Fetch viewer's plan — only SP users can access this endpoint
+  useEffect(() => {
+    if (!user || !isServiceProvider(user)) return;
+    fetch("/api/billing/provider/me")
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { planSlug?: string } | null) => { if (d?.planSlug) setViewerPlanSlug(d.planSlug); })
+      .catch(() => {});
+  }, [user]);
+
+  // Premium & Professional SPs can see the provider's website
+  const canSeeWebsite = viewerPlanSlug === "premium" || (viewerPlanSlug != null && viewerPlanSlug.includes("pro"));
 
   const openChat = () => {
     if (!user) { setLocation("/sign-in"); return; }
@@ -339,7 +352,7 @@ export default function CompanyProfile() {
                   {t.publicProfile.contactLoginCta}
                 </Button>
               )}
-              {company.website && (
+              {company.website && canSeeWebsite && (
                 <Button asChild variant="outline">
                   <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer">
                     <Globe className="w-4 h-4 mr-2" />
@@ -491,14 +504,26 @@ export default function CompanyProfile() {
                       </div>
                     )}
                     {company.website && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Globe className="w-4 h-4 text-primary flex-shrink-0" />
-                        <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
-                          target="_blank" rel="noreferrer"
-                          className="text-foreground/80 hover:text-primary truncate">
-                          {company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                        </a>
-                      </div>
+                      canSeeWebsite ? (
+                        <div className="flex items-center gap-3 text-sm">
+                          <Globe className="w-4 h-4 text-primary flex-shrink-0" />
+                          <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
+                            target="_blank" rel="noreferrer"
+                            className="text-foreground/80 hover:text-primary truncate">
+                            {company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                          </a>
+                        </div>
+                      ) : user ? (
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                          <Globe className="w-4 h-4 flex-shrink-0" />
+                          <span className="text-xs bg-primary/8 text-primary px-2 py-0.5 rounded-full font-medium">
+                            {language === "de" ? "Premium / Professional"
+                              : language === "fr" ? "Premium / Professionnel"
+                              : language === "sq" ? "Premium / Professional"
+                              : "Premium / Professional"}
+                          </span>
+                        </div>
+                      ) : null
                     )}
                     {company.city && (
                       <div className="flex items-center gap-3 text-sm">
