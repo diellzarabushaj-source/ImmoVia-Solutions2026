@@ -83,6 +83,7 @@ export interface InvoiceRow {
   kind?: string;
   amountCents?: number;
   status?: string;
+  receiptUrl?: string | null;
 }
 
 export interface UnlockedContact {

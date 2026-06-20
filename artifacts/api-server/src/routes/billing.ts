@@ -155,7 +155,7 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
   const allInvoices = await db.select().from(invoicesTable).orderBy(desc(invoicesTable.id));
   const regularInvoices = allInvoices.filter((i) => paymentIds.has(i.paymentId));
 
-  const result: Array<typeof regularInvoices[number] & { kind?: string; amountCents?: number; status?: string }> = [...regularInvoices];
+  const result: Array<typeof regularInvoices[number] & { kind?: string; amountCents?: number; status?: string; receiptUrl?: string | null }> = [...regularInvoices];
 
   if (user) {
     const [company] = await db
@@ -164,6 +164,26 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
       .where(eq(companiesTable.email, user.email))
       .limit(1);
     if (company?.registrationFeePaid) {
+      let receiptUrl: string | null = null;
+      try {
+        const [companyFull] = await db
+          .select({ stripeRegistrationSessionId: companiesTable.stripeRegistrationSessionId })
+          .from(companiesTable)
+          .where(eq(companiesTable.email, user.email))
+          .limit(1);
+        if (companyFull?.stripeRegistrationSessionId) {
+          const stripe = getStripeClient();
+          const session = await stripe.checkout.sessions.retrieve(
+            companyFull.stripeRegistrationSessionId,
+            { expand: ["payment_intent.latest_charge"] }
+          );
+          const pi = session.payment_intent as import("stripe").Stripe.PaymentIntent | null;
+          const charge = pi?.latest_charge as import("stripe").Stripe.Charge | null;
+          receiptUrl = charge?.receipt_url ?? null;
+        }
+      } catch {
+        // non-fatal — row still shown without receipt link
+      }
       result.unshift({
         id: 0,
         paymentId: 0,
@@ -172,6 +192,7 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
         kind: "registration",
         amountCents: 14900,
         status: "paid",
+        receiptUrl,
       });
     }
   }
