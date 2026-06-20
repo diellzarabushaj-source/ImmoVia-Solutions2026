@@ -371,8 +371,8 @@ export default function Projects() {
           </motion.div>
         )}
 
-        {/* Pro unlock quota banner */}
-        {isProvider && providerStats && providerStats.planSlug === "pro" && (
+        {/* Pro unlock quota banner — only for pro plan (premium has unlimited, no banner needed) */}
+        {isProvider && providerStats && providerStats.planSlug === "pro" && providerStats.contactUnlocksLimit !== -1 && (
           <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 mb-5 text-sm">
             <Unlock className="h-4 w-4 text-primary flex-shrink-0" />
             <span className="text-foreground/80">

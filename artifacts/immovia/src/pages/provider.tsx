@@ -1186,12 +1186,14 @@ export default function ProviderDashboard() {
               <div className="text-xs text-muted-foreground mb-1">{l.currentPlan}</div>
               <div className="font-semibold text-sm">{appStats.planName}</div>
               <div className="text-xs text-muted-foreground mt-1">
-                {appStats.usedThisMonth}/{appStats.appLimit} {l.applications}
+                {appStats.appLimit === -1
+                  ? `${appStats.usedThisMonth} / ∞ ${l.applications}`
+                  : `${appStats.usedThisMonth}/${appStats.appLimit} ${l.applications}`}
               </div>
               <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${atLimit ? "bg-destructive" : "bg-primary"}`}
-                  style={{ width: `${Math.min(100, (appStats.usedThisMonth / appStats.appLimit) * 100)}%` }}
+                  style={{ width: appStats.appLimit === -1 ? "0%" : `${Math.min(100, (appStats.usedThisMonth / appStats.appLimit) * 100)}%` }}
                 />
               </div>
             </div>

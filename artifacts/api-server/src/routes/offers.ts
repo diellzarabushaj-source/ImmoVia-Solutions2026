@@ -102,7 +102,7 @@ router.post("/projects/:id/offers", requireProvider, async (req, res): Promise<v
     .select({ monthlyUsed: sql<number>`count(*)::int` })
     .from(offersTable)
     .where(and(eq(offersTable.providerUserId, userId), gte(offersTable.createdAt, periodStart)));
-  if ((monthlyUsed ?? 0) >= appLimit) {
+  if (appLimit !== -1 && (monthlyUsed ?? 0) >= appLimit) {
     res.status(429).json({
       error: "Monatliches Bewerbungslimit erreicht. Upgraden Sie Ihren Plan.",
       code: "APP_LIMIT_REACHED",

@@ -49,13 +49,13 @@ const PLANS = [
     name: "Professional",
     priceCents: 9900,       // 99 CHF/month
     yearlyPriceCents: 0,    // live products are monthly-only
-    monthlyCredits: 60,
-    featured: true,
+    monthlyCredits: 50,     // 50 applications/month
+    featured: true,         // "Most popular" highlight in pricing UI
     badge: "Professional",
     visibilityRank: 2,
     contactVisible: true,   // Professional: can unlock contacts (50/month)
     features: [
-      "60 ImmoCredits/Monat",
+      "50 Bewerbungen/Monat",
       "Professional Provider Abzeichen",
       "Bis zu 50 Kontakt-Unlocks/Monat",
       "Telefonnummer & private Daten sichtbar",
@@ -68,13 +68,13 @@ const PLANS = [
     name: "Premium",
     priceCents: 14900,      // 149 CHF/month
     yearlyPriceCents: 0,    // live products are monthly-only
-    monthlyCredits: 150,
+    monthlyCredits: -1,     // -1 = unlimited applications
     featured: false,
     badge: "Premium",
     visibilityRank: 3,
     contactVisible: true,
     features: [
-      "150 ImmoCredits/Monat",
+      "Unbegrenzte Bewerbungen",
       "Premium Partner Abzeichen",
       "Unbegrenzte Kontakt-Unlocks",
       "Erstplatzierung & hervorgehobenes Profil",
