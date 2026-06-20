@@ -18,13 +18,14 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import { User, Building2, Loader2, Check, Star, Zap, Crown } from "lucide-react";
+import { User, Building2, Loader2, Check } from "lucide-react";
+import { PlanCards } from "@/components/PlanCards";
+import type { PlanType } from "@/components/PlanCards";
 import type { Lang } from "@/lib/categories";
 import { useCategories } from "@/hooks/useCategories";
 import { validateOtherTag, otherTagErrorMessage, sanitizeOtherTag, buildCustomServiceTag } from "@/lib/validateOtherTag";
 import { PhotoUploader } from "@/components/photo-uploader";
 
-type PlanType = "basic" | "professional" | "premium";
 
 const L = {
   sq: {
@@ -129,53 +130,6 @@ const L = {
   },
 } as const;
 
-const PLAN_ICONS = {
-  basic: Star,
-  professional: Zap,
-  premium: Crown,
-};
-
-const PLAN_CONFIG = {
-  basic: {
-    monthlyChf: 49,
-    cardBase: "border-border bg-white hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5",
-    cardSelected: "border-primary ring-2 ring-primary/15 shadow-md shadow-primary/10 bg-white",
-    iconBg: "bg-primary/10 text-primary",
-    checkColor: "text-primary",
-    tagBg: "",
-    tagText: "",
-    btnSelected: "bg-primary hover:bg-primary/90 text-white",
-    btnUnselected: "border border-primary/30 text-primary hover:bg-primary/5",
-    priceColor: "text-primary font-semibold",
-    regFeeColor: "text-muted-foreground",
-  },
-  professional: {
-    monthlyChf: 99,
-    cardBase: "border-primary/20 bg-gradient-to-br from-primary/3 to-primary/8 hover:border-primary hover:shadow-xl hover:shadow-primary/10",
-    cardSelected: "border-primary ring-2 ring-primary/25 shadow-lg shadow-primary/15 bg-gradient-to-br from-primary/5 to-primary/12",
-    iconBg: "bg-primary text-white shadow-md shadow-primary/30",
-    checkColor: "text-primary",
-    tagBg: "bg-primary text-white",
-    tagText: "text-white",
-    btnSelected: "bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/25",
-    btnUnselected: "border border-primary/40 text-primary hover:bg-primary/8",
-    priceColor: "text-primary font-semibold",
-    regFeeColor: "text-muted-foreground",
-  },
-  premium: {
-    monthlyChf: 149,
-    cardBase: "border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/40 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-200/50",
-    cardSelected: "border-amber-400 ring-2 ring-amber-300/40 shadow-xl shadow-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/60",
-    iconBg: "bg-gradient-to-br from-amber-400 to-orange-400 text-white shadow-lg shadow-amber-300/40",
-    checkColor: "text-amber-500",
-    tagBg: "bg-gradient-to-r from-amber-400 to-orange-400 text-white",
-    tagText: "text-white",
-    btnSelected: "bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white shadow-md shadow-amber-300/40",
-    btnUnselected: "border border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400",
-    priceColor: "text-amber-700 font-semibold",
-    regFeeColor: "text-amber-700/60",
-  },
-};
 
 export default function RegisterCompany() {
   const { t, language } = useLanguage();
@@ -338,82 +292,8 @@ export default function RegisterCompany() {
             <p className="text-muted-foreground text-sm max-w-xl mx-auto">{l.step1Sub}</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {(["basic", "professional", "premium"] as PlanType[]).map((plan) => {
-              const Icon = PLAN_ICONS[plan];
-              const cfg = PLAN_CONFIG[plan];
-              const info = l.plans[plan];
-              const isSelected = planType === plan;
-              return (
-                <div
-                  key={plan}
-                  onClick={() => setPlanType(plan)}
-                  className={`group relative cursor-pointer rounded-2xl border-2 p-6 flex flex-col gap-5 transition-all duration-200 ease-out select-none
-                    ${isSelected ? cfg.cardSelected : cfg.cardBase}
-                    ${plan === "premium" ? "hover:-translate-y-1" : "hover:-translate-y-0.5"}
-                  `}
-                  style={{ willChange: "transform" }}
-                >
-                  {/* Badge */}
-                  {(plan === "professional" || plan === "premium") && (
-                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm ${cfg.tagBg}`}>
-                      {info.tag}
-                    </span>
-                  )}
-
-                  {/* Icon */}
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110 ${cfg.iconBg}`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-
-                  {/* Name + price */}
-                  <div>
-                    <h3 className="font-serif font-bold text-xl mb-1">{info.name}</h3>
-                    <div className="flex items-baseline gap-0.5">
-                      <span className={`text-2xl font-bold ${cfg.priceColor}`}>CHF {cfg.monthlyChf}</span>
-                      <span className="text-xs text-muted-foreground">{l.perMonth}</span>
-                    </div>
-                  </div>
-
-                  {/* Features */}
-                  <ul className="space-y-2 flex-1">
-                    {info.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <Check className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${cfg.checkColor}`} />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Registration fee note */}
-                  <p className={`text-xs ${cfg.regFeeColor}`}>+ {l.regFee}</p>
-
-                  {/* CTA */}
-                  <button
-                    type="button"
-                    className={`w-full py-2 rounded-lg text-sm font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1
-                      ${isSelected ? cfg.btnSelected : cfg.btnUnselected}
-                    `}
-                    onClick={(e) => { e.stopPropagation(); setPlanType(plan); }}
-                  >
-                    {isSelected ? (
-                      <span className="flex items-center justify-center gap-1.5">
-                        <Check className="w-3.5 h-3.5" /> {l.chosenBtn}
-                      </span>
-                    ) : (
-                      l.chooseBtn
-                    )}
-                  </button>
-
-                  {/* Premium shimmer overlay */}
-                  {plan === "premium" && (
-                    <div className="pointer-events-none absolute inset-0 rounded-2xl overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-amber-100/30 to-transparent skew-x-12 animate-[shimmer_1.8s_ease-in-out_infinite]" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <div className="mb-8">
+            <PlanCards selected={planType} onSelect={setPlanType} />
           </div>
 
           <Button
