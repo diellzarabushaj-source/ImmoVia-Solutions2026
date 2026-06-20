@@ -1,0 +1,99 @@
+Please improve SEO, GEO/local SEO, meta tags, and multilingual language structure for ImmoVia365.
+
+Important language rule:
+- Primary language and main SEO focus: German / Deutsch for the Swiss market.
+- Website also supports: French, English, and Albanian.
+- Do not remove or break existing multilingual support.
+- Do not add fake hreflang pages unless real translated routes/pages exist.
+
+Tasks:
+
+1. Inspect current SEO setup first:
+- index.html
+- React routes/pages
+- meta titles and descriptions
+- canonical tags
+- Open Graph tags
+- Twitter/social preview tags
+- sitemap.xml
+- robots.txt
+- structured data/schema
+- language switcher / i18n setup if available
+
+2. Optimize main public pages for German-first SEO:
+- Homepage
+- Project search/listing
+- Project detail pages
+- Service Provider registration
+- Provider profile pages
+- Pricing/packages
+- Blog pages if available
+- Contact page
+- Terms/Privacy pages
+
+Each public page should have:
+- German-first title and meta description
+- Clean canonical URL
+- Open Graph title/description/image
+- Twitter card tags
+- Proper robots meta tag
+- Natural keywords for Switzerland, not keyword stuffing
+
+3. GEO / local SEO:
+Optimize naturally for Switzerland and main Swiss regions/cities:
+- Schweiz
+- Zürich
+- Bern
+- Basel
+- Luzern
+- St. Gallen
+- Zug
+- Aargau
+- Solothurn
+- Thurgau
+- Schaffhausen
+- Winterthur
+- Lausanne
+- Genève
+
+Use natural German wording, for example:
+“ImmoVia365 verbindet Projektbesitzer mit passenden Dienstleistern für Immobilien, Renovation, Bau, Reinigung, Umzug, Architektur, Unterhalt und Gebäudeservices in der Schweiz.”
+
+4. Multilingual SEO:
+- If real translated routes exist for French, English, and Albanian, add correct hreflang tags.
+- German should be the default / primary version.
+- Add x-default to the main German/default page.
+- If translated routes do not exist, do not create fake hreflang tags.
+- Keep meta content language-appropriate per page where translations exist.
+
+5. Structured data/schema:
+Add or improve schema where suitable:
+- Organization schema for ImmoVia365
+- WebSite schema
+- ProfessionalService / LocalBusiness schema
+- Service schema for categories
+- Breadcrumb schema
+- FAQ schema if FAQ sections exist
+- BlogPosting schema for blog pages if available
+
+6. Sitemap and robots:
+- Create/update sitemap.xml with only public indexable pages.
+- Include published public projects only if allowed.
+- Include approved public provider profiles only if allowed.
+- Include blog pages if available.
+- Exclude admin, dashboard, billing, payment, auth/private, and API pages.
+- Create/update robots.txt to block private/admin/API areas and link the sitemap.
+
+7. AI/GEO search optimization:
+Make content clear for Google and AI search engines:
+- Explain what ImmoVia365 does clearly.
+- Use German-first service descriptions.
+- Add concise FAQ content where useful.
+- Keep copy natural, trustworthy, and Swiss-market focused.
+
+Important:
+- Do not expose private project poster data.
+- Do not index private dashboards, billing, payment, admin, or API routes.
+- Do not redesign the website.
+- Do not break existing routes, auth, payments, project posting, or provider profiles.
+- Run validation/build and explain exactly what files were changed.
