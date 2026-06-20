@@ -90,7 +90,7 @@ export const PLAN_CONFIG: Record<PlanType, {
     badge: { sq: "Premium", en: "Premium", de: "Premium", fr: "Premium" },
     features: {
       sq: [
-        "Oferta të pakufizuara",
+        "ImmoCredits të pakufizuara",
         "Insinjë Premium Partner",
         "Zhbllokime të pakufizuara të kontakteve",
         "Vendi i parë në listë & profil i theksuar",
@@ -98,7 +98,7 @@ export const PLAN_CONFIG: Record<PlanType, {
         "Klientët shohin numrin tuaj të telefonit",
       ],
       en: [
-        "Unlimited offers",
+        "Unlimited ImmoCredits",
         "Premium Partner badge",
         "Unlimited contact unlocks",
         "First in lists & featured profile",
@@ -106,7 +106,7 @@ export const PLAN_CONFIG: Record<PlanType, {
         "Project posters can see your phone number",
       ],
       de: [
-        "Unbegrenzte Angebote",
+        "Unbegrenzte ImmoCredits",
         "Premium Partner Abzeichen",
         "Unbegrenzte Kontakt-Unlocks",
         "Erstplatzierung & hervorgehobenes Profil",
@@ -114,7 +114,7 @@ export const PLAN_CONFIG: Record<PlanType, {
         "Auftraggeber sehen Ihre Telefonnummer",
       ],
       fr: [
-        "Offres illimitées",
+        "ImmoCredits illimités",
         "Badge Premium Partner",
         "Déblocages de contacts illimités",
         "Première position & profil mis en avant",
