@@ -21,3 +21,17 @@ export const categoriesTable = pgTable("categories", {
 
 export type Category = typeof categoriesTable.$inferSelect;
 export type InsertCategory = typeof categoriesTable.$inferInsert;
+
+export const categorySuggestionsTable = pgTable("category_suggestions", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull().default("service"),
+  submittedByUserId: text("submitted_by_user_id").notNull(),
+  status: text("status").notNull().default("pending"),
+  adminNote: text("admin_note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type CategorySuggestion = typeof categorySuggestionsTable.$inferSelect;
+export type InsertCategorySuggestion = typeof categorySuggestionsTable.$inferInsert;

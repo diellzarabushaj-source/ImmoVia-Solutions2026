@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Tag, MapPin, X } from "lucide-react";
+import { Loader2, Tag, MapPin, X, Plus, CheckCircle2 } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import type { Lang } from "@/lib/categories";
 import { validateOtherTag, sanitizeOtherTag, otherTagErrorMessage, buildCustomServiceTag } from "@/lib/validateOtherTag";
@@ -23,6 +23,13 @@ const L: Record<string, Record<string, string>> = {
     error: "Fehler beim Speichern.",
     otherPlaceholder: "Dienst beschreiben…",
     otherHint: "3–40 Zeichen",
+    suggestTitle: "Kategorie vorschlagen",
+    suggestHint: "Fehlt eine Kategorie? Schlagen Sie sie vor — wir prüfen und fügen sie hinzu.",
+    suggestPlaceholder: "z.B. Solaranlage, Fassadenreinigung",
+    suggestBtn: "Vorschlag senden",
+    suggestSent: "Vorschlag gesendet. Danke!",
+    suggestError: "Fehler beim Senden.",
+    suggestMin: "Mindestens 3 Zeichen.",
   },
   en: {
     title: "Services & Categories",
@@ -38,6 +45,13 @@ const L: Record<string, Record<string, string>> = {
     error: "Error saving.",
     otherPlaceholder: "Describe the service…",
     otherHint: "3–40 characters",
+    suggestTitle: "Suggest a category",
+    suggestHint: "Don't see your category? Suggest it — we'll review and add it.",
+    suggestPlaceholder: "e.g. Solar panels, Facade cleaning",
+    suggestBtn: "Send suggestion",
+    suggestSent: "Suggestion sent. Thank you!",
+    suggestError: "Error sending suggestion.",
+    suggestMin: "At least 3 characters required.",
   },
   sq: {
     title: "Shërbime & Kategori",
@@ -53,6 +67,13 @@ const L: Record<string, Record<string, string>> = {
     error: "Gabim gjatë ruajtjes.",
     otherPlaceholder: "Përshkruani shërbimin…",
     otherHint: "3–40 karaktere",
+    suggestTitle: "Sugjeroni një kategori",
+    suggestHint: "Nuk e shihni kategorinë tuaj? Sugjerojeni — do ta shqyrtojmë dhe shtojmë.",
+    suggestPlaceholder: "p.sh. Panele diellore, Pastrim fasade",
+    suggestBtn: "Dërgo sugjerimin",
+    suggestSent: "Sugjerimi u dërgua. Faleminderit!",
+    suggestError: "Gabim gjatë dërgimit.",
+    suggestMin: "Minimum 3 karaktere.",
   },
   fr: {
     title: "Services & Catégories",
@@ -68,6 +89,13 @@ const L: Record<string, Record<string, string>> = {
     error: "Erreur lors de l'enregistrement.",
     otherPlaceholder: "Décrivez le service…",
     otherHint: "3–40 caractères",
+    suggestTitle: "Suggérer une catégorie",
+    suggestHint: "Vous ne voyez pas votre catégorie ? Suggérez-la — nous l'examinerons.",
+    suggestPlaceholder: "ex. Panneaux solaires, Nettoyage façade",
+    suggestBtn: "Envoyer la suggestion",
+    suggestSent: "Suggestion envoyée. Merci !",
+    suggestError: "Erreur lors de l'envoi.",
+    suggestMin: "Au moins 3 caractères requis.",
   },
 };
 
@@ -90,6 +118,11 @@ export default function LeistungenSection({ language }: Props) {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [loaded, setLoaded] = useState(false);
+
+  const [suggestInput, setSuggestInput] = useState("");
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [suggestSending, setSuggestSending] = useState(false);
+  const [suggestMsg, setSuggestMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
     if (loaded) return;
@@ -196,6 +229,30 @@ export default function LeistungenSection({ language }: Props) {
     }
   };
 
+  const sendSuggestion = async () => {
+    if (suggestInput.trim().length < 3) {
+      setSuggestMsg({ type: "err", text: l.suggestMin });
+      return;
+    }
+    setSuggestSending(true);
+    setSuggestMsg(null);
+    try {
+      const r = await fetch("/api/categories/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: suggestInput.trim(), type: "service" }),
+      });
+      if (!r.ok) throw new Error();
+      setSuggestMsg({ type: "ok", text: l.suggestSent });
+      setSuggestInput("");
+      setTimeout(() => { setSuggestOpen(false); setSuggestMsg(null); }, 3000);
+    } catch {
+      setSuggestMsg({ type: "err", text: l.suggestError });
+    } finally {
+      setSuggestSending(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <h2 className="text-xl font-serif font-bold">{l.title}</h2>
@@ -277,6 +334,57 @@ export default function LeistungenSection({ language }: Props) {
               </div>
             );
           })}
+        </div>
+
+        {/* Suggest a category */}
+        <div className="mt-4 pt-3 border-t border-border">
+          {!suggestOpen ? (
+            <button
+              type="button"
+              onClick={() => { setSuggestOpen(true); setSuggestMsg(null); }}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {l.suggestTitle}
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">{l.suggestHint}</p>
+              <div className="flex gap-2">
+                <Input
+                  value={suggestInput}
+                  onChange={e => setSuggestInput(e.target.value)}
+                  placeholder={l.suggestPlaceholder}
+                  maxLength={80}
+                  className="text-sm h-8"
+                  onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); void sendSuggestion(); } }}
+                  disabled={suggestSending}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => void sendSuggestion()}
+                  disabled={suggestSending || suggestInput.trim().length < 3}
+                  className="h-8 px-3 shrink-0"
+                >
+                  {suggestSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : l.suggestBtn}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => { setSuggestOpen(false); setSuggestInput(""); setSuggestMsg(null); }}
+                  className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {suggestMsg && (
+                <p className={`text-xs flex items-center gap-1 ${suggestMsg.type === "ok" ? "text-green-700" : "text-destructive"}`}>
+                  {suggestMsg.type === "ok" && <CheckCircle2 className="w-3.5 h-3.5" />}
+                  {suggestMsg.text}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </Card>
 

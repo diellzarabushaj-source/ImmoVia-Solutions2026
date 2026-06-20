@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, asc } from "drizzle-orm";
-import { db, categoriesTable } from "@workspace/db";
+import { eq, asc, desc } from "drizzle-orm";
+import { db, categoriesTable, categorySuggestionsTable } from "@workspace/db";
 import { requireAdmin } from "../middlewares/requireAdmin";
 import { ObjectStorageService } from "../lib/objectStorage";
 
@@ -205,6 +205,36 @@ router.delete("/admin/categories/:id", requireAdmin, async (req, res): Promise<v
   }
 
   await db.delete(categoriesTable).where(eq(categoriesTable.id, id));
+  res.status(204).end();
+});
+
+router.get("/admin/categories/suggestions", requireAdmin, async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(categorySuggestionsTable)
+    .orderBy(desc(categorySuggestionsTable.createdAt));
+  res.json(rows.map(r => ({ ...r, createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt.toISOString() })));
+});
+
+router.patch("/admin/categories/suggestions/:id", requireAdmin, async (req, res): Promise<void> => {
+  const id = Number(req.params["id"]);
+  const { status, adminNote } = req.body as { status?: string; adminNote?: string };
+  if (!status || !["pending", "approved", "rejected"].includes(status)) {
+    res.status(400).json({ error: "status must be pending, approved, or rejected" });
+    return;
+  }
+  const [updated] = await db
+    .update(categorySuggestionsTable)
+    .set({ status, adminNote: adminNote ?? null, updatedAt: new Date() })
+    .where(eq(categorySuggestionsTable.id, id))
+    .returning();
+  if (!updated) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...updated, createdAt: updated.createdAt.toISOString(), updatedAt: updated.updatedAt.toISOString() });
+});
+
+router.delete("/admin/categories/suggestions/:id", requireAdmin, async (req, res): Promise<void> => {
+  const id = Number(req.params["id"]);
+  await db.delete(categorySuggestionsTable).where(eq(categorySuggestionsTable.id, id));
   res.status(204).end();
 });
 

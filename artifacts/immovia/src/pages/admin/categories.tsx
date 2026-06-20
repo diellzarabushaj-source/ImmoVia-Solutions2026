@@ -12,7 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search, GitBranch, Wrench, FolderOpen, Upload, X } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Tag, Power, Search, GitBranch, Wrench, FolderOpen, Upload, X, Lightbulb, CheckCircle2, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { useLanguage } from "@/lib/language-context";
@@ -350,7 +350,13 @@ export function AdminCategories() {
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [activeTab, setActiveTab] = useState<"service" | "project">("service");
+  const [activeTab, setActiveTab] = useState<"service" | "project" | "suggestions">("service");
+  const [suggestions, setSuggestions] = useState<{
+    id: number; name: string; type: string; submittedByUserId: string;
+    status: string; adminNote: string | null; createdAt: string;
+  }[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionActionId, setSuggestionActionId] = useState<number | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -360,9 +366,34 @@ export function AdminCategories() {
       .catch(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, []);
+  const loadSuggestions = () => {
+    setSuggestionsLoading(true);
+    fetch("/api/admin/categories/suggestions", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setSuggestions(data as typeof suggestions))
+      .catch(() => {})
+      .finally(() => setSuggestionsLoading(false));
+  };
 
-  const tabCategories = categories.filter((c) => c.type === activeTab);
+  const handleSuggestion = async (id: number, status: "approved" | "rejected") => {
+    setSuggestionActionId(id);
+    await fetch(`/api/admin/categories/suggestions/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      credentials: "include", body: JSON.stringify({ status }),
+    }).catch(() => {});
+    setSuggestionActionId(null);
+    loadSuggestions();
+  };
+
+  const deleteSuggestion = async (id: number) => {
+    await fetch(`/api/admin/categories/suggestions/${id}`, { method: "DELETE", credentials: "include" }).catch(() => {});
+    loadSuggestions();
+  };
+
+  useEffect(() => { load(); }, []);
+  useEffect(() => { if (activeTab === "suggestions") loadSuggestions(); }, [activeTab]);
+
+  const tabCategories = categories.filter((c) => c.type === (activeTab === "suggestions" ? "service" : activeTab));
   const parents = tabCategories.filter((c) => c.parentId === null);
   const subcategoriesByParent = (parentId: number) =>
     tabCategories.filter((c) => c.parentId === parentId);
@@ -500,8 +531,101 @@ export function AdminCategories() {
             {projectCount}
           </span>
         </button>
+        <button
+          onClick={() => { setActiveTab("suggestions"); setSearch(""); }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === "suggestions"
+              ? "bg-white text-[#1a3a6e] shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          <Lightbulb className="h-3.5 w-3.5" />
+          Suggestions
+          {suggestions.filter(s => s.status === "pending").length > 0 && (
+            <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${activeTab === "suggestions" ? "bg-amber-100 text-amber-700" : "bg-amber-100 text-amber-600"}`}>
+              {suggestions.filter(s => s.status === "pending").length}
+            </span>
+          )}
+        </button>
       </div>
 
+      {activeTab === "suggestions" ? (
+        <Card className="border border-gray-200 shadow-sm">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="text-xs font-semibold text-gray-600">Name</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-600">Type</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-600">Status</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-600">{t.admin.colCreated}</TableHead>
+                <TableHead className="text-right text-xs font-semibold text-gray-600">{t.admin.actions}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {suggestionsLoading && (
+                <TableRow><TableCell colSpan={5} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-gray-400" /></TableCell></TableRow>
+              )}
+              {!suggestionsLoading && suggestions.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2 text-gray-400">
+                      <Lightbulb className="h-8 w-8 opacity-30" />
+                      <p className="text-sm">No suggestions yet</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+              {!suggestionsLoading && suggestions.map(s => (
+                <TableRow key={s.id} className="hover:bg-gray-50">
+                  <TableCell className="font-medium text-sm">{s.name}</TableCell>
+                  <TableCell><code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">{s.type}</code></TableCell>
+                  <TableCell>
+                    {s.status === "pending" && <span className="inline-flex items-center gap-1 text-xs text-amber-700 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />Pending</span>}
+                    {s.status === "approved" && <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />Approved</span>}
+                    {s.status === "rejected" && <span className="inline-flex items-center gap-1 text-xs text-gray-400"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block" />Rejected</span>}
+                  </TableCell>
+                  <TableCell className="text-xs text-gray-500">{format(new Date(s.createdAt), "MMM d, yyyy")}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      {s.status === "pending" && (
+                        <>
+                          <Button
+                            variant="ghost" size="sm"
+                            className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                            title="Approve"
+                            disabled={suggestionActionId === s.id}
+                            onClick={() => void handleSuggestion(s.id, "approved")}
+                          >
+                            {suggestionActionId === s.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                          </Button>
+                          <Button
+                            variant="ghost" size="sm"
+                            className="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
+                            title="Reject"
+                            disabled={suggestionActionId === s.id}
+                            onClick={() => void handleSuggestion(s.id, "rejected")}
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        variant="ghost" size="sm"
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        title="Delete"
+                        onClick={() => void deleteSuggestion(s.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      ) : (
+      <>
       <div className="flex gap-3 mb-4">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -623,6 +747,8 @@ export function AdminCategories() {
           </TableBody>
         </Table>
       </Card>
+      </>
+      )}
 
       <CategoryDialog
         open={dialogOpen}
@@ -631,7 +757,7 @@ export function AdminCategories() {
         initial={editing}
         allCategories={categories}
         defaultParentId={defaultParentId}
-        defaultType={activeTab}
+        defaultType={activeTab === "suggestions" ? "service" : activeTab}
       />
 
       {deleteTarget && (

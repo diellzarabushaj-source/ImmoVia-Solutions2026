@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, and, asc } from "drizzle-orm";
-import { db, categoriesTable } from "@workspace/db";
+import { db, categoriesTable, categorySuggestionsTable } from "@workspace/db";
+import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -77,6 +78,27 @@ router.get("/categories", async (req, res): Promise<void> => {
   }));
 
   res.json(result);
+});
+
+router.post("/categories/suggest", requireAuth, async (req, res): Promise<void> => {
+  const userId = req.userId!;
+  const { name, type } = req.body as { name?: string; type?: string };
+  if (!name?.trim()) {
+    res.status(400).json({ error: "name is required" });
+    return;
+  }
+  if (name.trim().length < 3 || name.trim().length > 80) {
+    res.status(400).json({ error: "Name must be between 3 and 80 characters" });
+    return;
+  }
+  const resolvedType = type === "project" ? "project" : "service";
+  const [row] = await db.insert(categorySuggestionsTable).values({
+    name: name.trim(),
+    type: resolvedType,
+    submittedByUserId: String(userId),
+    status: "pending",
+  }).returning();
+  res.status(201).json({ id: row!.id, name: row!.name, type: row!.type, status: row!.status });
 });
 
 export default router;
