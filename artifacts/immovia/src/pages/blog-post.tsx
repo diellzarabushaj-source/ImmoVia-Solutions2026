@@ -102,17 +102,28 @@ export default function BlogPost() {
     title: post ? `${post.title} | ImmoVia365` : null,
     description: post?.excerpt ? post.excerpt.slice(0, 160) : null,
   });
-  useStructuredData(post ? {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": post.title,
-    "description": post.excerpt ?? "",
-    "datePublished": post.publishedAt ?? undefined,
-    "author": { "@type": "Organization", "name": "ImmoVia365" },
-    "publisher": { "@type": "Organization", "name": "ImmoVia365", "url": `${APP_URL}/` },
-    "url": `${APP_URL}/blog/${slug}`,
-    "mainEntityOfPage": `${APP_URL}/blog/${slug}`
-  } : null);
+  useStructuredData(post ? [
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": post.title,
+      "description": post.excerpt ?? "",
+      "datePublished": post.publishedAt ?? undefined,
+      "author": { "@type": "Organization", "name": "ImmoVia365" },
+      "publisher": { "@type": "Organization", "name": "ImmoVia365", "url": `${APP_URL}/` },
+      "url": `${APP_URL}/blog/${slug}`,
+      "mainEntityOfPage": `${APP_URL}/blog/${slug}`
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+        { "@type": "ListItem", "position": 2, "name": "Blog", "item": `${APP_URL}/blog` },
+        { "@type": "ListItem", "position": 3, "name": post.title, "item": `${APP_URL}/blog/${slug}` }
+      ]
+    }
+  ] : null);
 
   useEffect(() => {
     if (!slug) return;

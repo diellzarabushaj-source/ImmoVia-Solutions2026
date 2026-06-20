@@ -49,14 +49,24 @@ export default function Companies() {
     title: "Geprüfte Dienstleister in der Schweiz | ImmoVia365",
     description: "Finden Sie geprüfte Handwerker und Dienstleister für Renovierung, Bau, Reinigung, Umzug und mehr. Jetzt Angebote in Zürich, Bern, Basel und weiteren Schweizer Städten einholen.",
   });
-  useStructuredData({
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
-      { "@type": "ListItem", "position": 2, "name": "Dienstleister", "item": `${APP_URL}/companies` }
-    ]
-  });
+  useStructuredData([
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "ImmoVia365 — Dienstleister-Verzeichnis",
+      "description": "Verzeichnis geprüfter Handwerker und Dienstleister für Renovierung, Bau, Reinigung, Umzug und mehr in der Schweiz.",
+      "url": `${APP_URL}/companies`,
+      "areaServed": "CH"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+        { "@type": "ListItem", "position": 2, "name": "Dienstleister", "item": `${APP_URL}/companies` }
+      ]
+    }
+  ]);
   const search = useSearch();
   const params = new URLSearchParams(search);
   const [, navigate] = useLocation();

@@ -107,19 +107,30 @@ export default function CompanyProfile() {
     title: company ? `${company.companyName} — ${company.city} | ImmoVia365` : null,
     description: company?.description ? company.description.slice(0, 160) : null,
   });
-  useStructuredData(company ? {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": company.companyName,
-    "description": company.description ?? undefined,
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": company.city,
-      "addressCountry": "CH"
+  useStructuredData(company ? [
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": company.companyName,
+      "description": company.description ?? undefined,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": company.city,
+        "addressCountry": "CH"
+      },
+      "url": `${APP_URL}/companies/${company.id}`,
+      "areaServed": company.city
     },
-    "url": `${APP_URL}/companies/${company.id}`,
-    "areaServed": company.city
-  } : null);
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+        { "@type": "ListItem", "position": 2, "name": "Dienstleister", "item": `${APP_URL}/companies` },
+        { "@type": "ListItem", "position": 3, "name": company.companyName, "item": `${APP_URL}/companies/${company.id}` }
+      ]
+    }
+  ] : null);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [galleryErrors, setGalleryErrors] = useState<Set<number>>(new Set());
 

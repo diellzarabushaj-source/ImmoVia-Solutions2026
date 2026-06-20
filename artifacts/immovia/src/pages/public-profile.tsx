@@ -89,18 +89,29 @@ export default function PublicProfilePage() {
       : null,
     description: data?.user.bio ? data.user.bio.slice(0, 160) : null,
   });
-  useStructuredData(data?.user ? {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": data.user.fullName,
-    "description": data.user.bio ?? undefined,
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": data.user.city ?? undefined,
-      "addressCountry": "CH"
+  useStructuredData(data?.user ? [
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": data.user.fullName,
+      "description": data.user.bio ?? undefined,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": data.user.city ?? undefined,
+        "addressCountry": "CH"
+      },
+      "url": `${APP_URL}/company/${slug}`
     },
-    "url": `${APP_URL}/company/${slug}`
-  } : null);
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${APP_URL}/` },
+        { "@type": "ListItem", "position": 2, "name": "Dienstleister", "item": `${APP_URL}/companies` },
+        { "@type": "ListItem", "position": 3, "name": data.user.fullName, "item": `${APP_URL}/company/${slug}` }
+      ]
+    }
+  ] : null);
   const [lightbox, setLightbox] = useState<PortfolioItem | null>(null);
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
 
