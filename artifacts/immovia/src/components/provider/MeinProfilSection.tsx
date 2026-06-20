@@ -727,14 +727,8 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
           </h4>
           <EditButton label={l.editPricing} onClick={() => onNavigate("preise")} />
         </div>
-        {(c?.hourlyRate || c?.priceFromChf || c?.priceNote) ? (
+        {(c?.priceFromChf || c?.priceNote) ? (
           <div className="space-y-1.5 text-sm text-foreground/80">
-            {c?.hourlyRate && (
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">{l.hourlyRate}:</span>
-                <span className="font-medium">CHF {c.hourlyRate}/h</span>
-              </div>
-            )}
             {c?.priceFromChf && (
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">{l.priceFrom}:</span>
