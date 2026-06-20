@@ -9,7 +9,9 @@ import {
   invoicesTable,
   immocreditTransactionsTable,
   offersTable,
+  contactUnlocksTable,
 } from "@workspace/db";
+import { getUnlockStats } from "../lib/planGating";
 import { requireProvider } from "../middlewares/requireProvider";
 import { paymentProvider } from "../payments";
 import {
@@ -142,6 +144,8 @@ router.get("/provider/app-stats", requireProvider, async (req, res): Promise<voi
     .from(offersTable)
     .where(and(eq(offersTable.providerUserId, userId), gte(offersTable.createdAt, periodStart)));
 
+  const unlockStats = await getUnlockStats(userId, periodStart);
+
   res.json({
     planSlug,
     planName: plan?.name ?? "Free",
@@ -153,6 +157,8 @@ router.get("/provider/app-stats", requireProvider, async (req, res): Promise<voi
     periodStart: sub?.currentPeriodStart ?? periodStart,
     periodEnd: sub?.currentPeriodEnd ?? null,
     features: plan?.features ?? [],
+    contactUnlocksUsed: unlockStats.used,
+    contactUnlocksLimit: unlockStats.limit,
   });
 });
 

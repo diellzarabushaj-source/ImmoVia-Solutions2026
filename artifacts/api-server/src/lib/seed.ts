@@ -34,13 +34,13 @@ const PLANS = [
     featured: false,
     badge: "Basic",
     visibilityRank: 1,
-    contactVisible: false,  // Basic: no contact details access
+    contactVisible: false,  // Basic: platform messages only, no contact details
     features: [
       "20 ImmoCredits/Monat",
       "Basic Provider Abzeichen",
-      "Nur In-Plattform-Messaging",
-      "Nur registrierte Auftraggeber",
-      "Standardsichtbarkeit",
+      "Nur In-Plattform-Messaging — kein Telefon/E-Mail",
+      "Nur Stadtangabe sichtbar, keine privaten Daten",
+      "Normale Platzierung im Verzeichnis",
     ],
     sortOrder: 2,
   },
@@ -53,13 +53,13 @@ const PLANS = [
     featured: true,
     badge: "Professional",
     visibilityRank: 2,
-    contactVisible: true,   // Professional: contact details visible
+    contactVisible: true,   // Professional: can unlock contacts (50/month)
     features: [
       "60 ImmoCredits/Monat",
-      "Pro Provider Abzeichen",
-      "Erscheint über Basic-Anbietern",
-      "Bessere Sichtbarkeit",
-      "Kontaktdaten der Auftraggeber sichtbar",
+      "Professional Provider Abzeichen",
+      "Bis zu 50 Kontakt-Unlocks/Monat",
+      "Telefonnummer & private Daten sichtbar",
+      "Höhere Platzierung als Basic-Anbieter",
     ],
     sortOrder: 3,
   },
@@ -76,10 +76,10 @@ const PLANS = [
     features: [
       "150 ImmoCredits/Monat",
       "Premium Partner Abzeichen",
-      "Erstplatzierung in Anbieterlisten",
-      "Zugang zu nicht-registrierten Leads",
-      "Kontaktdaten für alle sichtbar",
-      "Featured Platzierung",
+      "Unbegrenzte Kontakt-Unlocks",
+      "Erstplatzierung & hervorgehobenes Profil",
+      "Prioritätsbenachrichtigungen für neue Projekte",
+      "Auftraggeber sehen Ihre Telefonnummer",
     ],
     sortOrder: 4,
   },

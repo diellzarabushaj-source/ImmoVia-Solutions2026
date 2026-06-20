@@ -590,3 +590,82 @@ export async function sendNewMessageNotification(data: {
   if (error) logger.error({ error }, "Failed to send message notification");
   else logger.info({ to: data.recipientEmail, type: "new_message", lang }, "Message notification sent");
 }
+
+// ── sendPremiumProjectNotification ────────────────────────────────────────────
+export async function sendPremiumProjectNotification(data: {
+  recipientEmail: string;
+  recipientName: string;
+  projectType: string;
+  city: string;
+  projectId: number;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.recipientEmail) {
+    logger.warn("Email not configured — skipping premium project notification");
+    return;
+  }
+
+  const subjects: Record<string, string> = {
+    sq: `Projekt i ri: ${data.projectType} në ${data.city}`,
+    en: `New project alert: ${data.projectType} in ${data.city}`,
+    de: `Neues Projekt: ${data.projectType} in ${data.city}`,
+    fr: `Nouveau projet: ${data.projectType} à ${data.city}`,
+  };
+  const headings: Record<string, string> = {
+    sq: "ImmoVia365 — Projekt i Ri",
+    en: "ImmoVia365 — New Project Alert",
+    de: "ImmoVia365 — Neues Projekt",
+    fr: "ImmoVia365 — Nouveau Projet",
+  };
+  const intros: Record<string, (type: string, city: string) => string> = {
+    sq: (t, c) => `Një projekt i ri <strong>${t}</strong> sapo u postua në <strong>${c}</strong>. Si anëtar Premium, jeni ndër të parët që e shohë.`,
+    en: (t, c) => `A new <strong>${t}</strong> project was just posted in <strong>${c}</strong>. As a Premium member, you're among the first to see it.`,
+    de: (t, c) => `Ein neues <strong>${t}</strong>-Projekt wurde soeben in <strong>${c}</strong> veröffentlicht. Als Premium-Mitglied sehen Sie es als Erstes.`,
+    fr: (t, c) => `Un nouveau projet <strong>${t}</strong> vient d'être publié à <strong>${c}</strong>. En tant que membre Premium, vous êtes parmi les premiers à le voir.`,
+  };
+  const ctas: Record<string, string> = {
+    sq: "Shiko Projektin",
+    en: "View Project",
+    de: "Projekt ansehen",
+    fr: "Voir le projet",
+  };
+  const footerTexts: Record<string, string> = {
+    sq: "Ju po merrni këtë njoftim si anëtar Premium i ImmoVia365.",
+    en: "You are receiving this notification as a Premium member of ImmoVia365.",
+    de: "Sie erhalten diese Benachrichtigung als Premium-Mitglied von ImmoVia365.",
+    fr: "Vous recevez cette notification en tant que membre Premium d'ImmoVia365.",
+  };
+
+  const lang = "de";
+  const projectUrl = `${appUrl()}/projects/${data.projectId}`;
+
+  const { error } = await client.emails.send({
+    from: "ImmoVia365 <onboarding@resend.dev>",
+    to: data.recipientEmail,
+    subject: subjects[lang],
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}">
+          <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${headings[lang]}</h1>
+        </div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 4px;font-size:14px;color:#64748b">Hallo ${data.recipientName},</p>
+          <p style="margin:12px 0 16px">${intros[lang](data.projectType, data.city)}</p>
+          <div style="background:#f1f5f9;border-radius:8px;padding:16px;margin:0 0 20px">
+            <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#0f2044">${data.projectType}</p>
+            <p style="margin:0;font-size:13px;color:#475569">${data.city}</p>
+          </div>
+          <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:10px 14px;margin:0 0 20px">
+            <p style="margin:0;font-size:12px;font-weight:600;color:#92400e">Premium Priority Notification</p>
+          </div>
+          <div>
+            <a href="${projectUrl}" style="${BTN_STYLE}">${ctas[lang]}</a>
+          </div>
+          <p style="${FOOTER_STYLE};margin-top:24px">${footerTexts[lang]}</p>
+        </div>
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send premium project notification");
+  else logger.info({ to: data.recipientEmail, projectId: data.projectId }, "Premium project notification sent");
+}

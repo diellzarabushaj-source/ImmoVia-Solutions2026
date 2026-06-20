@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, sql, and, ilike } from "drizzle-orm";
+import { desc, eq, sql, and, ilike } from "drizzle-orm";
 import { db, companiesTable } from "@workspace/db";
 import {
   CreateCompanyBody,
@@ -67,7 +67,10 @@ router.get("/companies", async (req, res): Promise<void> => {
     .select()
     .from(companiesTable)
     .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(sql`${companiesTable.createdAt} desc`);
+    .orderBy(
+      sql`CASE WHEN ${companiesTable.planType} = 'premium' THEN 3 WHEN ${companiesTable.planType} = 'pro' THEN 2 WHEN ${companiesTable.planType} = 'basic' THEN 1 ELSE 0 END DESC`,
+      desc(companiesTable.createdAt),
+    );
   const payload = isAuthenticated(req) ? companies : companies.map(redactContact);
   res.json(ListCompaniesResponse.parse(payload));
 });

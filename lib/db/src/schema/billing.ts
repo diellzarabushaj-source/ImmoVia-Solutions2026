@@ -6,6 +6,7 @@ import {
   timestamp,
   boolean,
   jsonb,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const subscriptionPlansTable = pgTable("subscription_plans", {
@@ -99,6 +100,15 @@ export const offersTable = pgTable("offers", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const contactUnlocksTable = pgTable("contact_unlocks", {
+  id: serial("id").primaryKey(),
+  providerUserId: integer("provider_user_id").notNull(),
+  projectId: integer("project_id").notNull(),
+  unlockedAt: timestamp("unlocked_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  uniq: unique("contact_unlocks_prov_proj_uniq").on(table.providerUserId, table.projectId),
+}));
+
 export type SubscriptionPlan = typeof subscriptionPlansTable.$inferSelect;
 export type ImmocreditPack = typeof immocreditPacksTable.$inferSelect;
 export type Subscription = typeof subscriptionsTable.$inferSelect;
@@ -106,3 +116,4 @@ export type Payment = typeof paymentsTable.$inferSelect;
 export type Invoice = typeof invoicesTable.$inferSelect;
 export type ImmocreditTransaction = typeof immocreditTransactionsTable.$inferSelect;
 export type Offer = typeof offersTable.$inferSelect;
+export type ContactUnlock = typeof contactUnlocksTable.$inferSelect;

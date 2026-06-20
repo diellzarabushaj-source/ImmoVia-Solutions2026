@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, sql, and, ilike } from "drizzle-orm";
-import { db, projectsTable, usersTable } from "@workspace/db";
+import { desc, eq, sql, and, ilike } from "drizzle-orm";
+import { db, projectsTable, usersTable, contactUnlocksTable, subscriptionsTable, subscriptionPlansTable } from "@workspace/db";
 import { getAuth } from "@clerk/express";
 import {
   CreateProjectBody,
@@ -13,9 +13,9 @@ import {
   UpdateProjectResponse,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/requireAdmin";
-import { sendNewProjectNotification, sendProjectConfirmationToClient, sendProjectPublishedNotification, sendProjectRejectedNotification } from "../lib/email";
+import { sendNewProjectNotification, sendProjectConfirmationToClient, sendProjectPublishedNotification, sendProjectRejectedNotification, sendPremiumProjectNotification } from "../lib/email";
 import { createNotification, getUserEmail } from "../lib/notify";
-import { isAuthenticated, canViewContactDetails, canViewProjectContacts } from "../lib/planGating";
+import { isAuthenticated, canViewContactDetails, canViewProjectContacts, getLocalUserId, getUnlockStats, getProviderPlanSlug, PRO_UNLOCK_LIMIT } from "../lib/planGating";
 
 const router: IRouter = Router();
 
@@ -168,10 +168,83 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
   }
 
   const authed = isAuthenticated(req);
-  const canContact = await canViewProjectContacts(req, row.project.ownerUserId ?? null);
+  const canContact = await canViewProjectContacts(req, params.data.id, row.project.ownerUserId ?? null);
   const project = withPoster(row.project, row, authed);
   const payload = canContact ? project : redactContact(project);
   res.json(GetProjectResponse.parse(payload));
+});
+
+// POST /projects/:id/unlock — Professional providers unlock a project's contact details
+router.post("/projects/:id/unlock", async (req, res): Promise<void> => {
+  const params = GetProjectParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const userId = await getLocalUserId(req);
+  if (!userId) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const [row] = await db
+    .select()
+    .from(projectsTable)
+    .where(eq(projectsTable.id, params.data.id))
+    .limit(1);
+
+  if (!row) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  const slug = await getProviderPlanSlug(userId);
+  if (slug !== "pro" && slug !== "premium") {
+    res.status(403).json({ error: "Professional or Premium plan required to unlock contacts" });
+    return;
+  }
+
+  if (slug === "pro") {
+    // Check if already unlocked first (doesn't count against limit)
+    const [existing] = await db
+      .select({ id: contactUnlocksTable.id })
+      .from(contactUnlocksTable)
+      .where(and(eq(contactUnlocksTable.providerUserId, userId), eq(contactUnlocksTable.projectId, params.data.id)))
+      .limit(1);
+
+    if (!existing) {
+      // Determine period start from active subscription, fall back to calendar month
+      const [sub] = await db
+        .select({ currentPeriodStart: subscriptionsTable.currentPeriodStart })
+        .from(subscriptionsTable)
+        .innerJoin(subscriptionPlansTable, eq(subscriptionsTable.planId, subscriptionPlansTable.id))
+        .where(and(eq(subscriptionsTable.userId, userId), eq(subscriptionsTable.status, "active")))
+        .orderBy(desc(subscriptionsTable.id))
+        .limit(1);
+
+      const periodStart = sub?.currentPeriodStart ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const stats = await getUnlockStats(userId, periodStart);
+
+      if (!stats.canUnlock) {
+        res.status(403).json({
+          error: `Monthly contact unlock limit reached (${PRO_UNLOCK_LIMIT}/month). Upgrade to Premium for unlimited unlocks.`,
+          limitReached: true,
+          used: stats.used,
+          limit: stats.limit,
+        });
+        return;
+      }
+    }
+  }
+
+  // Insert unlock row — unique constraint makes this idempotent
+  await db
+    .insert(contactUnlocksTable)
+    .values({ providerUserId: userId, projectId: params.data.id })
+    .onConflictDoNothing();
+
+  res.json({ phone: row.phone, email: row.email, fullName: row.fullName });
 });
 
 router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
@@ -227,6 +300,30 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
             city: project.city,
             projectId: project.id,
           });
+          // Priority notification: alert all active Premium providers about the new project
+          void (async () => {
+            try {
+              const premiumUsers = await db
+                .select({ email: usersTable.email, fullName: usersTable.fullName })
+                .from(subscriptionsTable)
+                .innerJoin(subscriptionPlansTable, eq(subscriptionsTable.planId, subscriptionPlansTable.id))
+                .innerJoin(usersTable, eq(subscriptionsTable.userId, usersTable.id))
+                .where(and(eq(subscriptionsTable.status, "active"), eq(subscriptionPlansTable.slug, "premium")));
+
+              for (const u of premiumUsers) {
+                if (!u.email) continue;
+                await sendPremiumProjectNotification({
+                  recipientEmail: u.email,
+                  recipientName: u.fullName ?? "Provider",
+                  projectType: project.projectType,
+                  city: project.city,
+                  projectId: project.id,
+                });
+              }
+            } catch (notifyErr) {
+              req.log.error({ notifyErr }, "Failed to send premium project notifications");
+            }
+          })();
         } else if (isRejected) {
           await createNotification({
             recipientUserId: project.ownerUserId!,

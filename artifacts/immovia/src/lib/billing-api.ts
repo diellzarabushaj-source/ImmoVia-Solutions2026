@@ -124,6 +124,8 @@ export interface AppStats {
   periodStart: string;
   periodEnd: string | null;
   features: string[];
+  contactUnlocksUsed: number;
+  contactUnlocksLimit: number;
 }
 
 async function jsonFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -192,6 +194,11 @@ export const billingApi = {
     ),
   acceptOffer: (offerId: number) =>
     jsonFetch<{ ok: boolean }>(`/offers/${offerId}/accept`, { method: "POST" }),
+  unlockProjectContact: (projectId: number) =>
+    jsonFetch<{ phone: string; email: string; fullName: string }>(
+      `/projects/${projectId}/unlock`,
+      { method: "POST" },
+    ),
 };
 
 export function offerCostFor(size: string | null | undefined, type: "normal" | "highlighted" | "top"): number {

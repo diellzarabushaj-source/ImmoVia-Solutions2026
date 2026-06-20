@@ -25,9 +25,15 @@ import {
   CheckCircle2,
   Image,
   User,
+  Phone,
+  Mail,
+  Unlock,
+  Star,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { resolvePhotoSrc } from "@/lib/display";
+import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
+import { billingApi, type AppStats } from "@/lib/billing-api";
 
 interface Project {
   id: number;
@@ -76,11 +82,16 @@ function getPostedLabel(createdAt: string, listings: { today: string; yesterday:
 
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:id");
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { categories } = useCategories("project");
   const id = params?.id;
+  const { user } = useAuth();
+  const isProvider = isServiceProvider(user);
 
   const [project, setProject] = useState<Project | null>(null);
+  const [stats, setStats] = useState<AppStats | null>(null);
+  const [unlockLoading, setUnlockLoading] = useState(false);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
 
   usePageMeta({
     title: project
@@ -94,7 +105,7 @@ export default function ProjectDetail() {
   useEffect(() => {
     if (!id) return;
     setFetchStatus("loading");
-    fetch(`/api/projects/${id}`)
+    fetch(`/api/projects/${id}`, { credentials: "include" })
       .then(async r => {
         if (!r.ok) { setFetchStatus("notfound"); return; }
         const data = await r.json() as Project;
@@ -107,6 +118,73 @@ export default function ProjectDetail() {
       })
       .catch(() => setFetchStatus("notfound"));
   }, [id]);
+
+  useEffect(() => {
+    if (!isProvider) return;
+    billingApi.appStats().then(setStats).catch(() => setStats(null));
+  }, [isProvider]);
+
+  const UNLOCK_STRINGS: Record<string, {
+    unlockBtn: (r: number) => string; unlockingBtn: string; limitReached: string;
+    upgradeTitle: string; upgradeText: string; upgradeBtn: string;
+    contactName: string; contactPhone: string; contactEmail: string;
+    registerOnly: string; remainingLabel: (u: number, l: number) => string; unlimitedLabel: string;
+  }> = {
+    sq: {
+      unlockBtn: (r) => `Zhblloko Kontaktin (${r} mbetur)`, unlockingBtn: "Duke zhbllokuar...",
+      limitReached: "Kufiri mujor i arritur", upgradeTitle: "Kërkon plan Professional",
+      upgradeText: "Upgrade në Professional për të parë numrin e telefonit dhe të dhënat e kontaktit.",
+      upgradeBtn: "Shiko Planet", contactName: "Emri", contactPhone: "Telefon", contactEmail: "E-mail",
+      registerOnly: "Vetëm ofruesit e shërbimit mund të shohin detajet e kontaktit.",
+      remainingLabel: (u, l) => `${l - u} zhbllokime mbetur këtë muaj`,
+      unlimitedLabel: "Zhbllokime të pakufizuara (Premium)",
+    },
+    en: {
+      unlockBtn: (r) => `Unlock Contact (${r} remaining)`, unlockingBtn: "Unlocking...",
+      limitReached: "Monthly unlock limit reached", upgradeTitle: "Professional plan required",
+      upgradeText: "Upgrade to Professional to see the client's phone number and contact details.",
+      upgradeBtn: "View Plans", contactName: "Name", contactPhone: "Phone", contactEmail: "Email",
+      registerOnly: "Only service providers can view contact details.",
+      remainingLabel: (u, l) => `${l - u} unlocks remaining this month`,
+      unlimitedLabel: "Unlimited unlocks (Premium)",
+    },
+    de: {
+      unlockBtn: (r) => `Kontakt freischalten (${r} verbleibend)`, unlockingBtn: "Wird freigeschaltet...",
+      limitReached: "Monatliches Freischalt-Limit erreicht", upgradeTitle: "Professional-Abo erforderlich",
+      upgradeText: "Upgrade auf Professional, um Telefonnummer und Kontaktdaten zu sehen.",
+      upgradeBtn: "Pläne ansehen", contactName: "Name", contactPhone: "Telefon", contactEmail: "E-Mail",
+      registerOnly: "Nur Dienstleister können Kontaktdaten einsehen.",
+      remainingLabel: (u, l) => `${l - u} Freischaltungen verbleibend`,
+      unlimitedLabel: "Unbegrenzte Freischaltungen (Premium)",
+    },
+    fr: {
+      unlockBtn: (r) => `Débloquer le contact (${r} restants)`, unlockingBtn: "Déverrouillage...",
+      limitReached: "Limite mensuelle atteinte", upgradeTitle: "Abonnement Professionnel requis",
+      upgradeText: "Passez à Professional pour voir le téléphone et les coordonnées du client.",
+      upgradeBtn: "Voir les offres", contactName: "Nom", contactPhone: "Téléphone", contactEmail: "E-mail",
+      registerOnly: "Seuls les prestataires peuvent voir les coordonnées.",
+      remainingLabel: (u, l) => `${l - u} déblocages restants ce mois`,
+      unlimitedLabel: "Déblocages illimités (Premium)",
+    },
+  };
+  const us = UNLOCK_STRINGS[language] ?? UNLOCK_STRINGS.en;
+  const hasContacts = Boolean(project?.phone || project?.email);
+  const planSlug = stats?.planSlug ?? "";
+
+  const handleUnlock = async () => {
+    if (!id || !project) return;
+    setUnlockLoading(true);
+    setUnlockError(null);
+    try {
+      const data = await billingApi.unlockProjectContact(Number(id));
+      setProject(prev => prev ? { ...prev, phone: data.phone, email: data.email, fullName: data.fullName } : prev);
+      if (stats) setStats({ ...stats, contactUnlocksUsed: stats.contactUnlocksUsed + 1 });
+    } catch (e) {
+      setUnlockError(e instanceof Error ? e.message : "Failed to unlock contact");
+    } finally {
+      setUnlockLoading(false);
+    }
+  };
 
   if (fetchStatus === "loading") {
     return (
@@ -362,18 +440,126 @@ export default function ProjectDetail() {
                 <Building2 className="w-4 h-4 text-primary" />
                 {t.projectDetail.contactTitle}
               </h2>
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                  <Lock className="w-6 h-6 text-primary" />
+
+              {hasContacts ? (
+                // Contacts visible — Premium or already-unlocked Professional
+                <div className="space-y-3">
+                  {project.fullName && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">{us.contactName}</p>
+                        <p className="text-sm font-semibold text-foreground">{project.fullName}</p>
+                      </div>
+                    </div>
+                  )}
+                  {project.phone && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">{us.contactPhone}</p>
+                        <a href={`tel:${project.phone}`} className="text-sm font-semibold text-primary hover:underline">{project.phone}</a>
+                      </div>
+                    </div>
+                  )}
+                  {project.email && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">{us.contactEmail}</p>
+                        <a href={`mailto:${project.email}`} className="text-sm font-semibold text-primary hover:underline break-all">{project.email}</a>
+                      </div>
+                    </div>
+                  )}
+                  {planSlug === "premium" && (
+                    <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
+                      <Star className="w-3 h-3" />{us.unlimitedLabel}
+                    </p>
+                  )}
+                  {planSlug === "pro" && stats && stats.contactUnlocksLimit !== -1 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {us.remainingLabel(stats.contactUnlocksUsed, stats.contactUnlocksLimit)}
+                    </p>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{t.projectDetail.contactGateLabel}</p>
-                <Link href="/register-company">
-                  <Button className="w-full mb-2">
-                    {t.projectDetail.registerToContact}
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Button>
-                </Link>
-              </div>
+              ) : isProvider && planSlug === "pro" ? (
+                // Professional provider — unlock button
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                    <Lock className="w-6 h-6 text-primary" />
+                  </div>
+                  {stats && stats.contactUnlocksLimit !== -1 && stats.contactUnlocksUsed >= stats.contactUnlocksLimit ? (
+                    <>
+                      <p className="text-sm text-muted-foreground mb-3">{us.limitReached}</p>
+                      <Button variant="outline" className="w-full mb-2" disabled>{us.limitReached}</Button>
+                      <Link href="/pricing">
+                        <Button variant="link" size="sm" className="text-xs text-primary w-full">Upgrade to Premium</Button>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      {stats && stats.contactUnlocksLimit !== -1 && (
+                        <p className="text-xs text-muted-foreground mb-3">
+                          {us.remainingLabel(stats.contactUnlocksUsed, stats.contactUnlocksLimit)}
+                        </p>
+                      )}
+                      {unlockError && <p className="text-xs text-destructive mb-2">{unlockError}</p>}
+                      <Button className="w-full" onClick={() => void handleUnlock()} disabled={unlockLoading}>
+                        {unlockLoading
+                          ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{us.unlockingBtn}</>
+                          : <><Unlock className="w-4 h-4 mr-2" />{stats && stats.contactUnlocksLimit !== -1 ? us.unlockBtn(stats.contactUnlocksLimit - stats.contactUnlocksUsed) : us.unlockBtn(50)}</>
+                        }
+                      </Button>
+                    </>
+                  )}
+                </div>
+              ) : isProvider && stats && !["pro", "premium"].includes(planSlug) ? (
+                // Basic/free provider — upgrade prompt
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                    <Lock className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground mb-2">{us.upgradeTitle}</p>
+                  <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{us.upgradeText}</p>
+                  <Link href="/pricing">
+                    <Button className="w-full">
+                      {us.upgradeBtn}<ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              ) : !user ? (
+                // Not authenticated
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                    <Lock className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{t.projectDetail.contactGateLabel}</p>
+                  <Link href="/register-company">
+                    <Button className="w-full mb-2">
+                      {t.projectDetail.registerToContact}<ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                // Authenticated non-provider (project poster)
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                    <Lock className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{us.registerOnly}</p>
+                  <Link href="/register-company">
+                    <Button className="w-full mb-2">
+                      {t.projectDetail.registerToContact}<ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </motion.div>
 
             {/* Find companies */}
@@ -396,16 +582,37 @@ export default function ProjectDetail() {
       </div>
 
       {/* Sticky mobile CTA — hidden on lg+ where sidebar is visible */}
-      <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur border-t border-border shadow-lg">
-        <div className="container mx-auto px-4 py-3" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-          <Link href="/register-company">
-            <Button className="w-full" size="lg">
-              {t.projectDetail.registerToContact}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+      {!hasContacts && (
+        <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur border-t border-border shadow-lg">
+          <div className="container mx-auto px-4 py-3" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+            {isProvider && planSlug === "pro" ? (
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={() => void handleUnlock()}
+                disabled={unlockLoading || (stats ? stats.contactUnlocksLimit !== -1 && stats.contactUnlocksUsed >= stats.contactUnlocksLimit : false)}
+              >
+                {unlockLoading
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{us.unlockingBtn}</>
+                  : <><Unlock className="w-4 h-4 mr-2" />{stats && stats.contactUnlocksLimit !== -1 ? us.unlockBtn(stats.contactUnlocksLimit - stats.contactUnlocksUsed) : us.unlockBtn(50)}</>
+                }
+              </Button>
+            ) : isProvider && stats && !["pro", "premium"].includes(planSlug) ? (
+              <Link href="/pricing">
+                <Button className="w-full" size="lg">
+                  {us.upgradeBtn}<ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/register-company">
+                <Button className="w-full" size="lg">
+                  {t.projectDetail.registerToContact}<ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Lightbox */}
       {lightboxSrc && (

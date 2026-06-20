@@ -1,9 +1,16 @@
-import { and, desc, eq } from "drizzle-orm";
-import { db, subscriptionsTable, subscriptionPlansTable, usersTable } from "@workspace/db";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
+import {
+  db,
+  subscriptionsTable,
+  subscriptionPlansTable,
+  usersTable,
+  contactUnlocksTable,
+} from "@workspace/db";
 import { getAuth } from "@clerk/express";
 import type { Request } from "express";
 
-const CONTACT_VISIBLE_SLUGS = new Set(["pro", "premium"]);
+/** Monthly unlock limit for Professional plan */
+export const PRO_UNLOCK_LIMIT = 50;
 
 /** Returns true for admin sessions, otherwise false. */
 export function isAdminSession(req: Request): boolean {
@@ -21,7 +28,7 @@ export function isAuthenticated(req: Request): boolean {
 }
 
 /** Resolves the local user ID from a Clerk session. Returns undefined if not found. */
-async function getLocalUserId(req: Request): Promise<number | undefined> {
+export async function getLocalUserId(req: Request): Promise<number | undefined> {
   let clerkUserId: string | undefined;
   try {
     clerkUserId = getAuth(req)?.userId ?? undefined;
@@ -38,18 +45,8 @@ async function getLocalUserId(req: Request): Promise<number | undefined> {
   return user?.id;
 }
 
-/**
- * Returns true only if the requesting user has an active Professional or Premium
- * subscription. Admins always return true.
- *
- * Use for project contact details (homeowner phone / email / name).
- */
-export async function canViewContactDetails(req: Request): Promise<boolean> {
-  if (isAdminSession(req)) return true;
-
-  const userId = await getLocalUserId(req);
-  if (!userId) return false;
-
+/** Returns the active subscription plan slug for a local user ID. */
+export async function getProviderPlanSlug(userId: number): Promise<string> {
   const [row] = await db
     .select({ slug: subscriptionPlansTable.slug })
     .from(subscriptionsTable)
@@ -65,40 +62,74 @@ export async function canViewContactDetails(req: Request): Promise<boolean> {
     )
     .orderBy(desc(subscriptionsTable.id))
     .limit(1);
-
-  return CONTACT_VISIBLE_SLUGS.has(row?.slug ?? "");
+  return row?.slug ?? "free";
 }
 
 /**
- * Like canViewContactDetails, but also allows the project/resource owner to
- * always see their own contact details regardless of plan.
+ * For list views: only Premium providers always see contacts inline.
+ * Professional providers must unlock per-project via the unlock endpoint.
+ * Admins always return true.
+ */
+export async function canViewContactDetails(req: Request): Promise<boolean> {
+  if (isAdminSession(req)) return true;
+  const userId = await getLocalUserId(req);
+  if (!userId) return false;
+  const slug = await getProviderPlanSlug(userId);
+  return slug === "premium";
+}
+
+/**
+ * For a specific project: Premium always sees, owner always sees,
+ * Professional sees only if they have a persisted unlock row.
+ * Basic never sees.
  */
 export async function canViewProjectContacts(
   req: Request,
+  projectId: number,
   ownerUserId: number | null,
 ): Promise<boolean> {
   if (isAdminSession(req)) return true;
-
   const userId = await getLocalUserId(req);
   if (!userId) return false;
-
   if (ownerUserId !== null && userId === ownerUserId) return true;
-
-  const [row] = await db
-    .select({ slug: subscriptionPlansTable.slug })
-    .from(subscriptionsTable)
-    .innerJoin(
-      subscriptionPlansTable,
-      eq(subscriptionsTable.planId, subscriptionPlansTable.id),
-    )
+  const slug = await getProviderPlanSlug(userId);
+  if (slug === "premium") return true;
+  if (slug !== "pro") return false;
+  const [unlock] = await db
+    .select({ id: contactUnlocksTable.id })
+    .from(contactUnlocksTable)
     .where(
       and(
-        eq(subscriptionsTable.userId, userId),
-        eq(subscriptionsTable.status, "active"),
+        eq(contactUnlocksTable.providerUserId, userId),
+        eq(contactUnlocksTable.projectId, projectId),
       ),
     )
-    .orderBy(desc(subscriptionsTable.id))
     .limit(1);
+  return unlock !== undefined;
+}
 
-  return CONTACT_VISIBLE_SLUGS.has(row?.slug ?? "");
+/**
+ * Returns contact unlock usage stats for a user in the current billing period.
+ * Used by app-stats and the unlock endpoint to enforce the 50/period limit.
+ */
+export async function getUnlockStats(
+  userId: number,
+  periodStart: Date,
+): Promise<{ used: number; limit: number; canUnlock: boolean }> {
+  const slug = await getProviderPlanSlug(userId);
+  if (slug === "premium") return { used: 0, limit: -1, canUnlock: true };
+  if (slug !== "pro") return { used: 0, limit: 0, canUnlock: false };
+
+  const [row] = await db
+    .select({ used: sql<number>`count(*)::int` })
+    .from(contactUnlocksTable)
+    .where(
+      and(
+        eq(contactUnlocksTable.providerUserId, userId),
+        gte(contactUnlocksTable.unlockedAt, periodStart),
+      ),
+    );
+
+  const used = row?.used ?? 0;
+  return { used, limit: PRO_UNLOCK_LIMIT, canUnlock: used < PRO_UNLOCK_LIMIT };
 }
