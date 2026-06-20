@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { Link, useLocation, useSearch } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
@@ -1792,8 +1792,8 @@ export default function ProviderDashboard() {
                   </TableHeader>
                   <TableBody>
                     {offers.map((o) => (
-                      <>
-                        <TableRow key={o.id}>
+                      <Fragment key={o.id}>
+                        <TableRow>
                           <TableCell>
                             <div className="font-medium">{o.projectFullName}</div>
                             <div className="text-xs text-muted-foreground">{o.projectCity}</div>
@@ -1814,13 +1814,13 @@ export default function ProviderDashboard() {
                           </TableCell>
                         </TableRow>
                         {o.status === "accepted" && openThreads.has(o.id) && (
-                          <TableRow key={`thread-${o.id}`}>
+                          <TableRow>
                             <TableCell colSpan={5} className="p-3">
                               <MessageThread offerId={o.id} otherPartyName={o.projectFullName ?? undefined} />
                             </TableCell>
                           </TableRow>
                         )}
-                      </>
+                      </Fragment>
                     ))}
                     {offers.length === 0 && (
                       <TableRow>

@@ -212,6 +212,7 @@ export default function LeistungenSection({ language }: Props) {
 
       const r = await fetch("/api/provider/profile", {
         method: "PATCH",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           categories: [...selectedCats, ...selectedTags],
@@ -239,6 +240,7 @@ export default function LeistungenSection({ language }: Props) {
     try {
       const r = await fetch("/api/categories/suggest", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: suggestInput.trim(), type: "service" }),
       });
