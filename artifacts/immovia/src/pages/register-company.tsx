@@ -29,7 +29,7 @@ type PlanType = "basic" | "professional" | "premium";
 const L = {
   sq: {
     step1Title: "Zgjidhni Paketën Tuaj",
-    step1Sub: "Zgjidhni nivelin e duhur për biznesin tuaj. Tarifa e regjistrimit njëherë: CHF 149.",
+    step1Sub: "Zgjidhni nivelin e duhur për biznesin tuaj para se të vazhdoni.",
     step2Title: "Plotësoni Profilin Tuaj",
     step2Sub: "Këto të dhëna do të shfaqen në drejtorinë e profesionistëve.",
     next: "Vazhdoni",
@@ -45,6 +45,7 @@ const L = {
       premium: { name: "Premium", tag: "Plotë", features: ["Gjithçka nga Professional", "Paraqitje kryesore në shtëpi", "Vendosje në krye të kërkimit", "Panel analitik"] },
     },
     regFee: "Tarifë regjistrimi njëherë: CHF 149",
+    perMonth: "/muaj",
     chooseBtn: "Zgjidhni",
     chosenBtn: "Zgjedhur",
     workerType: "Jam",
@@ -53,7 +54,7 @@ const L = {
   },
   en: {
     step1Title: "Choose Your Plan",
-    step1Sub: "Select the level that fits your business. One-time registration fee: CHF 149.",
+    step1Sub: "Select the level that fits your business before continuing.",
     step2Title: "Complete Your Profile",
     step2Sub: "This information will appear in the professional directory.",
     next: "Continue",
@@ -69,6 +70,7 @@ const L = {
       premium: { name: "Premium", tag: "Complete", features: ["Everything in Professional", "Featured on homepage", "Top search placement", "Analytics dashboard"] },
     },
     regFee: "One-time registration fee: CHF 149",
+    perMonth: "/mo",
     chooseBtn: "Select",
     chosenBtn: "Selected",
     workerType: "I am a",
@@ -77,7 +79,7 @@ const L = {
   },
   de: {
     step1Title: "Paket Wählen",
-    step1Sub: "Wählen Sie die passende Stufe für Ihr Unternehmen. Einmalige Registrierungsgebühr: CHF 149.",
+    step1Sub: "Wählen Sie die passende Stufe für Ihr Unternehmen, bevor Sie fortfahren.",
     step2Title: "Profil Vervollständigen",
     step2Sub: "Diese Angaben erscheinen im Verzeichnis der Fachleute.",
     next: "Weiter",
@@ -93,6 +95,7 @@ const L = {
       premium: { name: "Premium", tag: "Komplett", features: ["Alles aus Professional", "Auf der Startseite hervorgehoben", "Spitzenplatzierung in der Suche", "Analyse-Dashboard"] },
     },
     regFee: "Einmalige Registrierungsgebühr: CHF 149",
+    perMonth: "/Monat",
     chooseBtn: "Wählen",
     chosenBtn: "Gewählt",
     workerType: "Ich bin",
@@ -101,7 +104,7 @@ const L = {
   },
   fr: {
     step1Title: "Choisissez Votre Forfait",
-    step1Sub: "Sélectionnez le niveau adapté à votre activité. Frais d'inscription uniques\u00a0: CHF 149.",
+    step1Sub: "Sélectionnez le niveau adapté à votre activité avant de continuer.",
     step2Title: "Complétez Votre Profil",
     step2Sub: "Ces informations apparaîtront dans le répertoire des professionnels.",
     next: "Continuer",
@@ -117,6 +120,7 @@ const L = {
       premium: { name: "Premium", tag: "Complet", features: ["Tout de Professional", "Mis en avant sur la page d'accueil", "Placement en tête de recherche", "Tableau de bord analytique"] },
     },
     regFee: "Frais d'inscription uniques\u00a0: CHF 149",
+    perMonth: "/mois",
     chooseBtn: "Choisir",
     chosenBtn: "Choisi",
     workerType: "Je suis",
@@ -133,6 +137,7 @@ const PLAN_ICONS = {
 
 const PLAN_CONFIG = {
   basic: {
+    monthlyChf: 49,
     cardBase: "border-border bg-white hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5",
     cardSelected: "border-primary ring-2 ring-primary/15 shadow-md shadow-primary/10 bg-white",
     iconBg: "bg-primary/10 text-primary",
@@ -142,8 +147,10 @@ const PLAN_CONFIG = {
     btnSelected: "bg-primary hover:bg-primary/90 text-white",
     btnUnselected: "border border-primary/30 text-primary hover:bg-primary/5",
     priceColor: "text-primary font-semibold",
+    regFeeColor: "text-muted-foreground",
   },
   professional: {
+    monthlyChf: 99,
     cardBase: "border-primary/20 bg-gradient-to-br from-primary/3 to-primary/8 hover:border-primary hover:shadow-xl hover:shadow-primary/10",
     cardSelected: "border-primary ring-2 ring-primary/25 shadow-lg shadow-primary/15 bg-gradient-to-br from-primary/5 to-primary/12",
     iconBg: "bg-primary text-white shadow-md shadow-primary/30",
@@ -153,8 +160,10 @@ const PLAN_CONFIG = {
     btnSelected: "bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/25",
     btnUnselected: "border border-primary/40 text-primary hover:bg-primary/8",
     priceColor: "text-primary font-semibold",
+    regFeeColor: "text-muted-foreground",
   },
   premium: {
+    monthlyChf: 149,
     cardBase: "border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/40 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-200/50",
     cardSelected: "border-amber-400 ring-2 ring-amber-300/40 shadow-xl shadow-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/60",
     iconBg: "bg-gradient-to-br from-amber-400 to-orange-400 text-white shadow-lg shadow-amber-300/40",
@@ -164,6 +173,7 @@ const PLAN_CONFIG = {
     btnSelected: "bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white shadow-md shadow-amber-300/40",
     btnUnselected: "border border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400",
     priceColor: "text-amber-700 font-semibold",
+    regFeeColor: "text-amber-700/60",
   },
 };
 
@@ -359,10 +369,10 @@ export default function RegisterCompany() {
                   {/* Name + price */}
                   <div>
                     <h3 className="font-serif font-bold text-xl mb-1">{info.name}</h3>
-                    <span className={`text-xs ${cfg.priceColor}`}>CHF 149</span>
-                    <span className="text-xs text-muted-foreground ml-1">
-                      {lang === "sq" ? "— njëherë" : lang === "de" ? "— einmalig" : lang === "fr" ? "— unique" : "— one-time"}
-                    </span>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className={`text-2xl font-bold ${cfg.priceColor}`}>CHF {cfg.monthlyChf}</span>
+                      <span className="text-xs text-muted-foreground">{l.perMonth}</span>
+                    </div>
                   </div>
 
                   {/* Features */}
@@ -374,6 +384,9 @@ export default function RegisterCompany() {
                       </li>
                     ))}
                   </ul>
+
+                  {/* Registration fee note */}
+                  <p className={`text-xs ${cfg.regFeeColor}`}>+ {l.regFee}</p>
 
                   {/* CTA */}
                   <button
