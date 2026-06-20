@@ -9,8 +9,18 @@ import {
 import { getAuth } from "@clerk/express";
 import type { Request } from "express";
 
-/** Monthly unlock limit for Professional plan */
-export const PRO_UNLOCK_LIMIT = 50;
+/** Monthly unlock limit per plan (applies to all paid plans) */
+export const PLAN_UNLOCK_LIMITS: Record<string, number> = {
+  free: 5,
+  basic: 20,
+  pro: 20,
+  premium: 20,
+  starter: 20,
+  professional: 20,
+  founding: 5,
+};
+/** @deprecated use PLAN_UNLOCK_LIMITS */
+export const PRO_UNLOCK_LIMIT = 20;
 
 /** Returns true for admin sessions, otherwise false. */
 export function isAdminSession(req: Request): boolean {
@@ -79,9 +89,8 @@ export async function canViewContactDetails(req: Request): Promise<boolean> {
 }
 
 /**
- * For a specific project: Premium always sees, owner always sees,
- * Professional sees only if they have a persisted unlock row.
- * Basic never sees.
+ * For a specific project: Premium always sees, owner always sees.
+ * Basic/Pro see only if they have a persisted unlock row and remaining quota.
  */
 export async function canViewProjectContacts(
   req: Request,
@@ -94,7 +103,8 @@ export async function canViewProjectContacts(
   if (ownerUserId !== null && userId === ownerUserId) return true;
   const slug = await getProviderPlanSlug(userId);
   if (slug === "premium") return true;
-  if (slug !== "pro") return false;
+  if (slug === "free") return false;
+  // basic, pro, professional, starter — check for existing unlock row
   const [unlock] = await db
     .select({ id: contactUnlocksTable.id })
     .from(contactUnlocksTable)
@@ -110,7 +120,7 @@ export async function canViewProjectContacts(
 
 /**
  * Returns contact unlock usage stats for a user in the current billing period.
- * Used by app-stats and the unlock endpoint to enforce the 50/period limit.
+ * All paid plans get 20 unlocks/period. Premium gets unlimited.
  */
 export async function getUnlockStats(
   userId: number,
@@ -118,7 +128,8 @@ export async function getUnlockStats(
 ): Promise<{ used: number; limit: number; canUnlock: boolean }> {
   const slug = await getProviderPlanSlug(userId);
   if (slug === "premium") return { used: 0, limit: -1, canUnlock: true };
-  if (slug !== "pro") return { used: 0, limit: 0, canUnlock: false };
+  const limit = PLAN_UNLOCK_LIMITS[slug] ?? 0;
+  if (limit === 0) return { used: 0, limit: 0, canUnlock: false };
 
   const [row] = await db
     .select({ used: sql<number>`count(*)::int` })
@@ -131,7 +142,7 @@ export async function getUnlockStats(
     );
 
   const used = row?.used ?? 0;
-  return { used, limit: PRO_UNLOCK_LIMIT, canUnlock: used < PRO_UNLOCK_LIMIT };
+  return { used, limit, canUnlock: used < limit };
 }
 
 /** Returns the set of project IDs a Pro provider has already unlocked. */

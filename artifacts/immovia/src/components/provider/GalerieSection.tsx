@@ -10,6 +10,12 @@ import {
 import { Loader2, Plus, X, Star, Images, Pencil, Check } from "lucide-react";
 import { PhotoUploader } from "@/components/photo-uploader";
 
+/** Max gallery photos by plan slug. Basic/free → 5, pro/premium → 10 */
+function photoLimit(planSlug: string): number {
+  if (planSlug === "premium" || planSlug === "pro" || planSlug === "professional") return 10;
+  return 5;
+}
+
 const L: Record<string, Record<string, string>> = {
   de: {
     title: "Portfolio",
@@ -17,6 +23,7 @@ const L: Record<string, Record<string, string>> = {
     add: "Foto hinzufügen",
     empty: "Noch keine Portfolio-Fotos.",
     emptyHint: "Zeigen Sie Ihre besten Projekte und überzeugen Sie potenzielle Kunden.",
+    limitReached: "Foto-Limit erreicht ({limit}). Upgrade für mehr Fotos.",
     imageLabel: "Foto hochladen",
     captionTitle: "Titel (optional)",
     captionTitlePlaceholder: "z.B. Badezimmer-Renovierung Zürich",
@@ -37,6 +44,7 @@ const L: Record<string, Record<string, string>> = {
     add: "Add photo",
     empty: "No portfolio photos yet.",
     emptyHint: "Show your best work and win over potential clients.",
+    limitReached: "Photo limit reached ({limit}). Upgrade for more photos.",
     imageLabel: "Upload photo",
     captionTitle: "Title (optional)",
     captionTitlePlaceholder: "e.g. Bathroom renovation Zurich",
@@ -57,6 +65,7 @@ const L: Record<string, Record<string, string>> = {
     add: "Shto foto",
     empty: "Ende asnjë foto portofoli.",
     emptyHint: "Trego punimet tuaja më të mira dhe bindo klientët e mundshëm.",
+    limitReached: "Kufiri i fotove u arrit ({limit}). Ndrysho planin për më shumë.",
     imageLabel: "Ngarko foto",
     captionTitle: "Titulli (opsional)",
     captionTitlePlaceholder: "p.sh. Rinovim banio Tiranë",
@@ -77,6 +86,7 @@ const L: Record<string, Record<string, string>> = {
     add: "Ajouter une photo",
     empty: "Pas encore de photos de portfolio.",
     emptyHint: "Montrez vos meilleurs travaux et convainquez vos clients potentiels.",
+    limitReached: "Limite de photos atteinte ({limit}). Passez à un plan supérieur.",
     imageLabel: "Télécharger une photo",
     captionTitle: "Titre (optionnel)",
     captionTitlePlaceholder: "ex. Rénovation salle de bain Zurich",
@@ -201,6 +211,17 @@ export default function GalerieSection({ language }: Props) {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [lightbox, setLightbox] = useState<PortfolioItem | null>(null);
+  const [planSlug, setPlanSlug] = useState<string>("basic");
+
+  useEffect(() => {
+    fetch("/api/billing/provider/app-stats")
+      .then(r => r.ok ? r.json() as Promise<{ planSlug?: string }> : null)
+      .then(d => { if (d?.planSlug) setPlanSlug(d.planSlug); })
+      .catch(() => {});
+  }, []);
+
+  const maxPhotos = photoLimit(planSlug);
+  const atLimit = items.length >= maxPhotos;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -266,11 +287,19 @@ export default function GalerieSection({ language }: Props) {
           <h2 className="text-xl font-serif font-bold">{l.title}</h2>
           <p className="text-sm text-muted-foreground mt-0.5">{l.subtitle}</p>
         </div>
-        <Button onClick={openAdd} size="sm" className="shrink-0">
-          <Plus className="w-4 h-4 mr-1.5" />
-          {l.add}
-        </Button>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <Button onClick={openAdd} size="sm" disabled={atLimit}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            {l.add}
+          </Button>
+          <span className="text-xs text-muted-foreground">{items.length} / {maxPhotos}</span>
+        </div>
       </div>
+      {atLimit && (
+        <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          {(l.limitReached ?? "").replace("{limit}", String(maxPhotos))}
+        </p>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-16">
