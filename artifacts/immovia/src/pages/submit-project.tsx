@@ -83,10 +83,15 @@ export default function SubmitProject() {
     timeline: z.string().optional(),
   });
 
+  // "User" is the DB fallback when name was never collected — treat it as empty
+  const storedName = user?.fullName === "User" ? "" : (user?.fullName ?? "");
+  const nameIsLocked = storedName.length >= 2; // real name from registration → read-only
+  const emailIsLocked = !!user?.email;          // email always locked
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: user?.fullName ?? "",
+      fullName: storedName,
       email: user?.email ?? "",
       phone: user?.phone ?? "",
       title: "",
@@ -102,8 +107,17 @@ export default function SubmitProject() {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Send size through; useCreateProject is OpenAPI-typed but fetch is forgiving — fall back to direct fetch if needed.
     const payload = { ...values, photos: projectPhotos } as z.infer<typeof formSchema> & { size: string; photos: string[] };
+
+    // If the user had "User" as their stored name, silently update their profile with the real name they entered.
+    if (!nameIsLocked && values.fullName.trim().length >= 2) {
+      void fetch("/api/auth/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName: values.fullName.trim() }),
+      });
+    }
+
     createProject.mutate(
       { data: payload as never },
       {
@@ -332,7 +346,12 @@ export default function SubmitProject() {
                       <FormItem>
                         <FormLabel>{t.projectForm.fullName}</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} />
+                          <Input
+                            placeholder="Arben Hoxha"
+                            {...field}
+                            readOnly={nameIsLocked}
+                            className={nameIsLocked ? "bg-muted cursor-default select-none" : ""}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -345,7 +364,13 @@ export default function SubmitProject() {
                       <FormItem>
                         <FormLabel>{t.projectForm.email}</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="john@example.com" {...field} />
+                          <Input
+                            type="email"
+                            placeholder="john@example.com"
+                            {...field}
+                            readOnly={emailIsLocked}
+                            className={emailIsLocked ? "bg-muted cursor-default select-none" : ""}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -358,7 +383,7 @@ export default function SubmitProject() {
                       <FormItem>
                         <FormLabel>{t.projectForm.phone}</FormLabel>
                         <FormControl>
-                          <Input placeholder="+41 XX XXX XX XX" {...field} />
+                          <Input type="tel" placeholder="+41 XX XXX XX XX" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
