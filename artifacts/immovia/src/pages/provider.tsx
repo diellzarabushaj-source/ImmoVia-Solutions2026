@@ -80,6 +80,7 @@ import {
   Save,
   Trash2,
   Upload,
+  RefreshCw,
 } from "lucide-react";
 import MessageThread from "@/components/MessageThread";
 import { MessagingSystem } from "@/components/MessagingSystem";
@@ -190,6 +191,10 @@ const L: Record<string, Record<string, string>> = {
     downloadPdf: "Shkarko",
     paymentHistory: "Historiku i pagesave",
     manageBilling: "Menaxho abonementin",
+    syncPlan: "Sinkronizo abonimin",
+    syncPlanDesc: "Pagesa juaj u pranua, por plani nuk u aktivizua. Klikoni për ta sinkronizuar.",
+    syncPlanSuccess: "Plani u aktivizua me sukses!",
+    syncPlanFail: "Sinkronizimi dështoi. Kontaktoni mbështetjen.",
     cancelSub: "Anulo abonementin",
     portalOpening: "Duke hapur...",
     stripeInvoices: "Faturat Stripe",
@@ -298,6 +303,10 @@ const L: Record<string, Record<string, string>> = {
     downloadPdf: "Download",
     paymentHistory: "Payment history",
     manageBilling: "Manage subscription",
+    syncPlan: "Sync subscription",
+    syncPlanDesc: "Your payment was received but your plan was not activated. Click to sync.",
+    syncPlanSuccess: "Plan activated successfully!",
+    syncPlanFail: "Sync failed. Please contact support.",
     cancelSub: "Cancel subscription",
     portalOpening: "Opening...",
     stripeInvoices: "Stripe invoices",
@@ -406,6 +415,10 @@ const L: Record<string, Record<string, string>> = {
     downloadPdf: "Herunterladen",
     paymentHistory: "Zahlungsverlauf",
     manageBilling: "Abonnement verwalten",
+    syncPlan: "Abonnement synchronisieren",
+    syncPlanDesc: "Ihre Zahlung wurde empfangen, aber der Plan wurde nicht aktiviert. Klicken Sie zum Synchronisieren.",
+    syncPlanSuccess: "Plan erfolgreich aktiviert!",
+    syncPlanFail: "Synchronisierung fehlgeschlagen. Bitte kontaktieren Sie den Support.",
     cancelSub: "Abonnement kündigen",
     portalOpening: "Öffnet...",
     stripeInvoices: "Stripe-Rechnungen",
@@ -514,6 +527,10 @@ const L: Record<string, Record<string, string>> = {
     downloadPdf: "Télécharger",
     paymentHistory: "Historique des paiements",
     manageBilling: "Gérer l'abonnement",
+    syncPlan: "Synchroniser l'abonnement",
+    syncPlanDesc: "Votre paiement a été reçu mais le plan n'a pas été activé. Cliquez pour synchroniser.",
+    syncPlanSuccess: "Plan activé avec succès !",
+    syncPlanFail: "Échec de la synchronisation. Veuillez contacter le support.",
     cancelSub: "Résilier l'abonnement",
     portalOpening: "Ouverture...",
     stripeInvoices: "Factures Stripe",
@@ -569,6 +586,7 @@ export default function ProviderDashboard() {
   const [stripeInvoices, setStripeInvoices] = useState<Array<{ stripeId: string; number: string; date: number; amountCents: number; currency: string; pdfUrl: string | null; hostedUrl: string | null; status: string }>>([]);
   const [stripeInvoicesLoaded, setStripeInvoicesLoaded] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
   const [detailProject, setDetailProject] = useState<ProviderProject | null>(null);
   const [offerProject, setOfferProject] = useState<ProviderProject | null>(null);
   const [offerMessage, setOfferMessage] = useState("");
@@ -759,6 +777,24 @@ export default function ProviderDashboard() {
       window.open(url, "_blank", "noopener");
     } catch { /* ignore */ } finally {
       setPortalLoading(false);
+    }
+  };
+
+  const syncSubscription = async () => {
+    setSyncLoading(true);
+    try {
+      const r = await fetch("/api/stripe/subscription/sync");
+      const data = await r.json() as { synced: boolean; plan?: string; reason?: string };
+      if (data.synced) {
+        setSuccess(l.syncPlanSuccess);
+        void refreshAll();
+      } else {
+        setError(l.syncPlanFail);
+      }
+    } catch {
+      setError(l.syncPlanFail);
+    } finally {
+      setSyncLoading(false);
     }
   };
 
@@ -1938,6 +1974,25 @@ export default function ProviderDashboard() {
                       </div>
                     </div>
                   </Card>
+
+                  {/* Sync banner — shown only when payment succeeded but subscription wasn't activated */}
+                  {(!planSlug || planSlug === "free") && (
+                    <Card className="p-5 border-amber-300 bg-amber-50/60">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+                        <div className="flex items-start gap-3">
+                          <RefreshCw className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <div className="font-semibold text-amber-900 text-sm">{l.syncPlan}</div>
+                            <div className="text-xs text-amber-700 mt-0.5">{l.syncPlanDesc}</div>
+                          </div>
+                        </div>
+                        <Button size="sm" variant="outline" className="border-amber-400 text-amber-800 hover:bg-amber-100 flex-shrink-0" onClick={() => void syncSubscription()} disabled={syncLoading}>
+                          {syncLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                          {l.syncPlan}
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
 
                   {/* Plan features */}
                   {appStats.features.length > 0 && (

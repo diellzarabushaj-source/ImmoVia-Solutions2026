@@ -160,8 +160,22 @@ router.get("/stripe/subscription/sync", requireAuth, async (req, res): Promise<v
       return;
     }
 
-    // Provision the local subscription idempotently (shared with webhook handling).
-    const slug = await activateSubscription(activeSub);
+    // Also store the Stripe customer ID on the user record so the fallback
+    // customer-list path works on subsequent syncs (e.g. after login refresh).
+    const customerId = typeof activeSub.customer === "string"
+      ? activeSub.customer
+      : activeSub.customer?.id;
+    if (customerId && !user?.stripeCustomerId) {
+      await db
+        .update(usersTable)
+        .set({ stripeCustomerId: customerId })
+        .where(eq(usersTable.id, userId));
+    }
+
+    // Provision the local subscription idempotently.
+    // Pass userId directly — the sync route already authenticated the user,
+    // so we don't need to rely on Stripe metadata or stripeCustomerId being set.
+    const slug = await activateSubscription(activeSub, userId);
     if (!slug) {
       res.json({ synced: false, reason: "plan_not_found_for_price" });
       return;

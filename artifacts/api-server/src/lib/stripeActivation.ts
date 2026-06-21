@@ -57,9 +57,16 @@ function periodFromSubscription(sub: Stripe.Subscription): { start: Date; end: D
  * Idempotently mirror a Stripe subscription into the local DB.
  * Safe to call from both the post-checkout sync route and webhook events.
  * Returns the resolved plan slug when it activated/updated, otherwise null.
+ *
+ * @param overrideUserId - when the caller already knows the local user ID (e.g.
+ *   the authenticated sync route), pass it here so we don't depend on the
+ *   Stripe metadata or stripeCustomerId being set.
  */
-export async function activateSubscription(sub: Stripe.Subscription): Promise<string | null> {
-  const userId = await resolveUserId({
+export async function activateSubscription(
+  sub: Stripe.Subscription,
+  overrideUserId?: number,
+): Promise<string | null> {
+  const userId = overrideUserId ?? await resolveUserId({
     metadataUserId: sub.metadata?.["userId"],
     customer: sub.customer,
   });
