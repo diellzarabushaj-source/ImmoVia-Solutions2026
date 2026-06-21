@@ -10,9 +10,9 @@ import { Loader2, CheckCircle, AlertCircle, CreditCard, ExternalLink, Shield, Za
 import { format } from "date-fns";
 
 const PLAN_ICONS: Record<string, React.ReactNode> = {
-  free: <Shield className="w-4 h-4 text-slate-400" />,
   basic: <Zap className="w-4 h-4 text-blue-500" />,
   pro: <Star className="w-4 h-4 text-primary" />,
+  professional: <Star className="w-4 h-4 text-primary" />,
   premium: <Award className="w-4 h-4 text-amber-500" />,
 };
 

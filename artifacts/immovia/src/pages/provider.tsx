@@ -969,7 +969,6 @@ export default function ProviderDashboard() {
     { id: "nachrichten", label: l.navMessages, icon: <MessageSquare className="w-4 h-4" /> },
     { id: "angebote", label: l.navAngebote, icon: <Send className="w-4 h-4" /> },
     { id: "plan", label: l.navPlan, icon: <CreditCard className="w-4 h-4" /> },
-    { id: "sichtbarkeit", label: l.navVisibility, icon: <Eye className="w-4 h-4" /> },
     { id: "bewertungen", label: l.navReviews, icon: <Star className="w-4 h-4" /> },
     { id: "rechnungen", label: l.navInvoices, icon: <Receipt className="w-4 h-4" />, badge: appStats?.contactUnlocksUsed || undefined },
     { id: "einstellungen", label: l.navSettings, icon: <Settings className="w-4 h-4" /> },
@@ -996,7 +995,7 @@ export default function ProviderDashboard() {
   const VISIBILITY_TABLE: Array<{ row: string } & Record<VisCol, string>> = [
     {
       row: l.visRowContacts,
-      basic: l.visValueFree,
+      basic: l.visValueVisible,
       professional: l.visValueVisible,
       premium: l.visValueVisible,
     },
@@ -1360,14 +1359,6 @@ export default function ProviderDashboard() {
                   <User className="w-4 h-4 mr-2" />
                   {l.navProfile}
                 </Button>
-                {!appStats?.contactVisible && (
-                  <Link href="/pricing">
-                    <Button variant="outline">
-                      <ArrowUpRight className="w-4 h-4 mr-1" />
-                      {l.upgradeBtn}
-                    </Button>
-                  </Link>
-                )}
               </div>
             </div>
           )}
@@ -1619,13 +1610,8 @@ export default function ProviderDashboard() {
               </h2>
 
               {atLimit && (
-                <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-center justify-between gap-3">
-                  <span>{l.limitReached} — {appStats?.usedThisMonth}/{appStats?.appLimit}</span>
-                  <Link href="/pricing">
-                    <Button size="sm" variant="outline" className="border-amber-400 text-amber-800 hover:bg-amber-100">
-                      {l.upgradeNow}
-                    </Button>
-                  </Link>
+                <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                  {l.limitReached} — {appStats?.usedThisMonth}/{appStats?.appLimit}
                 </div>
               )}
 
@@ -1931,11 +1917,10 @@ export default function ProviderDashboard() {
                         )}
                       </div>
                       <div className="flex gap-2">
-                        <Link href="/pricing">
-                          <Button data-testid="button-upgrade">
-                            {l.upgradeBtn} <ArrowUpRight className="w-4 h-4 ml-1" />
-                          </Button>
-                        </Link>
+                        <Button variant="outline" onClick={() => void openPortal()} disabled={portalLoading}>
+                          {portalLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Settings className="w-4 h-4 mr-2" />}
+                          {l.manageBilling}
+                        </Button>
                       </div>
                     </div>
 
@@ -1978,32 +1963,13 @@ export default function ProviderDashboard() {
                         <span className="font-semibold">{appStats.badge}</span>
                       </div>
                     </Card>
-                    <Card className={`p-5 ${appStats.contactVisible ? "bg-green-50/60 border-green-200" : "bg-muted/30"}`}>
-                      <div className="text-xs text-muted-foreground mb-1">
-                        {appStats.contactVisible ? l.contactVisible : l.contactHidden}
-                      </div>
+                    <Card className="p-5 bg-green-50/60 border-green-200">
+                      <div className="text-xs text-muted-foreground mb-1">{l.contactVisible}</div>
                       <div className="flex items-center gap-2 mt-1">
-                        {appStats.contactVisible ? (
-                          <>
-                            <Phone className="w-4 h-4 text-green-600" />
-                            <Mail className="w-4 h-4 text-green-600" />
-                            <Globe className="w-4 h-4 text-green-600" />
-                          </>
-                        ) : (
-                          <>
-                            <Phone className="w-4 h-4 text-muted-foreground" />
-                            <Mail className="w-4 h-4 text-muted-foreground" />
-                            <Globe className="w-4 h-4 text-muted-foreground" />
-                          </>
-                        )}
+                        <Phone className="w-4 h-4 text-green-600" />
+                        <Mail className="w-4 h-4 text-green-600" />
+                        <Globe className="w-4 h-4 text-green-600" />
                       </div>
-                      {!appStats.contactVisible && (
-                        <Link href="/pricing">
-                          <Button size="sm" variant="link" className="mt-1 px-0 text-xs h-auto">
-                            {l.upgradeNow} →
-                          </Button>
-                        </Link>
-                      )}
                     </Card>
                   </div>
                 </div>
@@ -2065,28 +2031,6 @@ export default function ProviderDashboard() {
                 </div>
               </Card>
 
-              {normalisedPlanSlug === "basic" && (
-                <Card className="mt-4 p-4 bg-amber-50 border-amber-200">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="text-sm text-amber-800">
-                      <span className="font-semibold">{l.contactHidden}.</span>
-                      {" "}
-                      {language === "de"
-                        ? "Upgraden Sie auf Professional oder Premium, um Ihre Kontaktdaten sichtbar zu machen."
-                        : language === "fr"
-                        ? "Passez à Professional ou Premium pour rendre vos coordonnées visibles."
-                        : language === "sq"
-                        ? "Ndrysho planin te Professional ose Premium për të shfaqur kontaktet."
-                        : "Upgrade to Professional or Premium to make your contact details visible."}
-                    </div>
-                    <Link href="/pricing">
-                      <Button size="sm" className="flex-shrink-0">
-                        {l.upgradeNow}
-                      </Button>
-                    </Link>
-                  </div>
-                </Card>
-              )}
             </div>
           )}
 
