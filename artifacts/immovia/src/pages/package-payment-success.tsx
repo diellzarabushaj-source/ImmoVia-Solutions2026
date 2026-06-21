@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@clerk/react";
 import { useLocation, useSearch } from "wouter";
 import { motion } from "framer-motion";
 import {
@@ -96,6 +97,7 @@ function localeFor(lang: string) {
 export default function PackagePaymentSuccess() {
   const [, setLocation] = useLocation();
   const search = useSearch();
+  const { isLoaded: clerkLoaded, isSignedIn } = useAuth();
   const [status, setStatus] = useState<Status>("verifying");
   const [stats, setStats] = useState<AppStats | null>(null);
   const ranRef = useRef(false);
@@ -107,7 +109,11 @@ export default function PackagePaymentSuccess() {
   const companyId = urlParams.get("company_id");
   const sessionId = urlParams.get("session_id");
 
+  // Wait for Clerk to finish loading before running — the sync route requires
+  // a valid Clerk session, which may not be present immediately after the
+  // Stripe redirect. Re-runs once clerkLoaded flips to true.
   useEffect(() => {
+    if (!clerkLoaded) return;      // Clerk session not ready yet — wait
     if (ranRef.current) return;
     ranRef.current = true;
 
@@ -118,7 +124,7 @@ export default function PackagePaymentSuccess() {
 
     void (async () => {
       try {
-        // Step 1: mark company as paid
+        // Step 1: mark company as paid (no auth required)
         const verifyResp = await fetch(`/api/companies/${companyId}/package-payment/verify`, {
           method: "POST",
           credentials: "include",
@@ -132,34 +138,36 @@ export default function PackagePaymentSuccess() {
           return;
         }
 
-        // Step 2: sync subscription to local DB (so plan is immediately active)
-        try {
-          const syncResp = await fetch(`/api/stripe/subscription/sync?session_id=${sessionId}`, {
-            credentials: "include",
-          });
-          if (syncResp.ok) {
-            const syncData = await syncResp.json() as { synced: boolean };
-            if (syncData.synced) {
-              try {
-                setStats(await billingApi.appStats());
-              } catch {
-                // stats are best-effort
+        // Step 2: sync subscription (requires Clerk session — only attempt if signed in)
+        if (isSignedIn) {
+          try {
+            const syncResp = await fetch(`/api/stripe/subscription/sync?session_id=${sessionId}`, {
+              credentials: "include",
+            });
+            if (syncResp.ok) {
+              const syncData = await syncResp.json() as { synced: boolean };
+              if (syncData.synced) {
+                try {
+                  setStats(await billingApi.appStats());
+                } catch {
+                  // stats are best-effort
+                }
+                setStatus("success");
+                return;
               }
-              setStatus("success");
-              return;
             }
+          } catch {
+            // sync failed — fall through to pending; webhook may still activate
           }
-        } catch {
-          // sync failed — still show success since payment was verified
         }
 
-        // Payment verified but sync didn't confirm — show pending
+        // Payment verified — webhook will activate the plan shortly
         setStatus("pending");
       } catch {
         setStatus("error");
       }
     })();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clerkLoaded, isSignedIn]); // re-run once Clerk is ready
 
   if (status === "verifying") {
     return (

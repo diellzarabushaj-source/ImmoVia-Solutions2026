@@ -388,6 +388,11 @@ router.post("/companies/:id/package-checkout", async (req, res): Promise<void> =
     allow_promotion_codes: true,
     customer_email: body.data.email,
     metadata: sessionMeta,
+    // Mirror userId into subscription_data.metadata so the webhook can activate
+    // the subscription even when the post-checkout sync route isn't reachable.
+    subscription_data: userIdForMeta
+      ? { metadata: { userId: userIdForMeta, companyId: String(company.id) } }
+      : { metadata: { companyId: String(company.id) } },
     success_url: `${origin}/package-payment-success?company_id=${company.id}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/provider?cancelled=1`,
   });
