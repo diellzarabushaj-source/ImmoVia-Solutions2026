@@ -81,7 +81,12 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
   try {
     const clerkUser = await clerk.users.getUser(clerkUserId);
     clerkEmail = clerkUser.emailAddresses[0]?.emailAddress ?? "";
-    clerkFullName = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") || "User";
+    const nameFromClerk = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ");
+    const fallbackName =
+      clerkUser.username ||
+      (clerkEmail ? clerkEmail.split("@")[0] : "") ||
+      "User";
+    clerkFullName = nameFromClerk || fallbackName;
     clerkAvatarUrl = clerkUser.imageUrl || null;
   } catch (err) {
     req.log.error({ err }, "Failed to fetch Clerk user");
@@ -97,13 +102,18 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
     .limit(1);
 
   if (existingUser) {
-    if (ADMIN_EMAILS.has(existingUser.email) && existingUser.role !== "admin") {
-      const [upgraded] = await db
+    const needsNameFix = existingUser.fullName === "User" && clerkFullName !== "User";
+    const shouldBeAdmin = ADMIN_EMAILS.has(existingUser.email) && existingUser.role !== "admin";
+    if (needsNameFix || shouldBeAdmin) {
+      const [updated] = await db
         .update(usersTable)
-        .set({ role: "admin" })
+        .set({
+          ...(needsNameFix ? { fullName: clerkFullName } : {}),
+          ...(shouldBeAdmin ? { role: "admin" as const } : {}),
+        })
         .where(eq(usersTable.id, existingUser.id))
         .returning();
-      existingUser = upgraded!;
+      existingUser = updated!;
     }
     res.json({ user: toPublicUser(existingUser) });
     return;
