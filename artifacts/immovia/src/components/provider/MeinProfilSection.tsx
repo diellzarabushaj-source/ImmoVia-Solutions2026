@@ -344,7 +344,7 @@ export default function MeinProfilSection({ language, onNavigate }: Props) {
     setLoading(true);
     Promise.all([
       fetch("/api/provider/profile").then(r => r.ok ? r.json() as Promise<ProfileData> : Promise.reject()),
-      fetch("/api/billing/provider/app-stats").then(r => r.ok ? r.json() as Promise<BillingStats> : Promise.resolve(null)).catch(() => null),
+      fetch("/api/provider/app-stats").then(r => r.ok ? r.json() as Promise<BillingStats> : Promise.resolve(null)).catch(() => null),
     ])
       .then(([d, b]) => {
         setData(d);

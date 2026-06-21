@@ -214,7 +214,7 @@ export default function GalerieSection({ language }: Props) {
   const [planSlug, setPlanSlug] = useState<string>("basic");
 
   useEffect(() => {
-    fetch("/api/billing/provider/app-stats")
+    fetch("/api/provider/app-stats")
       .then(r => r.ok ? r.json() as Promise<{ planSlug?: string }> : null)
       .then(d => { if (d?.planSlug) setPlanSlug(d.planSlug); })
       .catch(() => {});

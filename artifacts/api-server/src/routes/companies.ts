@@ -362,18 +362,32 @@ router.post("/companies/:id/package-checkout", async (req, res): Promise<void> =
   const stripe = getStripeClient();
   const origin = (req.headers.origin as string) || `https://${req.headers.host}`;
 
+  // Resolve the local user ID from Clerk so activateSubscription can link the subscription
+  const auth = getAuth(req);
+  let userIdForMeta: string | undefined;
+  if (auth.userId) {
+    const [u] = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.clerkUserId, auth.userId));
+    if (u) userIdForMeta = String(u.id);
+  }
+
   const regFeePrice = process.env.STRIPE_REGISTRATION_FEE_PRICE_ID;
   const lineItems: { price: string; quantity: number }[] = [
     { price: priceId, quantity: 1 },
   ];
   if (regFeePrice) lineItems.push({ price: regFeePrice, quantity: 1 });
 
+  const sessionMeta: Record<string, string> = { companyId: String(company.id) };
+  if (userIdForMeta) sessionMeta["userId"] = userIdForMeta;
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     line_items: lineItems,
     allow_promotion_codes: true,
     customer_email: body.data.email,
-    metadata: { companyId: String(company.id) },
+    metadata: sessionMeta,
     success_url: `${origin}/package-payment-success?company_id=${company.id}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/provider?cancelled=1`,
   });

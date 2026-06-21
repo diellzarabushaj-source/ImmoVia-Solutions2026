@@ -100,7 +100,7 @@ export default function PackagePaymentSuccess() {
   const [stats, setStats] = useState<AppStats | null>(null);
   const ranRef = useRef(false);
 
-  const lang = (typeof localStorage !== "undefined" ? localStorage.getItem("immo_lang") : null) ?? "en";
+  const lang = (typeof localStorage !== "undefined" ? localStorage.getItem("immovia_lang") : null) ?? "de";
   const l = L[lang] ?? L.en;
 
   const urlParams = new URLSearchParams(search);
