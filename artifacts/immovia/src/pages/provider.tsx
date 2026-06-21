@@ -212,6 +212,10 @@ const L: Record<string, Record<string, string>> = {
     gateSecure: "Pagesë e sigurt me Stripe",
     gateOpening: "Duke hapur...",
     gateError: "Ndodhi një gabim. Ju lutemi provoni përsëri.",
+    offerStatusSent: "Në pritje",
+    offerStatusAccepted: "Aprovuar",
+    offerStatusRejected: "Refuzuar",
+    offerStatusRefunded: "Rimbursuar",
   },
   en: {
     navOverview: "Overview",
@@ -324,6 +328,10 @@ const L: Record<string, Record<string, string>> = {
     gateSecure: "Secure payment via Stripe",
     gateOpening: "Opening...",
     gateError: "An error occurred. Please try again.",
+    offerStatusSent: "Pending",
+    offerStatusAccepted: "Approved",
+    offerStatusRejected: "Declined",
+    offerStatusRefunded: "Refunded",
   },
   de: {
     navOverview: "Übersicht",
@@ -436,6 +444,10 @@ const L: Record<string, Record<string, string>> = {
     gateSecure: "Sichere Zahlung über Stripe",
     gateOpening: "Öffnet...",
     gateError: "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    offerStatusSent: "Ausstehend",
+    offerStatusAccepted: "Akzeptiert",
+    offerStatusRejected: "Abgelehnt",
+    offerStatusRefunded: "Erstattet",
   },
   fr: {
     navOverview: "Vue d'ensemble",
@@ -548,6 +560,10 @@ const L: Record<string, Record<string, string>> = {
     gateSecure: "Paiement sécurisé via Stripe",
     gateOpening: "Ouverture...",
     gateError: "Une erreur s'est produite. Veuillez réessayer.",
+    offerStatusSent: "En attente",
+    offerStatusAccepted: "Accepté",
+    offerStatusRejected: "Refusé",
+    offerStatusRefunded: "Remboursé",
   },
 };
 
@@ -995,6 +1011,36 @@ export default function ProviderDashboard() {
       );
     }
     return <Badge variant="outline">{t.provider.offerTypeNormal}</Badge>;
+  };
+
+  const offerStatusBadge = (status: string) => {
+    if (status === "accepted") {
+      return (
+        <Badge className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200">
+          {l.offerStatusAccepted}
+        </Badge>
+      );
+    }
+    if (status === "rejected") {
+      return (
+        <Badge className="bg-red-100 text-red-800 hover:bg-red-100 border-red-200">
+          {l.offerStatusRejected}
+        </Badge>
+      );
+    }
+    if (status === "refunded") {
+      return (
+        <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-100 border-gray-200">
+          {l.offerStatusRefunded}
+        </Badge>
+      );
+    }
+    // "sent" and any other value → pending (amber)
+    return (
+      <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">
+        {l.offerStatusSent}
+      </Badge>
+    );
   };
 
   const navItems: Array<{ id: Section; label: string; icon: React.ReactNode; badge?: number }> = [
@@ -1845,7 +1891,7 @@ export default function ProviderDashboard() {
                             <div className="text-xs text-muted-foreground">{o.projectCity}</div>
                           </TableCell>
                           <TableCell>{typeBadge(o.type)}</TableCell>
-                          <TableCell><Badge variant="outline">{o.status}</Badge></TableCell>
+                          <TableCell>{offerStatusBadge(o.status)}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">
                             {format(new Date(o.createdAt), "MMM d, yyyy")}
                           </TableCell>
@@ -1908,7 +1954,7 @@ export default function ProviderDashboard() {
                         {typeBadge(o.type)}
                       </div>
                       <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-xs">{o.status}</Badge>
+                        {offerStatusBadge(o.status)}
                         <span className="text-xs text-muted-foreground">
                           {format(new Date(o.createdAt), "dd.MM.yyyy")}
                         </span>
