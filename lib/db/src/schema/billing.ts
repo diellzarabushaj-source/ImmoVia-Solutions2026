@@ -48,6 +48,8 @@ export const subscriptionsTable = pgTable("subscriptions", {
   currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }).notNull(),
   providerRef: text("provider_ref"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  // Unused credits carried over from the previous billing period (rollover model).
+  carryoverCredits: integer("carryover_credits").notNull().default(0),
 });
 
 export const paymentsTable = pgTable("payments", {

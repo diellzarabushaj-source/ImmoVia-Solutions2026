@@ -1,5 +1,5 @@
 import type Stripe from "stripe";
-import { eq } from "drizzle-orm";
+import { and, eq, gte, lt, sql } from "drizzle-orm";
 import {
   db,
   usersTable,
@@ -8,6 +8,7 @@ import {
   paymentsTable,
   invoicesTable,
   companiesTable,
+  offersTable,
 } from "@workspace/db";
 import { slugForPriceId } from "./stripeClient";
 import { logger } from "./logger";
@@ -42,9 +43,20 @@ function priceIdOf(sub: Stripe.Subscription): string | undefined {
 }
 
 function periodFromSubscription(sub: Stripe.Subscription): { start: Date; end: Date } {
-  // Stripe v20 removed current_period_start/current_period_end from the
-  // Subscription object — derive the period from start_date + the price interval.
-  const rawStart = sub.start_date ?? sub.billing_cycle_anchor ?? Math.floor(Date.now() / 1000);
+  // Prefer the item-level period — it advances on every renewal and is the
+  // authoritative source for the current billing window.
+  // The Stripe API includes period on SubscriptionItem but the TS type omits it.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const itemPeriod = (sub.items?.data[0] as any)?.period as { start?: number; end?: number } | undefined;
+  if (itemPeriod?.start && itemPeriod?.end) {
+    return {
+      start: new Date(itemPeriod.start * 1000),
+      end: new Date(itemPeriod.end * 1000),
+    };
+  }
+  // Fallback: Stripe v20 removed current_period_start/end from the root object.
+  // Derive from billing_cycle_anchor + price interval.
+  const rawStart = sub.billing_cycle_anchor ?? sub.start_date ?? Math.floor(Date.now() / 1000);
   const start = new Date(rawStart * 1000);
   const end = new Date(start);
   const interval = sub.items?.data[0]?.price?.recurring?.interval;
@@ -108,9 +120,33 @@ export async function activateSubscription(
     .where(eq(subscriptionsTable.providerRef, sub.id));
 
   if (existing) {
+    // Detect renewal: new period start is after the previous period end.
+    const isRenewal = start.getTime() > existing.currentPeriodEnd.getTime();
+    let carryoverCredits = existing.carryoverCredits ?? 0;
+
+    if (isRenewal && plan.monthlyCredits !== -1) {
+      // Count how many apps were submitted in the just-ended period.
+      const [{ usedPrev }] = await db
+        .select({ usedPrev: sql<number>`count(*)::int` })
+        .from(offersTable)
+        .where(
+          and(
+            eq(offersTable.providerUserId, userId),
+            gte(offersTable.createdAt, existing.currentPeriodStart),
+            lt(offersTable.createdAt, start),
+          ),
+        );
+      const prevLimit = plan.monthlyCredits + (existing.carryoverCredits ?? 0);
+      carryoverCredits = Math.max(0, prevLimit - (usedPrev ?? 0));
+      logger.info(
+        { userId, plan: plan.slug, prevLimit, usedPrev, carryoverCredits },
+        "Subscription renewed — carrying over unused credits",
+      );
+    }
+
     await db
       .update(subscriptionsTable)
-      .set({ status, currentPeriodStart: start, currentPeriodEnd: end, planId: plan.id })
+      .set({ status, currentPeriodStart: start, currentPeriodEnd: end, planId: plan.id, carryoverCredits })
       .where(eq(subscriptionsTable.id, existing.id));
     return plan.slug;
   }

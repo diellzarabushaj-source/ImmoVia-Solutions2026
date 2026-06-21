@@ -103,8 +103,18 @@ router.get("/provider/app-stats", requireProvider, async (req, res): Promise<voi
     plan = p ?? null;
   }
 
-  const planSlug = plan?.slug ?? "free";
-  const appLimit = PLAN_APP_LIMITS[planSlug] ?? 2;
+  // Enforce expiry: subscription must be active AND within its period.
+  const now = new Date();
+  const subActive =
+    sub?.status === "active" &&
+    sub?.currentPeriodEnd != null &&
+    new Date(sub.currentPeriodEnd) > now;
+
+  const planSlug = subActive ? (plan?.slug ?? "free") : "free";
+  const baseLimit = PLAN_APP_LIMITS[planSlug] ?? 0;
+  // Rollover: add unused credits carried from the previous period (infinite plans ignore it).
+  const carryover = subActive ? (sub?.carryoverCredits ?? 0) : 0;
+  const appLimit = baseLimit === -1 ? -1 : baseLimit + carryover;
   const contactVisible = PLAN_CONTACT_VISIBLE[planSlug] ?? false;
   const badge = PLAN_BADGES[planSlug] ?? "Basic Anbieter";
 
@@ -120,7 +130,7 @@ router.get("/provider/app-stats", requireProvider, async (req, res): Promise<voi
 
   res.json({
     planSlug,
-    planName: plan?.name ?? "Free",
+    planName: subActive ? (plan?.name ?? "Free") : "Free",
     priceCents: plan?.priceCents ?? 0,
     appLimit,
     usedThisMonth: usedThisMonth ?? 0,
@@ -128,9 +138,9 @@ router.get("/provider/app-stats", requireProvider, async (req, res): Promise<voi
     badge,
     periodStart: sub?.currentPeriodStart ?? periodStart,
     periodEnd: sub?.currentPeriodEnd ?? null,
-    features: plan?.features ?? [],
+    features: subActive ? (plan?.features ?? []) : [],
     contactUnlocksUsed: unlockStats.used,
-    contactUnlocksLimit: unlockStats.limit,
+    contactUnlocksLimit: subActive ? unlockStats.limit : 0,
   });
 });
 
