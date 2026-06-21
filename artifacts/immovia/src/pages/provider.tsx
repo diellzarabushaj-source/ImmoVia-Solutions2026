@@ -907,75 +907,8 @@ export default function ProviderDashboard() {
   }
 
   if (registrationGate === "package_unpaid") {
-    const handlePackagePay = async () => {
-      if (!gateCompanyId) return;
-      setGatePaymentLoading(true);
-      setGatePaymentError(null);
-      try {
-        const result = await createPackageGateCheckout.mutateAsync({
-          id: gateCompanyId,
-          data: { email: user.email ?? "", planType: gateCompanyPlan },
-        });
-        if (result.url) window.location.href = result.url;
-      } catch {
-        setGatePaymentError(l.gateError);
-        setGatePaymentLoading(false);
-      }
-    };
-
-    const planPrice = gateCompanyPlan === "premium" ? 149 : gateCompanyPlan === "professional" ? 99 : 49;
-
-    return (
-      <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
-        <div className="w-full max-w-2xl">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CreditCard className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-serif font-bold mb-2">
-              {language === "sq" ? "Aktivizoni Paketën Tuaj" :
-               language === "de" ? "Paket aktivieren" :
-               language === "fr" ? "Activer votre forfait" :
-               "Activate Your Plan"}
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              {language === "sq" ? "Zgjidhni paketën dhe plotësoni pagesën mujore për të aktivizuar profilin tuaj." :
-               language === "de" ? "Wählen Sie Ihr Paket und schliessen Sie die monatliche Zahlung ab, um Ihr Profil zu aktivieren." :
-               language === "fr" ? "Choisissez votre forfait et finalisez le paiement mensuel pour activer votre profil." :
-               "Choose your plan and complete the monthly payment to activate your profile."}
-            </p>
-          </div>
-
-          <PlanCards
-            selected={gateCompanyPlan as PlanType}
-            onSelect={(pt) => setGateCompanyPlan(pt)}
-          />
-
-          {gatePaymentError && (
-            <p className="text-sm text-red-600 text-center mb-3 mt-4">{gatePaymentError}</p>
-          )}
-
-          <Button
-            size="lg"
-            className="w-full bg-[#1a3a6e] hover:bg-[#0f2044] mt-4"
-            onClick={() => void handlePackagePay()}
-            disabled={gatePaymentLoading || !gateCompanyPlan}
-          >
-            {gatePaymentLoading ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {language === "sq" ? "Po hapet Stripe..." : language === "de" ? "Stripe wird geöffnet..." : language === "fr" ? "Ouverture de Stripe..." : "Opening Stripe..."}
-              </span>
-            ) : (
-              language === "sq" ? `Paguani CHF ${planPrice}/muaj` : language === "de" ? `CHF ${planPrice}/Monat bezahlen` : language === "fr" ? `Payer CHF ${planPrice}/mois` : `Pay CHF ${planPrice}/month`
-            )}
-          </Button>
-          <p className="text-xs text-center text-muted-foreground mt-3 flex items-center justify-center gap-1">
-            <ShieldCheck className="w-3 h-3" /> {l.gateSecure}
-          </p>
-        </div>
-      </div>
-    );
+    setLocation("/pricing");
+    return null;
   }
 
   const atLimit = appStats ? (appStats.appLimit !== -1 && appStats.usedThisMonth >= appStats.appLimit) : false;
@@ -1042,7 +975,7 @@ export default function ProviderDashboard() {
     { id: "einstellungen", label: l.navSettings, icon: <Settings className="w-4 h-4" /> },
   ];
 
-  const planSlug = appStats?.planSlug ?? "free";
+  const planSlug = appStats?.planSlug ?? "";
 
   // Normalise legacy slugs so the highlight always works
   const normalisedPlanSlug =
@@ -1103,57 +1036,14 @@ export default function ProviderDashboard() {
     }
   };
 
+  if (registrationGate === "unpaid") {
+    setLocation("/pricing");
+    return null;
+  }
+
   return (
     <>
-      {registrationGate === "unpaid" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CreditCard className="w-8 h-8" />
-              </div>
-              <h2 className="text-2xl font-serif font-bold mb-2 text-white">{l.gateTitle}</h2>
-              <p className="text-blue-100 text-sm">{l.gateSub}</p>
-            </div>
-            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-2xl mb-4">
-              <div className="bg-[#1a3a6e] text-white px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 opacity-80" />
-                  <span className="text-sm font-semibold uppercase tracking-wide">{l.gateTitle}</span>
-                </div>
-                <span className="text-xl font-bold">CHF 149</span>
-              </div>
-              <div className="px-6 py-5 space-y-3">
-                {[l.gateFeat1, l.gateFeat2, l.gateFeat3].map((feat, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
-                    <p className="text-sm text-foreground">{feat}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {gatePaymentError && (
-              <p className="text-sm text-red-400 text-center mb-3">{gatePaymentError}</p>
-            )}
-            <Button
-              size="lg"
-              className="w-full bg-[#1a3a6e] hover:bg-[#0f2044]"
-              onClick={() => void handleGatePay()}
-              disabled={gatePaymentLoading}
-            >
-              {gatePaymentLoading ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> {l.gateOpening}
-                </span>
-              ) : l.gateBtn}
-            </Button>
-            <p className="text-xs text-center text-blue-200 mt-3 flex items-center justify-center gap-1">
-              <ShieldCheck className="w-3 h-3" /> {l.gateSecure}
-            </p>
-          </div>
-        </div>
-      )}
-      <div className={`container mx-auto px-4 py-8 max-w-7xl${registrationGate === "unpaid" ? " blur-sm pointer-events-none select-none" : ""}`}>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
       {success && (
         <div className="mb-4 p-3 rounded bg-green-50 border border-green-200 text-green-800 text-sm flex items-center justify-between gap-3">
           <span>{success}</span>
@@ -1344,7 +1234,7 @@ export default function ProviderDashboard() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                 <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("plan")}>
                   <div className="text-xs text-muted-foreground mb-1">{l.currentPlan}</div>
-                  <div className="text-lg font-bold">{appStats?.planName ?? "Free"}</div>
+                  <div className="text-lg font-bold">{appStats?.planName ?? "—"}</div>
                   <div className="text-xs text-primary mt-1 font-medium">{appStats?.badge ?? "Basic Dienstleister"}</div>
                 </Card>
                 <Card className="p-4 hover:border-primary/30 cursor-pointer transition-colors" onClick={() => setActiveSection("profil")}>

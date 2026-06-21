@@ -35,7 +35,7 @@ const LABELS: Record<string, Record<string, string>> = {
     loading: "Lade…",
     portalLoading: "Weiterleitung zu Stripe…",
     noPlan: "Kein aktives Abonnement",
-    freePlan: "Sie nutzen den kostenlosen Plan.",
+    freePlan: "",
     seePlans: "Preise ansehen",
     tabBilling: "Abonnement",
     tabUnlocked: "Entsperrte Kontakte",
@@ -67,7 +67,7 @@ const LABELS: Record<string, Record<string, string>> = {
     loading: "Loading…",
     portalLoading: "Redirecting to Stripe…",
     noPlan: "No active subscription",
-    freePlan: "You are on the free plan.",
+    freePlan: "",
     seePlans: "View plans",
     tabBilling: "Subscription",
     tabUnlocked: "Unlocked Contacts",
@@ -99,7 +99,7 @@ const LABELS: Record<string, Record<string, string>> = {
     loading: "Duke ngarkuar…",
     portalLoading: "Po ridrejtoheni te Stripe…",
     noPlan: "Asnjë abonim aktiv",
-    freePlan: "Jeni në planin falas.",
+    freePlan: "",
     seePlans: "Shiko planet",
     tabBilling: "Abonimi",
     tabUnlocked: "Kontaktet e Zhbllokuara",
@@ -131,7 +131,7 @@ const LABELS: Record<string, Record<string, string>> = {
     loading: "Chargement…",
     portalLoading: "Redirection vers Stripe…",
     noPlan: "Aucun abonnement actif",
-    freePlan: "Vous utilisez le plan gratuit.",
+    freePlan: "",
     seePlans: "Voir les plans",
     tabBilling: "Abonnement",
     tabUnlocked: "Contacts Débloqués",
@@ -370,7 +370,7 @@ export default function ProviderBilling() {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {stats?.planSlug && stats.planSlug !== "free" && (
+            {stats?.planSlug && (
               <Button
                 variant="outline"
                 onClick={() => void openPortal()}
