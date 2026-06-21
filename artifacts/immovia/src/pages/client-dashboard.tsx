@@ -332,7 +332,7 @@ export default function ClientDashboard() {
                 {/* Welcome banner */}
                 <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-primary/8 via-sky-50/60 to-transparent border border-primary/10">
                   <h1 className="text-2xl font-serif font-bold mb-1" data-testid="customer-heading">
-                    {t.dashboard.welcome}, {user.fullName.split(" ")[0]}
+                    {t.dashboard.welcome}, {(user.fullName === "User" ? user.email?.split("@")[0] : user.fullName?.split(" ")[0]) ?? ""}
                   </h1>
                   <p className="text-sm text-muted-foreground mb-4">{l.welcomeDesc}</p>
                   <div className="flex flex-wrap gap-3">
@@ -829,7 +829,7 @@ export default function ClientDashboard() {
                   <Card className="p-4 flex items-center justify-between">
                     <div>
                       <p className="font-medium text-sm">{language === "de" ? "Profil & Konto" : language === "fr" ? "Profil & compte" : language === "sq" ? "Profili & Llogaria" : "Profile & Account"}</p>
-                      <p className="text-xs text-muted-foreground">{user.fullName} · {user.email}</p>
+                      <p className="text-xs text-muted-foreground">{user.fullName === "User" ? user.email : user.fullName} · {user.email}</p>
                     </div>
                     <Link href="/dashboard/profile">
                       <Button size="sm" variant="outline">{language === "de" ? "Bearbeiten" : language === "fr" ? "Modifier" : language === "sq" ? "Ndrysho" : "Edit"}</Button>

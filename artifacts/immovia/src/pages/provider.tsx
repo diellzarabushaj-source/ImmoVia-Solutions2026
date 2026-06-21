@@ -1887,7 +1887,7 @@ export default function ProviderDashboard() {
                       <Fragment key={o.id}>
                         <TableRow>
                           <TableCell>
-                            <div className="font-medium">{o.projectFullName}</div>
+                            <div className="font-medium">{o.projectFullName === "User" || !o.projectFullName ? (o.projectType ?? "—") : o.projectFullName}</div>
                             <div className="text-xs text-muted-foreground">{o.projectCity}</div>
                           </TableCell>
                           <TableCell>{typeBadge(o.type)}</TableCell>
@@ -1908,7 +1908,7 @@ export default function ProviderDashboard() {
                         {o.status === "accepted" && openThreads.has(o.id) && (
                           <TableRow>
                             <TableCell colSpan={5} className="p-3">
-                              <MessageThread offerId={o.id} otherPartyName={o.projectFullName ?? undefined} />
+                              <MessageThread offerId={o.id} otherPartyName={(o.projectFullName === "User" || !o.projectFullName ? o.projectType : o.projectFullName) ?? undefined} />
                             </TableCell>
                           </TableRow>
                         )}
@@ -1946,7 +1946,7 @@ export default function ProviderDashboard() {
                     <Card key={o.id} className="p-5">
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
-                          <p className="font-semibold text-sm line-clamp-1">{o.projectFullName}</p>
+                          <p className="font-semibold text-sm line-clamp-1">{o.projectFullName === "User" || !o.projectFullName ? (o.projectType ?? "—") : o.projectFullName}</p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <MapPin className="w-3 h-3" />{o.projectCity}
                           </p>
@@ -2478,7 +2478,7 @@ export default function ProviderDashboard() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t.provider.detailTitle}</DialogTitle>
-            <DialogDescription>{detailProject?.fullName} · {detailProject?.city}</DialogDescription>
+            <DialogDescription>{detailProject?.fullName === "User" || !detailProject?.fullName ? (detailProject?.projectType ?? "—") : detailProject.fullName} · {detailProject?.city}</DialogDescription>
           </DialogHeader>
           {detailProject?.photos && detailProject.photos.length > 0 && (
             <div className="space-y-2">
