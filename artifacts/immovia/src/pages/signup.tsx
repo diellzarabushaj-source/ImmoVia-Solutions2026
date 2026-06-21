@@ -4,6 +4,7 @@ import { useUser } from "@clerk/react";
 import { setPendingSignup } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Briefcase,
   User,
@@ -11,24 +12,29 @@ import {
   ChevronLeft,
   CheckCircle2,
   ArrowRight,
+  Phone,
+  MapPin,
 } from "lucide-react";
 import { PlanCards, PLAN_CONFIG } from "@/components/PlanCards";
 import type { PlanType } from "@/components/PlanCards";
 
 const PENDING_PLAN_KEY = "immovia_pending_plan";
+const SP_WORKER_TYPE_KEY = "immovia_sp_worker_type";
+const SP_FIRST_NAME_KEY = "immovia_sp_first_name";
+const SP_LAST_NAME_KEY = "immovia_sp_last_name";
+const SP_COMPANY_NAME_KEY = "immovia_sp_company_name";
+const SP_PHONE_KEY = "immovia_sp_phone";
+const SP_CITY_KEY = "immovia_sp_city";
 
 type AccountType = "project_poster" | "service_provider";
 type AccountSubtype = "individual" | "company";
 
-const PLAN_LABELS: Record<string, { choosePlan: string; planSub: string; recommended: string; perMonth: string; regFee: string; step1of3: string; step2of3: string; step3of3: string; step4of4: string; step1of4: string; step2of4: string; step3of4: string; title: string; step1Question: string; step2Question: string; step3Title: string; step3Subtitle: string; yourSelection: string; posterLabel: string; posterTitle: string; posterDesc: string; providerLabel: string; providerTitle: string; providerDesc: string; individualTitle: string; individualDesc: string; companyTitle: string; companyDesc: string; labelIndividualPoster: string; labelCompanyPoster: string; labelIndividualProvider: string; labelCompanyProvider: string; meaningIndividualPoster: string; meaningCompanyPoster: string; meaningIndividualProvider: string; meaningCompanyProvider: string; confirmBtn: string; backBtn: string; alreadyHaveAccount: string; signIn: string; chooseBtn: string; choosePlanStep: string }> = {
+const L = {
   sq: {
     choosePlan: "Zgjidhni Paketën",
     planSub: "Zgjidhni nivelin e duhur para se të vazhdoni.",
-    recommended: "Rekomanduar",
     perMonth: "/ muaj",
-    regFee: "Tarifa e regjistrimit njëherë: CHF 149",
     step1of3: "Hapi 1 nga 3", step2of3: "Hapi 2 nga 3", step3of3: "Hapi 3 nga 3",
-    step1of4: "Hapi 1 nga 4", step2of4: "Hapi 2 nga 4", step3of4: "Hapi 3 nga 4", step4of4: "Hapi 4 nga 4",
     title: "Krijoni Llogarinë Tuaj",
     step1Question: "Si do të përdorni ImmoVia365?",
     step2Question: "Si do të operoni?",
@@ -45,16 +51,37 @@ const PLAN_LABELS: Record<string, { choosePlan: string; planSub: string; recomme
     meaningIndividualProvider: "Si profesionist individual, profili juaj do të shfaqet në drejtorinë e kontraktorëve.",
     meaningCompanyProvider: "Si kompani, do të keni qasje në listimin e plotë dhe menaxhimin e projekteve.",
     confirmBtn: "Konfirmo dhe Vazhdo", backBtn: "Kthehu", alreadyHaveAccount: "Keni tashmë llogari?", signIn: "Hyni",
-    chooseBtn: "Zgjidhni", choosePlanStep: "Zgjidhni paketën",
+    chooseBtn: "Zgjidhni",
+    // SP details form
+    spDetailsTitle: "Të dhënat tuaja",
+    spDetailsSubtitle: "Plotësoni informacionin bazë. Pas kësaj do të krijoni llogarinë dhe do të paguani.",
+    workerTypeLabel: "Lloji i aktivitetit",
+    individual: "Profesionist Individual",
+    individualDesc2: "Punoj si individ ose i vetëpunësuar",
+    company: "Kompani / Firmë",
+    companyDesc2: "Drejtoj një kompani ose firmë",
+    firstNameLabel: "Emri",
+    lastNameLabel: "Mbiemri",
+    companyNameLabel: "Emri i Kompanisë",
+    phoneLabel: "Numri i Telefonit",
+    cityLabel: "Qyteti",
+    ph_firstName: "p.sh. Arben",
+    ph_lastName: "p.sh. Hoxha",
+    ph_company: "p.sh. Hoxha Ndërtim Sh.p.k.",
+    ph_phone: "p.sh. +41 79 123 45 67",
+    ph_city: "p.sh. Zürich",
+    continueToAccount: "Vazhdo me Krijimin e Llogarisë",
+    errorRequired: "Ky fushë është e detyrueshme.",
+    errorPhone: "Numri i telefonit duhet të ketë të paktën 7 karaktere.",
+    planLabel: "Paketa juaj",
+    setupFee: "Tarifa njëherë: CHF 149",
+    totalFirst: "Pagesa e parë",
   },
   en: {
     choosePlan: "Choose Your Plan",
     planSub: "Select the level that fits your business before continuing.",
-    recommended: "Recommended",
     perMonth: "/ mo",
-    regFee: "One-time registration fee: CHF 149",
     step1of3: "Step 1 of 3", step2of3: "Step 2 of 3", step3of3: "Step 3 of 3",
-    step1of4: "Step 1 of 4", step2of4: "Step 2 of 4", step3of4: "Step 3 of 4", step4of4: "Step 4 of 4",
     title: "Create Your Account",
     step1Question: "How will you use ImmoVia365?",
     step2Question: "How do you operate?",
@@ -71,16 +98,36 @@ const PLAN_LABELS: Record<string, { choosePlan: string; planSub: string; recomme
     meaningIndividualProvider: "As an individual professional, your profile will appear in the contractor directory.",
     meaningCompanyProvider: "As a company, you will have access to full listings and project management.",
     confirmBtn: "Confirm & Continue", backBtn: "Back", alreadyHaveAccount: "Already have an account?", signIn: "Sign in",
-    chooseBtn: "Choose", choosePlanStep: "Choose plan",
+    chooseBtn: "Choose",
+    spDetailsTitle: "Your Details",
+    spDetailsSubtitle: "Fill in your basic information. You will then create your account and pay.",
+    workerTypeLabel: "Business type",
+    individual: "Individual Professional",
+    individualDesc2: "I work as an individual or self-employed",
+    company: "Company / Firm",
+    companyDesc2: "I run a company or firm",
+    firstNameLabel: "First Name",
+    lastNameLabel: "Last Name",
+    companyNameLabel: "Company Name",
+    phoneLabel: "Phone Number",
+    cityLabel: "City",
+    ph_firstName: "e.g. John",
+    ph_lastName: "e.g. Smith",
+    ph_company: "e.g. Smith Construction GmbH",
+    ph_phone: "e.g. +41 79 123 45 67",
+    ph_city: "e.g. Zurich",
+    continueToAccount: "Continue to Account Setup",
+    errorRequired: "This field is required.",
+    errorPhone: "Phone number must be at least 7 characters.",
+    planLabel: "Your plan",
+    setupFee: "One-time setup fee: CHF 149",
+    totalFirst: "First payment",
   },
   de: {
     choosePlan: "Paket wählen",
     planSub: "Wählen Sie das passende Paket für Ihr Unternehmen.",
-    recommended: "Empfohlen",
     perMonth: "/ Mo.",
-    regFee: "Einmalige Registrierungsgebühr: CHF 149",
     step1of3: "Schritt 1 von 3", step2of3: "Schritt 2 von 3", step3of3: "Schritt 3 von 3",
-    step1of4: "Schritt 1 von 4", step2of4: "Schritt 2 von 4", step3of4: "Schritt 3 von 4", step4of4: "Schritt 4 von 4",
     title: "Konto erstellen",
     step1Question: "Wie möchten Sie ImmoVia365 nutzen?",
     step2Question: "Wie sind Sie tätig?",
@@ -97,16 +144,36 @@ const PLAN_LABELS: Record<string, { choosePlan: string; planSub: string; recomme
     meaningIndividualProvider: "Als Einzelunternehmer erscheint Ihr Profil im Auftragnehmerverzeichnis.",
     meaningCompanyProvider: "Als Unternehmen haben Sie vollen Zugang zum Listing und Projektmanagement.",
     confirmBtn: "Bestätigen & Weiter", backBtn: "Zurück", alreadyHaveAccount: "Bereits ein Konto?", signIn: "Anmelden",
-    chooseBtn: "Wählen", choosePlanStep: "Paket wählen",
+    chooseBtn: "Wählen",
+    spDetailsTitle: "Ihre Angaben",
+    spDetailsSubtitle: "Füllen Sie Ihre Grunddaten aus. Danach erstellen Sie Ihr Konto und bezahlen.",
+    workerTypeLabel: "Unternehmenstyp",
+    individual: "Einzelunternehmer",
+    individualDesc2: "Ich bin selbstständig oder Einzelperson",
+    company: "Unternehmen / Firma",
+    companyDesc2: "Ich leite ein Unternehmen oder eine Firma",
+    firstNameLabel: "Vorname",
+    lastNameLabel: "Nachname",
+    companyNameLabel: "Unternehmensname",
+    phoneLabel: "Telefonnummer",
+    cityLabel: "Stadt",
+    ph_firstName: "z.B. Hans",
+    ph_lastName: "z.B. Müller",
+    ph_company: "z.B. Müller Bau GmbH",
+    ph_phone: "z.B. +41 79 123 45 67",
+    ph_city: "z.B. Zürich",
+    continueToAccount: "Weiter zur Kontoerstellung",
+    errorRequired: "Dieses Feld ist erforderlich.",
+    errorPhone: "Telefonnummer muss mindestens 7 Zeichen haben.",
+    planLabel: "Ihr Paket",
+    setupFee: "Einmalige Einrichtungsgebühr: CHF 149",
+    totalFirst: "Erste Zahlung",
   },
   fr: {
     choosePlan: "Choisir un forfait",
     planSub: "Sélectionnez le niveau adapté à votre activité avant de continuer.",
-    recommended: "Recommandé",
     perMonth: "/ mois",
-    regFee: "Frais d'inscription uniques : CHF 149",
     step1of3: "Étape 1 sur 3", step2of3: "Étape 2 sur 3", step3of3: "Étape 3 sur 3",
-    step1of4: "Étape 1 sur 4", step2of4: "Étape 2 sur 4", step3of4: "Étape 3 sur 4", step4of4: "Étape 4 sur 4",
     title: "Créer votre compte",
     step1Question: "Comment allez-vous utiliser ImmoVia365 ?",
     step2Question: "Comment exercez-vous ?",
@@ -123,7 +190,30 @@ const PLAN_LABELS: Record<string, { choosePlan: string; planSub: string; recomme
     meaningIndividualProvider: "En tant qu'indépendant, votre profil apparaît dans l'annuaire.",
     meaningCompanyProvider: "En tant que société, vous avez accès aux annonces complètes et à la gestion de projets.",
     confirmBtn: "Confirmer & Continuer", backBtn: "Retour", alreadyHaveAccount: "Déjà un compte ?", signIn: "Se connecter",
-    chooseBtn: "Choisir", choosePlanStep: "Choisir un forfait",
+    chooseBtn: "Choisir",
+    spDetailsTitle: "Vos coordonnées",
+    spDetailsSubtitle: "Remplissez vos informations de base. Vous créerez ensuite votre compte et paierez.",
+    workerTypeLabel: "Type d'activité",
+    individual: "Professionnel indépendant",
+    individualDesc2: "Je travaille en tant qu'indépendant",
+    company: "Société / Entreprise",
+    companyDesc2: "Je dirige une société ou entreprise",
+    firstNameLabel: "Prénom",
+    lastNameLabel: "Nom de famille",
+    companyNameLabel: "Nom de la société",
+    phoneLabel: "Numéro de téléphone",
+    cityLabel: "Ville",
+    ph_firstName: "ex. Jean",
+    ph_lastName: "ex. Dupont",
+    ph_company: "ex. Dupont Construction Sàrl",
+    ph_phone: "ex. +41 79 123 45 67",
+    ph_city: "ex. Zurich",
+    continueToAccount: "Continuer vers la création du compte",
+    errorRequired: "Ce champ est obligatoire.",
+    errorPhone: "Le numéro de téléphone doit contenir au moins 7 caractères.",
+    planLabel: "Votre forfait",
+    setupFee: "Frais d'activation uniques : CHF 149",
+    totalFirst: "Premier paiement",
   },
 };
 
@@ -133,13 +223,22 @@ export default function Signup() {
   const [, setLocation] = useLocation();
   const search = useSearch();
 
-  const o = PLAN_LABELS[language] ?? PLAN_LABELS.en;
+  const o = L[language as keyof typeof L] ?? L.en;
 
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [accountSubtype, setAccountSubtype] = useState<AccountSubtype | null>(null);
   const [planType, setPlanType] = useState<PlanType | null>(null);
   const [showPlanSelection, setShowPlanSelection] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
+
+  // SP details form state
+  const [spWorkerType, setSpWorkerType] = useState<AccountSubtype | null>(null);
+  const [spFirstName, setSpFirstName] = useState("");
+  const [spLastName, setSpLastName] = useState("");
+  const [spCompanyName, setSpCompanyName] = useState("");
+  const [spPhone, setSpPhone] = useState("");
+  const [spCity, setSpCity] = useState("");
+  const [spErrors, setSpErrors] = useState<Record<string, string>>({});
 
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -153,7 +252,7 @@ export default function Signup() {
     const preselected = params.get("account_type") as AccountType | null;
     if (preselected === "service_provider") {
       setAccountType("service_provider");
-      setShowPlanSelection(true); // show plan selection first for SP
+      setShowPlanSelection(true);
     } else if (preselected === "project_poster") {
       setAccountType("project_poster");
       setStep(2);
@@ -174,14 +273,12 @@ export default function Signup() {
     }
   };
 
-  const handlePlanSelect = (plan: PlanType) => {
-    setPlanType(plan);
-  };
-
   const handlePlanConfirm = () => {
     if (!planType) return;
+    localStorage.setItem(PENDING_PLAN_KEY, planType);
     setShowPlanSelection(false);
-    setStep(2);
+    // SP skips step 2 (subtype only) — goes directly to details form (step 3)
+    setStep(3);
   };
 
   const handleSubtypeSelect = (subtype: AccountSubtype) => {
@@ -189,12 +286,36 @@ export default function Signup() {
     setStep(3);
   };
 
+  // SP details form submission
+  const handleSpDetailsSubmit = () => {
+    const e: Record<string, string> = {};
+    if (!spWorkerType) e.workerType = o.errorRequired;
+    if (spWorkerType === "individual") {
+      if (!spFirstName.trim()) e.firstName = o.errorRequired;
+      if (!spLastName.trim()) e.lastName = o.errorRequired;
+    } else if (spWorkerType === "company") {
+      if (!spCompanyName.trim()) e.companyName = o.errorRequired;
+    }
+    if (!spPhone.trim() || spPhone.trim().length < 7) e.phone = o.errorPhone;
+    if (!spCity.trim()) e.city = o.errorRequired;
+    setSpErrors(e);
+    if (Object.keys(e).length > 0) return;
+
+    // Store all details to localStorage
+    localStorage.setItem(SP_WORKER_TYPE_KEY, spWorkerType!);
+    localStorage.setItem(SP_FIRST_NAME_KEY, spFirstName.trim());
+    localStorage.setItem(SP_LAST_NAME_KEY, spLastName.trim());
+    localStorage.setItem(SP_COMPANY_NAME_KEY, spCompanyName.trim());
+    localStorage.setItem(SP_PHONE_KEY, spPhone.trim());
+    localStorage.setItem(SP_CITY_KEY, spCity.trim());
+
+    setPendingSignup({ accountType: "service_provider", accountSubtype: spWorkerType!, language });
+    window.location.href = `${basePath}/sign-up`;
+  };
+
+  // Project poster confirmation
   const handleConfirm = () => {
     if (!accountType || !accountSubtype) return;
-    // Store plan in localStorage so it survives the Clerk redirect
-    if (planType) {
-      localStorage.setItem(PENDING_PLAN_KEY, planType);
-    }
     setPendingSignup({ accountType, accountSubtype, language });
     window.location.href = `${basePath}/sign-up`;
   };
@@ -215,29 +336,26 @@ export default function Signup() {
     return o.meaningCompanyProvider;
   };
 
-  // ── Progress (SP = 4 steps, PP = 3 steps) ─────────────────────────────────
+  // ── Progress (always 3 dots) ───────────────────────────────────────────────
   const isSP = accountType === "service_provider";
 
   const getStepLabel = (): string => {
     if (!isSP) {
       return step === 1 ? o.step1of3 : step === 2 ? o.step2of3 : o.step3of3;
     }
-    // SP: plan selection is "step 2 of 4", subtype is "step 3 of 4", confirm is "step 4 of 4"
-    if (showPlanSelection) return o.step2of4;
-    if (step === 2) return o.step3of4;
-    if (step === 3) return o.step4of4;
-    return o.step1of4;
+    if (step === 1 && !showPlanSelection) return o.step1of3;
+    if (showPlanSelection) return o.step2of3;
+    return o.step3of3;
   };
 
   const getVisualStep = (): number => {
     if (!isSP) return step;
     if (step === 1 && !showPlanSelection) return 1;
     if (showPlanSelection) return 2;
-    if (step === 2) return 3;
-    return 4;
+    return 3;
   };
 
-  const totalDots = isSP ? 4 : 3;
+  const totalDots = 3;
   const visualStep = getVisualStep();
 
   const ProgressBar = () => (
@@ -285,8 +403,12 @@ export default function Signup() {
     </div>
   );
 
-  // ── PLAN SELECTION (SP only, appears before step 2) ───────────────────────
+  // ── PLAN SELECTION (SP only) ───────────────────────────────────────────────
   if (showPlanSelection && accountType === "service_provider") {
+    const planConfig = planType ? PLAN_CONFIG[planType] : null;
+    const planPrice = planConfig?.monthlyChf ?? 0;
+    const firstTotal = planPrice + 149;
+
     return (
       <Shell maxW="max-w-4xl">
         <button
@@ -301,8 +423,18 @@ export default function Signup() {
         <p className="text-center text-muted-foreground text-sm mb-8">{o.planSub}</p>
 
         <div className="mb-6">
-          <PlanCards selected={planType} onSelect={handlePlanSelect} />
+          <PlanCards selected={planType} onSelect={setPlanType} />
         </div>
+
+        {planType && planConfig && (
+          <div className="max-w-sm mx-auto mb-4 bg-slate-50 border border-border rounded-xl px-4 py-3 text-sm text-center text-muted-foreground">
+            {o.planLabel}: <span className="font-semibold text-foreground">CHF {planPrice}{o.perMonth}</span>
+            {" + "}
+            <span className="text-amber-700 font-medium">CHF 149</span>
+            {" → "}
+            {o.totalFirst}: <span className="font-bold text-foreground">CHF {firstTotal}</span>
+          </div>
+        )}
 
         <div className="flex justify-center">
           <Button
@@ -362,25 +494,14 @@ export default function Signup() {
     );
   }
 
-  // ── STEP 2: Individual or Company ─────────────────────────────────────────
+  // ── STEP 2: Individual or Company (project posters only) ──────────────────
   if (step === 2) {
     const typeLabel = accountType === "project_poster" ? o.posterLabel : o.providerLabel;
-
-    const handleBack = () => {
-      if (accountType === "service_provider") {
-        // For SP, go back to plan selection
-        setStep(1);
-        setShowPlanSelection(true);
-      } else {
-        setStep(1);
-      }
-    };
-
     return (
       <Shell maxW="max-w-xl">
         <button
           type="button"
-          onClick={handleBack}
+          onClick={() => setStep(1)}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mx-auto mb-6 transition-colors"
           data-testid="back-to-step-1"
         >
@@ -437,7 +558,189 @@ export default function Signup() {
     );
   }
 
-  // ── STEP 3: Confirmation ──────────────────────────────────────────────────
+  // ── STEP 3-SP: Details form (service providers) ───────────────────────────
+  if (step === 3 && accountType === "service_provider") {
+    const planConfig = planType ? PLAN_CONFIG[planType] : PLAN_CONFIG.basic;
+    const planPrice = planConfig.monthlyChf;
+    const firstTotal = planPrice + 149;
+    const planBadge = planConfig.badge[language as keyof typeof planConfig.badge] ?? planConfig.badge.en;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 flex items-start justify-center px-4 py-10">
+        <div className="w-full max-w-lg">
+          <div className="flex justify-center mb-6">
+            <img src="/logo-color.png" alt="ImmoVia365" className="h-14 w-auto object-contain" decoding="async" />
+          </div>
+
+          {/* Progress */}
+          <div className="flex items-center justify-center gap-0 mb-6">
+            {[1, 2, 3].map((s) => (
+              <div key={s} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                  s < 3 ? "bg-primary text-white" : "bg-primary text-white ring-4 ring-primary/20"
+                }`}>
+                  {s < 3 ? <CheckCircle2 className="w-4 h-4" /> : s}
+                </div>
+                {s < 3 && <div className="w-10 h-0.5 bg-primary" />}
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mb-5">
+            <span className="inline-block text-xs font-bold text-primary/70 uppercase tracking-widest mb-2">
+              {o.step3of3}
+            </span>
+            <h1 className="text-2xl md:text-3xl font-bold font-serif mb-1">{o.spDetailsTitle}</h1>
+            <p className="text-muted-foreground text-sm">{o.spDetailsSubtitle}</p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-border p-6 md:p-8 space-y-5">
+            {/* Plan summary */}
+            <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-semibold text-primary/70 uppercase tracking-wide mb-0.5">{o.planLabel}</div>
+                <div className="font-bold text-sm">
+                  {planBadge} — CHF {planPrice}{o.perMonth}
+                  <span className="ml-2 text-xs font-normal text-amber-700">+ {o.setupFee}</span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {o.totalFirst}: <span className="font-bold text-foreground">CHF {firstTotal}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Worker type */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">{o.workerTypeLabel}</label>
+              <div className="grid grid-cols-2 gap-3">
+                {(["individual", "company"] as AccountSubtype[]).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => {
+                      setSpWorkerType(type);
+                      setSpErrors((p) => ({ ...p, workerType: "" }));
+                    }}
+                    className={`flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all ${
+                      spWorkerType === type ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      spWorkerType === type ? "bg-primary/20" : "bg-slate-100"
+                    }`}>
+                      {type === "individual"
+                        ? <User className="w-4 h-4 text-primary" />
+                        : <Building2 className="w-4 h-4 text-primary" />}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm">{type === "individual" ? o.individual : o.company}</div>
+                      <div className="text-xs text-muted-foreground">{type === "individual" ? o.individualDesc2 : o.companyDesc2}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {spErrors.workerType && <p className="text-xs text-destructive mt-1">{spErrors.workerType}</p>}
+            </div>
+
+            {/* Name fields — show only after worker type selected */}
+            {spWorkerType === "individual" && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-semibold mb-1">{o.firstNameLabel}</label>
+                  <Input
+                    value={spFirstName}
+                    onChange={(e) => { setSpFirstName(e.target.value); setSpErrors((p) => ({ ...p, firstName: "" })); }}
+                    placeholder={o.ph_firstName}
+                    className={spErrors.firstName ? "border-destructive" : ""}
+                  />
+                  {spErrors.firstName && <p className="text-xs text-destructive mt-1">{spErrors.firstName}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">{o.lastNameLabel}</label>
+                  <Input
+                    value={spLastName}
+                    onChange={(e) => { setSpLastName(e.target.value); setSpErrors((p) => ({ ...p, lastName: "" })); }}
+                    placeholder={o.ph_lastName}
+                    className={spErrors.lastName ? "border-destructive" : ""}
+                  />
+                  {spErrors.lastName && <p className="text-xs text-destructive mt-1">{spErrors.lastName}</p>}
+                </div>
+              </div>
+            )}
+
+            {spWorkerType === "company" && (
+              <div>
+                <label className="block text-sm font-semibold mb-1">{o.companyNameLabel}</label>
+                <Input
+                  value={spCompanyName}
+                  onChange={(e) => { setSpCompanyName(e.target.value); setSpErrors((p) => ({ ...p, companyName: "" })); }}
+                  placeholder={o.ph_company}
+                  className={spErrors.companyName ? "border-destructive" : ""}
+                />
+                {spErrors.companyName && <p className="text-xs text-destructive mt-1">{spErrors.companyName}</p>}
+              </div>
+            )}
+
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-semibold mb-1">
+                <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-primary" />{o.phoneLabel}</span>
+              </label>
+              <Input
+                type="tel"
+                value={spPhone}
+                onChange={(e) => { setSpPhone(e.target.value); setSpErrors((p) => ({ ...p, phone: "" })); }}
+                placeholder={o.ph_phone}
+                className={spErrors.phone ? "border-destructive" : ""}
+              />
+              {spErrors.phone && <p className="text-xs text-destructive mt-1">{spErrors.phone}</p>}
+            </div>
+
+            {/* City */}
+            <div>
+              <label className="block text-sm font-semibold mb-1">
+                <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-primary" />{o.cityLabel}</span>
+              </label>
+              <Input
+                value={spCity}
+                onChange={(e) => { setSpCity(e.target.value); setSpErrors((p) => ({ ...p, city: "" })); }}
+                placeholder={o.ph_city}
+                className={spErrors.city ? "border-destructive" : ""}
+              />
+              {spErrors.city && <p className="text-xs text-destructive mt-1">{spErrors.city}</p>}
+            </div>
+
+            <div className="pt-1">
+              <Button
+                size="lg"
+                onClick={handleSpDetailsSubmit}
+                className="w-full font-semibold"
+              >
+                {o.continueToAccount} <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => { setShowPlanSelection(true); setStep(1); }}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mx-auto mt-5 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" /> {o.backBtn}
+          </button>
+
+          <p className="text-center text-sm text-muted-foreground mt-5">
+            {o.alreadyHaveAccount}{" "}
+            <Link href="/login" className="text-primary font-semibold hover:underline">
+              {o.signIn}
+            </Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── STEP 3: Confirmation (project posters only) ───────────────────────────
   const combinedLabel = getCombinedLabel();
   const combinedMeaning = getCombinedMeaning();
   const isProjectPoster = accountType === "project_poster";
@@ -470,7 +773,7 @@ export default function Signup() {
             <div className="text-xl font-bold leading-tight">{combinedLabel}</div>
             {planType && !isProjectPoster && (
               <div className="text-sm text-primary font-medium mt-0.5">
-                {PLAN_CONFIG[planType].badge[language] ?? PLAN_CONFIG[planType].badge.en} Plan · CHF {PLAN_CONFIG[planType].monthlyChf}{o.perMonth}
+                {PLAN_CONFIG[planType].badge[language as keyof (typeof PLAN_CONFIG)[typeof planType]["badge"]] ?? PLAN_CONFIG[planType].badge.en} Plan · CHF {PLAN_CONFIG[planType].monthlyChf}{o.perMonth}
               </div>
             )}
           </div>
