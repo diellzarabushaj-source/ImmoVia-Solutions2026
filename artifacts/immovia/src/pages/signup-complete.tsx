@@ -11,6 +11,9 @@ const SP_LAST_NAME_KEY = "immovia_sp_last_name";
 const SP_COMPANY_NAME_KEY = "immovia_sp_company_name";
 const SP_PHONE_KEY = "immovia_sp_phone";
 const SP_CITY_KEY = "immovia_sp_city";
+const POSTER_ACCOUNT_TYPE_KEY = "immovia_poster_account_type";
+const POSTER_FIRST_NAME_KEY = "immovia_poster_first_name";
+const POSTER_LAST_NAME_KEY = "immovia_poster_last_name";
 
 function clearSpStorage() {
   localStorage.removeItem(PENDING_PLAN_KEY);
@@ -20,6 +23,12 @@ function clearSpStorage() {
   localStorage.removeItem(SP_COMPANY_NAME_KEY);
   localStorage.removeItem(SP_PHONE_KEY);
   localStorage.removeItem(SP_CITY_KEY);
+}
+
+function clearPosterStorage() {
+  localStorage.removeItem(POSTER_ACCOUNT_TYPE_KEY);
+  localStorage.removeItem(POSTER_FIRST_NAME_KEY);
+  localStorage.removeItem(POSTER_LAST_NAME_KEY);
 }
 
 type Status =
@@ -86,14 +95,44 @@ export default function SignupComplete() {
 
     const pendingPlan = localStorage.getItem(PENDING_PLAN_KEY);
 
-    // No pending plan → not a SP registration → go to appropriate dashboard
+    // No pending plan → Project Poster flow → sync then go to dashboard
     if (!pendingPlan) {
-      setLocation("/provider");
+      void runPosterFlow();
       return;
     }
 
     void runSpFlow();
   }, [isLoaded, isSignedIn, user, retryCount]);
+
+  const syncUser = async (opts: {
+    accountType: string;
+    accountSubtype: string;
+    fullName: string;
+    language: string;
+  }) => {
+    await fetch("/api/auth/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(opts),
+    });
+  };
+
+  const runPosterFlow = async () => {
+    setErrorMsg(null);
+    setStatus("checking_profile");
+    try {
+      const firstName = localStorage.getItem(POSTER_FIRST_NAME_KEY) ?? "";
+      const lastName = localStorage.getItem(POSTER_LAST_NAME_KEY) ?? "";
+      const accountSubtype = localStorage.getItem(POSTER_ACCOUNT_TYPE_KEY) ?? "individual";
+      const fullName = [firstName, lastName].filter(Boolean).join(" ");
+      await syncUser({ accountType: "project_poster", accountSubtype, fullName, language: lang });
+      clearPosterStorage();
+      setLocation("/dashboard");
+    } catch {
+      clearPosterStorage();
+      setLocation("/dashboard");
+    }
+  };
 
   const runSpFlow = async () => {
     setErrorMsg(null);
@@ -108,11 +147,21 @@ export default function SignupComplete() {
       const city = localStorage.getItem(SP_CITY_KEY) ?? "";
 
       const email = user?.primaryEmailAddress?.emailAddress ?? "";
+      const fullName = workerType === "company" ? companyNameStored : [firstName, lastName].filter(Boolean).join(" ");
+
+      // ── 0. Sync user to DB first (so requireContractor can find them) ──────
+      await syncUser({
+        accountType: "service_provider",
+        accountSubtype: workerType,
+        fullName: fullName || email.split("@")[0] || "User",
+        language: lang,
+      });
 
       // ── 1. Check existing profile ─────────────────────────────────────────
       setStatus("checking_profile");
       const profileResp = await fetch("/api/provider/profile");
-      if (!profileResp.ok && profileResp.status !== 401 && profileResp.status !== 404) {
+      // 401 = not authenticated yet (retry), 404/403 = no profile yet (create it)
+      if (!profileResp.ok && profileResp.status === 401) {
         throw new Error(`profile_check_failed_${profileResp.status}`);
       }
 

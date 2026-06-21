@@ -25,6 +25,9 @@ const SP_LAST_NAME_KEY = "immovia_sp_last_name";
 const SP_COMPANY_NAME_KEY = "immovia_sp_company_name";
 const SP_PHONE_KEY = "immovia_sp_phone";
 const SP_CITY_KEY = "immovia_sp_city";
+const POSTER_ACCOUNT_TYPE_KEY = "immovia_poster_account_type";
+const POSTER_FIRST_NAME_KEY = "immovia_poster_first_name";
+const POSTER_LAST_NAME_KEY = "immovia_poster_last_name";
 
 type AccountType = "project_poster" | "service_provider";
 type AccountSubtype = "individual" | "company";
@@ -240,6 +243,11 @@ export default function Signup() {
   const [spCity, setSpCity] = useState("");
   const [spErrors, setSpErrors] = useState<Record<string, string>>({});
 
+  // Project poster name state
+  const [posterFirstName, setPosterFirstName] = useState("");
+  const [posterLastName, setPosterLastName] = useState("");
+  const [posterErrors, setPosterErrors] = useState<Record<string, string>>({});
+
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   useEffect(() => {
@@ -313,9 +321,20 @@ export default function Signup() {
     window.location.href = `${basePath}/sign-up`;
   };
 
-  // Project poster confirmation
+  // Project poster confirmation (with name validation)
   const handleConfirm = () => {
     if (!accountType || !accountSubtype) return;
+    const e: Record<string, string> = {};
+    if (!posterFirstName.trim()) e.firstName = o.errorRequired;
+    if (!posterLastName.trim()) e.lastName = o.errorRequired;
+    setPosterErrors(e);
+    if (Object.keys(e).length > 0) return;
+
+    // Store poster name + subtype so signup-complete can sync them
+    localStorage.setItem(POSTER_ACCOUNT_TYPE_KEY, accountSubtype);
+    localStorage.setItem(POSTER_FIRST_NAME_KEY, posterFirstName.trim());
+    localStorage.setItem(POSTER_LAST_NAME_KEY, posterLastName.trim());
+
     setPendingSignup({ accountType, accountSubtype, language });
     window.location.href = `${basePath}/sign-up`;
   };
@@ -782,6 +801,30 @@ export default function Signup() {
         <div className="flex items-start gap-3 text-sm text-muted-foreground bg-white/60 rounded-xl p-4">
           <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <span className="leading-relaxed">{combinedMeaning}</span>
+        </div>
+      </div>
+
+      {/* Name fields — required for all account types */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div>
+          <label className="block text-sm font-semibold mb-1">{o.firstNameLabel}</label>
+          <Input
+            value={posterFirstName}
+            onChange={(e) => { setPosterFirstName(e.target.value); setPosterErrors((p) => ({ ...p, firstName: "" })); }}
+            placeholder={o.ph_firstName}
+            className={posterErrors.firstName ? "border-destructive" : ""}
+          />
+          {posterErrors.firstName && <p className="text-xs text-destructive mt-1">{posterErrors.firstName}</p>}
+        </div>
+        <div>
+          <label className="block text-sm font-semibold mb-1">{o.lastNameLabel}</label>
+          <Input
+            value={posterLastName}
+            onChange={(e) => { setPosterLastName(e.target.value); setPosterErrors((p) => ({ ...p, lastName: "" })); }}
+            placeholder={o.ph_lastName}
+            className={posterErrors.lastName ? "border-destructive" : ""}
+          />
+          {posterErrors.lastName && <p className="text-xs text-destructive mt-1">{posterErrors.lastName}</p>}
         </div>
       </div>
 
