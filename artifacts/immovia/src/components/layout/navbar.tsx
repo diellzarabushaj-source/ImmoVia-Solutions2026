@@ -212,25 +212,6 @@ export function Navbar() {
                 </Link>
               ))}
 
-              {!user && (
-                <div className="w-px h-5 bg-border mx-2 shrink-0" />
-              )}
-
-              {/* Guests: both role entry points */}
-              {!user && (
-                <>
-                  <Link href="/signup?account_type=project_poster" data-testid="nav-submit-project">
-                    <Button size="sm" className="text-sm">
-                      {t.nav.submitProject}
-                    </Button>
-                  </Link>
-                  <Link href="/signup?account_type=service_provider" data-testid="nav-register-company">
-                    <Button variant="outline" size="sm" className="text-sm border-primary/40 text-primary hover:bg-primary/8 hover:border-primary">
-                      {t.nav.registerCompany}
-                    </Button>
-                  </Link>
-                </>
-              )}
             </>
           )}
         </div>
@@ -430,12 +411,6 @@ export function Navbar() {
                           </button>
                         ) : (
                           <>
-                            <Link href="/signup?account_type=project_poster" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                              {t.nav.submitProject}
-                            </Link>
-                            <Link href="/signup?account_type=service_provider" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30">
-                              {t.nav.registerCompany}
-                            </Link>
                             <div className="border-t border-border mt-1 pt-1">
                               <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30 block">
                                 {t.nav.login}
