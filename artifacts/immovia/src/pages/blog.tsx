@@ -140,15 +140,20 @@ export default function Blog() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="bg-[#1a3a6e] text-white py-16 md:py-24">
-        <div className="container mx-auto px-4 text-center">
-          <Badge className="mb-4 bg-white/10 text-white border-white/20 hover:bg-white/10 text-xs font-medium uppercase tracking-widest">
+      <section className="relative overflow-hidden text-white py-20 md:py-28"
+        style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}>
+        {/* Radial glow */}
+        <div className="absolute top-0 right-0 w-[480px] h-[480px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle,rgba(147,197,253,0.12) 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
+        <div className="absolute bottom-0 left-0 w-[320px] h-[320px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle,rgba(99,179,237,0.08) 0%,transparent 70%)", transform: "translate(-30%,30%)" }} />
+        <div className="container mx-auto px-4 text-center relative">
+          <p className="text-[10px] font-bold text-blue-200 uppercase tracking-[0.22em] mb-4">ImmoVia365</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight tracking-tight">
             {t.nav.blog}
-          </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            ImmoVia365 Insights
           </h1>
-          <p className="text-lg text-white/70 max-w-xl mx-auto">
+          <div className="w-12 h-[2px] bg-blue-300/40 mx-auto mb-4 rounded-full" />
+          <p className="text-base text-white/60 max-w-md mx-auto leading-relaxed">
             {t.blog.subtitle}
           </p>
         </div>
