@@ -149,6 +149,32 @@ export default function Contact() {
                   <span className="text-sm text-muted-foreground pt-2 leading-snug">{value}</span>
                 </div>
               ))}
+
+              {/* Mini map */}
+              <div className="rounded-xl overflow-hidden shadow-md shadow-primary/10 mt-2">
+                <div
+                  className="relative flex items-center gap-3 px-4 py-3 overflow-hidden"
+                  style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
+                    style={{ background: "radial-gradient(circle,rgba(147,197,253,0.15) 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
+                  <MapPin className="w-3.5 h-3.5 text-blue-200 flex-shrink-0 relative" />
+                  <div className="relative">
+                    <p className="text-[10px] font-semibold text-white leading-snug">Urtenen-Schönbühl, Switzerland</p>
+                    <p className="text-[9px] text-white/40">Mon – Fri, 09:00 – 18:00</p>
+                  </div>
+                </div>
+                <iframe
+                  title="ImmoVia365 Location"
+                  src="https://maps.google.com/maps?q=Gmeinmatt%201A%2C%203322%20Urtenen-Sch%C3%B6nb%C3%BChl%2C%20Switzerland&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                  width="100%"
+                  height="180"
+                  style={{ border: 0, display: "block" }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
             </motion.div>
 
             {/* Form */}
@@ -251,48 +277,6 @@ export default function Contact() {
         </div>
       </section>
 
-      {/* Map */}
-      <section className="bg-white py-12">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.55 }}
-            className="rounded-2xl overflow-hidden shadow-xl shadow-primary/10"
-          >
-            {/* Navy gradient header */}
-            <div
-              className="relative flex items-center gap-4 px-6 py-5 overflow-hidden"
-              style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
-            >
-              {/* Radial glow */}
-              <div className="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none"
-                style={{ background: "radial-gradient(circle,rgba(147,197,253,0.15) 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
-              <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-4.5 h-4.5 text-white" />
-              </div>
-              <div className="relative">
-                <p className="text-[10px] font-bold text-blue-200 uppercase tracking-[0.2em] mb-0.5">ImmoVia365</p>
-                <p className="text-sm font-semibold text-white leading-snug">
-                  Gmeinmatt 1A, 3322 Urtenen-Schönbühl, Switzerland
-                </p>
-                <p className="text-[11px] text-white/45 mt-0.5">Monday – Friday, 09:00 – 18:00</p>
-              </div>
-            </div>
-            <iframe
-              title="ImmoVia365 Location"
-              src="https://maps.google.com/maps?q=Gmeinmatt%201A%2C%203322%20Urtenen-Sch%C3%B6nb%C3%BChl%2C%20Switzerland&t=&z=15&ie=UTF8&iwloc=&output=embed"
-              width="100%"
-              height="360"
-              style={{ border: 0, display: "block" }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </motion.div>
-        </div>
-      </section>
     </div>
   );
 }
