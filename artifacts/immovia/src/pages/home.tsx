@@ -9,6 +9,7 @@ import { useListCompanies, useListProjects } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TestimonialsColumn } from "@/components/ui/testimonials-columns";
 import {
   ArrowRight,
   CheckCircle2,
@@ -288,6 +289,18 @@ export default function Home() {
     { text: t.testimonials.t1, author: t.testimonials.t1Author, city: t.testimonials.t1City, rating: 5 },
     { text: t.testimonials.t2, author: t.testimonials.t2Author, city: t.testimonials.t2City, rating: 5 },
     { text: t.testimonials.t3, author: t.testimonials.t3Author, city: t.testimonials.t3City, rating: 5 },
+  ];
+
+  const scrollTestimonials = [
+    { text: t.testimonials.t1, name: t.testimonials.t1Author, role: t.testimonials.t1City, avatar: "https://randomuser.me/api/portraits/men/11.jpg" },
+    { text: t.testimonials.t2, name: t.testimonials.t2Author, role: t.testimonials.t2City, avatar: "https://randomuser.me/api/portraits/women/22.jpg" },
+    { text: t.testimonials.t3, name: t.testimonials.t3Author, role: t.testimonials.t3City, avatar: "https://randomuser.me/api/portraits/men/33.jpg" },
+    { text: t.testimonials.t1, name: "Lena Weber", role: "Zürich", avatar: "https://randomuser.me/api/portraits/women/44.jpg" },
+    { text: t.testimonials.t2, name: "Florim Berisha", role: "Bern", avatar: "https://randomuser.me/api/portraits/men/55.jpg" },
+    { text: t.testimonials.t3, name: "Sophie Martin", role: "Geneva", avatar: "https://randomuser.me/api/portraits/women/66.jpg" },
+    { text: t.testimonials.t1, name: "Klaus Richter", role: "Basel", avatar: "https://randomuser.me/api/portraits/men/77.jpg" },
+    { text: t.testimonials.t2, name: "Elira Hoxha", role: "Pristina", avatar: "https://randomuser.me/api/portraits/women/88.jpg" },
+    { text: t.testimonials.t3, name: "Thomas Baumann", role: "Vienna", avatar: "https://randomuser.me/api/portraits/men/99.jpg" },
   ];
 
   return (
@@ -1196,64 +1209,27 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          TESTIMONIALS — pull-quote editorial style
+          TESTIMONIALS — auto-scrolling columns
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-24 md:py-32 bg-[#f7f8fb]">
+      <section className="py-16 md:py-20 bg-[#f7f8fb] overflow-hidden">
         <div className="container mx-auto px-6 lg:px-8">
           <motion.div
-            className="mb-20"
+            className="mb-12 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
             <p className="text-[11px] font-bold text-primary uppercase tracking-[0.22em] mb-3">{t.testimonials.title}</p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight max-w-xl">{t.testimonials.title}</h2>
-            <div className="w-10 h-0.5 bg-primary mt-6" />
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">{t.testimonials.title}</h2>
+            <div className="w-10 h-0.5 bg-primary mt-6 mx-auto" />
           </motion.div>
+        </div>
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-            variants={stagger}
-            initial="initial"
-            animate="animate"
-          >
-            {testimonials.map((t_, i) => (
-              <motion.div
-                key={i}
-                variants={fadeUp}
-                className="bg-white border border-border rounded-3xl p-8 flex flex-col gap-6 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
-              >
-                {/* Opening quote mark */}
-                <div className="text-6xl leading-none font-serif text-primary/15 select-none mt-[-8px]">"</div>
-
-                {/* Stars */}
-                <div className="flex gap-0.5 -mt-6">
-                  {Array.from({ length: t_.rating }).map((_, s) => (
-                    <Star key={s} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                  ))}
-                </div>
-
-                {/* Quote */}
-                <p className="text-foreground/75 text-sm leading-[1.8] flex-1 italic">
-                  {t_.text}
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center gap-3 border-t border-border pt-5">
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-primary">
-                      {t_.author.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-foreground leading-tight">{t_.author}</p>
-                    <p className="text-xs text-muted-foreground">{t_.city}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+        <div className="flex justify-center gap-6 [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)] max-h-[640px] overflow-hidden">
+          <TestimonialsColumn testimonials={scrollTestimonials.slice(0, 3)} duration={18} />
+          <TestimonialsColumn testimonials={scrollTestimonials.slice(3, 6)} duration={22} className="hidden md:block" />
+          <TestimonialsColumn testimonials={scrollTestimonials.slice(6, 9)} duration={16} className="hidden lg:block" />
         </div>
       </section>
 
