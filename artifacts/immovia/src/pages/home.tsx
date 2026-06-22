@@ -1043,16 +1043,16 @@ export default function Home() {
                   ] as { step: string; icon: React.ElementType }[]).map(({ step, icon: StepIcon }, i) => (
                     <motion.div
                       key={i}
-                      className="flex items-start gap-4 group cursor-default"
-                      whileHover={{ x: 4 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                      className="flex items-start gap-3 group cursor-default rounded-xl px-3 py-2 -mx-3 transition-colors duration-200 hover:bg-primary/5"
+                      whileHover={{ x: 6 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
                     >
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold group-hover:scale-110 transition-transform duration-200">{i + 1}</div>
+                      <div className="flex-shrink-0 mt-0.5">
+                        <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold group-hover:scale-110 group-hover:shadow-md group-hover:shadow-primary/30 transition-all duration-200">{i + 1}</div>
                       </div>
-                      <div className="flex items-start gap-3 flex-1 pt-1">
-                        <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 opacity-70" />
-                        <p className="text-sm text-foreground leading-relaxed">{step}</p>
+                      <div className="flex items-start gap-2.5 flex-1 pt-1">
+                        <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 opacity-50 group-hover:opacity-100 transition-opacity duration-200" />
+                        <p className="text-sm text-foreground leading-relaxed group-hover:text-foreground/90 font-medium transition-colors duration-200">{step}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -1090,16 +1090,16 @@ export default function Home() {
                   ] as { step: string; icon: React.ElementType }[]).map(({ step, icon: StepIcon }, i) => (
                     <motion.div
                       key={i}
-                      className="flex items-start gap-4 group cursor-default"
-                      whileHover={{ x: 4 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                      className="flex items-start gap-3 group cursor-default rounded-xl px-3 py-2 -mx-3 transition-colors duration-200 hover:bg-blue-50"
+                      whileHover={{ x: 6 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
                     >
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-foreground text-white flex items-center justify-center text-xs font-bold group-hover:scale-110 transition-transform duration-200">{i + 1}</div>
+                      <div className="flex-shrink-0 mt-0.5">
+                        <div className="w-8 h-8 rounded-full bg-foreground text-white flex items-center justify-center text-xs font-bold group-hover:scale-110 group-hover:shadow-md group-hover:shadow-foreground/20 transition-all duration-200">{i + 1}</div>
                       </div>
-                      <div className="flex items-start gap-3 flex-1 pt-1">
-                        <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 opacity-70" />
-                        <p className="text-sm text-foreground leading-relaxed">{step}</p>
+                      <div className="flex items-start gap-2.5 flex-1 pt-1">
+                        <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 opacity-50 group-hover:opacity-100 transition-opacity duration-200" />
+                        <p className="text-sm text-foreground leading-relaxed group-hover:text-foreground/90 font-medium transition-colors duration-200">{step}</p>
                       </div>
                     </motion.div>
                   ))}
