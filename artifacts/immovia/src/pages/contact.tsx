@@ -250,6 +250,39 @@ export default function Contact() {
           </div>
         </div>
       </section>
+
+      {/* Map */}
+      <section className="bg-white py-12">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.55 }}
+            className="rounded-2xl overflow-hidden border border-[#d0daf0] shadow-sm"
+          >
+            {/* Map header */}
+            <div className="flex items-center gap-3 px-5 py-3.5 bg-[#f4f7fd] border-b border-[#d0daf0]">
+              <div className="w-7 h-7 rounded-lg bg-[#eef2f9] flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-3.5 h-3.5 text-[#1a3a6e]" />
+              </div>
+              <span className="text-sm font-medium text-[#1a3a6e]">
+                Gmeinmatt 1A, 3322 Urtenen-Schönbühl, Switzerland
+              </span>
+            </div>
+            <iframe
+              title="ImmoVia365 Location"
+              src="https://maps.google.com/maps?q=Gmeinmatt%201A%2C%203322%20Urtenen-Sch%C3%B6nb%C3%BChl%2C%20Switzerland&t=&z=15&ie=UTF8&iwloc=&output=embed"
+              width="100%"
+              height="340"
+              style={{ border: 0, display: "block" }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }
