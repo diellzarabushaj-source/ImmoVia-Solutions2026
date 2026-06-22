@@ -514,12 +514,12 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          BROWSE MARKETPLACE — editorial 2×2 grid
+          BROWSE MARKETPLACE — 4-col flip cards
       ══════════════════════════════════════════════════════════ */}
       <section className="py-24 md:py-32 bg-white">
         <div className="container mx-auto px-6 lg:px-8">
           <motion.div
-            className="mb-16"
+            className="mb-14"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -530,150 +530,117 @@ export default function Home() {
             <div className="w-10 h-0.5 bg-primary mt-6" />
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl">
-            {/* Card 1: Browse Projects */}
-            <motion.div
-              className="group relative rounded-3xl overflow-hidden flex flex-col bg-slate-50 border border-border hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/8"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.0 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative h-52 overflow-hidden flex-shrink-0">
-                <img
-                  src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=75&fit=crop"
-                  alt="Browse open projects"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-transparent to-transparent" />
-                <div className="absolute top-5 left-5 w-10 h-10 rounded-xl bg-white shadow flex items-center justify-center">
-                  <FileText className="w-4.5 h-4.5 text-primary" />
-                </div>
-              </div>
-              <div className="p-7 flex flex-col gap-5 flex-1">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-foreground mb-2 leading-snug">{t.browse.projectsTitle}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.projectsDesc}</p>
-                </div>
-                <Link href="/projects">
-                  <Button variant="outline" className="w-full border-border text-foreground hover:border-primary hover:text-primary transition-colors" data-testid="browse-card-view-projects">
-                    {t.browse.projectsCta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              {
+                icon: FileText,
+                label: t.browse.card2Label,
+                title: t.browse.projectsTitle,
+                desc: t.browse.projectsDesc,
+                cta: t.browse.projectsCta,
+                href: "/projects",
+                testId: "browse-card-view-projects",
+                accent: "#3b82f6",
+              },
+              {
+                icon: Briefcase,
+                label: t.browse.card2Label,
+                title: t.browse.card2Title,
+                desc: t.browse.card2Desc,
+                cta: t.browse.card2Cta,
+                href: "/signup?account_type=project_poster",
+                testId: "browse-card-register-poster",
+                accent: "#60a5fa",
+              },
+              {
+                icon: Users,
+                label: t.browse.card4Label,
+                title: t.browse.providersTitle,
+                desc: t.browse.providersDesc,
+                cta: t.browse.providersCta,
+                href: "/companies",
+                testId: "browse-card-view-providers",
+                accent: "#93c5fd",
+              },
+              {
+                icon: Building2,
+                label: t.browse.card4Label,
+                title: t.browse.card4Title,
+                desc: t.browse.card4Desc,
+                cta: t.browse.card4Cta,
+                href: "/signup?account_type=service_provider",
+                testId: "browse-card-register-provider",
+                accent: "#38bdf8",
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={i}
+                className="relative h-60 cursor-pointer group"
+                style={{ perspective: "1000px" }}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: i * 0.07 }}
+                viewport={{ once: true }}
+              >
+                {/* Flip container — CSS hover */}
+                <div
+                  className="relative w-full h-full transition-transform duration-[550ms] ease-in-out group-hover:[transform:rotateY(180deg)]"
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  {/* ── FRONT ── */}
+                  <div
+                    className="absolute inset-0 rounded-2xl flex flex-col justify-between p-5 overflow-hidden"
+                    style={{
+                      backfaceVisibility: "hidden",
+                      background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 60%,#1e4b8a 100%)",
+                    }}
+                  >
+                    {/* Subtle radial glow */}
+                    <div
+                      className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20 blur-2xl pointer-events-none"
+                      style={{ background: card.accent }}
+                    />
+                    <div className="relative z-10">
+                      <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.18em]">{card.label}</span>
+                      <div className="mt-3 w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
+                        <card.icon className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                    <div className="relative z-10">
+                      <h3 className="text-sm font-bold text-white leading-snug mb-1">{card.title}</h3>
+                      <p className="text-white/45 text-[11px] leading-relaxed line-clamp-2">{card.desc}</p>
+                    </div>
+                    {/* Flip hint */}
+                    <div className="absolute bottom-4 right-4 w-7 h-7 rounded-full bg-white/8 border border-white/15 flex items-center justify-center">
+                      <ArrowRight className="w-3 h-3 text-white/50" />
+                    </div>
+                  </div>
 
-            {/* Card 2: Post a Project */}
-            <motion.div
-              className="group relative rounded-3xl overflow-hidden flex flex-col"
-              style={{ background: "linear-gradient(145deg, #0d2151 0%, #1a3a6e 60%, #1e4b8a 100%)" }}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.08 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative h-52 overflow-hidden flex-shrink-0">
-                <img
-                  src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&q=75&fit=crop"
-                  alt="Post a new project"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0d2151]/95 via-[#0d2151]/30 to-transparent" />
-                <div className="absolute top-5 left-5 w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                  <Briefcase className="w-4.5 h-4.5 text-white" />
+                  {/* ── BACK ── */}
+                  <div
+                    className="absolute inset-0 rounded-2xl bg-white border-2 border-primary/20 flex flex-col items-center justify-center gap-5 p-6 shadow-xl shadow-primary/10"
+                    style={{
+                      backfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)",
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: `${card.accent}18` }}>
+                      <card.icon className="w-6 h-6 text-primary" />
+                    </div>
+                    <p className="text-sm font-semibold text-foreground text-center leading-snug">{card.title}</p>
+                    <Link href={card.href} className="w-full">
+                      <Button
+                        className="w-full bg-foreground text-white hover:bg-foreground/90 font-semibold text-sm"
+                        data-testid={card.testId}
+                      >
+                        {card.cta}
+                        <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <div className="absolute top-5 right-5">
-                  <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">{t.browse.card2Label}</span>
-                </div>
-              </div>
-              <div className="p-7 flex flex-col gap-5 flex-1">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2 leading-snug">{t.browse.card2Title}</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">{t.browse.card2Desc}</p>
-                </div>
-                <Link href="/signup?account_type=project_poster">
-                  <Button className="w-full bg-white text-foreground hover:bg-white/92 font-semibold" data-testid="browse-card-register-poster">
-                    {t.browse.card2Cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* Card 3: Browse Service Providers */}
-            <motion.div
-              className="group relative rounded-3xl overflow-hidden flex flex-col bg-slate-50 border border-border hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/8"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.16 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative h-52 overflow-hidden flex-shrink-0">
-                <img
-                  src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=600&q=75&fit=crop"
-                  alt="Browse approved Service Providers"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-transparent to-transparent" />
-                <div className="absolute top-5 left-5 w-10 h-10 rounded-xl bg-white shadow flex items-center justify-center">
-                  <Users className="w-4.5 h-4.5 text-primary" />
-                </div>
-              </div>
-              <div className="p-7 flex flex-col gap-5 flex-1">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-foreground mb-2 leading-snug">{t.browse.providersTitle}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{t.browse.providersDesc}</p>
-                </div>
-                <Link href="/companies">
-                  <Button variant="outline" className="w-full border-border text-foreground hover:border-primary hover:text-primary transition-colors" data-testid="browse-card-view-providers">
-                    {t.browse.providersCta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* Card 4: Offer Services */}
-            <motion.div
-              className="group relative rounded-3xl overflow-hidden flex flex-col"
-              style={{ background: "linear-gradient(145deg, #0d2151 0%, #1a3a6e 60%, #1e4b8a 100%)" }}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.24 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative h-52 overflow-hidden flex-shrink-0">
-                <img
-                  src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=75&fit=crop"
-                  alt="Create a Service Provider profile"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0d2151]/95 via-[#0d2151]/30 to-transparent" />
-                <div className="absolute top-5 left-5 w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                  <Building2 className="w-4.5 h-4.5 text-white" />
-                </div>
-                <div className="absolute top-5 right-5">
-                  <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">{t.browse.card4Label}</span>
-                </div>
-              </div>
-              <div className="p-7 flex flex-col gap-5 flex-1">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2 leading-snug">{t.browse.card4Title}</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">{t.browse.card4Desc}</p>
-                </div>
-                <Link href="/signup?account_type=service_provider">
-                  <Button className="w-full bg-white text-foreground hover:bg-white/92 font-semibold" data-testid="browse-card-register-provider">
-                    {t.browse.card4Cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
