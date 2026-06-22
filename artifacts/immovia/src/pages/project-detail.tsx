@@ -667,18 +667,31 @@ export default function ProjectDetail() {
 
             {/* Find companies */}
             <Link href="/companies">
-              <Button variant="outline" className="w-full text-sm border-primary/30 text-primary hover:bg-primary/5">
-                <Building2 className="w-4 h-4 mr-2" />
-                {t.nav.companies}
-              </Button>
+              <motion.div
+                className="flex items-center gap-3 w-full rounded-xl border border-primary/20 bg-white px-4 py-3 cursor-pointer shadow-sm"
+                whileHover={{ y: -2, boxShadow: "0 8px 24px -4px rgba(26,58,110,0.18)", borderColor: "rgba(26,58,110,0.4)" }}
+                transition={{ type: "spring", stiffness: 320, damping: 22 }}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Building2 className="w-4 h-4 text-primary" />
+                </div>
+                <span className="text-sm font-semibold text-primary flex-1">{t.nav.companies}</span>
+                <ArrowRight className="w-4 h-4 text-primary/50" />
+              </motion.div>
             </Link>
 
             {/* Back to all projects */}
             <Link href="/projects">
-              <Button variant="outline" className="w-full text-sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {t.projectDetail.viewAllProjects}
-              </Button>
+              <motion.div
+                className="flex items-center gap-3 w-full rounded-xl border border-border bg-white px-4 py-3 cursor-pointer shadow-sm"
+                whileHover={{ y: -2, boxShadow: "0 8px 24px -4px rgba(0,0,0,0.10)", borderColor: "rgba(26,58,110,0.25)" }}
+                transition={{ type: "spring", stiffness: 320, damping: 22 }}
+              >
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                  <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <span className="text-sm font-semibold text-foreground flex-1">{t.projectDetail.viewAllProjects}</span>
+              </motion.div>
             </Link>
           </div>
         </div>
