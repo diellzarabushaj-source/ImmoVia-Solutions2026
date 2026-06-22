@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { format } from "date-fns";
-import { Calendar, ArrowRight, BookOpen, Rss } from "lucide-react";
+import { Calendar, ArrowRight, BookOpen } from "lucide-react";
 import { urlFor, fetchBlogList } from "@/lib/sanity";
 import type { BlogPostSummary } from "@/lib/sanity";
 import { useLanguage } from "@/lib/language-context";
@@ -155,15 +155,6 @@ export default function Blog() {
         className="relative overflow-hidden text-white py-24 md:py-36"
         style={{ background: "linear-gradient(145deg,#0b1c3e 0%,#0d2151 40%,#1a3a6e 75%,#1e4b8a 100%)" }}
       >
-        {/* Subtle grid overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.04]"
-          style={{
-            backgroundImage: "linear-gradient(to right,white 1px,transparent 1px),linear-gradient(to bottom,white 1px,transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-
         {/* Glow orbs */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none"
           style={{ background: "radial-gradient(circle,rgba(147,197,253,0.14) 0%,transparent 65%)", transform: "translate(25%,-35%)" }} />
@@ -174,12 +165,13 @@ export default function Blog() {
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-blue-400/40 to-transparent" />
 
         <div className="container mx-auto px-6 lg:px-8 relative text-center">
-          {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 mb-6">
-            <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
-              <Rss className="w-3.5 h-3.5 text-blue-300" />
-            </div>
-            <span className="text-[11px] font-bold text-blue-300/80 uppercase tracking-[0.24em]">ImmoVia365</span>
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img
+              src="/logo-white.png"
+              alt="ImmoVia365"
+              className="h-14 md:h-16 w-auto object-contain"
+            />
           </div>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-5 leading-[1.05] tracking-tight">
