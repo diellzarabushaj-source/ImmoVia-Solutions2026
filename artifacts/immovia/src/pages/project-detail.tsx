@@ -534,7 +534,7 @@ export default function ProjectDetail() {
             >
               {/* Header strip */}
               <div className="px-6 pt-6 pb-4 border-b border-white/10">
-                <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1">ImmoVia365</p>
+                <img src="/logo-white.png" alt="ImmoVia365" className="h-7 w-auto object-contain mb-3 opacity-90" />
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-primary flex-shrink-0" />
                   {t.projectDetail.contactTitle}
