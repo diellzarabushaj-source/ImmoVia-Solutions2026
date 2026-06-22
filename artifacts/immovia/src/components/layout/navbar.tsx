@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth, isServiceProvider, isProjectPoster } from "@/contexts/AuthContext";
-import { useClerk } from "@clerk/react";
+import { useClerk, useUser } from "@clerk/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,8 @@ export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useAuth();
   const { signOut } = useClerk();
+  const { user: clerkUser } = useUser();
+  const avatarUrl = clerkUser?.imageUrl ?? null;
   const [location, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -280,9 +282,13 @@ export function Navbar() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="gap-2 hidden sm:flex" data-testid="button-user-menu">
-                    <span className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
-                      {initials}
-                    </span>
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={initials} className="w-7 h-7 rounded-full object-cover" />
+                    ) : (
+                      <span className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                        {initials}
+                      </span>
+                    )}
                     <span className="text-sm font-medium max-w-[120px] truncate">{user.fullName.split(" ")[0]}</span>
                   </Button>
                 </DropdownMenuTrigger>
