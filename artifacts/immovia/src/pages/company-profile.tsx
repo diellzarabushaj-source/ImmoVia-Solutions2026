@@ -634,7 +634,7 @@ export default function CompanyProfile() {
                 <div className="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none"
                   style={{ background: "radial-gradient(circle,rgba(147,197,253,0.2) 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
                 <div className="px-6 pt-6 pb-4 border-b border-white/10 relative">
-                  <p className="text-[10px] font-bold text-blue-200 uppercase tracking-[0.22em] mb-1">ImmoVia365</p>
+                  <img src="/logo-white.png" alt="ImmoVia365" className="h-7 w-auto object-contain mb-3 opacity-90" />
                   <h3 className="text-xl font-extrabold text-white flex items-center gap-2 tracking-tight">
                     <Mail className="w-5 h-5 text-blue-200 flex-shrink-0" />
                     {t.publicProfile.contactInfo}
@@ -686,7 +686,7 @@ export default function CompanyProfile() {
               style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
             >
               <div className="px-6 pt-6 pb-4 border-b border-white/10">
-                <p className="text-[10px] font-bold text-blue-200 uppercase tracking-[0.22em] mb-1">ImmoVia365</p>
+                <img src="/logo-white.png" alt="ImmoVia365" className="h-7 w-auto object-contain mb-3 opacity-90" />
                 <h3 className="text-lg font-extrabold text-white flex items-center gap-2">
                   <FileCheck className="w-4 h-4 text-blue-200 flex-shrink-0" />
                   {t.publicProfile.haveProject}
