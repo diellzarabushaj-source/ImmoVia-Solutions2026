@@ -20,10 +20,15 @@ export default defineCliConfig({
     projectId: "c0tinigu",
     dataset: "production",
   },
+  studioHost: "immovia-blog",
   vite(config) {
     return {
       ...config,
-      base: "/studio/",
+      // REPLIT_BUILD=1 → building for Replit proxy (needs /studio/ base so the
+      // Replit path-based proxy routes /studio/static/... to the right service).
+      // Sanity deploy → omit so Sanity CLI sets the correct root base for
+      // immovia-blog.sanity.studio where assets live at /static/...
+      base: process.env.REPLIT_BUILD ? "/studio/" : (config.base ?? "/"),
       server: {
         ...(config.server ?? {}),
         host: "0.0.0.0",

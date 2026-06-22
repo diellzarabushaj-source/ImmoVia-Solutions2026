@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "sanity dev --port $PORT --host 0.0.0.0",
-    "build": "sanity build && node patch-dist.mjs",
+    "build": "REPLIT_BUILD=1 sanity build && node patch-dist.mjs",
+    "deploy": "sanity deploy",
     "serve": "node serve.mjs",
     "start": "sanity build && node serve.mjs",
     "typecheck": "tsc --noEmit"
