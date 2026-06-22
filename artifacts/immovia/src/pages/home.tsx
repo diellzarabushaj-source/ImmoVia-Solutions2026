@@ -150,6 +150,7 @@ export default function Home() {
   const [isLocating, setIsLocating] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [flippedCard, setFlippedCard] = useState<number | null>(null);
   const suggestDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suggestWrapRef = useRef<HTMLDivElement>(null);
   const listingSearchRef = useRef(search);
@@ -359,7 +360,7 @@ export default function Home() {
               {/* Headline — editorial scale */}
               <motion.h1
                 variants={fadeUp}
-                className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tight leading-[1.04] text-white mb-6"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-bold tracking-tight leading-[1.06] text-white mb-6"
                 style={{ textShadow: "0 4px 40px rgba(0,0,0,0.5)" }}
               >
                 {t.search.headline}
@@ -547,7 +548,7 @@ export default function Home() {
             <div className="w-10 h-0.5 bg-primary mt-6" />
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {[
               {
                 icon: FileText,
@@ -600,17 +601,20 @@ export default function Home() {
             ].map((card, i) => (
               <motion.div
                 key={i}
-                className="relative h-64 cursor-pointer group"
+                className="relative h-64 cursor-pointer"
                 style={{ perspective: "1000px" }}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.07 }}
                 viewport={{ once: true }}
+                onMouseEnter={() => setFlippedCard(i)}
+                onMouseLeave={() => setFlippedCard(null)}
+                onClick={() => setFlippedCard(flippedCard === i ? null : i)}
               >
                 {/* Flip container */}
                 <div
-                  className="relative w-full h-full transition-transform duration-[600ms] ease-in-out group-hover:[transform:rotateY(180deg)]"
-                  style={{ transformStyle: "preserve-3d" }}
+                  className="relative w-full h-full transition-transform duration-[600ms] ease-in-out"
+                  style={{ transformStyle: "preserve-3d", transform: flippedCard === i ? "rotateY(180deg)" : "none" }}
                 >
                   {/* ── FRONT — foto + overlay ── */}
                   <div
@@ -783,24 +787,24 @@ export default function Home() {
           </motion.div>
 
           {/* Filter bar */}
-          <div className="flex flex-wrap items-center gap-2.5 mb-10 bg-[#f7f8fb] rounded-2xl px-5 py-3.5 border border-border/60">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2.5 mb-10 bg-[#f7f8fb] rounded-2xl px-5 py-4 border border-border/60">
             <select
               value={listingTypeFilter}
               onChange={e => setListingTypeFilter(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-auto"
             >
               <option value="">{t.listings.filterAllTypes ?? "All types"}</option>
               {serviceCategories.map(cat => (
                 <option key={cat.key} value={cat.key}>{cat.label}</option>
               ))}
             </select>
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <input
                 value={listingCityFilter}
                 onChange={e => setListingCityFilter(e.target.value)}
                 placeholder={t.listings.filterCity ?? "Filter by city"}
-                className="h-9 rounded-lg border border-border bg-white pl-7 pr-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-36 md:w-44"
+                className="h-9 rounded-lg border border-border bg-white pl-7 pr-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-40 md:w-44"
               />
               {listingCityFilter && (
                 <button onClick={() => setListingCityFilter("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -811,7 +815,7 @@ export default function Home() {
             <select
               value={listingSizeFilter}
               onChange={e => setListingSizeFilter(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-auto"
             >
               <option value="">{t.listings.filterAllSizes ?? "All sizes"}</option>
               <option value="small">{t.listings.sizeSm}</option>
@@ -822,7 +826,7 @@ export default function Home() {
             <select
               value={listingBudgetFilter}
               onChange={e => setListingBudgetFilter(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-auto"
             >
               <option value="">{t.listings.filterAllBudgets ?? "All budgets"}</option>
               <option value="under-10k">{"< 10k"}</option>
@@ -831,20 +835,22 @@ export default function Home() {
               <option value="100k-500k">{"100k – 500k"}</option>
               <option value="over-500k">{"> 500k"}</option>
             </select>
-            {hasListingFilter && (
-              <button
-                onClick={() => { setListingTypeFilter(""); setListingCityFilter(""); setListingSizeFilter(""); setListingBudgetFilter(""); }}
-                className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
-              >
-                <X className="h-3 w-3" />
-                {t.listings.clearFilters ?? "Clear filters"}
-              </button>
-            )}
-            {!isLoadingProjects && (
-              <span className="text-xs text-muted-foreground ml-auto">
-                {previewProjects.length} {previewProjects.length === 1 ? (t.listings.result ?? "result") : (t.listings.results ?? "results")}
-              </span>
-            )}
+            <div className="flex items-center gap-2 sm:ml-auto">
+              {hasListingFilter && (
+                <button
+                  onClick={() => { setListingTypeFilter(""); setListingCityFilter(""); setListingSizeFilter(""); setListingBudgetFilter(""); }}
+                  className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+                >
+                  <X className="h-3 w-3" />
+                  {t.listings.clearFilters ?? "Clear filters"}
+                </button>
+              )}
+              {!isLoadingProjects && (
+                <span className="text-xs text-muted-foreground">
+                  {previewProjects.length} {previewProjects.length === 1 ? (t.listings.result ?? "result") : (t.listings.results ?? "results")}
+                </span>
+              )}
+            </div>
           </div>
 
           {isLoadingProjects && (
