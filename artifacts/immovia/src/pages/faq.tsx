@@ -351,12 +351,6 @@ export default function Faq() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/chat">
-                <Button size="lg" variant="outline" className="font-semibold border-primary/30 text-primary hover:bg-primary/5 w-full sm:w-auto">
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  {cta.chat}
-                </Button>
-              </Link>
             </div>
           </motion.div>
         </div>
