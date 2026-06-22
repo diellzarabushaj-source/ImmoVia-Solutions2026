@@ -230,42 +230,51 @@ function ContactSection({
 }) {
   const [, setLocation] = useLocation();
 
-  // Not authenticated → show blur overlay
+  // Not authenticated → navy gradient card
   if (!meta?.viewerAuthenticated) {
     return (
-      <div className="relative rounded-xl border border-dashed border-primary/30 bg-primary/4 overflow-hidden">
-        {/* Blurred background preview of contact rows */}
-        <div className="p-5 select-none pointer-events-none" style={{ filter: "blur(6px)" }}>
-          <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
+      <motion.div
+        className="rounded-2xl overflow-hidden shadow-xl shadow-primary/10"
+        whileHover={{ y: -3, boxShadow: "0 28px 56px -8px rgba(30,75,138,0.45)" }}
+        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+        style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
+      >
+        {/* Header strip */}
+        <div className="px-6 pt-6 pb-4 border-b border-white/10">
+          <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1">ImmoVia365</p>
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Mail className="w-4 h-4 text-primary flex-shrink-0" />
             {tProfile.contactInfo}
-          </p>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4" />
-              <span>+41 79 ••• •• ••</span>
+          </h2>
+        </div>
+        {/* Body */}
+        <div className="p-6 text-center">
+          {/* Blurred preview rows */}
+          <div className="mb-5 select-none pointer-events-none space-y-2 text-sm text-white/40" style={{ filter: "blur(5px)" }}>
+            <div className="flex items-center gap-2 justify-center">
+              <Phone className="w-4 h-4" /><span>+41 79 ••• •• ••</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4" />
-              <span>info@•••••••.ch</span>
+            <div className="flex items-center gap-2 justify-center">
+              <Mail className="w-4 h-4" /><span>info@•••••••.ch</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              <span>www.•••••••.ch</span>
+            <div className="flex items-center gap-2 justify-center">
+              <Globe className="w-4 h-4" /><span>www.•••••••.ch</span>
             </div>
           </div>
-        </div>
-        {/* CTA overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm gap-3 p-4">
-          <Lock className="w-5 h-5 text-primary/70" />
-          <p className="text-sm font-semibold text-center text-foreground">
-            {tProfile.registerToSeeContact}
-          </p>
-          <Button size="sm" onClick={() => setLocation("/sign-up")}>
+          <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-7 h-7 text-white" />
+          </div>
+          <p className="text-sm text-white/65 mb-5 leading-relaxed">{tProfile.registerToSeeContact}</p>
+          <Button
+            className="w-full bg-white text-foreground hover:bg-white/92 font-semibold shadow-lg shadow-black/20 h-11"
+            onClick={() => setLocation("/sign-up")}
+          >
+            <Mail className="w-4 h-4 mr-2" />
             {tProfile.contactLoginCta}
-            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -692,15 +701,28 @@ export default function PublicProfilePage() {
           />
 
           {/* Quick actions */}
-          <Card className="p-5">
-            <p className="text-sm font-semibold mb-3">{t.publicProfile.haveProject}</p>
-            <Button asChild className="w-full">
-              <Link href="/submit-project">
-                {t.publicProfile.sendProject}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-          </Card>
+          <motion.div
+            className="rounded-2xl overflow-hidden shadow-xl shadow-primary/10"
+            whileHover={{ y: -3, boxShadow: "0 28px 56px -8px rgba(30,75,138,0.45)" }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
+            style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
+          >
+            <div className="px-6 pt-6 pb-4 border-b border-white/10">
+              <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1">ImmoVia365</p>
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <FileCheck className="w-4 h-4 text-primary flex-shrink-0" />
+                {t.publicProfile.haveProject}
+              </h2>
+            </div>
+            <div className="p-6">
+              <Button asChild className="w-full bg-white text-foreground hover:bg-white/92 font-semibold shadow-lg shadow-black/20 h-11">
+                <Link href="/submit-project">
+                  {t.publicProfile.sendProject}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            </div>
+          </motion.div>
         </div>
       </div>
 
