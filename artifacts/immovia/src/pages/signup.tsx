@@ -220,6 +220,73 @@ const L = {
   },
 };
 
+// ── Module-level components (MUST be outside the main component to prevent
+//    React from treating them as new types on every render, which would
+//    unmount inputs and lose focus after each keystroke) ───────────────────
+
+function SignupProgressBar({ visualStep }: { visualStep: number }) {
+  const totalDots = 3;
+  return (
+    <div className="flex items-center justify-center gap-0 mb-8">
+      {Array.from({ length: totalDots }, (_, i) => i + 1).map((s) => (
+        <div key={s} className="flex items-center">
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+              s < visualStep
+                ? "bg-primary text-white"
+                : s === visualStep
+                ? "bg-primary text-white ring-4 ring-primary/20"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {s < visualStep ? <CheckCircle2 className="w-4 h-4" /> : s}
+          </div>
+          {s < totalDots && (
+            <div className={`w-10 h-0.5 transition-colors ${s < visualStep ? "bg-primary" : "bg-muted"}`} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SignupShell({
+  children,
+  maxW = "max-w-3xl",
+  stepLabel,
+  alreadyText,
+  signInText,
+  visualStep,
+}: {
+  children: React.ReactNode;
+  maxW?: string;
+  stepLabel: string;
+  alreadyText: string;
+  signInText: string;
+  visualStep: number;
+}) {
+  return (
+    <div className={`container mx-auto px-4 py-12 md:py-20 ${maxW}`}>
+      <div className="flex justify-center mb-8">
+        <img src="/logo-color.png" alt="ImmoVia365" className="h-14 md:h-16 w-auto object-contain" decoding="async" />
+      </div>
+      <SignupProgressBar visualStep={visualStep} />
+      <div className="text-center mb-1">
+        <span className="inline-block text-xs font-bold text-primary/70 uppercase tracking-widest mb-3">
+          {stepLabel}
+        </span>
+      </div>
+      {children}
+      <p className="text-center text-sm text-muted-foreground mt-8">
+        {alreadyText}{" "}
+        <Link href="/login" className="text-primary font-semibold hover:underline">
+          {signInText}
+        </Link>
+      </p>
+    </div>
+  );
+}
+
 export default function Signup() {
   const { isSignedIn, isLoaded } = useUser();
   const { language } = useLanguage();
@@ -374,53 +441,8 @@ export default function Signup() {
     return 3;
   };
 
-  const totalDots = 3;
   const visualStep = getVisualStep();
-
-  const ProgressBar = () => (
-    <div className="flex items-center justify-center gap-0 mb-8">
-      {Array.from({ length: totalDots }, (_, i) => i + 1).map((s) => (
-        <div key={s} className="flex items-center">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-              s < visualStep
-                ? "bg-primary text-white"
-                : s === visualStep
-                ? "bg-primary text-white ring-4 ring-primary/20"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {s < visualStep ? <CheckCircle2 className="w-4 h-4" /> : s}
-          </div>
-          {s < totalDots && (
-            <div className={`w-10 h-0.5 transition-colors ${s < visualStep ? "bg-primary" : "bg-muted"}`} />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-
-  // ── Shell wrapper ─────────────────────────────────────────────────────────
-  const Shell = ({ children, maxW = "max-w-3xl" }: { children: React.ReactNode; maxW?: string }) => (
-    <div className={`container mx-auto px-4 py-12 md:py-20 ${maxW}`}>
-      <div className="flex justify-center mb-8">
-        <img src="/logo-color.png" alt="ImmoVia365" className="h-14 md:h-16 w-auto object-contain" decoding="async" />
-      </div>
-      <ProgressBar />
-      <div className="text-center mb-1">
-        <span className="inline-block text-xs font-bold text-primary/70 uppercase tracking-widest mb-3">
-          {getStepLabel()}
-        </span>
-      </div>
-      {children}
-      <p className="text-center text-sm text-muted-foreground mt-8">
-        {o.alreadyHaveAccount}{" "}
-        <Link href="/login" className="text-primary font-semibold hover:underline">
-          {o.signIn}
-        </Link>
-      </p>
-    </div>
-  );
+  const shellProps = { stepLabel: getStepLabel(), alreadyText: o.alreadyHaveAccount, signInText: o.signIn, visualStep };
 
   // ── PLAN SELECTION (SP only) ───────────────────────────────────────────────
   if (showPlanSelection && accountType === "service_provider") {
@@ -429,7 +451,7 @@ export default function Signup() {
     const firstTotal = planPrice + 149;
 
     return (
-      <Shell maxW="max-w-4xl">
+      <SignupShell {...shellProps} maxW="max-w-4xl">
         <button
           type="button"
           onClick={() => { setShowPlanSelection(false); setAccountType(null); setStep(1); }}
@@ -465,14 +487,14 @@ export default function Signup() {
             {o.confirmBtn} <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
-      </Shell>
+      </SignupShell>
     );
   }
 
   // ── STEP 1: Account type ──────────────────────────────────────────────────
   if (step === 1) {
     return (
-      <Shell>
+      <SignupShell {...shellProps}>
         <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">{o.title}</h1>
         <p className="text-center text-muted-foreground mb-8">{o.step1Question}</p>
 
@@ -509,7 +531,7 @@ export default function Signup() {
             <p className="text-sm text-muted-foreground leading-relaxed">{o.providerDesc}</p>
           </button>
         </div>
-      </Shell>
+      </SignupShell>
     );
   }
 
@@ -517,7 +539,7 @@ export default function Signup() {
   if (step === 2) {
     const typeLabel = accountType === "project_poster" ? o.posterLabel : o.providerLabel;
     return (
-      <Shell maxW="max-w-xl">
+      <SignupShell {...shellProps} maxW="max-w-xl">
         <button
           type="button"
           onClick={() => setStep(1)}
@@ -573,7 +595,7 @@ export default function Signup() {
             </div>
           </button>
         </div>
-      </Shell>
+      </SignupShell>
     );
   }
 
@@ -765,7 +787,7 @@ export default function Signup() {
   const isProjectPoster = accountType === "project_poster";
 
   return (
-    <Shell maxW="max-w-lg">
+    <SignupShell {...shellProps} maxW="max-w-lg">
       <button
         type="button"
         onClick={() => setStep(2)}
@@ -836,6 +858,6 @@ export default function Signup() {
           {o.confirmBtn} <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>
-    </Shell>
+    </SignupShell>
   );
 }
