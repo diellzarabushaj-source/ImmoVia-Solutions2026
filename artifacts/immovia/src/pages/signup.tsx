@@ -54,6 +54,8 @@ const L = {
     meaningIndividualProvider: "Si profesionist individual, profili juaj do të shfaqet në drejtorinë e kontraktorëve.",
     meaningCompanyProvider: "Si kompani, do të keni qasje në listimin e plotë dhe menaxhimin e projekteve.",
     confirmBtn: "Konfirmo dhe Vazhdo", backBtn: "Kthehu", alreadyHaveAccount: "Keni tashmë llogari?", signIn: "Hyni",
+    termsAgreeLabel: "Kam lexuar dhe pranoj",
+    termsAgreeError: "Duhet të pranosh kushtet para se të vazhdosh.",
     chooseBtn: "Zgjidhni",
     // SP details form
     spDetailsTitle: "Të dhënat tuaja",
@@ -101,6 +103,8 @@ const L = {
     meaningIndividualProvider: "As an individual professional, your profile will appear in the contractor directory.",
     meaningCompanyProvider: "As a company, you will have access to full listings and project management.",
     confirmBtn: "Confirm & Continue", backBtn: "Back", alreadyHaveAccount: "Already have an account?", signIn: "Sign in",
+    termsAgreeLabel: "I have read and agree to the",
+    termsAgreeError: "You must accept the terms before continuing.",
     chooseBtn: "Choose",
     spDetailsTitle: "Your Details",
     spDetailsSubtitle: "Fill in your basic information. You will then create your account and pay.",
@@ -147,6 +151,8 @@ const L = {
     meaningIndividualProvider: "Als Einzelunternehmer erscheint Ihr Profil im Auftragnehmerverzeichnis.",
     meaningCompanyProvider: "Als Unternehmen haben Sie vollen Zugang zum Listing und Projektmanagement.",
     confirmBtn: "Bestätigen & Weiter", backBtn: "Zurück", alreadyHaveAccount: "Bereits ein Konto?", signIn: "Anmelden",
+    termsAgreeLabel: "Ich habe die",
+    termsAgreeError: "Bitte akzeptieren Sie die Nutzungsbedingungen, um fortzufahren.",
     chooseBtn: "Wählen",
     spDetailsTitle: "Ihre Angaben",
     spDetailsSubtitle: "Füllen Sie Ihre Grunddaten aus. Danach erstellen Sie Ihr Konto und bezahlen.",
@@ -193,6 +199,8 @@ const L = {
     meaningIndividualProvider: "En tant qu'indépendant, votre profil apparaît dans l'annuaire.",
     meaningCompanyProvider: "En tant que société, vous avez accès aux annonces complètes et à la gestion de projets.",
     confirmBtn: "Confirmer & Continuer", backBtn: "Retour", alreadyHaveAccount: "Déjà un compte ?", signIn: "Se connecter",
+    termsAgreeLabel: "J'ai lu et j'accepte les",
+    termsAgreeError: "Vous devez accepter les conditions avant de continuer.",
     chooseBtn: "Choisir",
     spDetailsTitle: "Vos coordonnées",
     spDetailsSubtitle: "Remplissez vos informations de base. Vous créerez ensuite votre compte et paierez.",
@@ -289,7 +297,7 @@ function SignupShell({
 
 export default function Signup() {
   const { isSignedIn, isLoaded } = useUser();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [, setLocation] = useLocation();
   const search = useSearch();
 
@@ -300,6 +308,9 @@ export default function Signup() {
   const [planType, setPlanType] = useState<PlanType | null>(null);
   const [showPlanSelection, setShowPlanSelection] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
+
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [termsError, setTermsError] = useState(false);
 
   // SP details form state
   const [spWorkerType, setSpWorkerType] = useState<AccountSubtype | null>(null);
@@ -374,6 +385,7 @@ export default function Signup() {
     if (!spPhone.trim() || spPhone.trim().length < 7) e.phone = o.errorPhone;
     if (!spCity.trim()) e.city = o.errorRequired;
     setSpErrors(e);
+    if (!termsAgreed) { setTermsError(true); return; }
     if (Object.keys(e).length > 0) return;
 
     // Store all details to localStorage
@@ -395,6 +407,7 @@ export default function Signup() {
     if (!posterFirstName.trim()) e.firstName = o.errorRequired;
     if (!posterLastName.trim()) e.lastName = o.errorRequired;
     setPosterErrors(e);
+    if (!termsAgreed) { setTermsError(true); return; }
     if (Object.keys(e).length > 0) return;
 
     // Store poster name + subtype so signup-complete can sync them
@@ -751,6 +764,30 @@ export default function Signup() {
               {spErrors.city && <p className="text-xs text-destructive mt-1">{spErrors.city}</p>}
             </div>
 
+            {/* Terms & Conditions checkbox */}
+            <div className="pt-1">
+              <label className={`flex items-start gap-2.5 cursor-pointer select-none rounded-xl border p-3 transition-colors ${termsError && !termsAgreed ? "border-destructive bg-destructive/5" : "border-border bg-muted/30 hover:bg-muted/50"}`}>
+                <input
+                  type="checkbox"
+                  checked={termsAgreed}
+                  onChange={(e) => { setTermsAgreed(e.target.checked); if (e.target.checked) setTermsError(false); }}
+                  className="mt-0.5 h-4 w-4 accent-primary flex-shrink-0"
+                />
+                <span className="text-sm text-muted-foreground leading-snug">
+                  {o.termsAgreeLabel}{" "}
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">
+                    {t.footer.terms}
+                  </a>{" & "}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">
+                    {t.footer.privacy}
+                  </a>
+                </span>
+              </label>
+              {termsError && !termsAgreed && (
+                <p className="text-xs text-destructive mt-1.5 ml-1">{o.termsAgreeError}</p>
+              )}
+            </div>
+
             <div className="pt-1">
               <Button
                 size="lg"
@@ -848,6 +885,30 @@ export default function Signup() {
           />
           {posterErrors.lastName && <p className="text-xs text-destructive mt-1">{posterErrors.lastName}</p>}
         </div>
+      </div>
+
+      {/* Terms & Conditions checkbox */}
+      <div className="mb-4">
+        <label className={`flex items-start gap-2.5 cursor-pointer select-none rounded-xl border p-3 transition-colors ${termsError && !termsAgreed ? "border-destructive bg-destructive/5" : "border-border bg-muted/30 hover:bg-muted/50"}`}>
+          <input
+            type="checkbox"
+            checked={termsAgreed}
+            onChange={(e) => { setTermsAgreed(e.target.checked); if (e.target.checked) setTermsError(false); }}
+            className="mt-0.5 h-4 w-4 accent-primary flex-shrink-0"
+          />
+          <span className="text-sm text-muted-foreground leading-snug">
+            {o.termsAgreeLabel}{" "}
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">
+              {t.footer.terms}
+            </a>{" & "}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">
+              {t.footer.privacy}
+            </a>
+          </span>
+        </label>
+        {termsError && !termsAgreed && (
+          <p className="text-xs text-destructive mt-1.5 ml-1">{o.termsAgreeError}</p>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
