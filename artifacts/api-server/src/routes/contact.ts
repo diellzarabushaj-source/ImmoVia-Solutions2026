@@ -25,14 +25,14 @@ router.post("/contact", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Invalid email address." });
     return;
   }
-  const adminEmail = process.env["ADMIN_EMAIL"];
+  const CONTACT_EMAIL = "info@immovia365.ch";
   const apiKey = process.env["RESEND_API_KEY"];
 
-  if (apiKey && adminEmail) {
+  if (apiKey) {
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({
       from: "ImmoVia365 <onboarding@resend.dev>",
-      to: adminEmail,
+      to: CONTACT_EMAIL,
       replyTo: email,
       subject: `Contact Form: ${subject}`,
       html: `
@@ -60,10 +60,10 @@ router.post("/contact", async (req, res): Promise<void> => {
     if (error) {
       req.log.error({ error }, "Failed to send contact email");
     } else {
-      req.log.info({ to: adminEmail }, "Contact email sent");
+      req.log.info({ to: CONTACT_EMAIL }, "Contact email sent");
     }
   } else {
-    req.log.warn("Email not configured — contact form submitted but no email sent");
+    req.log.warn("RESEND_API_KEY not set — contact form submitted but no email sent");
   }
 
   res.json({ ok: true });

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Phone, MapPin, Clock, CheckCircle2, Send, Quote } from "lucide-react";
+import { Mail, MapPin, Clock, CheckCircle2, Send, Quote } from "lucide-react";
 
 export default function Contact() {
   const { t } = useLanguage();
@@ -53,7 +53,6 @@ export default function Contact() {
 
   const infoItems = [
     { icon: Mail, value: t.contact.infoEmail },
-    { icon: Phone, value: t.contact.infoPhone },
     { icon: MapPin, value: t.contact.infoAddress },
     { icon: Clock, value: t.contact.infoHours },
   ];
