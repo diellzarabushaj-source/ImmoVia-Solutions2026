@@ -37,6 +37,7 @@ import ProviderWelcome from "@/pages/provider-welcome";
 import ProviderDashboard from "@/pages/provider";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
+import Faq from "@/pages/faq";
 import Blog from "@/pages/blog";
 import BlogPost from "@/pages/blog-post";
 import NotFound from "@/pages/not-found";
@@ -194,6 +195,7 @@ function Router() {
         <Route path="/pricing" component={Pricing} />
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
+        <Route path="/faq" component={Faq} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:slug" component={BlogPost} />
         <Route component={NotFound} />

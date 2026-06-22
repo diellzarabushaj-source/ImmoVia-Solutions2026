@@ -62,3 +62,57 @@ export async function fetchBlogPost(slug: string): Promise<BlogPostFull | null> 
   if (!res.ok) throw new Error("Failed to fetch blog post");
   return res.json() as Promise<BlogPostFull>;
 }
+
+// ── Legal & FAQ pages ──────────────────────────────────────────────────────
+
+export interface LocalizedString {
+  sq?: string;
+  en?: string;
+  de?: string;
+  fr?: string;
+}
+
+export interface SanityLegalSection {
+  title: LocalizedString;
+  body: LocalizedString;
+}
+
+export interface SanityLegalPage {
+  _id: string;
+  pageId: string;
+  title: LocalizedString;
+  updatedAt: LocalizedString;
+  intro: LocalizedString;
+  sections: SanityLegalSection[];
+}
+
+export interface SanityFaqItem {
+  question: LocalizedString;
+  answer: LocalizedString;
+}
+
+export interface SanityFaqPage {
+  _id: string;
+  title: LocalizedString;
+  items: SanityFaqItem[];
+}
+
+export async function fetchLegalPage(pageId: "terms" | "privacy"): Promise<SanityLegalPage | null> {
+  try {
+    const res = await fetch(`/api/legal/${pageId}`);
+    if (!res.ok) return null;
+    return res.json() as Promise<SanityLegalPage>;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchFaqPage(): Promise<SanityFaqPage | null> {
+  try {
+    const res = await fetch("/api/legal/faq");
+    if (!res.ok) return null;
+    return res.json() as Promise<SanityFaqPage>;
+  } catch {
+    return null;
+  }
+}

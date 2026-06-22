@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
-import { MapPin, Mail, Phone, Shield, Lock } from "lucide-react";
+import { MapPin, Mail, Phone, Shield, Lock, HelpCircle } from "lucide-react";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -18,6 +18,7 @@ export function Footer() {
   const legalLinks = [
     { href: "/terms", label: t.footer.terms, icon: Shield },
     { href: "/privacy", label: t.footer.privacy, icon: Lock },
+    { href: "/faq", label: t.footer.faq, icon: HelpCircle },
   ];
 
   return (
