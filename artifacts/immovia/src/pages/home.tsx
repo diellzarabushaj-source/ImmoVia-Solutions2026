@@ -541,6 +541,8 @@ export default function Home() {
                 href: "/projects",
                 testId: "browse-card-view-projects",
                 accent: "#3b82f6",
+                photo: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80&fit=crop",
+                darkBack: false,
               },
               {
                 icon: Briefcase,
@@ -551,6 +553,8 @@ export default function Home() {
                 href: "/signup?account_type=project_poster",
                 testId: "browse-card-register-poster",
                 accent: "#60a5fa",
+                photo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&q=80&fit=crop",
+                darkBack: true,
               },
               {
                 icon: Users,
@@ -561,6 +565,8 @@ export default function Home() {
                 href: "/companies",
                 testId: "browse-card-view-providers",
                 accent: "#93c5fd",
+                photo: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=600&q=80&fit=crop",
+                darkBack: false,
               },
               {
                 icon: Building2,
@@ -571,66 +577,89 @@ export default function Home() {
                 href: "/signup?account_type=service_provider",
                 testId: "browse-card-register-provider",
                 accent: "#38bdf8",
+                photo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80&fit=crop",
+                darkBack: true,
               },
             ].map((card, i) => (
               <motion.div
                 key={i}
-                className="relative h-60 cursor-pointer group"
+                className="relative h-64 cursor-pointer group"
                 style={{ perspective: "1000px" }}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.07 }}
                 viewport={{ once: true }}
               >
-                {/* Flip container — CSS hover */}
+                {/* Flip container */}
                 <div
-                  className="relative w-full h-full transition-transform duration-[550ms] ease-in-out group-hover:[transform:rotateY(180deg)]"
+                  className="relative w-full h-full transition-transform duration-[600ms] ease-in-out group-hover:[transform:rotateY(180deg)]"
                   style={{ transformStyle: "preserve-3d" }}
                 >
-                  {/* ── FRONT ── */}
+                  {/* ── FRONT — foto + overlay ── */}
                   <div
-                    className="absolute inset-0 rounded-2xl flex flex-col justify-between p-5 overflow-hidden"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 60%,#1e4b8a 100%)",
-                    }}
+                    className="absolute inset-0 rounded-2xl overflow-hidden"
+                    style={{ backfaceVisibility: "hidden" }}
                   >
-                    {/* Subtle radial glow */}
-                    <div
-                      className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20 blur-2xl pointer-events-none"
-                      style={{ background: card.accent }}
+                    {/* Photo */}
+                    <img
+                      src={card.photo}
+                      alt={card.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
                     />
-                    <div className="relative z-10">
-                      <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.18em]">{card.label}</span>
-                      <div className="mt-3 w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
-                        <card.icon className="w-5 h-5 text-white" />
+                    {/* Dark overlay for readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+
+                    {/* Content */}
+                    <div className="relative z-10 h-full flex flex-col justify-between p-5">
+                      <div>
+                        <span className="text-[9px] font-bold text-white/60 uppercase tracking-[0.18em]">{card.label}</span>
+                        <div className="mt-3 w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
+                          <card.icon className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-white leading-snug mb-1 drop-shadow-md">{card.title}</h3>
+                        <p className="text-white/70 text-[11px] leading-relaxed line-clamp-2">{card.desc}</p>
                       </div>
                     </div>
-                    <div className="relative z-10">
-                      <h3 className="text-sm font-bold text-white leading-snug mb-1">{card.title}</h3>
-                      <p className="text-white/45 text-[11px] leading-relaxed line-clamp-2">{card.desc}</p>
-                    </div>
-                    {/* Flip hint */}
-                    <div className="absolute bottom-4 right-4 w-7 h-7 rounded-full bg-white/8 border border-white/15 flex items-center justify-center">
-                      <ArrowRight className="w-3 h-3 text-white/50" />
+                    {/* Hover hint */}
+                    <div className="absolute bottom-4 right-4 w-7 h-7 rounded-full bg-white/15 border border-white/25 flex items-center justify-center">
+                      <ArrowRight className="w-3 h-3 text-white" />
                     </div>
                   </div>
 
-                  {/* ── BACK ── */}
+                  {/* ── BACK — white or navy ── */}
                   <div
-                    className="absolute inset-0 rounded-2xl bg-white border-2 border-primary/20 flex flex-col items-center justify-center gap-5 p-6 shadow-xl shadow-primary/10"
+                    className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center gap-4 p-6"
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
+                      background: card.darkBack
+                        ? "linear-gradient(145deg,#0d2151 0%,#1a3a6e 60%,#1e4b8a 100%)"
+                        : "#ffffff",
+                      boxShadow: card.darkBack
+                        ? "0 20px 40px -12px rgba(13,33,81,0.5)"
+                        : "0 20px 40px -12px rgba(59,130,246,0.15)",
+                      border: card.darkBack ? "none" : "2px solid rgba(59,130,246,0.15)",
                     }}
                   >
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: `${card.accent}18` }}>
-                      <card.icon className="w-6 h-6 text-primary" />
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center"
+                      style={{ background: card.darkBack ? "rgba(255,255,255,0.12)" : `${card.accent}18` }}
+                    >
+                      <card.icon className={`w-6 h-6 ${card.darkBack ? "text-white" : "text-primary"}`} />
                     </div>
-                    <p className="text-sm font-semibold text-foreground text-center leading-snug">{card.title}</p>
+                    <p className={`text-sm font-bold text-center leading-snug ${card.darkBack ? "text-white" : "text-foreground"}`}>
+                      {card.title}
+                    </p>
                     <Link href={card.href} className="w-full">
                       <Button
-                        className="w-full bg-foreground text-white hover:bg-foreground/90 font-semibold text-sm"
+                        className={`w-full font-semibold text-sm ${
+                          card.darkBack
+                            ? "bg-white text-foreground hover:bg-white/92"
+                            : "bg-foreground text-white hover:bg-foreground/90"
+                        }`}
                         data-testid={card.testId}
                       >
                         {card.cta}
