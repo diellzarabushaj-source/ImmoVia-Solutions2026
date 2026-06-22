@@ -528,7 +528,8 @@ export default function ProjectDetail() {
               className="rounded-2xl overflow-hidden lg:sticky lg:top-24 shadow-xl shadow-primary/10"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              whileHover={{ y: -3, boxShadow: "0 28px 56px -8px rgba(30,75,138,0.45)" }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 300, damping: 24 }}
               style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
             >
               {/* Header strip */}
