@@ -599,9 +599,9 @@ export default function Home() {
                 darkBack: true,
               },
             ].map((card, i) => (
-              <Link href={card.href} key={i} className="relative h-64 block" style={{ perspective: "1000px" }}>
+              <Link href={card.href} key={i} className="relative h-80 block" style={{ perspective: "1000px" }}>
               <motion.div
-                className="relative h-64 cursor-pointer"
+                className="relative h-80 cursor-pointer"
                 style={{ perspective: "1000px" }}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -670,11 +670,11 @@ export default function Home() {
                     >
                       <card.icon className={`w-6 h-6 ${card.darkBack ? "text-white" : "text-primary"}`} />
                     </div>
-                    <p className={`text-sm font-bold text-center leading-snug ${card.darkBack ? "text-white" : "text-foreground"}`}>
+                    <p className={`text-base font-bold text-center leading-snug ${card.darkBack ? "text-white" : "text-foreground"}`}>
                       {card.title}
                     </p>
                     <Button
-                      className={`w-full font-semibold text-sm pointer-events-none ${
+                      className={`w-full font-semibold pointer-events-none ${
                         card.darkBack
                           ? "bg-white text-foreground"
                           : "bg-foreground text-white"
