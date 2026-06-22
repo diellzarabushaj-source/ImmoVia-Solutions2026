@@ -1038,7 +1038,7 @@ export default function Home() {
           <img
             src="/helmet-branded.png"
             alt=""
-            className="absolute right-[-4%] top-1/2 -translate-y-1/2 w-[520px] max-w-[55vw] object-contain opacity-[0.07]"
+            className="absolute right-[-4%] top-1/2 -translate-y-1/2 w-[520px] max-w-[55vw] object-contain opacity-[0.15]"
           />
         </div>
 
@@ -1047,15 +1047,15 @@ export default function Home() {
 
         <div className="container mx-auto px-6 lg:px-8 relative z-10">
           <motion.div
-            className="mb-12"
+            className="mb-12 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
             <p className="text-[11px] font-bold text-primary uppercase tracking-[0.22em] mb-3">{t.howItWorks.title}</p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight max-w-xl">{t.howItWorks.title}</h2>
-            <div className="w-10 h-0.5 bg-primary mt-6" />
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">{t.howItWorks.title}</h2>
+            <div className="w-10 h-0.5 bg-primary mt-6 mx-auto" />
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl">
