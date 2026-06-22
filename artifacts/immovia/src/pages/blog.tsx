@@ -257,10 +257,7 @@ export default function Blog() {
 
       {/* ── CTA BAND ── */}
       {!loading && !error && posts.length > 0 && (
-        <div
-          className="mt-4 py-16 text-white text-center"
-          style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
-        >
+        <div className="mt-4 py-16 text-white text-center bg-foreground">
           <div className="flex justify-center mb-7">
             <img src="/logo-white.png" alt="ImmoVia365" className="h-12 w-auto object-contain" />
           </div>
