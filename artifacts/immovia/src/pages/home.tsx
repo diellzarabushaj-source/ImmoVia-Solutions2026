@@ -436,24 +436,6 @@ export default function Home() {
                 </div>
               </motion.div>
 
-              {/* Sub-CTA */}
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <span className="text-white/50 text-sm">{t.search.ctaText}</span>
-                <div className="flex gap-3 flex-wrap">
-                  <Link href="/signup?account_type=project_poster">
-                    <Button size="sm" className="bg-white text-primary hover:bg-white/92 font-semibold shadow-md" data-testid="hero-cta-project">
-                      <FileText className="mr-1.5 h-3.5 w-3.5" />
-                      {t.search.ctaPost}
-                    </Button>
-                  </Link>
-                  <Link href="/signup?account_type=service_provider">
-                    <Button size="sm" variant="outline" className="border-white/25 text-white hover:bg-white/10 backdrop-blur-sm font-semibold" data-testid="hero-cta-company">
-                      <Briefcase className="mr-1.5 h-3.5 w-3.5" />
-                      {t.search.ctaOffer}
-                    </Button>
-                  </Link>
-                </div>
-              </motion.div>
 
             </motion.div>
           </div>
