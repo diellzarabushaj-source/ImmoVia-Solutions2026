@@ -229,17 +229,23 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1.5 text-foreground/70 hover:text-primary" data-testid="button-language">
-                <Globe className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase tracking-wide">{language}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 h-9 px-3 border-border/60 bg-background/80 hover:bg-primary/5 hover:border-primary/40 hover:text-primary text-foreground/75 rounded-lg shadow-sm transition-all duration-200"
+                data-testid="button-language"
+              >
+                <Globe className="h-[15px] w-[15px] opacity-80" />
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em]">{language}</span>
+                <svg className="h-3 w-3 opacity-50" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-36">
+            <DropdownMenuContent align="end" className="w-40 rounded-xl shadow-lg border-border/60 p-1">
               {langOptions.map((opt) => (
                 <DropdownMenuItem
                   key={opt.code}
                   onClick={() => setLanguage(opt.code)}
-                  className={`cursor-pointer gap-2 ${language === opt.code ? "bg-secondary text-primary font-semibold" : ""}`}
+                  className={`cursor-pointer gap-2.5 rounded-lg px-3 py-2 text-sm ${language === opt.code ? "bg-primary/8 text-primary font-semibold" : "text-foreground/80"}`}
                   data-testid={`lang-${opt.code}`}
                 >
                   <span className="text-xs font-bold bg-muted px-1.5 py-0.5 rounded">{opt.flag}</span>
