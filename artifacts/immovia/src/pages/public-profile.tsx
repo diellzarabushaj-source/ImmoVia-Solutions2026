@@ -281,61 +281,79 @@ function ContactSection({
   // Authenticated but SP on Basic plan — platform messages only
   if (!meta.contactVisible) {
     return (
-      <div className="rounded-xl border border-border bg-muted/30 p-5">
-        <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider flex items-center gap-1.5">
-          <MessageSquare className="w-3.5 h-3.5" />
-          {tProfile.contactInfo}
-        </p>
-        <p className="text-sm text-muted-foreground mb-4">{tProfile.platformMessagesOnly}</p>
-        <Button variant="outline" size="sm" onClick={openMessage}>
-          <MessageSquare className="w-4 h-4 mr-2" />
-          {tProfile.platformMessagesCta}
-        </Button>
-      </div>
+      <motion.div
+        className="rounded-2xl border border-primary/20 bg-white shadow-sm overflow-hidden"
+        whileHover={{ y: -3, boxShadow: "0 12px 32px -6px rgba(26,58,110,0.18)" }}
+        transition={{ type: "spring", stiffness: 300, damping: 22 }}
+      >
+        <div className="px-5 pt-5 pb-4 border-b border-border/60">
+          <p className="text-[10px] font-bold text-primary uppercase tracking-[0.18em] mb-1">ImmoVia365</p>
+          <p className="text-base font-bold text-foreground flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-primary" />
+            {tProfile.contactInfo}
+          </p>
+        </div>
+        <div className="p-5">
+          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{tProfile.platformMessagesOnly}</p>
+          <Button className="w-full h-10 font-semibold" onClick={openMessage}>
+            <MessageSquare className="w-4 h-4 mr-2" />
+            {tProfile.platformMessagesCta}
+          </Button>
+        </div>
+      </motion.div>
     );
   }
 
   // Authenticated + SP Pro/Premium — show full contact
   return (
-    <div className="rounded-xl border border-border bg-muted/20 p-5">
-      <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-        {tProfile.contactInfo}
-      </p>
-      <div className="space-y-2 text-sm">
+    <motion.div
+      className="rounded-2xl border border-primary/20 bg-white shadow-sm overflow-hidden"
+      whileHover={{ y: -3, boxShadow: "0 12px 32px -6px rgba(26,58,110,0.18)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+    >
+      <div className="px-5 pt-5 pb-4 border-b border-border/60">
+        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.18em] mb-1">ImmoVia365</p>
+        <p className="text-base font-bold text-foreground flex items-center gap-2">
+          <Mail className="w-4 h-4 text-primary" />
+          {tProfile.contactInfo}
+        </p>
+      </div>
+      <div className="p-5 space-y-3">
         {u.phone && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Phone className="w-4 h-4 flex-shrink-0" />
-            <a href={`tel:${u.phone}`} className="hover:text-primary">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center flex-shrink-0">
+              <Phone className="w-4 h-4 text-primary" />
+            </div>
+            <a href={`tel:${u.phone}`} className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               {u.phone}
             </a>
           </div>
         )}
         {u.email && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Mail className="w-4 h-4 flex-shrink-0" />
-            <a href={`mailto:${u.email}`} className="hover:text-primary truncate">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center flex-shrink-0">
+              <Mail className="w-4 h-4 text-primary" />
+            </div>
+            <a href={`mailto:${u.email}`} className="text-sm font-medium text-foreground hover:text-primary transition-colors truncate">
               {u.email}
             </a>
           </div>
         )}
         {u.website && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Globe className="w-4 h-4 flex-shrink-0" />
-            <a
-              href={u.website}
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-primary truncate"
-            >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center flex-shrink-0">
+              <Globe className="w-4 h-4 text-primary" />
+            </div>
+            <a href={u.website} target="_blank" rel="noreferrer" className="text-sm font-medium text-foreground hover:text-primary transition-colors truncate">
               {u.website.replace(/^https?:\/\//, "")}
             </a>
           </div>
         )}
         {!u.phone && !u.email && !u.website && (
-          <p className="text-muted-foreground">{tProfile.platformMessagesOnly}</p>
+          <p className="text-sm text-muted-foreground">{tProfile.platformMessagesOnly}</p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
