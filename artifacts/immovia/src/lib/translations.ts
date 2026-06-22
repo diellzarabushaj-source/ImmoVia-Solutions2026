@@ -797,6 +797,8 @@ export const translations = {
       galleryGateCta: 'Krijo Llogari Falas',
       platformMessagesOnly: 'Ky ofrues komunikon vetëm nëpërmjet platformës',
       platformMessagesCta: 'Dërgo Mesazh nëpërmjet Platformës',
+      saveProvider: 'Ruaj Ofruesin',
+      savedProvider: 'Ruajtur',
     },
     portfolio: {
       title: 'Portofolio',
@@ -1898,6 +1900,8 @@ export const translations = {
       galleryGateCta: 'Create Free Account',
       platformMessagesOnly: 'This provider uses platform messaging only',
       platformMessagesCta: 'Send a Platform Message',
+      saveProvider: 'Save Provider',
+      savedProvider: 'Saved',
     },
     portfolio: {
       title: 'Portfolio',
@@ -2999,6 +3003,8 @@ export const translations = {
       galleryGateCta: 'Kostenloses Konto erstellen',
       platformMessagesOnly: 'Dieser Anbieter nutzt ausschließlich die Plattform-Nachrichtenfunktion',
       platformMessagesCta: 'Plattform-Nachricht senden',
+      saveProvider: 'Anbieter speichern',
+      savedProvider: 'Gespeichert',
     },
     portfolio: {
       title: 'Portfolio',
@@ -4100,6 +4106,8 @@ export const translations = {
       galleryGateCta: 'Créer un compte gratuit',
       platformMessagesOnly: 'Ce prestataire utilise uniquement la messagerie de la plateforme',
       platformMessagesCta: 'Envoyer un message via la plateforme',
+      saveProvider: 'Enregistrer',
+      savedProvider: 'Enregistré',
     },
     portfolio: {
       title: 'Portfolio',

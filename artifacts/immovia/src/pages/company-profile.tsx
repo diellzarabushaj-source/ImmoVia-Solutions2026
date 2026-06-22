@@ -25,6 +25,7 @@ import {
   Loader2,
   Image,
   MessageSquare,
+  Heart,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -131,9 +132,40 @@ export default function CompanyProfile() {
       ]
     }
   ] : null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [galleryErrors, setGalleryErrors] = useState<Set<number>>(new Set());
   const [viewerPlanSlug, setViewerPlanSlug] = useState<string | null>(null);
+
+  // Check if this provider is already saved (project posters only)
+  useEffect(() => {
+    if (!user || isServiceProvider(user) || !company) return;
+    fetch("/api/customer/favorites", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then((rows: Array<{ companyId: number }>) => {
+        setIsSaved(rows.some(r => r.companyId === company.id));
+      })
+      .catch(() => {});
+  }, [user, company]);
+
+  const toggleSave = async () => {
+    if (!user || !company || saveLoading) return;
+    setSaveLoading(true);
+    try {
+      if (isSaved) {
+        await fetch(`/api/customer/favorites/${company.id}`, { method: "DELETE", credentials: "include" });
+        setIsSaved(false);
+      } else {
+        await fetch(`/api/customer/favorites/${company.id}`, { method: "POST", credentials: "include" });
+        setIsSaved(true);
+      }
+    } catch {
+      // silent
+    } finally {
+      setSaveLoading(false);
+    }
+  };
 
   // Fetch viewer's plan — only SP users can access this endpoint
   useEffect(() => {
@@ -376,6 +408,17 @@ export default function CompanyProfile() {
                 <MessageSquare className="w-4 h-4 mr-2" />
                 {t.publicProfile.sendMessage}
               </Button>
+              {user && !isServiceProvider(user) && (
+                <Button
+                  variant={isSaved ? "secondary" : "outline"}
+                  className={isSaved ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100" : "border-primary/30 text-primary hover:bg-primary/8"}
+                  onClick={toggleSave}
+                  disabled={saveLoading}
+                >
+                  <Heart className={`w-4 h-4 mr-2 ${isSaved ? "fill-rose-500 text-rose-500" : ""}`} />
+                  {isSaved ? t.publicProfile.savedProvider : t.publicProfile.saveProvider}
+                </Button>
+              )}
               <Button asChild variant="outline" className="ml-auto border-primary/30 text-primary hover:bg-primary/8">
                 <Link href="/submit-project">
                   {t.publicProfile.submitProject}
