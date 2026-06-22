@@ -297,11 +297,8 @@ export default function Home() {
         <div className="absolute bottom-[-10%] left-[10%] w-[35%] h-[60%] rounded-full bg-blue-400 opacity-[0.07] blur-[120px] pointer-events-none z-[1]" />
 
         {/* Content */}
-        <motion.div
-          className="container mx-auto px-6 lg:px-8 relative z-10 py-24 md:py-32 lg:py-40 w-full"
-          style={{ rotateX: tiltX, rotateY: tiltY, transformPerspective: 1400, transformStyle: "preserve-3d" }}
-        >
-          <div className="max-w-4xl">
+        <div className="container mx-auto px-6 lg:px-8 relative z-10 py-24 md:py-32 lg:py-40 w-full">
+          <div className="max-w-3xl mx-auto text-center">
             <motion.div initial="initial" animate="animate" variants={stagger}>
 
               {/* Overline badge */}
@@ -439,7 +436,7 @@ export default function Home() {
 
             </motion.div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-foreground/40 to-transparent pointer-events-none z-[2]" />
