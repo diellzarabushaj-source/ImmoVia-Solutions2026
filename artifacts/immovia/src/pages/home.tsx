@@ -599,8 +599,8 @@ export default function Home() {
                 darkBack: true,
               },
             ].map((card, i) => (
+              <Link href={card.href} key={i} className="relative h-64 block" style={{ perspective: "1000px" }}>
               <motion.div
-                key={i}
                 className="relative h-64 cursor-pointer"
                 style={{ perspective: "1000px" }}
                 initial={{ opacity: 0, y: 24 }}
@@ -609,7 +609,6 @@ export default function Home() {
                 viewport={{ once: true }}
                 onMouseEnter={() => setFlippedCard(i)}
                 onMouseLeave={() => setFlippedCard(null)}
-                onClick={() => setFlippedCard(flippedCard === i ? null : i)}
               >
                 {/* Flip container */}
                 <div
@@ -674,22 +673,22 @@ export default function Home() {
                     <p className={`text-sm font-bold text-center leading-snug ${card.darkBack ? "text-white" : "text-foreground"}`}>
                       {card.title}
                     </p>
-                    <Link href={card.href} className="w-full" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        className={`w-full font-semibold text-sm ${
-                          card.darkBack
-                            ? "bg-white text-foreground hover:bg-white/92"
-                            : "bg-foreground text-white hover:bg-foreground/90"
-                        }`}
-                        data-testid={card.testId}
-                      >
-                        {card.cta}
-                        <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                      </Button>
-                    </Link>
+                    <Button
+                      className={`w-full font-semibold text-sm pointer-events-none ${
+                        card.darkBack
+                          ? "bg-white text-foreground"
+                          : "bg-foreground text-white"
+                      }`}
+                      data-testid={card.testId}
+                      tabIndex={-1}
+                    >
+                      {card.cta}
+                      <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </div>
               </motion.div>
+              </Link>
             ))}
           </div>
         </div>
