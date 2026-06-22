@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import type { ReactNode } from "react";
 import { useLanguage } from "@/lib/language-context";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, FileText, Building2, User, Star, BadgeCheck } from "lucide-react";
+import { MapPin, Clock, FileText, Building2, User, Star, BadgeCheck, Crown, Shield } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import { resolvePhotoSrc, avatarGradient, initialsOf } from "@/lib/display";
 
@@ -28,14 +28,38 @@ export interface ProviderCardData {
 
 interface ProviderCardProps {
   provider: ProviderCardData;
-  /** Override the destination. Defaults to `/companies/:id`. Ignored when `onClick` is set. */
   href?: string;
-  /** Render as a clickable element (no navigation). */
   onClick?: () => void;
   showDescription?: boolean;
   showRating?: boolean;
-  /** Extra content rendered at the bottom of the card body (e.g. contact buttons). */
   footer?: ReactNode;
+}
+
+function PlanBadge({ plan }: { plan: string }) {
+  if (plan === "premium") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-sm shadow-amber-200/60 flex-shrink-0">
+        <Crown className="w-2.5 h-2.5" />
+        Premium Partner
+      </span>
+    );
+  }
+  if (plan === "pro" || plan === "professional") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-sm shadow-blue-200/50 flex-shrink-0">
+        <Shield className="w-2.5 h-2.5" />
+        Professional
+      </span>
+    );
+  }
+  if (plan === "basic") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium capitalize border border-border text-muted-foreground bg-muted/50 flex-shrink-0">
+        Basic
+      </span>
+    );
+  }
+  return null;
 }
 
 export function ProviderCard({
@@ -55,10 +79,26 @@ export function ProviderCard({
   const services = provider.serviceTypes ?? [];
   const rating = provider.rating ?? null;
 
-  const planBadge = provider.plan ?? provider.planType;
-  const isPremiumPlan = planBadge === "premium";
+  const planBadge = (provider.plan ?? provider.planType ?? "").toLowerCase();
+  const isPremium = planBadge === "premium";
+  const isPro = planBadge === "pro" || planBadge === "professional";
+
+  const cardClass = isPremium
+    ? "bg-gradient-to-br from-amber-50 via-orange-50/60 to-white border-2 border-amber-400/80 shadow-md shadow-amber-100/60 ring-1 ring-amber-200/40 hover:shadow-xl hover:shadow-amber-100/80 hover:border-amber-500 hover:-translate-y-0.5"
+    : isPro
+      ? "bg-gradient-to-br from-blue-50/70 via-indigo-50/40 to-white border-2 border-blue-300/70 shadow-md shadow-blue-100/40 ring-1 ring-blue-200/30 hover:shadow-xl hover:shadow-blue-100/60 hover:border-blue-400 hover:-translate-y-0.5"
+      : "bg-white border border-border shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5";
+
   const inner = (
-    <div className={`bg-white rounded-2xl transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group h-full hover:-translate-y-0.5 ${isPremiumPlan ? "border-2 border-amber-400/70 shadow-md ring-1 ring-amber-200/40 hover:shadow-xl hover:border-amber-400" : "border border-border shadow-sm hover:shadow-lg hover:border-primary/30"}`}>
+    <div className={`rounded-2xl transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group h-full ${cardClass}`}>
+      {/* Plan accent strip — only for premium & pro */}
+      {isPremium && (
+        <div className="h-1 w-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 flex-shrink-0" />
+      )}
+      {isPro && (
+        <div className="h-1 w-full bg-gradient-to-r from-blue-400 via-indigo-500 to-blue-500 flex-shrink-0" />
+      )}
+
       <div className="p-4 flex gap-3 items-start border-b border-border/50">
         {avatar ? (
           <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 border border-border">
@@ -114,6 +154,7 @@ export function ProviderCard({
           </div>
         </div>
       </div>
+
       <div className="p-4 flex-1 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           {isIndividual && provider.hourlyRate ? (
@@ -128,21 +169,7 @@ export function ProviderCard({
               <span>{t.companies?.contractBased ?? "Contract-based"}</span>
             </div>
           )}
-          {planBadge && (
-            <Badge
-              variant="outline"
-              className={`text-[10px] flex-shrink-0 flex items-center gap-0.5 ${
-                planBadge === "premium"
-                  ? "border-amber-400 text-amber-700 bg-amber-50 font-semibold"
-                  : planBadge === "pro"
-                    ? "capitalize border-primary/40 text-primary bg-primary/5"
-                    : "capitalize border-primary/30 text-primary"
-              }`}
-            >
-              {planBadge === "premium" && <Star className="w-2.5 h-2.5 fill-current" />}
-              {planBadge === "premium" ? "Premium Partner" : planBadge}
-            </Badge>
-          )}
+          {planBadge && <PlanBadge plan={planBadge} />}
         </div>
         {showDescription && provider.description && (
           <p className="text-sm text-foreground/70 leading-relaxed line-clamp-2">{provider.description}</p>
