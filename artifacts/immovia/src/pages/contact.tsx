@@ -277,6 +277,7 @@ export default function Contact() {
                 <p className="text-sm font-semibold text-white leading-snug">
                   Gmeinmatt 1A, 3322 Urtenen-Schönbühl, Switzerland
                 </p>
+                <p className="text-[11px] text-white/45 mt-0.5">Monday – Friday, 09:00 – 18:00</p>
               </div>
             </div>
             <iframe
