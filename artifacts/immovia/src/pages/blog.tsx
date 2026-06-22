@@ -261,8 +261,9 @@ export default function Blog() {
           className="mt-4 py-16 text-white text-center"
           style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
         >
-          <div className="w-8 h-0.5 bg-blue-400/40 mx-auto mb-6" />
-          <p className="text-[11px] font-bold text-blue-300/70 uppercase tracking-[0.22em] mb-3">ImmoVia365</p>
+          <div className="flex justify-center mb-7">
+            <img src="/logo-white.png" alt="ImmoVia365" className="h-12 w-auto object-contain" />
+          </div>
           <h2 className="text-2xl md:text-3xl font-bold mb-4 leading-tight">
             {language === "de" ? "Bereit, Ihr Projekt zu starten?" :
              language === "sq" ? "Gati të filloni projektin tuaj?" :
