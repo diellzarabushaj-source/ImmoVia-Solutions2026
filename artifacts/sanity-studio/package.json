@@ -1,0 +1,26 @@
+{
+  "name": "@workspace/sanity-studio",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "sanity dev --port $PORT --host 0.0.0.0",
+    "build": "sanity build",
+    "serve": "node serve.mjs",
+    "start": "sanity build && node serve.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sanity/vision": "^3.66.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sanity": "^3.66.0",
+    "styled-components": "^6.1.15"
+  },
+  "devDependencies": {
+    "@sanity/types": "^3.66.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.9.0"
+  }
+}

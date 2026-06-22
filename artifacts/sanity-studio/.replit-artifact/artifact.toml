@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/studio/"
+title = "Sanity Studio"
+version = "1.0.0"
+id = "artifacts/sanity-studio"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/studio/" ]
+localPort = 20291
+
+[services.development]
+run = "pnpm --filter @workspace/sanity-studio run serve"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sanity-studio", "run", "build" ]
+publicDir = "artifacts/sanity-studio/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20291"
+BASE_PATH = "/studio/"

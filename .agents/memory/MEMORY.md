@@ -12,3 +12,4 @@
 - [SP onboarding gate pattern](sp-onboarding-gate-pattern.md) — full gate state machine (package_unpaid/unpaid/paid), blurred overlay approach, plan localStorage key, useCategories("service") signature.
 - [Post-checkout confirmation page](post-checkout-confirmation.md) — success page requires session_id; the customer-wide sync fallback can falsely confirm an old sub as a fresh purchase.
 - [Orval named-schema vs inline conflict](orval-named-schema-conflict.md) — inline request/response bodies + path params cause TS2308 duplicate exports; fix with $ref to named schemas in components/schemas.
+- [Sanity Studio production serve setup](sanity-studio-production-serve.md) — build+serve.mjs pattern, bridge.js strip, base path patch, CORS, esnext target; screenshot tool can't verify (no ES module support).

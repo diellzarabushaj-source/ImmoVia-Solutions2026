@@ -75,6 +75,12 @@ onlyBuiltDependencies:
   - unrs-resolver
 
 overrides:
+  # Force a single React version across the entire workspace so the Sanity Studio
+  # virtual-store entries all resolve to react@19.1.0 (avoids the duplicate-React
+  # "Invalid hook call" error caused by pnpm creating separate react@18 entries
+  # for @sanity/* packages when the workspace root uses react@19).
+  react: "19.1.0"
+  react-dom: "19.1.0"
   # replit uses linux-x64 only, we can exclude all other platforms
   "esbuild>@esbuild/darwin-arm64": "-"
   "esbuild>@esbuild/darwin-x64": "-"
