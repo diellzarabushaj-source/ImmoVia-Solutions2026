@@ -1058,7 +1058,7 @@ export default function Home() {
             <div className="w-10 h-0.5 bg-primary mt-6 mx-auto" />
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* For Project Posters */}
             <motion.div
               className="relative"
