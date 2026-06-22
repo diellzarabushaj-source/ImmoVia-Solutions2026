@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
-import { MapPin, Mail, Phone, Shield, Lock, HelpCircle } from "lucide-react";
+import { MapPin, Mail, Shield, Lock, HelpCircle } from "lucide-react";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -99,10 +99,6 @@ export function Footer() {
               <li className="flex items-center gap-2 text-sm text-white/60">
                 <Mail className="h-4 w-4 flex-shrink-0 text-primary" />
                 <span>{t.footer.email}</span>
-              </li>
-              <li className="flex items-center gap-2 text-sm text-white/60">
-                <Phone className="h-4 w-4 flex-shrink-0 text-primary" />
-                <span>{t.footer.phone}</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-white/60">
                 <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
