@@ -57,6 +57,40 @@ const stagger = {
   animate: { transition: { staggerChildren: 0.1 } },
 };
 
+function CountUpStat({ value }: { value: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [displayed, setDisplayed] = useState("0");
+  const match = value.match(/^([^\d]*)(\d[\d,]*)([^\d]*)$/);
+  const prefix = match?.[1] ?? "";
+  const rawNum = parseInt((match?.[2] ?? "0").replace(/,/g, ""), 10);
+  const suffix = match?.[3] ?? "";
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      const duration = 1800;
+      const startTime = performance.now();
+      const step = (now: number) => {
+        const p = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const cur = Math.round(eased * rawNum);
+        setDisplayed(cur >= 1000 ? cur.toLocaleString() : String(cur));
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+      observer.disconnect();
+    }, { threshold: 0.6 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [rawNum]);
+  return (
+    <span ref={ref} className="text-4xl md:text-5xl font-bold text-white tracking-tight tabular-nums">
+      {prefix}{displayed}{suffix}
+    </span>
+  );
+}
+
 const SERVICE_ICONS: Record<string, React.ElementType> = {
   renovation:      Hammer,
   painting:        Paintbrush,
