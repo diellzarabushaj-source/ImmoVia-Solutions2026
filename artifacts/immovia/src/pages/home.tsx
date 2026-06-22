@@ -674,7 +674,7 @@ export default function Home() {
                     <p className={`text-sm font-bold text-center leading-snug ${card.darkBack ? "text-white" : "text-foreground"}`}>
                       {card.title}
                     </p>
-                    <Link href={card.href} className="w-full">
+                    <Link href={card.href} className="w-full" onClick={(e) => e.stopPropagation()}>
                       <Button
                         className={`w-full font-semibold text-sm ${
                           card.darkBack
