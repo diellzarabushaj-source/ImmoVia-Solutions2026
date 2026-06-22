@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useRoute, Link, useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/contexts/AuthContext";
