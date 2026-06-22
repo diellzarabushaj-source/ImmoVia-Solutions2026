@@ -211,7 +211,17 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
-
+              {!user && (
+                <>
+                  <div className="w-px h-4 bg-border mx-1.5 shrink-0" />
+                  <Link href="/sign-in">
+                    <Button variant="ghost" size="sm" className="text-sm" data-testid="nav-login">{t.nav.login}</Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button size="sm" className="text-sm" data-testid="nav-signup">{t.nav.signup}</Button>
+                  </Link>
+                </>
+              )}
             </>
           )}
         </div>
@@ -295,16 +305,7 @@ export function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
-          ) : (
-            <>
-              <Link href="/sign-in" className="hidden sm:block">
-                <Button variant="ghost" size="sm" data-testid="nav-login">{t.nav.login}</Button>
-              </Link>
-              <Link href="/signup" className="hidden md:block">
-                <Button size="sm" data-testid="nav-signup">{t.nav.signup}</Button>
-              </Link>
-            </>
-          )}
+          ) : null}
 
           <Button
             variant="ghost"
