@@ -168,7 +168,7 @@ export default function Blog() {
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <img
-              src="/logo-white.png"
+              src="/logo-white-svg.svg"
               alt="ImmoVia365"
               className="h-14 md:h-16 w-auto object-contain"
             />
@@ -259,7 +259,7 @@ export default function Blog() {
       {!loading && !error && posts.length > 0 && (
         <div className="mt-4 py-16 text-white text-center bg-foreground">
           <div className="flex justify-center mb-7">
-            <img src="/logo-white.png" alt="ImmoVia365" className="h-12 w-auto object-contain" />
+            <img src="/logo-white-svg.svg" alt="ImmoVia365" className="h-12 w-auto object-contain" />
           </div>
           <h2 className="text-2xl md:text-3xl font-bold mb-4 leading-tight">
             {language === "de" ? "Bereit, Ihr Projekt zu starten?" :
