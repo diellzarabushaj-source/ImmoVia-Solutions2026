@@ -52,9 +52,9 @@ export default function Contact() {
   };
 
   const infoItems = [
-    { icon: Mail, value: t.contact.infoEmail },
-    { icon: MapPin, value: t.contact.infoAddress },
-    { icon: Clock, value: t.contact.infoHours },
+    { icon: Mail, value: t.contact.infoEmail, href: "mailto:info@immovia365.ch" },
+    { icon: MapPin, value: t.contact.infoAddress, href: "https://www.google.com/maps/search/Gmeinmatt+1A,+3322+Urtenen-Sch%C3%B6nb%C3%BChl,+Switzerland" },
+    { icon: Clock, value: t.contact.infoHours, href: undefined },
   ];
 
   return (
@@ -141,12 +141,23 @@ export default function Contact() {
               transition={{ duration: 0.5 }}
             >
               <h2 className="text-lg font-bold text-[#0f2044] mb-2">{t.contact.infoTitle}</h2>
-              {infoItems.map(({ icon: Icon, value }, i) => (
+              {infoItems.map(({ icon: Icon, value, href }, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-lg bg-[#eef2f9] flex items-center justify-center flex-shrink-0">
                     <Icon className="w-4 h-4 text-[#1a3a6e]" />
                   </div>
-                  <span className="text-sm text-muted-foreground pt-2 leading-snug">{value}</span>
+                  {href ? (
+                    <a
+                      href={href}
+                      target={href.startsWith("mailto") ? undefined : "_blank"}
+                      rel={href.startsWith("mailto") ? undefined : "noreferrer"}
+                      className="text-sm text-muted-foreground pt-2 leading-snug hover:text-[#1a3a6e] transition-colors underline-offset-2 hover:underline"
+                    >
+                      {value}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-muted-foreground pt-2 leading-snug">{value}</span>
+                  )}
                 </div>
               ))}
 
