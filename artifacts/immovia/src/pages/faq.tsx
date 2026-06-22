@@ -3,7 +3,10 @@ import { useLanguage } from "@/lib/language-context";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useStructuredData, APP_URL } from "@/hooks/useStructuredData";
 import { fetchFaqPage, type SanityFaqPage, type LocalizedString } from "@/lib/sanity";
-import { HelpCircle, ChevronDown, Loader2 } from "lucide-react";
+import { HelpCircle, ChevronDown, Loader2, ArrowRight, Mail, MessageSquare } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 function loc(field: LocalizedString | undefined, lang: string): string {
   if (!field) return "";
@@ -13,10 +16,11 @@ function loc(field: LocalizedString | undefined, lang: string): string {
 const fallback = {
   sq: {
     title: "Pyetjet e Shpeshta",
+    subtitle: "Gjeni përgjigje për pyetjet tuaja rreth ImmoVia365.",
     items: [
       {
         question: "Si funksionon ImmoVia365?",
-        answer: "ImmoVia365 është një platformë dixhitale që lidh pronarë shtëpish dhe klientë me kontraktorë dhe profesionistë të besuar. Postonijë projekt, merrni aplikime nga profesionistë, krahasoni ofertat dhe zgjidhni ofruesin më të mirë.",
+        answer: "ImmoVia365 është një platformë dixhitale që lidh pronarë shtëpish dhe klientë me kontraktorë dhe profesionistë të besuar. Postoni një projekt, merrni aplikime nga profesionistë, krahasoni ofertat dhe zgjidhni ofruesin më të mirë.",
       },
       {
         question: "A është falas regjistrimi?",
@@ -28,7 +32,7 @@ const fallback = {
       },
       {
         question: "Sa kohë duhet për të marrë oferta?",
-        answer: "Zakonisht brenda 24-48 orëve pas postimit të projektit tuaj filloni të merrni aplikime nga profesionistë. Koha mund të ndryshojë sipas llojit të projektit dhe vendndodhjes.",
+        answer: "Zakonisht brenda 24–48 orëve pas postimit të projektit tuaj filloni të merrni aplikime nga profesionistë. Koha mund të ndryshojë sipas llojit të projektit dhe vendndodhjes.",
       },
       {
         question: "A mund të ndryshoj planin tim?",
@@ -50,6 +54,7 @@ const fallback = {
   },
   en: {
     title: "Frequently Asked Questions",
+    subtitle: "Find answers to common questions about ImmoVia365.",
     items: [
       {
         question: "How does ImmoVia365 work?",
@@ -65,7 +70,7 @@ const fallback = {
       },
       {
         question: "How long does it take to receive offers?",
-        answer: "Typically within 24-48 hours of posting your project you will start receiving applications from professionals. Time may vary depending on the type of project and location.",
+        answer: "Typically within 24–48 hours of posting your project you will start receiving applications from professionals. Time may vary depending on the type of project and location.",
       },
       {
         question: "Can I change my plan?",
@@ -87,6 +92,7 @@ const fallback = {
   },
   de: {
     title: "Häufig gestellte Fragen",
+    subtitle: "Finden Sie Antworten auf häufige Fragen zu ImmoVia365.",
     items: [
       {
         question: "Wie funktioniert ImmoVia365?",
@@ -102,7 +108,7 @@ const fallback = {
       },
       {
         question: "Wie lange dauert es, Angebote zu erhalten?",
-        answer: "Normalerweise erhalten Sie innerhalb von 24-48 Stunden nach der Einstellung Ihres Projekts erste Bewerbungen von Fachleuten. Die Zeit kann je nach Projektart und Standort variieren.",
+        answer: "Normalerweise erhalten Sie innerhalb von 24–48 Stunden nach der Einstellung Ihres Projekts erste Bewerbungen von Fachleuten. Die Zeit kann je nach Projektart und Standort variieren.",
       },
       {
         question: "Kann ich meinen Plan ändern?",
@@ -124,6 +130,7 @@ const fallback = {
   },
   fr: {
     title: "Foire Aux Questions",
+    subtitle: "Trouvez des réponses aux questions fréquentes sur ImmoVia365.",
     items: [
       {
         question: "Comment fonctionne ImmoVia365 ?",
@@ -163,6 +170,13 @@ const fallback = {
 
 type LangKey = keyof typeof fallback;
 
+const ctaLabels: Record<LangKey, { heading: string; sub: string; contact: string; chat: string }> = {
+  sq: { heading: "Keni ende pyetje?", sub: "Ekipi ynë është këtu për t'ju ndihmuar.", contact: "Na Kontaktoni", chat: "Hap Chat-in" },
+  en: { heading: "Still have questions?", sub: "Our team is here to help you.", contact: "Contact Us", chat: "Open Chat" },
+  de: { heading: "Noch Fragen?", sub: "Unser Team ist für Sie da.", contact: "Kontakt aufnehmen", chat: "Chat öffnen" },
+  fr: { heading: "Vous avez encore des questions ?", sub: "Notre équipe est là pour vous aider.", contact: "Nous contacter", chat: "Ouvrir le chat" },
+};
+
 export default function Faq() {
   const { language } = useLanguage();
   const lang = (language as LangKey) in fallback ? (language as LangKey) : "en";
@@ -182,6 +196,7 @@ export default function Faq() {
     description: "Find answers to frequently asked questions about ImmoVia365 — how it works, pricing, verification and support.",
     noindex: false,
   });
+
   useStructuredData({
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -194,6 +209,7 @@ export default function Faq() {
       },
     })),
   });
+
   useStructuredData({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -211,51 +227,141 @@ export default function Faq() {
       }))
     : fallback[lang].items;
 
+  const cta = ctaLabels[lang];
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-foreground text-white py-16">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <div className="flex items-center gap-3 mb-4">
-            <HelpCircle className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">{pageTitle}</h1>
-          </div>
-          <p className="text-white/50 text-sm">ImmoVia365</p>
-        </div>
-      </div>
 
-      <div className="container mx-auto px-4 max-w-3xl py-12">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-        ) : (
-          <div className="flex flex-col divide-y divide-border">
-            {items.map((item, i) => (
-              <div key={i} className="py-5">
-                <button
-                  type="button"
-                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                  className="w-full flex items-center justify-between gap-4 text-left group"
-                >
-                  <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {item.question}
-                  </span>
-                  <ChevronDown
-                    className={`h-4 w-4 flex-shrink-0 text-primary transition-transform duration-200 ${
-                      openIndex === i ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-                {openIndex === i && (
-                  <p className="mt-3 text-sm text-foreground/70 leading-relaxed pl-0 pr-8">
-                    {item.answer}
-                  </p>
-                )}
+      {/* ── Hero ── */}
+      <section className="relative bg-foreground text-white overflow-hidden py-20 md:py-28">
+        {/* Subtle dot grid */}
+        <div
+          className="absolute inset-0 opacity-[0.035] pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
+        />
+        {/* Glow */}
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-primary/15 blur-[100px] pointer-events-none" />
+
+        <div className="relative container mx-auto px-6 max-w-3xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {/* CardDecorator-style icon */}
+            <div
+              aria-hidden
+              className="relative mx-auto w-24 h-24 mb-6"
+              style={{ maskImage: "radial-gradient(ellipse 50% 50% at 50% 50%, #000 70%, transparent 100%)" }}
+            >
+              <div
+                className="absolute inset-0 opacity-10"
+                style={{
+                  backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.8) 1px, transparent 1px)",
+                  backgroundSize: "16px 16px",
+                }}
+              />
+              <div className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center bg-white/10 border-t border-l border-white/20">
+                <HelpCircle className="w-5 h-5 text-primary" />
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+
+            <p className="text-[11px] font-bold text-primary uppercase tracking-[0.22em] mb-3">FAQ</p>
+            <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">{pageTitle}</h1>
+            <p className="text-white/50 text-sm max-w-md mx-auto leading-relaxed">{fallback[lang].subtitle}</p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Accordion ── */}
+      <section className="py-16 md:py-20">
+        <div className="container mx-auto px-6 max-w-2xl">
+          {loading ? (
+            <div className="flex items-center justify-center py-24">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {items.map((item, i) => (
+                <motion.div
+                  key={i}
+                  className="border-b border-border last:border-b-0"
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: i * 0.04 }}
+                  viewport={{ once: true }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                    className="w-full flex items-center justify-between gap-4 text-left py-5 group"
+                  >
+                    <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+                      {item.question}
+                    </span>
+                    <div className={`w-7 h-7 rounded-full border border-border flex-shrink-0 flex items-center justify-center transition-all duration-200 ${openIndex === i ? "bg-primary border-primary" : "bg-transparent group-hover:border-primary/50"}`}>
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform duration-200 ${openIndex === i ? "rotate-180 text-white" : "text-muted-foreground"}`}
+                      />
+                    </div>
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {openIndex === i && (
+                      <motion.div
+                        key="content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                      >
+                        <p className="text-sm text-foreground/65 leading-relaxed pb-5 pr-10">
+                          {item.answer}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="bg-[#f4f7fc] py-16 md:py-20">
+        <div className="container mx-auto px-6 max-w-2xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-5">
+              <MessageSquare className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">{cta.heading}</h2>
+            <p className="text-muted-foreground text-sm mb-8 leading-relaxed">{cta.sub}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/contact">
+                <Button size="lg" className="font-semibold w-full sm:w-auto">
+                  <Mail className="mr-2 h-4 w-4" />
+                  {cta.contact}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/chat">
+                <Button size="lg" variant="outline" className="font-semibold border-primary/30 text-primary hover:bg-primary/5 w-full sm:w-auto">
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  {cta.chat}
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
     </div>
   );
 }
