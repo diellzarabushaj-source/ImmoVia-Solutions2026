@@ -234,45 +234,59 @@ function ContactSection({
   if (!meta?.viewerAuthenticated) {
     return (
       <motion.div
-        className="rounded-2xl overflow-hidden shadow-xl shadow-primary/10"
-        whileHover={{ y: -3, boxShadow: "0 28px 56px -8px rgba(30,75,138,0.45)" }}
-        transition={{ type: "spring", stiffness: 300, damping: 24 }}
-        style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
+        className="rounded-2xl overflow-hidden cursor-pointer relative"
+        initial={{ boxShadow: "0 8px 32px -6px rgba(37,99,235,0.35)" }}
+        whileHover={{ y: -5, scale: 1.01, boxShadow: "0 40px 80px -12px rgba(37,99,235,0.65), 0 0 0 1px rgba(99,179,237,0.3)" }}
+        transition={{ type: "spring", stiffness: 280, damping: 20 }}
+        style={{ background: "linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 40%,#2563eb 70%,#3b82f6 100%)" }}
       >
-        {/* Header strip */}
-        <div className="px-6 pt-6 pb-4 border-b border-white/10">
-          <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1">ImmoVia365</p>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Mail className="w-4 h-4 text-primary flex-shrink-0" />
+        {/* Radial glow spot */}
+        <div className="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle,rgba(147,197,253,0.2) 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
+
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 border-b border-white/10 relative">
+          <p className="text-[10px] font-bold text-blue-200 uppercase tracking-[0.22em] mb-1">ImmoVia365</p>
+          <h2 className="text-xl font-extrabold text-white flex items-center gap-2 tracking-tight">
+            <Mail className="w-5 h-5 text-blue-200 flex-shrink-0" />
             {tProfile.contactInfo}
           </h2>
         </div>
+
         {/* Body */}
-        <div className="p-6 text-center">
-          {/* Blurred preview rows */}
-          <div className="mb-5 select-none pointer-events-none space-y-2 text-sm text-white/40" style={{ filter: "blur(5px)" }}>
-            <div className="flex items-center gap-2 justify-center">
-              <Phone className="w-4 h-4" /><span>+41 79 ••• •• ••</span>
-            </div>
-            <div className="flex items-center gap-2 justify-center">
-              <Mail className="w-4 h-4" /><span>info@•••••••.ch</span>
-            </div>
-            <div className="flex items-center gap-2 justify-center">
-              <Globe className="w-4 h-4" /><span>www.•••••••.ch</span>
+        <div className="p-6 text-center relative">
+          {/* Blurred preview */}
+          <div className="mb-5 select-none pointer-events-none space-y-2 text-sm text-white/30" style={{ filter: "blur(5px)" }}>
+            <div className="flex items-center gap-2 justify-center"><Phone className="w-4 h-4" /><span>+41 79 ••• •• ••</span></div>
+            <div className="flex items-center gap-2 justify-center"><Mail className="w-4 h-4" /><span>info@•••••••.ch</span></div>
+            <div className="flex items-center gap-2 justify-center"><Globe className="w-4 h-4" /><span>www.•••••••.ch</span></div>
+          </div>
+
+          {/* Pulsing lock ring */}
+          <div className="relative flex items-center justify-center mx-auto mb-5 w-20 h-20">
+            <motion.div
+              className="absolute inset-0 rounded-full border-2 border-blue-300/40"
+              animate={{ scale: [1, 1.18, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <div className="w-16 h-16 rounded-full bg-white/15 border border-white/25 flex items-center justify-center backdrop-blur-sm">
+              <Lock className="w-8 h-8 text-white" />
             </div>
           </div>
-          <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-7 h-7 text-white" />
-          </div>
-          <p className="text-sm text-white/65 mb-5 leading-relaxed">{tProfile.registerToSeeContact}</p>
-          <Button
-            className="w-full bg-white text-foreground hover:bg-white/92 font-semibold shadow-lg shadow-black/20 h-11"
-            onClick={() => setLocation("/sign-up")}
-          >
-            <Mail className="w-4 h-4 mr-2" />
-            {tProfile.contactLoginCta}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+
+          <p className="text-sm text-blue-100/80 mb-6 leading-relaxed">{tProfile.registerToSeeContact}</p>
+
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} transition={{ type: "spring", stiffness: 400, damping: 18 }}>
+            <Button
+              className="w-full h-12 font-bold text-[15px] shadow-xl shadow-black/30 border border-white/20"
+              style={{ background: "linear-gradient(135deg,#ffffff 0%,#e0f2fe 100%)", color: "#1e3a8a" }}
+              onClick={() => setLocation("/sign-up")}
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              {tProfile.contactLoginCta}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </motion.div>
         </div>
       </motion.div>
     );
