@@ -20,7 +20,7 @@ import {
   MapPin, Calendar, ArrowRight, Flame, ShieldCheck,
   Archive, CheckCircle2, Eye, Trash2, Building2,
   BarChart3, Scale, Pencil,
-  Hammer, Paintbrush, Zap, Wrench, ChefHat, SquareStack, Sofa, Leaf, HelpCircle,
+  Hammer, Paintbrush, Zap, Wrench, ChefHat, SquareStack, Sofa, Leaf, HelpCircle, Check,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useCategories } from "@/hooks/useCategories";
@@ -39,6 +39,23 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>
   cleaning:        Leaf,
   other:           HelpCircle,
 };
+
+const CATEGORY_COLORS: Record<string, { icon: string; ring: string }> = {
+  renovation:      { icon: "bg-amber-100 text-amber-600",   ring: "ring-amber-400/50 bg-amber-50" },
+  painting:        { icon: "bg-violet-100 text-violet-600", ring: "ring-violet-400/50 bg-violet-50" },
+  electrical:      { icon: "bg-yellow-100 text-yellow-700", ring: "ring-yellow-400/50 bg-yellow-50" },
+  plumbing:        { icon: "bg-blue-100 text-blue-600",     ring: "ring-blue-400/50 bg-blue-50" },
+  kitchen:         { icon: "bg-red-100 text-red-600",       ring: "ring-red-400/50 bg-red-50" },
+  flooring:        { icon: "bg-teal-100 text-teal-600",     ring: "ring-teal-400/50 bg-teal-50" },
+  interior_design: { icon: "bg-pink-100 text-pink-600",     ring: "ring-pink-400/50 bg-pink-50" },
+  cleaning:        { icon: "bg-green-100 text-green-600",   ring: "ring-green-400/50 bg-green-50" },
+  construction:    { icon: "bg-slate-100 text-slate-600",   ring: "ring-slate-400/50 bg-slate-50" },
+  heating:         { icon: "bg-orange-100 text-orange-600", ring: "ring-orange-400/50 bg-orange-50" },
+  facade:          { icon: "bg-stone-100 text-stone-600",   ring: "ring-stone-400/50 bg-stone-50" },
+  hvac:            { icon: "bg-sky-100 text-sky-600",       ring: "ring-sky-400/50 bg-sky-50" },
+  landscaping:     { icon: "bg-lime-100 text-lime-700",     ring: "ring-lime-400/50 bg-lime-50" },
+};
+const DEFAULT_CATEGORY_COLORS = { icon: "bg-muted text-muted-foreground", ring: "ring-primary/30 bg-primary/5" };
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -157,6 +174,7 @@ export default function ClientDashboard() {
   const [reviewedOfferIds, setReviewedOfferIds] = useState<Set<number>>(new Set());
   const [openThreads, setOpenThreads] = useState<Set<number>>(new Set());
   const [reviewModal, setReviewModal] = useState<{ offerId: number; projectId: number; providerName: string } | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [archiving, setArchiving] = useState<number | null>(null);
   const [editingProject, setEditingProject] = useState<ProviderProject | null>(null);
   const [compareMode, setCompareMode] = useState(false);
@@ -399,51 +417,98 @@ export default function ClientDashboard() {
             )}
 
             {/* ── PROJEKT ERSTELLEN ── */}
-            {activeSection === "erstellen" && (() => {
-              const requestQuoteLabel =
-                language === "de" ? "Angebot anfordern" :
-                language === "fr" ? "Demander un devis" :
-                language === "sq" ? "Kërko Ofertë" :
-                "Request a Quote";
-              return (
-                <div>
-                  <div className="mb-6">
-                    <h2 className="text-xl font-serif font-bold">{l.navCreate}</h2>
-                    <p className="text-sm text-muted-foreground mt-1">{l.publishHelper}</p>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {serviceCategories.map(cat => {
-                      const Icon = CATEGORY_ICONS[cat.key] ?? HelpCircle;
-                      return (
-                        <div key={cat.key} className="bg-white rounded-2xl border border-border p-5 flex flex-col gap-3 hover:border-primary/30 hover:shadow-sm transition-all duration-200">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <Icon className="w-5 h-5 text-primary" />
-                            </div>
-                            <span className="font-semibold text-sm leading-tight">{cat.label}</span>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {cat.subcategories.map(sub => (
-                              <span key={sub.key} className="text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded-full">
-                                {sub.label}
-                              </span>
-                            ))}
-                          </div>
-                          <div className="mt-auto pt-1">
-                            <Link href={`/submit-project?type=${cat.key}`}>
-                              <Button size="sm" variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40" data-testid={`button-category-${cat.key}`}>
-                                {requestQuoteLabel}
-                                <ArrowRight className="w-3.5 h-3.5 ml-2" />
-                              </Button>
-                            </Link>
-                          </div>
+            {activeSection === "erstellen" && (
+              <div>
+                <div className="mb-7">
+                  <h2 className="text-xl font-serif font-bold">{l.navCreate}</h2>
+                  <p className="text-sm text-muted-foreground mt-1">{l.selectCategoryHint}</p>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+                  {serviceCategories.map(cat => {
+                    const Icon = CATEGORY_ICONS[cat.key] ?? HelpCircle;
+                    const colors = CATEGORY_COLORS[cat.key] ?? DEFAULT_CATEGORY_COLORS;
+                    const isSelected = selectedCategories.has(cat.key);
+                    return (
+                      <button
+                        key={cat.key}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategories(prev => {
+                            const next = new Set(prev);
+                            if (next.has(cat.key)) next.delete(cat.key);
+                            else next.add(cat.key);
+                            return next;
+                          });
+                        }}
+                        className={`relative group rounded-2xl border-2 p-4 sm:p-5 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                          isSelected
+                            ? `border-primary ring-4 ${colors.ring}`
+                            : "border-border bg-white hover:border-primary/40 hover:shadow-md"
+                        }`}
+                        data-testid={`button-category-${cat.key}`}
+                      >
+                        {/* Checkmark badge */}
+                        <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${
+                          isSelected ? "bg-primary scale-100 opacity-100" : "bg-muted/60 scale-75 opacity-0 group-hover:opacity-40 group-hover:scale-90"
+                        }`}>
+                          <Check className="w-3 h-3 text-white" />
                         </div>
-                      );
-                    })}
+
+                        {/* Icon */}
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-200 ${
+                          isSelected ? `${colors.icon} scale-110` : colors.icon
+                        }`}>
+                          <Icon className="w-6 h-6" />
+                        </div>
+
+                        {/* Label */}
+                        <span className={`font-semibold text-sm block leading-snug transition-colors ${isSelected ? "text-primary" : "text-foreground"}`}>
+                          {cat.label}
+                        </span>
+
+                        {/* Sub-count */}
+                        {cat.subcategories.length > 0 && (
+                          <span className="text-xs text-muted-foreground mt-1.5 block">
+                            {cat.subcategories.length}{" "}
+                            {language === "de" ? "Unterkategorien" : language === "fr" ? "sous-catégories" : language === "sq" ? "nënkategori" : "subcategories"}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Continue bar */}
+                <div className={`mt-6 overflow-hidden transition-all duration-300 ${selectedCategories.size > 0 ? "max-h-24 opacity-100" : "max-h-0 opacity-0"}`}>
+                  <div className="flex items-center justify-between bg-primary text-primary-foreground rounded-2xl px-5 py-4 shadow-lg shadow-primary/20">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex gap-1">
+                        {[...selectedCategories].slice(0, 3).map(key => {
+                          const Icon = CATEGORY_ICONS[key] ?? HelpCircle;
+                          return <div key={key} className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center"><Icon className="w-4 h-4" /></div>;
+                        })}
+                      </div>
+                      <span className="text-sm font-semibold">
+                        {selectedCategories.size} {l.nSelected}
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="bg-white text-primary hover:bg-white/90 font-semibold"
+                      onClick={() => {
+                        const [firstKey] = selectedCategories;
+                        setLocation(`/submit-project?type=${firstKey}`);
+                      }}
+                    >
+                      {l.continueBtn}
+                      <ArrowRight className="w-4 h-4 ml-1.5" />
+                    </Button>
                   </div>
                 </div>
-              );
-            })()}
+              </div>
+            )}
 
             {/* ── MEINE PROJEKTE ── */}
             {activeSection === "projekte" && (
