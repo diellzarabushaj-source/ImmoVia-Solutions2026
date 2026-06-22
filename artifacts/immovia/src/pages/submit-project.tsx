@@ -171,11 +171,6 @@ export default function SubmitProject() {
     cleaning:       Leaf,
     other:          HelpCircle,
   };
-  const projectTypes = categories.map(cat => ({
-    id: cat.key,
-    icon: SUBMIT_ICONS[cat.key] ?? HelpCircle,
-    label: cat.label,
-  }));
   const selectedCategoryData = categories.find(c => c.key === form.watch("projectType"));
 
   if (!authLoading && !user) {
