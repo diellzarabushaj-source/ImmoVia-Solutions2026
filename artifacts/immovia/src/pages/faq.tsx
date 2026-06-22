@@ -249,21 +249,8 @@ export default function Faq() {
             transition={{ duration: 0.5 }}
           >
             {/* CardDecorator-style icon */}
-            <div
-              aria-hidden
-              className="relative mx-auto w-24 h-24 mb-6"
-              style={{ maskImage: "radial-gradient(ellipse 50% 50% at 50% 50%, #000 70%, transparent 100%)" }}
-            >
-              <div
-                className="absolute inset-0 opacity-10"
-                style={{
-                  backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.8) 1px, transparent 1px)",
-                  backgroundSize: "16px 16px",
-                }}
-              />
-              <div className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center bg-white/10 border-t border-l border-white/20">
-                <HelpCircle className="w-5 h-5 text-primary" />
-              </div>
+            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-6">
+              <HelpCircle className="w-6 h-6 text-primary" />
             </div>
 
             <p className="text-[11px] font-bold text-primary uppercase tracking-[0.22em] mb-3">FAQ</p>
