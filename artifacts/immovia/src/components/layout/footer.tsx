@@ -95,13 +95,22 @@ export function Footer() {
               {t.footer.contact}
             </h4>
             <ul className="flex flex-col gap-3">
-              <li className="flex items-center gap-2 text-sm text-white/60">
-                <Mail className="h-4 w-4 flex-shrink-0 text-primary" />
-                <span>{t.footer.email}</span>
+              <li>
+                <a href="mailto:info@immovia365.ch" className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors group">
+                  <Mail className="h-4 w-4 flex-shrink-0 text-primary group-hover:scale-110 transition-transform" />
+                  <span>{t.footer.email}</span>
+                </a>
               </li>
-              <li className="flex items-center gap-2 text-sm text-white/60">
-                <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
-                <span>{t.footer.address}</span>
+              <li>
+                <a
+                  href="https://www.google.com/maps/search/Gmeinmatt+1A,+3322+Urtenen-Sch%C3%B6nb%C3%BChl,+Switzerland"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors group"
+                >
+                  <MapPin className="h-4 w-4 flex-shrink-0 text-primary group-hover:scale-110 transition-transform" />
+                  <span>{t.footer.address}</span>
+                </a>
               </li>
               <li>
                 <a
