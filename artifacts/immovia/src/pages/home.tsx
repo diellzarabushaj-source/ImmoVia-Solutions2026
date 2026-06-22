@@ -1014,10 +1014,25 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          HOW IT WORKS — 3-col with 3D helmet centerpiece
+          HOW IT WORKS — helmet background + steps
       ══════════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className="py-16 md:py-20 bg-white scroll-mt-20 md:scroll-mt-24 overflow-hidden">
-        <div className="container mx-auto px-6 lg:px-8">
+      <section id="how-it-works" className="relative py-16 md:py-20 scroll-mt-20 md:scroll-mt-24 overflow-hidden">
+        {/* Background helmet — right-aligned, transparent */}
+        <div
+          className="absolute inset-0 pointer-events-none select-none"
+          aria-hidden="true"
+        >
+          <img
+            src="/helmet-branded.png"
+            alt=""
+            className="absolute right-[-4%] top-1/2 -translate-y-1/2 w-[520px] max-w-[55vw] object-contain opacity-[0.07]"
+          />
+        </div>
+
+        {/* Very light tinted background */}
+        <div className="absolute inset-0 bg-[#f4f7fc] pointer-events-none" style={{ zIndex: -1 }} />
+
+        <div className="container mx-auto px-6 lg:px-8 relative z-10">
           <motion.div
             className="mb-12"
             initial={{ opacity: 0, y: 20 }}
@@ -1030,9 +1045,8 @@ export default function Home() {
             <div className="w-10 h-0.5 bg-primary mt-6" />
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px_1fr] gap-8 lg:gap-6 items-start">
-
-            {/* ── Left: For Project Posters ── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl">
+            {/* For Project Posters */}
             <motion.div
               className="relative"
               initial={{ opacity: 0, x: -24 }}
@@ -1044,7 +1058,7 @@ export default function Home() {
               <div className="pl-8">
                 <div className="text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-1">{t.howItWorks.posterTitle}</div>
                 <p className="text-muted-foreground text-sm mb-6 leading-relaxed">{t.howItWorks.posterSubtitle}</p>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-5">
                   {([
                     { step: t.howItWorks.posterStep1, icon: User },
                     { step: t.howItWorks.posterStep2, icon: FileText },
@@ -1059,16 +1073,16 @@ export default function Home() {
                       transition={{ type: "spring", stiffness: 300, damping: 24 }}
                     >
                       <div className="flex-shrink-0">
-                        <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold group-hover:scale-110 transition-transform duration-200">{i + 1}</div>
+                        <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold group-hover:scale-110 transition-transform duration-200">{i + 1}</div>
                       </div>
-                      <div className="flex items-start gap-2.5 flex-1 pt-0.5">
-                        <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 opacity-60" />
+                      <div className="flex items-start gap-3 flex-1 pt-1">
+                        <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 opacity-70" />
                         <p className="text-sm text-foreground leading-relaxed">{step}</p>
                       </div>
                     </motion.div>
                   ))}
                 </div>
-                <div className="mt-7">
+                <div className="mt-8">
                   <Link href="/signup?account_type=project_poster">
                     <Button data-testid="hiw-poster-cta">
                       {t.howItWorks.posterCta}
@@ -1079,53 +1093,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* ── Center: 3D Helmet ── */}
-            <motion.div
-              className="hidden lg:flex flex-col items-center justify-center py-4"
-              initial={{ opacity: 0, y: 30, scale: 0.92 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
-              viewport={{ once: true }}
-            >
-              {/* Perspective wrapper for 3D tilt on hover */}
-              <motion.div
-                style={{ perspective: 800 }}
-                className="relative"
-                whileHover="hover"
-              >
-                {/* Glow ring behind helmet */}
-                <div className="absolute inset-0 rounded-full bg-primary/10 blur-3xl scale-90 pointer-events-none" />
-
-                {/* Float wrapper — continuous up/down */}
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ transformStyle: "preserve-3d" }}
-                >
-                  <motion.img
-                    src="/helmet-branded.png"
-                    alt="ImmoVia365 helmet"
-                    className="w-72 h-72 object-contain relative z-10 drop-shadow-2xl"
-                    variants={{
-                      hover: { rotateY: 18, rotateX: -6, scale: 1.07 },
-                    }}
-                    transition={{ type: "spring", stiffness: 200, damping: 18 }}
-                    style={{ transformStyle: "preserve-3d" }}
-                  />
-                </motion.div>
-
-                {/* Subtle shadow ellipse */}
-                <div className="mx-auto mt-1 w-44 h-5 bg-primary/10 rounded-full blur-xl" />
-              </motion.div>
-
-              {/* Brand badge */}
-              <div className="mt-4 flex items-center gap-2 bg-primary/6 border border-primary/15 rounded-full px-4 py-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                <span className="text-[11px] font-bold text-primary uppercase tracking-widest">ImmoVia365</span>
-              </div>
-            </motion.div>
-
-            {/* ── Right: For Service Providers ── */}
+            {/* For Service Providers */}
             <motion.div
               className="relative"
               initial={{ opacity: 0, x: 24 }}
@@ -1137,7 +1105,7 @@ export default function Home() {
               <div className="pl-8">
                 <div className="text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-1">{t.howItWorks.providerTitle}</div>
                 <p className="text-muted-foreground text-sm mb-6 leading-relaxed">{t.howItWorks.providerSubtitle}</p>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-5">
                   {([
                     { step: t.howItWorks.providerStep1, icon: User },
                     { step: t.howItWorks.providerStep2, icon: Clock },
@@ -1148,20 +1116,20 @@ export default function Home() {
                     <motion.div
                       key={i}
                       className="flex items-start gap-4 group cursor-default"
-                      whileHover={{ x: -4 }}
+                      whileHover={{ x: 4 }}
                       transition={{ type: "spring", stiffness: 300, damping: 24 }}
                     >
                       <div className="flex-shrink-0">
-                        <div className="w-7 h-7 rounded-full bg-foreground text-white flex items-center justify-center text-xs font-bold group-hover:scale-110 transition-transform duration-200">{i + 1}</div>
+                        <div className="w-8 h-8 rounded-full bg-foreground text-white flex items-center justify-center text-xs font-bold group-hover:scale-110 transition-transform duration-200">{i + 1}</div>
                       </div>
-                      <div className="flex items-start gap-2.5 flex-1 pt-0.5">
-                        <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 opacity-60" />
+                      <div className="flex items-start gap-3 flex-1 pt-1">
+                        <StepIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 opacity-70" />
                         <p className="text-sm text-foreground leading-relaxed">{step}</p>
                       </div>
                     </motion.div>
                   ))}
                 </div>
-                <div className="mt-7">
+                <div className="mt-8">
                   <Link href="/signup?account_type=service_provider">
                     <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/6" data-testid="hiw-provider-cta">
                       {t.howItWorks.providerCta}
@@ -1171,7 +1139,6 @@ export default function Home() {
                 </div>
               </div>
             </motion.div>
-
           </div>
         </div>
       </section>
