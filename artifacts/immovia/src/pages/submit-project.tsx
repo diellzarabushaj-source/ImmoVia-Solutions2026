@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -67,6 +67,17 @@ export default function SubmitProject() {
 
   const [projectPhotos, setProjectPhotos] = useState<string[]>([]);
   const [otherTagError, setOtherTagError] = useState<string | null>(null);
+  const searchStr = useSearch();
+
+  // Pre-fill projectType from ?type= URL param (set by dashboard category picker)
+  useEffect(() => {
+    const params = new URLSearchParams(searchStr);
+    const type = params.get("type");
+    if (type) {
+      form.setValue("projectType", type);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const formSchema = z.object({
     fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -133,26 +144,13 @@ export default function SubmitProject() {
     if (step === 1) {
       isValid = await form.trigger(["fullName", "email", "phone"]);
     } else if (step === 2) {
-      isValid = await form.trigger(["projectType"]);
-      if (isValid && form.getValues("subcategory") === "other") {
-        const text = form.getValues("subcategoryOtherText") ?? "";
-        const result = validateOtherTag(text);
-        if (!result.ok) {
-          setOtherTagError(otherTagErrorMessage(result.error, language as Lang));
-          isValid = false;
-        } else {
-          form.setValue("subcategoryOtherText", result.clean);
-          setOtherTagError(null);
-        }
-      }
-    } else if (step === 3) {
       isValid = await form.trigger(["size"]);
-    } else if (step === 4) {
+    } else if (step === 3) {
       isValid = await form.trigger(["title", "description", "city"]);
     }
 
     if (isValid) {
-      setStep((prev) => Math.min(prev + 1, 5));
+      setStep((prev) => Math.min(prev + 1, 4));
       window.scrollTo(0, 0);
     }
   };
@@ -303,15 +301,15 @@ export default function SubmitProject() {
         
         {/* Progress Bar */}
         <div className="flex items-center justify-center gap-2 mb-4">
-          {[1, 2, 3, 4, 5].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                 step >= i ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               }`}>
                 {i}
               </div>
-              {i < 5 && (
-                <div className={`w-6 sm:w-12 md:w-20 h-1 mx-1 sm:mx-2 ${
+              {i < 4 && (
+                <div className={`w-6 sm:w-16 md:w-24 h-1 mx-1 sm:mx-2 ${
                   step > i ? "bg-primary" : "bg-muted"
                 }`} />
               )}
@@ -320,10 +318,9 @@ export default function SubmitProject() {
         </div>
         <p className="text-muted-foreground font-medium">
           {step === 1 && t.projectForm.step1}
-          {step === 2 && t.projectForm.step2}
-          {step === 3 && t.projectSize.title}
-          {step === 4 && t.projectForm.step3}
-          {step === 5 && t.projectForm.step4}
+          {step === 2 && t.projectSize.title}
+          {step === 3 && t.projectForm.step3}
+          {step === 4 && t.projectForm.step4}
         </p>
       </div>
 
@@ -398,105 +395,6 @@ export default function SubmitProject() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
-                  <FormField
-                    control={form.control}
-                    name="projectType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="sr-only">{t.projectForm.step2}</FormLabel>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          {projectTypes.map((type) => (
-                            <div
-                              key={type.id}
-                              className={`cursor-pointer rounded-lg border-2 p-4 flex flex-col items-center justify-center gap-3 transition-all ${
-                                field.value === type.id
-                                  ? "border-primary bg-secondary/50 text-foreground"
-                                  : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                              }`}
-                              onClick={() => { field.onChange(type.id); form.setValue("subcategory", ""); }}
-                            >
-                              <type.icon className={`w-8 h-8 ${field.value === type.id ? "text-primary" : ""}`} />
-                              <span className="font-medium text-sm text-center">{type.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {selectedCategoryData && (
-                    <div className="pt-4 border-t border-border">
-                      <p className="text-sm font-medium text-muted-foreground mb-3">
-                        {language === "de" ? "Genauere Leistung (optional)" :
-                         language === "sq" ? "Shërbim specifik (opsional)" :
-                         language === "fr" ? "Service précis (optionnel)" :
-                         "More specific service (optional)"}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedCategoryData.subcategories.map(tag => {
-                          const isSelected = form.watch("subcategory") === tag.key;
-                          return (
-                            <button
-                              key={tag.key}
-                              type="button"
-                              onClick={() => {
-                                const newVal = isSelected ? "" : tag.key;
-                                form.setValue("subcategory", newVal);
-                                if (newVal !== "other") {
-                                  form.setValue("subcategoryOtherText", "");
-                                  setOtherTagError(null);
-                                }
-                              }}
-                              className={`px-3 py-1.5 text-sm rounded-full border transition-all ${
-                                isSelected
-                                  ? "bg-primary text-primary-foreground border-primary"
-                                  : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                              }`}
-                            >
-                              {tag.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {form.watch("subcategory") === "other" && (
-                        <div className="mt-3 space-y-1.5">
-                          <label className="text-xs font-medium text-foreground block">
-                            {t.projectForm.otherTagLabel}
-                          </label>
-                          <input
-                            type="text"
-                            maxLength={40}
-                            placeholder={t.projectForm.otherTagPlaceholder}
-                            value={form.watch("subcategoryOtherText") ?? ""}
-                            onChange={(e) => {
-                              const sanitized = sanitizeOtherTag(e.target.value);
-                              form.setValue("subcategoryOtherText", sanitized);
-                              if (sanitized.length >= 3) {
-                                const result = validateOtherTag(sanitized);
-                                setOtherTagError(result.ok ? null : otherTagErrorMessage(result.error, language as Lang));
-                              } else {
-                                setOtherTagError(null);
-                              }
-                            }}
-                            className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                          />
-                          <p className="text-xs text-muted-foreground">{t.projectForm.otherTagHint}</p>
-                          {otherTagError && <p className="text-xs text-destructive">{otherTagError}</p>}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              {step === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
                   className="space-y-4"
                 >
                   <FormField
@@ -537,9 +435,9 @@ export default function SubmitProject() {
                 </motion.div>
               )}
 
-              {step === 4 && (
+              {step === 3 && (
                 <motion.div
-                  key="step4"
+                  key="step3new"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
@@ -649,9 +547,9 @@ export default function SubmitProject() {
                 </motion.div>
               )}
 
-              {step === 5 && (
+              {step === 4 && (
                 <motion.div
-                  key="step5"
+                  key="step4"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
@@ -751,7 +649,7 @@ export default function SubmitProject() {
                 {t.projectForm.back}
               </Button>
               
-              {step < 5 ? (
+              {step < 4 ? (
                 <Button type="button" onClick={nextStep} data-testid={`button-next-${step}`}>
                   {t.projectForm.next}
                 </Button>
