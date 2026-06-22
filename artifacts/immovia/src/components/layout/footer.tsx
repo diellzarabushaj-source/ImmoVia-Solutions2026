@@ -103,6 +103,21 @@ export function Footer() {
                 <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
                 <span>{t.footer.address}</span>
               </li>
+              <li>
+                <a
+                  href="https://www.instagram.com/immo.via365?igsh=MTBpNDF3ZzQ1Y2t4Yw=="
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors group"
+                >
+                  <svg className="h-4 w-4 flex-shrink-0 text-primary group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+                  </svg>
+                  @immo.via365
+                </a>
+              </li>
             </ul>
           </div>
         </div>
