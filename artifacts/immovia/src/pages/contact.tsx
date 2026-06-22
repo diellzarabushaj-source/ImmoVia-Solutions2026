@@ -259,22 +259,31 @@ export default function Contact() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.55 }}
-            className="rounded-2xl overflow-hidden border border-[#d0daf0] shadow-sm"
+            className="rounded-2xl overflow-hidden shadow-xl shadow-primary/10"
           >
-            {/* Map header */}
-            <div className="flex items-center gap-3 px-5 py-3.5 bg-[#f4f7fd] border-b border-[#d0daf0]">
-              <div className="w-7 h-7 rounded-lg bg-[#eef2f9] flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-3.5 h-3.5 text-[#1a3a6e]" />
+            {/* Navy gradient header */}
+            <div
+              className="relative flex items-center gap-4 px-6 py-5 overflow-hidden"
+              style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
+            >
+              {/* Radial glow */}
+              <div className="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none"
+                style={{ background: "radial-gradient(circle,rgba(147,197,253,0.15) 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
+              <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-4.5 h-4.5 text-white" />
               </div>
-              <span className="text-sm font-medium text-[#1a3a6e]">
-                Gmeinmatt 1A, 3322 Urtenen-Schönbühl, Switzerland
-              </span>
+              <div className="relative">
+                <p className="text-[10px] font-bold text-blue-200 uppercase tracking-[0.2em] mb-0.5">ImmoVia365</p>
+                <p className="text-sm font-semibold text-white leading-snug">
+                  Gmeinmatt 1A, 3322 Urtenen-Schönbühl, Switzerland
+                </p>
+              </div>
             </div>
             <iframe
               title="ImmoVia365 Location"
               src="https://maps.google.com/maps?q=Gmeinmatt%201A%2C%203322%20Urtenen-Sch%C3%B6nb%C3%BChl%2C%20Switzerland&t=&z=15&ie=UTF8&iwloc=&output=embed"
               width="100%"
-              height="340"
+              height="360"
               style={{ border: 0, display: "block" }}
               allowFullScreen
               loading="lazy"
