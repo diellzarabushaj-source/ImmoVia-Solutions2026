@@ -485,16 +485,27 @@ export default function Home() {
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
-                className={`flex flex-col items-center text-center py-10 md:py-12 px-4 relative ${
+                className={`flex flex-col items-center text-center py-10 md:py-12 px-4 relative cursor-default ${
                   i < 3 ? "md:after:absolute md:after:right-0 md:after:top-1/4 md:after:bottom-1/4 md:after:w-px md:after:bg-white/10 md:after:content-['']" : ""
                 } ${i < 2 ? "after:absolute after:right-0 after:top-1/4 after:bottom-1/4 after:w-px after:bg-white/10 after:content-['']" : ""}`}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
                 transition={{ delay: i * 0.09, duration: 0.5 }}
                 viewport={{ once: true }}
               >
-                <stat.icon className="w-4 h-4 text-primary mb-3 opacity-70" />
-                <span className="text-4xl md:text-5xl font-bold text-white tracking-tight">{stat.value}</span>
+                {/* Icon with pulsing glow ring */}
+                <div className="relative mb-4">
+                  <motion.div
+                    className="absolute inset-[-6px] rounded-full bg-primary/20 blur-sm"
+                    animate={{ scale: [1, 1.35, 1], opacity: [0.4, 0.15, 0.4] }}
+                    transition={{ duration: 2.8, repeat: Infinity, delay: i * 0.5, ease: "easeInOut" }}
+                  />
+                  <div className="relative w-9 h-9 rounded-full bg-white/6 border border-white/10 flex items-center justify-center">
+                    <stat.icon className="w-4 h-4 text-primary" />
+                  </div>
+                </div>
+                <CountUpStat value={stat.value} />
                 <span className="text-xs font-medium text-white/40 uppercase tracking-[0.15em] mt-2">{stat.label}</span>
               </motion.div>
             ))}
