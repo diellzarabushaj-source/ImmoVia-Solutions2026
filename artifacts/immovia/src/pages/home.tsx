@@ -408,8 +408,9 @@ export default function Home() {
                   <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
                     {activeTab === "service" ? t.search.tab1Helper : t.search.tab2Helper}
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-2.5">
-                    <div className="relative flex-1 min-w-0" ref={suggestWrapRef}>
+                  <div className="flex flex-col gap-2.5">
+                    {/* Row 1 — keyword input */}
+                    <div className="relative w-full" ref={suggestWrapRef}>
                       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
                       <input
                         value={searchKeyword}
@@ -439,43 +440,46 @@ export default function Home() {
                         </ul>
                       )}
                     </div>
-                    <select
-                      value={searchCategory}
-                      onChange={e => setSearchCategory(e.target.value)}
-                      className="h-12 rounded-xl border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 sm:w-44 transition"
-                    >
-                      <option value="">{t.search.categoryAll}</option>
-                      {serviceCategories.map(cat => (
-                        <option key={cat.key} value={cat.key}>{cat.label}</option>
-                      ))}
-                    </select>
-                    <div className="relative sm:w-44">
-                      <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                      <input
-                        value={searchCity}
-                        onChange={e => setSearchCity(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && handleSearch()}
-                        placeholder={t.search.locationPlaceholder}
-                        className="w-full h-12 rounded-xl border border-border bg-background pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
-                      />
-                      <button
-                        type="button"
-                        onClick={detectLocation}
-                        disabled={isLocating}
-                        title="Detect my location"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors disabled:opacity-40"
+                    {/* Row 2 — category + city + button */}
+                    <div className="flex flex-col sm:flex-row gap-2.5">
+                      <select
+                        value={searchCategory}
+                        onChange={e => setSearchCategory(e.target.value)}
+                        className="h-12 rounded-xl border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 sm:flex-1 transition"
                       >
-                        {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
-                      </button>
+                        <option value="">{t.search.categoryAll}</option>
+                        {serviceCategories.map(cat => (
+                          <option key={cat.key} value={cat.key}>{cat.label}</option>
+                        ))}
+                      </select>
+                      <div className="relative sm:flex-1">
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <input
+                          value={searchCity}
+                          onChange={e => setSearchCity(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && handleSearch()}
+                          placeholder={t.search.locationPlaceholder}
+                          className="w-full h-12 rounded-xl border border-border bg-background pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        />
+                        <button
+                          type="button"
+                          onClick={detectLocation}
+                          disabled={isLocating}
+                          title="Detect my location"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors disabled:opacity-40"
+                        >
+                          {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <Button
+                        onClick={handleSearch}
+                        className="h-12 px-7 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/25 flex-shrink-0 transition-all duration-200"
+                        data-testid="hero-smart-search-btn"
+                      >
+                        <Search className="mr-2 h-4 w-4" />
+                        {activeTab === "service" ? t.search.btn1 : t.search.btn2}
+                      </Button>
                     </div>
-                    <Button
-                      onClick={handleSearch}
-                      className="h-12 px-7 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/25 sm:flex-shrink-0 transition-all duration-200"
-                      data-testid="hero-smart-search-btn"
-                    >
-                      <Search className="mr-2 h-4 w-4" />
-                      {activeTab === "service" ? t.search.btn1 : t.search.btn2}
-                    </Button>
                   </div>
                 </div>
               </motion.div>
