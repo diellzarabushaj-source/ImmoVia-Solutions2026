@@ -1234,151 +1234,142 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          ACCOUNT TYPES — inline with CTA
+          ACCOUNT TYPES + FINAL CTA — full-bleed split panel
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-24 md:py-28 bg-white">
-        <div className="container mx-auto px-6 lg:px-8">
-          <motion.div
-            className="mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <p className="text-[11px] font-bold text-primary uppercase tracking-[0.22em] mb-3">{t.accountTypes.title}</p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight max-w-xl">{t.accountTypes.title}</h2>
-            <div className="w-10 h-0.5 bg-primary mt-6" />
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl">
+      <section className="relative overflow-hidden">
+        {/* ── Header strip ── */}
+        <div className="bg-white py-12 md:py-16">
+          <div className="container mx-auto px-6 lg:px-8 text-center">
             <motion.div
-              className="group relative rounded-3xl border border-border p-9 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/6 transition-all duration-300 bg-white"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
+              transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <div className="w-12 h-12 rounded-2xl bg-primary/8 flex items-center justify-center mb-6">
-                <HomeIcon className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-3">{t.accountTypes.posterLabel}</div>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-7">{t.accountTypes.posterDesc}</p>
-              <div className="space-y-3 mb-0">
-                <div className="flex items-center gap-2.5 text-sm text-foreground font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                  {t.accountTypes.posterSub1}
-                </div>
-                <div className="flex items-center gap-2.5 text-sm text-foreground font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                  {t.accountTypes.posterSub2}
-                </div>
-              </div>
-              <div className="absolute bottom-0 right-0 w-24 h-24 rounded-3xl bg-primary/3 translate-x-4 translate-y-4" />
-            </motion.div>
-
-            <motion.div
-              className="group relative rounded-3xl border border-border p-9 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/6 transition-all duration-300 bg-white overflow-hidden"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-primary/8 flex items-center justify-center mb-6">
-                <Building2 className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-3">{t.accountTypes.providerLabel}</div>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-7">{t.accountTypes.providerDesc}</p>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5 text-sm text-foreground font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                  {t.accountTypes.providerSub1}
-                </div>
-                <div className="flex items-center gap-2.5 text-sm text-foreground font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                  {t.accountTypes.providerSub2}
-                </div>
-              </div>
-              <div className="absolute bottom-0 right-0 w-24 h-24 rounded-3xl bg-primary/3 translate-x-4 translate-y-4" />
+              <p className="text-[11px] font-bold text-primary uppercase tracking-[0.22em] mb-3">{t.accountTypes.title}</p>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">{t.accountTypes.title}</h2>
+              <p className="mt-4 text-muted-foreground text-sm max-w-xl mx-auto leading-relaxed">{t.cta.subtitle}</p>
             </motion.div>
           </div>
         </div>
-      </section>
 
-      {/* ══════════════════════════════════════════════════════════
-          FINAL CTA — full-bleed cinematic dark
-      ══════════════════════════════════════════════════════════ */}
-      <section className="relative py-24 md:py-36 overflow-hidden" style={{ background: "linear-gradient(145deg,#060e24 0%,#0d1f4d 50%,#0f2660 100%)" }}>
-        {/* Ambient orbs */}
-        <div className="absolute top-[-20%] right-[-5%] w-[55%] h-[130%] rounded-full bg-primary opacity-[0.12] blur-[180px] pointer-events-none" />
-        <div className="absolute bottom-[-20%] left-[-5%] w-[40%] h-[100%] rounded-full bg-blue-500 opacity-[0.07] blur-[150px] pointer-events-none" />
+        {/* ── Split panels ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2">
 
-        {/* Fine grid */}
-        <div className="absolute inset-0 opacity-[0.025] pointer-events-none"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.15) 1px,transparent 1px)", backgroundSize: "60px 60px" }} />
-
-        <div className="container mx-auto px-6 lg:px-8 relative z-10">
+          {/* LEFT — Project Poster / Client */}
           <motion.div
-            className="text-center max-w-3xl mx-auto mb-14"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            className="relative overflow-hidden flex flex-col justify-between gap-10 px-10 py-14 md:px-14 md:py-20"
+            style={{ background: "linear-gradient(135deg,#060e24 0%,#0d1f4d 100%)" }}
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <p className="text-[11px] font-bold text-primary uppercase tracking-[0.22em] mb-5">ImmoVia365</p>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-5 leading-[1.06] tracking-tight">{t.cta.title}</h2>
-            <p className="text-white/45 text-lg leading-relaxed">{t.cta.subtitle}</p>
-          </motion.div>
+            {/* Ambient glow */}
+            <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-primary/20 blur-[100px] pointer-events-none" />
+            <div className="absolute -bottom-16 right-0 w-56 h-56 rounded-full bg-blue-600/10 blur-[80px] pointer-events-none" />
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.12 }}
-            viewport={{ once: true }}
-          >
-            {/* Project Poster card */}
-            <div className="relative rounded-3xl p-8 flex flex-col gap-5 overflow-hidden border border-primary/30 bg-primary/15 backdrop-blur-sm hover:bg-primary/20 transition-colors duration-300">
-              <div className="w-12 h-12 rounded-2xl bg-white/15 border border-white/15 flex items-center justify-center flex-shrink-0">
-                <FileText className="w-5 h-5 text-white" />
+            {/* Fine dot grid */}
+            <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+              style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+
+            <div className="relative z-10">
+              {/* Icon + number */}
+              <div className="flex items-start justify-between mb-8">
+                <div className="w-14 h-14 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                  <HomeIcon className="w-6 h-6 text-primary" />
+                </div>
+                <span className="text-7xl font-bold text-white/5 leading-none select-none">01</span>
               </div>
-              <div className="flex-1">
-                <div className="text-[10px] font-bold text-white/45 uppercase tracking-widest mb-2">{t.hero.persona1Label}</div>
-                <h3 className="text-xl font-bold text-white mb-2 leading-snug">{t.cta.button}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{t.cta.subtitle}</p>
+
+              <div className="text-[10px] font-bold text-primary uppercase tracking-[0.25em] mb-3">{t.accountTypes.posterLabel}</div>
+              <h3 className="text-2xl md:text-3xl font-bold text-white leading-snug mb-4">{t.cta.button}</h3>
+              <p className="text-white/55 text-sm leading-relaxed mb-8 max-w-sm">{t.accountTypes.posterDesc}</p>
+
+              {/* Feature bullets */}
+              <div className="space-y-3 mb-10">
+                {[t.accountTypes.posterSub1, t.accountTypes.posterSub2].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-primary/25 border border-primary/40 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="w-3 h-3 text-primary" />
+                    </div>
+                    <span className="text-sm text-white/70 font-medium">{item}</span>
+                  </div>
+                ))}
               </div>
+            </div>
+
+            <div className="relative z-10">
               <Link href="/signup?account_type=project_poster">
                 <Button
                   size="lg"
-                  className="bg-white text-foreground hover:bg-white/92 font-semibold w-full shadow-lg"
+                  className="bg-white text-foreground hover:bg-white/92 font-bold w-full shadow-xl shadow-black/30"
                   data-testid="footer-cta-project"
                 >
                   {t.cta.button}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+              <p className="text-white/30 text-xs text-center mt-3">{t.howItWorks.posterStep1}</p>
+            </div>
+          </motion.div>
+
+          {/* RIGHT — Service Provider */}
+          <motion.div
+            className="relative overflow-hidden flex flex-col justify-between gap-10 px-10 py-14 md:px-14 md:py-20"
+            style={{ background: "linear-gradient(135deg,#0d2260 0%,#1a3a8f 100%)" }}
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            viewport={{ once: true }}
+          >
+            {/* Ambient glow */}
+            <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-blue-400/15 blur-[100px] pointer-events-none" />
+            <div className="absolute -bottom-16 left-0 w-56 h-56 rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
+
+            {/* Fine dot grid */}
+            <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+              style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+
+            <div className="relative z-10">
+              {/* Icon + number */}
+              <div className="flex items-start justify-between mb-8">
+                <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
+                  <Briefcase className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-7xl font-bold text-white/5 leading-none select-none">02</span>
+              </div>
+
+              <div className="text-[10px] font-bold text-blue-300 uppercase tracking-[0.25em] mb-3">{t.accountTypes.providerLabel}</div>
+              <h3 className="text-2xl md:text-3xl font-bold text-white leading-snug mb-4">{t.cta.companyTitle}</h3>
+              <p className="text-white/55 text-sm leading-relaxed mb-8 max-w-sm">{t.accountTypes.providerDesc}</p>
+
+              {/* Feature bullets */}
+              <div className="space-y-3 mb-10">
+                {[t.accountTypes.providerSub1, t.accountTypes.providerSub2].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="w-3 h-3 text-blue-300" />
+                    </div>
+                    <span className="text-sm text-white/70 font-medium">{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Service Provider card */}
-            <div className="relative rounded-3xl p-8 flex flex-col gap-5 overflow-hidden border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/8 transition-colors duration-300">
-              <div className="w-12 h-12 rounded-2xl bg-white/12 border border-white/12 flex items-center justify-center flex-shrink-0">
-                <Briefcase className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[10px] font-bold text-white/45 uppercase tracking-widest mb-2">{t.hero.persona2Label}</div>
-                <h3 className="text-xl font-bold text-white mb-2 leading-snug">{t.cta.companyTitle}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{t.cta.companySubtitle}</p>
-              </div>
+            <div className="relative z-10">
               <Link href="/signup?account_type=service_provider">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white/25 text-white hover:bg-white/12 font-semibold w-full"
+                  className="border-white/30 text-white hover:bg-white/10 hover:border-white/50 font-bold w-full"
                   data-testid="footer-cta-company"
                 >
                   {t.cta.companyButton}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+              <p className="text-white/30 text-xs text-center mt-3">{t.howItWorks.providerStep1}</p>
             </div>
           </motion.div>
         </div>
