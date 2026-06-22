@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "sanity dev --port $PORT --host 0.0.0.0",
-    "build": "sanity build",
+    "build": "sanity build && node patch-dist.mjs",
     "serve": "node serve.mjs",
     "start": "sanity build && node serve.mjs",
     "typecheck": "tsc --noEmit"

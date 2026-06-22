@@ -19,7 +19,7 @@ run = "pnpm --filter @workspace/sanity-studio run serve"
 
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/sanity-studio", "run", "build" ]
-publicDir = "artifacts/sanity-studio/dist/public"
+publicDir = "artifacts/sanity-studio/dist"
 serve = "static"
 
 [[services.production.rewrites]]
