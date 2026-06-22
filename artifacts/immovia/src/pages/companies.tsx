@@ -41,6 +41,8 @@ const SORT_OPTIONS = [
   { value: "experience", labelKey: "sortExperience" },
 ];
 
+const PLAN_RANK: Record<string, number> = { premium: 3, pro: 2, professional: 2, basic: 1 };
+
 export default function Companies() {
   const { t, language } = useLanguage();
   const { categories } = useCategories("service");
@@ -211,6 +213,13 @@ export default function Companies() {
       list = [...list].sort((a, b) => (b.hourlyRate ?? 0) - (a.hourlyRate ?? 0));
     } else if (sortBy === "experience") {
       list = [...list].sort((a, b) => (b.yearsExperience ?? 0) - (a.yearsExperience ?? 0));
+    } else {
+      // default: Premium → Professional → Basic → unranked
+      list = [...list].sort((a, b) => {
+        const pa = PLAN_RANK[(a.planType ?? "").toLowerCase()] ?? 0;
+        const pb = PLAN_RANK[(b.planType ?? "").toLowerCase()] ?? 0;
+        return pb - pa;
+      });
     }
 
     return list;
