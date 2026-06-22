@@ -1058,10 +1058,10 @@ export default function Home() {
                   ))}
                 </div>
                 <div className="mt-8">
-                  <Link href="/signup?account_type=project_poster">
-                    <Button data-testid="hiw-poster-cta">
+                  <Link href="/signup?account_type=project_poster" className="group inline-block">
+                    <Button data-testid="hiw-poster-cta" className="transition-all duration-200 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98]">
                       {t.howItWorks.posterCta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                     </Button>
                   </Link>
                 </div>
@@ -1105,10 +1105,10 @@ export default function Home() {
                   ))}
                 </div>
                 <div className="mt-8">
-                  <Link href="/signup?account_type=service_provider">
-                    <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/6" data-testid="hiw-provider-cta">
+                  <Link href="/signup?account_type=service_provider" className="group inline-block">
+                    <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/6 transition-all duration-200 hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.03] active:scale-[0.98]" data-testid="hiw-provider-cta">
                       {t.howItWorks.providerCta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                     </Button>
                   </Link>
                 </div>
