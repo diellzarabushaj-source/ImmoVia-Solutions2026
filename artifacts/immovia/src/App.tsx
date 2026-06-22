@@ -164,9 +164,21 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    // Only scroll to top for clean path changes (not hash jumps like /#how-it-works)
+    if (!window.location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  }, [location]);
+  return null;
+}
+
 function Router() {
   return (
     <Layout>
+      <ScrollToTop />
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/submit-project" component={SubmitProject} />
