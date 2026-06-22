@@ -335,7 +335,7 @@ export const translations = {
       contact: 'Kontakt',
       email: 'info@immovia365.ch',
       phone: '+355 4 222 0000',
-      address: 'Zvicër',
+      address: 'Gmeinmatt 1A, 3322 Urtenen-Schönbühl, Zvicër',
     },
     hero: {
       badge: 'Marketplace Nr.1 i Shërbimeve',
@@ -1444,7 +1444,7 @@ export const translations = {
       contact: 'Contact',
       email: 'info@immovia365.ch',
       phone: '+355 4 222 0000',
-      address: 'Switzerland',
+      address: 'Gmeinmatt 1A, 3322 Urtenen-Schönbühl, Switzerland',
     },
     hero: {
       badge: 'Services Marketplace #1',
@@ -2553,7 +2553,7 @@ export const translations = {
       contact: 'Kontakt',
       email: 'info@immovia365.ch',
       phone: '+355 4 222 0000',
-      address: 'Schweiz',
+      address: 'Gmeinmatt 1A, 3322 Urtenen-Schönbühl, Schweiz',
     },
     hero: {
       badge: 'Dienstleistungs-Marktplatz Nr. 1',
@@ -3662,7 +3662,7 @@ export const translations = {
       contact: 'Contact',
       email: 'info@immovia365.ch',
       phone: '+355 4 222 0000',
-      address: 'Suisse',
+      address: 'Gmeinmatt 1A, 3322 Urtenen-Schönbühl, Suisse',
     },
     hero: {
       badge: 'Marketplace de Services N°1',
