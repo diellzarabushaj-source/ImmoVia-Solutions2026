@@ -525,59 +525,66 @@ export default function ProjectDetail() {
             )}
 
             <motion.div
-              className="bg-white rounded-2xl border border-border shadow-sm p-6 lg:sticky lg:top-24"
+              className="rounded-2xl overflow-hidden lg:sticky lg:top-24 shadow-xl shadow-primary/10"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
+              style={{ background: "linear-gradient(145deg,#0d2151 0%,#1a3a6e 55%,#1e4b8a 100%)" }}
             >
-              <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-primary" />
-                {t.projectDetail.contactTitle}
-              </h2>
+              {/* Header strip */}
+              <div className="px-6 pt-6 pb-4 border-b border-white/10">
+                <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1">ImmoVia365</p>
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-primary flex-shrink-0" />
+                  {t.projectDetail.contactTitle}
+                </h2>
+              </div>
 
+              {/* Body */}
+              <div className="p-6">
               {hasContacts ? (
                 // Contacts visible — Premium or already-unlocked Professional
                 <div className="space-y-3">
                   {project.fullName && (
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <User className="w-4 h-4 text-primary" />
+                      <div className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground">{us.contactName}</p>
-                        <p className="text-sm font-semibold text-foreground">{project.fullName}</p>
+                        <p className="text-[11px] font-medium text-white/50">{us.contactName}</p>
+                        <p className="text-sm font-semibold text-white">{project.fullName}</p>
                       </div>
                     </div>
                   )}
                   {project.phone && (
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Phone className="w-4 h-4 text-primary" />
+                      <div className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground">{us.contactPhone}</p>
+                        <p className="text-[11px] font-medium text-white/50">{us.contactPhone}</p>
                         <a href={`tel:${project.phone}`} className="text-sm font-semibold text-primary hover:underline">{project.phone}</a>
                       </div>
                     </div>
                   )}
                   {project.email && (
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Mail className="w-4 h-4 text-primary" />
+                      <div className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground">{us.contactEmail}</p>
+                        <p className="text-[11px] font-medium text-white/50">{us.contactEmail}</p>
                         <a href={`mailto:${project.email}`} className="text-sm font-semibold text-primary hover:underline break-all">{project.email}</a>
                       </div>
                     </div>
                   )}
                   {planSlug === "premium" && (
-                    <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
-                      <Star className="w-3 h-3" />{us.unlimitedLabel}
+                    <p className="text-xs text-amber-400 flex items-center gap-1 mt-1">
+                      <Star className="w-3 h-3 fill-amber-400" />{us.unlimitedLabel}
                     </p>
                   )}
                   {["basic", "pro"].includes(planSlug) && stats && stats.contactUnlocksLimit !== -1 && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-white/50 mt-1">
                       {us.remainingLabel(stats.contactUnlocksUsed, stats.contactUnlocksLimit)}
                     </p>
                   )}
@@ -585,13 +592,13 @@ export default function ProjectDetail() {
               ) : isProvider && ["basic", "pro"].includes(planSlug) ? (
                 // Basic / Professional provider — unlock button
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                    <Lock className="w-6 h-6 text-primary" />
+                  <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
+                    <Lock className="w-7 h-7 text-white" />
                   </div>
                   {stats && stats.contactUnlocksLimit !== -1 && stats.contactUnlocksUsed >= stats.contactUnlocksLimit ? (
                     <>
-                      <p className="text-sm text-muted-foreground mb-3">{us.limitReached}</p>
-                      <Button variant="outline" className="w-full mb-2" disabled>{us.limitReached}</Button>
+                      <p className="text-sm text-white/60 mb-4 leading-relaxed">{us.limitReached}</p>
+                      <Button variant="outline" className="w-full mb-2 border-white/20 text-white/60" disabled>{us.limitReached}</Button>
                       <Link href="/pricing">
                         <Button variant="link" size="sm" className="text-xs text-primary w-full">Upgrade to Premium</Button>
                       </Link>
@@ -599,12 +606,12 @@ export default function ProjectDetail() {
                   ) : (
                     <>
                       {stats && stats.contactUnlocksLimit !== -1 && (
-                        <p className="text-xs text-muted-foreground mb-3">
+                        <p className="text-xs text-white/50 mb-4">
                           {us.remainingLabel(stats.contactUnlocksUsed, stats.contactUnlocksLimit)}
                         </p>
                       )}
-                      {unlockError && <p className="text-xs text-destructive mb-2">{unlockError}</p>}
-                      <Button className="w-full" onClick={() => void handleUnlock()} disabled={unlockLoading}>
+                      {unlockError && <p className="text-xs text-red-300 mb-2">{unlockError}</p>}
+                      <Button className="w-full bg-white text-foreground hover:bg-white/92 font-semibold shadow-lg" onClick={() => void handleUnlock()} disabled={unlockLoading}>
                         {unlockLoading
                           ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{us.unlockingBtn}</>
                           : <><Unlock className="w-4 h-4 mr-2" />{stats && stats.contactUnlocksLimit !== -1 ? us.unlockBtn(stats.contactUnlocksLimit - stats.contactUnlocksUsed) : us.unlockBtn(50)}</>
@@ -616,44 +623,45 @@ export default function ProjectDetail() {
               ) : isProvider && stats && !["basic", "pro", "premium"].includes(planSlug) ? (
                 // No plan — upgrade prompt
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                    <Lock className="w-6 h-6 text-primary" />
+                  <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
+                    <Lock className="w-7 h-7 text-white" />
                   </div>
-                  <p className="text-sm font-semibold text-foreground mb-2">{us.upgradeTitle}</p>
-                  <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{us.upgradeText}</p>
+                  <p className="text-base font-bold text-white mb-2">{us.upgradeTitle}</p>
+                  <p className="text-sm text-white/55 mb-5 leading-relaxed">{us.upgradeText}</p>
                   <Link href="/pricing">
-                    <Button className="w-full">
-                      {us.upgradeBtn}<ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    <Button className="w-full bg-white text-foreground hover:bg-white/92 font-semibold shadow-lg">
+                      {us.upgradeBtn}<ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                     </Button>
                   </Link>
                 </div>
               ) : !user ? (
                 // Not authenticated
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                    <Lock className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5">
+                    <Lock className="w-8 h-8 text-white" />
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{t.projectDetail.contactGateLabel}</p>
+                  <p className="text-sm text-white/65 mb-5 leading-relaxed">{t.projectDetail.contactGateLabel}</p>
                   <Link href="/register-company">
-                    <Button className="w-full mb-2">
-                      {t.projectDetail.registerToContact}<ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    <Button className="w-full bg-white text-foreground hover:bg-white/92 font-semibold shadow-lg shadow-black/20 h-11">
+                      {t.projectDetail.registerToContact}<ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </Link>
                 </div>
               ) : (
                 // Authenticated non-provider (project poster)
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                    <Lock className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5">
+                    <Lock className="w-8 h-8 text-white" />
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{us.registerOnly}</p>
+                  <p className="text-sm text-white/65 mb-5 leading-relaxed">{us.registerOnly}</p>
                   <Link href="/register-company">
-                    <Button className="w-full mb-2">
-                      {t.projectDetail.registerToContact}<ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    <Button className="w-full bg-white text-foreground hover:bg-white/92 font-semibold shadow-lg shadow-black/20 h-11">
+                      {t.projectDetail.registerToContact}<ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </Link>
                 </div>
               )}
+              </div>
             </motion.div>
 
             {/* Find companies */}
