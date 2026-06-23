@@ -2,6 +2,7 @@ import { Navbar } from "./navbar";
 import { Footer } from "./footer";
 import { ChatWidget } from "@/components/ChatWidget";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { ChatbaseDismissButton } from "@/components/ChatbaseDismissButton";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 flex flex-col">{children}</main>
       <Footer />
       <ChatWidget />
+      <ChatbaseDismissButton />
       <CookieConsentBanner />
     </div>
   );
