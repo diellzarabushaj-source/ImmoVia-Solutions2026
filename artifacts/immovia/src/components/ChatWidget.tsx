@@ -727,9 +727,12 @@ function ChatWidgetInner() {
       </AnimatePresence>
 
       {/* Header bar — always visible, click to expand/collapse */}
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={handleHeaderClick}
-        className="flex items-center gap-3 px-4 py-3 rounded-t-2xl text-white shadow-lg transition-all hover:brightness-110 active:brightness-90 w-full"
+        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") handleHeaderClick(); }}
+        className="flex items-center gap-3 px-4 py-3 rounded-t-2xl text-white shadow-lg transition-all hover:brightness-110 active:brightness-90 w-full cursor-pointer select-none"
         style={{ background: "linear-gradient(135deg,#0d2151 0%,#1a3a6e 60%,#1e4b8a 100%)" }}
       >
         {/* Avatar / icon */}
@@ -760,7 +763,7 @@ function ChatWidgetInner() {
         <span className="p-1 rounded-full hover:bg-white/20 transition-colors">
           <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expanded ? "" : "rotate-180"}`} />
         </span>
-      </button>
+      </div>
     </div>
   );
 }

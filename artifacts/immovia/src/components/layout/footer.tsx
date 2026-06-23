@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 import { MapPin, Mail, Shield, Lock, HelpCircle } from "lucide-react";
+import { ChatbaseRestoreButton } from "@/components/ChatbaseDismissButton";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -151,6 +152,7 @@ export function Footer() {
             >
               Cookie-Einstellungen
             </button>
+            <ChatbaseRestoreButton />
           </div>
         </div>
       </div>
