@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { and, asc, desc, eq, or } from "drizzle-orm";
 import { db, companiesTable, conversationsTable, convMessagesTable, usersTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
+import { sendNewMessageNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -113,6 +114,40 @@ router.post("/conversations", requireAuth, async (req, res): Promise<void> => {
     updatedAt: new Date(),
     unreadCountProvider: 1,
   }).where(eq(conversationsTable.id, convId));
+
+  // Notify provider about new inquiry (fire-and-forget)
+  void (async () => {
+    try {
+      const [customer] = await db
+        .select({ fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+      const [co] = await db
+        .select({ email: companiesTable.email, companyName: companiesTable.companyName })
+        .from(companiesTable)
+        .where(eq(companiesTable.id, companyId))
+        .limit(1);
+      if (!co?.email) return;
+      const [providerUser] = await db
+        .select({ id: usersTable.id, fullName: usersTable.fullName, language: usersTable.language })
+        .from(usersTable)
+        .where(eq(usersTable.email, co.email))
+        .limit(1);
+      await sendNewMessageNotification({
+        recipientEmail: co.email,
+        recipientName: providerUser?.fullName ?? co.companyName ?? "Provider",
+        recipientUserId: providerUser?.id ?? 0,
+        senderName: customer?.fullName ?? "Customer",
+        preview: firstMessage,
+        offerId: convId,
+        isProvider: true,
+        language: providerUser?.language,
+      });
+    } catch (err) {
+      req.log.error({ err }, "Failed to send new conversation notification");
+    }
+  })();
 
   res.status(201).json({ conversationId: convId });
 });
@@ -239,6 +274,73 @@ router.post("/conversations/:id/messages", requireAuth, async (req, res): Promis
     updatedAt: new Date(),
     ...unreadUpdate,
   }).where(eq(conversationsTable.id, convId));
+
+  // Notify the other party (fire-and-forget)
+  void (async () => {
+    try {
+      const [conv] = await db
+        .select({
+          companyId: conversationsTable.companyId,
+          customerUserId: conversationsTable.customerUserId,
+        })
+        .from(conversationsTable)
+        .where(eq(conversationsTable.id, convId))
+        .limit(1);
+      if (!conv) return;
+
+      const [sender] = await db
+        .select({ fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+      if (!sender) return;
+
+      if (access.role === "customer") {
+        // Customer sent → notify provider
+        const [co] = await db
+          .select({ email: companiesTable.email, companyName: companiesTable.companyName })
+          .from(companiesTable)
+          .where(eq(companiesTable.id, conv.companyId))
+          .limit(1);
+        if (!co?.email) return;
+        const [providerUser] = await db
+          .select({ id: usersTable.id, fullName: usersTable.fullName, language: usersTable.language })
+          .from(usersTable)
+          .where(eq(usersTable.email, co.email))
+          .limit(1);
+        await sendNewMessageNotification({
+          recipientEmail: co.email,
+          recipientName: providerUser?.fullName ?? co.companyName ?? "Provider",
+          recipientUserId: providerUser?.id ?? 0,
+          senderName: sender.fullName ?? "Customer",
+          preview: text || "[Attachment]",
+          offerId: convId,
+          isProvider: true,
+          language: providerUser?.language,
+        });
+      } else {
+        // Provider sent → notify customer
+        const [customer] = await db
+          .select({ email: usersTable.email, fullName: usersTable.fullName, language: usersTable.language })
+          .from(usersTable)
+          .where(eq(usersTable.id, conv.customerUserId))
+          .limit(1);
+        if (!customer?.email) return;
+        await sendNewMessageNotification({
+          recipientEmail: customer.email,
+          recipientName: customer.fullName ?? "Customer",
+          recipientUserId: conv.customerUserId,
+          senderName: sender.fullName ?? "Provider",
+          preview: text || "[Attachment]",
+          offerId: convId,
+          isProvider: false,
+          language: customer.language,
+        });
+      }
+    } catch (err) {
+      req.log.error({ err }, "Failed to send conversation message notification");
+    }
+  })();
 
   res.status(201).json({ message: msg });
 });
