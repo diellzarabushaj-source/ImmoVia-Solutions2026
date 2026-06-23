@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
@@ -230,6 +230,8 @@ function ThreadView({ convId, myUserId, myCompanyId, m, onBack }: {
   convId: number; myUserId: number; myCompanyId: number | null;
   m: Record<string, string>; onBack: () => void;
 }) {
+  void myUserId; void myCompanyId;
+
   const [conv, setConv] = useState<ConvRow | null>(null);
   const [messages, setMessages] = useState<MsgRow[]>([]);
   const [myRole, setMyRole] = useState<"customer" | "provider">("customer");
@@ -239,55 +241,135 @@ function ThreadView({ convId, myUserId, myCompanyId, m, onBack }: {
   const [sendErr, setSendErr] = useState<string | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [fileErr, setFileErr] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<number | null>(null);
+  const optimisticIdRef = useRef(-1);
+  const initialLoadRef = useRef(true);
 
+  /* ── Smart scroll helpers ── */
+  const isAtBottom = () => {
+    const el = scrollRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
+  const scrollToBottom = (instant = false) => {
+    bottomRef.current?.scrollIntoView({ behavior: instant ? "instant" : "smooth" });
+  };
+
+  /* ── Load / poll ── */
   const load = useCallback(async () => {
     try {
       const r = await fetch(`/api/conversations/${convId}`);
       if (!r.ok) return;
       const d = await r.json() as { conversation: ConvRow; messages: MsgRow[]; myRole: string };
-      setConv(d.conversation); setMessages(d.messages);
+      const wasAtBottom = isAtBottom();
+      setConv(d.conversation);
+      setMessages(prev => {
+        // Drop any optimistic messages (negative IDs) and replace with server data
+        const real = d.messages;
+        return real;
+      });
       setMyRole(d.myRole as "customer" | "provider");
-    } catch { /* ignore */ } finally { setLoading(false); }
-  }, [convId]);
+      if (initialLoadRef.current || wasAtBottom) {
+        requestAnimationFrame(() => scrollToBottom(initialLoadRef.current));
+        initialLoadRef.current = false;
+      }
+    } catch { /* ignore */ } finally {
+      setLoading(false);
+    }
+  }, [convId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     void load();
-    pollRef.current = window.setInterval(() => void load(), 5000);
+    pollRef.current = window.setInterval(() => void load(), 2000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [load]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length]);
+  /* ── Auto-grow textarea ── */
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+  }, [text]);
 
-  void myUserId;
-
-  const handleFiles = (fl: FileList) => {
+  /* ── File handling ── */
+  const handleFilesArray = useCallback((files: File[]) => {
     setFileErr(null);
     const next: File[] = [];
-    for (const f of Array.from(fl)) {
+    for (const f of files) {
       if (!ALLOWED.includes(f.type)) { setFileErr(m.invalidFile); continue; }
       if (f.size > 10 * 1024 * 1024) { setFileErr(m.fileTooBig); continue; }
       next.push(f);
     }
     setPendingFiles(p => [...p, ...next].slice(0, 5));
+  }, [m]);
+
+  const handleFiles = (fl: FileList) => handleFilesArray(Array.from(fl));
+
+  /* ── Paste images from clipboard ── */
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const imageFiles = Array.from(e.clipboardData.items)
+      .filter(i => i.kind === "file" && i.type.startsWith("image/"))
+      .map(i => i.getAsFile())
+      .filter(Boolean) as File[];
+    if (imageFiles.length === 0) return;
+    const named = imageFiles.map((f, idx) =>
+      new File([f], `clipboard-${Date.now()}-${idx}.png`, { type: f.type })
+    );
+    handleFilesArray(named);
   };
 
+  /* ── Optimistic send ── */
   const send = async () => {
-    if (!text.trim() && pendingFiles.length === 0) return;
-    setSending(true); setSendErr(null);
+    const trimmed = text.trim();
+    if (!trimmed && pendingFiles.length === 0) return;
+
+    setSendErr(null);
+    const myFiles = [...pendingFiles];
+    const savedText = trimmed;
+
+    // Add optimistic message immediately
+    const optId = --optimisticIdRef.current;
+    const optMsg: MsgRow = {
+      id: optId,
+      senderUserId: myUserId,
+      senderRole: myRole,
+      body: savedText || "[Attachment]",
+      messageType: myFiles.length > 0 ? "file" : "text",
+      attachments: [],
+      createdAt: new Date().toISOString(),
+      senderName: null,
+    };
+    setMessages(p => [...p.filter(x => x.id > 0), optMsg]);
+    setText("");
+    setPendingFiles([]);
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
+    requestAnimationFrame(() => scrollToBottom());
+
+    setSending(true);
     try {
       const uploaded: string[] = [];
-      for (const f of pendingFiles) uploaded.push(await uploadFile(f));
+      for (const f of myFiles) uploaded.push(await uploadFile(f));
       const r = await fetch(`/api/conversations/${convId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: text.trim(), attachments: uploaded }),
+        body: JSON.stringify({ body: savedText, attachments: uploaded }),
       });
       if (!r.ok) throw new Error();
-      setText(""); setPendingFiles([]); await load();
-    } catch { setSendErr(m.errorSend); } finally { setSending(false); }
+      await load();
+    } catch {
+      setSendErr(m.errorSend);
+      setMessages(p => p.filter(x => x.id !== optId));
+      setText(savedText);
+    } finally {
+      setSending(false);
+    }
   };
 
   const isProvider = myRole === "provider";
@@ -295,12 +377,27 @@ function ThreadView({ convId, myUserId, myCompanyId, m, onBack }: {
 
   if (loading) return (
     <div className="flex-1 p-4 space-y-3">
-      {[1,2,3].map(i => <Skeleton key={i} className="h-10 w-3/4" />)}
+      {[1,2,3].map(i => <Skeleton key={i} className={`h-10 ${i % 2 === 0 ? "w-2/3" : "w-3/4 ml-auto"}`} />)}
     </div>
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div
+      className="flex flex-col h-full relative"
+      onDragOver={e => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }}
+      onDrop={e => { e.preventDefault(); setDragging(false); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); }}
+    >
+      {/* Drag overlay */}
+      {dragging && (
+        <div className="absolute inset-0 z-20 bg-primary/10 border-2 border-dashed border-primary rounded-xl flex items-center justify-center pointer-events-none">
+          <div className="text-center text-primary">
+            <Paperclip className="h-7 w-7 mx-auto mb-1.5" />
+            <p className="text-sm font-semibold">{m.attach}</p>
+          </div>
+        </div>
+      )}
+
       {/* Thread header */}
       <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-border/60 bg-white flex-shrink-0">
         <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-muted/60 text-muted-foreground transition-colors">
@@ -314,70 +411,111 @@ function ThreadView({ convId, myUserId, myCompanyId, m, onBack }: {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2 bg-slate-50">
-        {messages.map(msg => {
-          const mine = (myRole === "customer" && msg.senderRole === "customer") ||
-            (myRole === "provider" && msg.senderRole === "provider");
-          return (
-            <div key={msg.id} className={`flex gap-2 ${mine ? "flex-row-reverse" : "flex-row"}`}>
-              {!mine && <Avatar isProvider={isProvider} size="sm" />}
-              <div className={`flex flex-col ${mine ? "items-end" : "items-start"} max-w-[75%]`}>
-                <div className={`rounded-2xl px-3 py-2 text-sm ${mine
-                  ? "bg-primary text-white rounded-br-sm"
-                  : "bg-white text-foreground rounded-bl-sm border border-border/60 shadow-sm"
-                }`}>
-                  {!mine && <p className="text-[10px] font-semibold mb-0.5 opacity-60">{msg.senderName ?? partnerName}</p>}
-                  {msg.body !== "[Attachment]" && <p className="whitespace-pre-wrap leading-relaxed">{msg.body}</p>}
-                  {msg.attachments?.map((a, i) => <AttachPreview key={i} path={a} />)}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-1.5 bg-slate-50">
+        <AnimatePresence initial={false}>
+          {messages.map(msg => {
+            const mine = (myRole === "customer" && msg.senderRole === "customer") ||
+              (myRole === "provider" && msg.senderRole === "provider");
+            const isOptimistic = msg.id < 0;
+            return (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                animate={{ opacity: isOptimistic ? 0.75 : 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                className={`flex gap-2 ${mine ? "flex-row-reverse" : "flex-row"}`}
+              >
+                {!mine && <Avatar isProvider={isProvider} size="sm" />}
+                <div className={`flex flex-col ${mine ? "items-end" : "items-start"} max-w-[78%]`}>
+                  <div className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${mine
+                    ? "bg-primary text-white rounded-br-sm shadow-sm"
+                    : "bg-white text-foreground rounded-bl-sm border border-border/60 shadow-sm"
+                  }`}>
+                    {!mine && <p className="text-[10px] font-semibold mb-0.5 opacity-60">{msg.senderName ?? partnerName}</p>}
+                    {msg.body !== "[Attachment]" && <p className="whitespace-pre-wrap">{msg.body}</p>}
+                    {msg.attachments?.map((a, i) => <AttachPreview key={i} path={a} />)}
+                  </div>
+                  <p className="text-[9px] text-muted-foreground/50 mt-0.5 px-1">
+                    {isOptimistic ? "…" : format(new Date(msg.createdAt), "dd.MM · HH:mm")}
+                  </p>
                 </div>
-                <p className="text-[9px] text-muted-foreground/60 mt-0.5 px-1">
-                  {format(new Date(msg.createdAt), "dd.MM · HH:mm")}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
+      {/* Input area */}
       <div className="border-t border-border/60 bg-white px-3 py-2.5 flex-shrink-0">
+        {/* Pending file chips */}
         {pendingFiles.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {pendingFiles.map((f, i) => (
-              <div key={i} className="flex items-center gap-1 bg-muted rounded-lg px-2 py-0.5 text-xs">
-                {f.type.startsWith("image/") ? <ImageIcon className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
-                <span className="max-w-[80px] truncate">{f.name}</span>
-                <button onClick={() => setPendingFiles(p => p.filter((_,idx)=>idx!==i))} className="text-muted-foreground hover:text-foreground ml-0.5">
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                className="flex items-center gap-1 bg-primary/8 border border-primary/20 rounded-lg px-2 py-0.5 text-xs text-foreground"
+              >
+                {f.type.startsWith("image/") ? <ImageIcon className="h-3 w-3 text-primary" /> : <FileText className="h-3 w-3 text-primary" />}
+                <span className="max-w-[90px] truncate">{f.name}</span>
+                <button
+                  onClick={() => setPendingFiles(p => p.filter((_, idx) => idx !== i))}
+                  className="text-muted-foreground hover:text-destructive ml-0.5 transition-colors"
+                >
                   <X className="h-2.5 w-2.5" />
                 </button>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
-        {(fileErr || sendErr) && <p className="text-[10px] text-destructive mb-1.5">{fileErr ?? sendErr}</p>}
-        <div className="flex items-end gap-2">
-          <button onClick={() => fileRef.current?.click()}
-            className="p-1.5 rounded-full hover:bg-muted/60 text-muted-foreground transition-colors flex-shrink-0" title={m.attach}>
+
+        {(fileErr || sendErr) && (
+          <p className="text-[10px] text-destructive mb-1.5">{fileErr ?? sendErr}</p>
+        )}
+
+        <div className="flex items-end gap-1.5">
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="p-1.5 rounded-full hover:bg-muted/70 text-muted-foreground transition-colors flex-shrink-0"
+            title={m.attach}
+          >
             <Paperclip className="h-4 w-4" />
           </button>
           <textarea
-            className="flex-1 resize-none rounded-2xl border border-border bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 min-h-[38px] max-h-24 transition-colors"
-            placeholder={m.type} value={text}
+            ref={textareaRef}
+            className="flex-1 resize-none rounded-2xl border border-border bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors overflow-hidden"
+            style={{ minHeight: "38px", maxHeight: "120px" }}
+            placeholder={m.type}
+            value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
+            onPaste={handlePaste}
             rows={1}
           />
-          <button
+          <motion.button
             onClick={() => void send()}
             disabled={sending || (!text.trim() && pendingFiles.length === 0)}
-            className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 hover:bg-primary/90 disabled:opacity-40 transition-colors"
+            whileTap={{ scale: 0.9 }}
+            className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 hover:bg-primary/90 disabled:opacity-35 transition-colors shadow-sm"
           >
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </button>
+            {sending
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <Send className="h-[15px] w-[15px]" />
+            }
+          </motion.button>
         </div>
-        <input ref={fileRef} type="file" multiple accept={ALLOWED.join(",")} className="hidden"
-          onChange={e => { if (e.target.files) handleFiles(e.target.files); e.target.value = ""; }} />
+
+        <input
+          ref={fileRef}
+          type="file"
+          multiple
+          accept={ALLOWED.join(",")}
+          className="hidden"
+          onChange={e => { if (e.target.files) handleFiles(e.target.files); e.target.value = ""; }}
+        />
       </div>
     </div>
   );
