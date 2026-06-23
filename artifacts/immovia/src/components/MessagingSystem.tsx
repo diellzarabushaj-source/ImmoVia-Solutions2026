@@ -342,7 +342,7 @@ function ConversationView({
                   </div>
                   {/* Action area */}
                   {!action && (
-                    <div className="flex gap-2 px-4 pb-4 pt-1">
+                    <div className="flex flex-col sm:flex-row gap-2 px-4 pb-4 pt-1">
                       <Button
                         size="sm"
                         className="flex-1 gap-1.5"
@@ -491,7 +491,7 @@ export function MessagingSystem({ myUserId }: { myUserId: number }) {
   useEffect(() => { void loadConversations(); }, [loadConversations]);
 
   return (
-    <div className="flex h-[calc(100vh-200px)] min-h-[500px] bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
+    <div className="flex h-[calc(100dvh-260px)] md:h-[calc(100dvh-200px)] min-h-[360px] md:min-h-[480px] bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
       {/* Sidebar: conversation list */}
       <div className={`w-full md:w-72 xl:w-80 border-r border-border flex flex-col flex-shrink-0 ${activeConvId ? "hidden md:flex" : "flex"}`}>
         <div className="p-4 border-b border-border">
