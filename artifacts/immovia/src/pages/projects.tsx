@@ -218,86 +218,102 @@ export default function Projects() {
       </div>
 
       {/* ── FILTER BAR ── */}
-      <div className="bg-white border-b border-border sticky top-0 z-20 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
+      <div className="bg-white border-b border-border sticky top-20 md:top-24 z-20 shadow-sm">
+        <div className="container mx-auto px-4 py-3 space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
 
-          {/* City filter */}
-          <div className="relative flex items-center flex-1 min-w-[180px] sm:flex-initial">
-            <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              placeholder={t.listings.cityFilterPlaceholder ?? t.companies.cityPlaceholder ?? "Filter by city…"}
-              className="pl-9 pr-16 h-10 text-sm w-full sm:w-56 rounded-lg border border-border bg-white outline-none focus:ring-1 focus:ring-primary"
-              value={cityFilter}
-              onChange={e => setCityFilter(e.target.value)}
-            />
-            {cityFilter ? (
+          {/* Row 1 on mobile: city + clear */}
+          <div className="flex gap-2 items-center">
+            {/* City filter */}
+            <div className="relative flex items-center flex-1">
+              <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <input
+                placeholder={t.listings.cityFilterPlaceholder ?? t.companies.cityPlaceholder ?? "Filter by city…"}
+                className="pl-9 pr-8 h-10 text-sm w-full sm:w-52 rounded-lg border border-border bg-white outline-none focus:ring-1 focus:ring-primary"
+                value={cityFilter}
+                onChange={e => setCityFilter(e.target.value)}
+              />
+              {cityFilter ? (
+                <button
+                  onClick={() => setCityFilter("")}
+                  className="absolute right-2 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                  aria-label={t.listings.clearFilters ?? "Clear"}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </div>
+            {/* Clear filters (mobile: next to city) */}
+            {activeFiltersCount > 0 && (
               <button
-                onClick={() => setCityFilter("")}
-                className="absolute right-2 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-                aria-label={t.listings.clearFilters ?? "Clear"}
+                onClick={clearFilters}
+                className="sm:hidden flex-shrink-0 flex items-center gap-1 text-xs text-primary hover:underline font-medium"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3 w-3" />
+                {t.listings.clearFilters ?? "Clear"} ({activeFiltersCount})
               </button>
-            ) : null}
+            )}
           </div>
 
-          {/* Size filter */}
-          <div className="relative">
-            <select
-              value={sizeFilter}
-              onChange={e => setSizeFilter(e.target.value)}
-              className="appearance-none bg-white border border-border rounded-lg px-3 pr-7 py-1.5 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="">{t.listings.filterAllSizes ?? "All sizes"}</option>
-              <option value="small">{t.listings.sizeSm}</option>
-              <option value="medium">{t.listings.sizeMd}</option>
-              <option value="large">{t.listings.sizeLg}</option>
-              <option value="premium">{t.listings.sizePremium}</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+          {/* Row 2 on mobile: size + budget + sort in 3-col grid */}
+          <div className="grid grid-cols-3 gap-2 sm:contents">
+            {/* Size filter */}
+            <div className="relative">
+              <select
+                value={sizeFilter}
+                onChange={e => setSizeFilter(e.target.value)}
+                className="appearance-none bg-white border border-border rounded-lg px-2 pr-6 py-2 h-10 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary w-full"
+              >
+                <option value="">{t.listings.filterAllSizes ?? "All sizes"}</option>
+                <option value="small">{t.listings.sizeSm}</option>
+                <option value="medium">{t.listings.sizeMd}</option>
+                <option value="large">{t.listings.sizeLg}</option>
+                <option value="premium">{t.listings.sizePremium}</option>
+              </select>
+              <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            </div>
+
+            {/* Budget filter */}
+            <div className="relative">
+              <select
+                value={budgetFilter}
+                onChange={e => setBudgetFilter(e.target.value)}
+                className="appearance-none bg-white border border-border rounded-lg px-2 pr-6 py-2 h-10 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary w-full"
+              >
+                <option value="">{t.listings.filterAllBudgets ?? "All budgets"}</option>
+                <option value="under-10k">{"< 10k"}</option>
+                <option value="10k-50k">{"10k – 50k"}</option>
+                <option value="50k-100k">{"50k – 100k"}</option>
+                <option value="100k-500k">{"100k – 500k"}</option>
+                <option value="over-500k">{"> 500k"}</option>
+              </select>
+              <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            </div>
+
+            {/* Sort */}
+            <div className="relative sm:ml-auto">
+              <ArrowUpDown className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+                className="appearance-none bg-white border border-border rounded-lg pl-7 pr-6 py-2 h-10 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary w-full"
+              >
+                {SORT_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.value === "newest"
+                      ? (t.listings.sortNewest ?? "Newest first")
+                      : (t.listings.sortOldest ?? "Oldest first")}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            </div>
           </div>
 
-          {/* Budget filter */}
-          <div className="relative">
-            <select
-              value={budgetFilter}
-              onChange={e => setBudgetFilter(e.target.value)}
-              className="appearance-none bg-white border border-border rounded-lg px-3 pr-7 py-1.5 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="">{t.listings.filterAllBudgets ?? "All budgets"}</option>
-              <option value="under-10k">{"< 10k"}</option>
-              <option value="10k-50k">{"10k – 50k"}</option>
-              <option value="50k-100k">{"50k – 100k"}</option>
-              <option value="100k-500k">{"100k – 500k"}</option>
-              <option value="over-500k">{"> 500k"}</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-          </div>
-
-          {/* Sort */}
-          <div className="relative ml-auto">
-            <ArrowUpDown className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
-              className="appearance-none bg-white border border-border rounded-lg pl-8 pr-8 py-1.5 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              {SORT_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.value === "newest"
-                    ? (t.listings.sortNewest ?? "Newest first")
-                    : (t.listings.sortOldest ?? "Oldest first")}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-          </div>
-
-          {/* Clear filters */}
+          {/* Clear filters (desktop only) */}
           {activeFiltersCount > 0 && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+              className="hidden sm:flex items-center gap-1 text-xs text-primary hover:underline font-medium"
             >
               <X className="h-3 w-3" />
               {t.listings.clearFilters ?? "Clear filters"} ({activeFiltersCount})

@@ -329,29 +329,31 @@ export default function Companies() {
       </div>
 
       {/* ── FILTER BAR ── */}
-      <div className="bg-white border-b border-border sticky top-0 z-20 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
+      <div className="bg-white border-b border-border sticky top-20 md:top-24 z-20 shadow-sm">
+        <div className="container mx-auto px-4 py-3 space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
 
-          {/* Worker type tabs */}
-          <div className="flex rounded-lg border border-border overflow-hidden text-sm">
-            {[
-              { val: "" as const, label: t.companies.all ?? "All" },
-              { val: "individual" as const, label: t.companies.individual ?? "Individual" },
-              { val: "company" as const, label: t.companies.company ?? "Company" },
-            ].map(opt => (
-              <button
-                key={opt.val}
-                onClick={() => setWorkerTypeFilter(opt.val)}
-                className={`px-3 py-1.5 font-medium transition-colors ${
-                  workerTypeFilter === opt.val
-                    ? "bg-primary text-white"
-                    : "bg-white text-muted-foreground hover:bg-muted/50"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          {/* Row 1: worker type tabs + city */}
+          <div className="flex gap-2 items-center">
+            {/* Worker type tabs */}
+            <div className="flex rounded-lg border border-border overflow-hidden text-sm flex-shrink-0">
+              {[
+                { val: "" as const, label: t.companies.all ?? "All" },
+                { val: "individual" as const, label: t.companies.individual ?? "Individual" },
+                { val: "company" as const, label: t.companies.company ?? "Company" },
+              ].map(opt => (
+                <button
+                  key={opt.val}
+                  onClick={() => setWorkerTypeFilter(opt.val)}
+                  className={`px-3 py-2 text-sm font-medium transition-colors ${
+                    workerTypeFilter === opt.val
+                      ? "bg-primary text-white"
+                      : "bg-white text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
 
           {/* City filter with autocomplete */}
           <div className="relative flex items-center gap-1" ref={cityRef}>
@@ -359,7 +361,7 @@ export default function Companies() {
               <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder={t.companies.cityPlaceholder ?? "City..."}
-                className={`pl-7 pr-2 h-8 text-sm w-36 md:w-44 ${geoError ? "border-destructive/50 focus-visible:ring-destructive/30" : ""}`}
+                className={`pl-7 pr-2 h-10 text-sm w-full sm:w-44 ${geoError ? "border-destructive/50 focus-visible:ring-destructive/30" : ""}`}
                 value={cityFilter}
                 autoComplete="off"
                 onChange={e => {
@@ -437,32 +439,36 @@ export default function Companies() {
               }
             </button>
           </div>
+          </div>{/* closes row-1 flex */}
 
-          {/* Sort */}
-          <div className="relative ml-auto">
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
-              className="appearance-none bg-white border border-border rounded-lg pl-8 pr-8 py-1.5 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              {SORT_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{sortLabel(opt.value)}</option>
-              ))}
-            </select>
-            <ArrowUpDown className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+          {/* Row 2 on mobile: sort + clear */}
+          <div className="flex items-center gap-2 sm:contents">
+            {/* Sort */}
+            <div className="relative flex-1 sm:flex-initial sm:ml-auto">
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+                className="appearance-none bg-white border border-border rounded-lg pl-8 pr-7 py-2 h-10 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary w-full"
+              >
+                {SORT_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{sortLabel(opt.value)}</option>
+                ))}
+              </select>
+              <ArrowUpDown className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            </div>
+
+            {/* Clear filters */}
+            {activeFiltersCount > 0 && (
+              <button
+                onClick={clearFilters}
+                className="flex-shrink-0 flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+              >
+                <X className="h-3 w-3" />
+                {t.companies.clearFilters ?? "Clear"} ({activeFiltersCount})
+              </button>
+            )}
           </div>
-
-          {/* Clear filters */}
-          {activeFiltersCount > 0 && (
-            <button
-              onClick={clearFilters}
-              className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
-            >
-              <X className="h-3 w-3" />
-              {t.companies.clearFilters ?? "Clear filters"} ({activeFiltersCount})
-            </button>
-          )}
         </div>
       </div>
 
