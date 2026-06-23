@@ -202,7 +202,7 @@ export function PlanCards({ selected, onSelect, showSetupFee = true }: PlanCards
             >
               {isPro && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <span className="bg-primary text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow">
+                  <span className="bg-primary text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow whitespace-nowrap">
                     {s.mostPopular}
                   </span>
                 </div>
