@@ -26,6 +26,19 @@ function hideAllChatbase() {
   });
 }
 
+function showAllChatbase() {
+  document.querySelectorAll<HTMLElement>("iframe").forEach((f) => {
+    if (!isChatbaseEl(f)) return;
+    let el: HTMLElement | null = f;
+    let hops = 0;
+    while (el && el !== document.body && hops < 8) {
+      el.style.removeProperty("display");
+      el = el.parentElement;
+      hops++;
+    }
+  });
+}
+
 function findBubbleRect(): DOMRect | null {
   for (const f of Array.from(document.querySelectorAll<HTMLIFrameElement>("iframe"))) {
     if (!isChatbaseEl(f)) continue;
