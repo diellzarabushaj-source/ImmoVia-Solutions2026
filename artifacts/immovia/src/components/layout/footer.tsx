@@ -151,10 +151,6 @@ export function Footer() {
             >
               Cookie-Einstellungen
             </button>
-            <span className="text-white/20">·</span>
-            <Link href="/admin" className="text-xs text-white/20 hover:text-white/40 transition-colors">
-              {t.footer.admin}
-            </Link>
           </div>
         </div>
       </div>
