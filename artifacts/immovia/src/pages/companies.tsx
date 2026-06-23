@@ -207,20 +207,17 @@ export default function Companies() {
       return matchSearch && matchService && matchType && matchCity;
     });
 
-    if (sortBy === "price_asc") {
-      list = [...list].sort((a, b) => (a.hourlyRate ?? 9999) - (b.hourlyRate ?? 9999));
-    } else if (sortBy === "price_desc") {
-      list = [...list].sort((a, b) => (b.hourlyRate ?? 0) - (a.hourlyRate ?? 0));
-    } else if (sortBy === "experience") {
-      list = [...list].sort((a, b) => (b.yearsExperience ?? 0) - (a.yearsExperience ?? 0));
-    } else {
-      // default: Premium → Professional → Basic → unranked
-      list = [...list].sort((a, b) => {
-        const pa = PLAN_RANK[(a.planType ?? "").toLowerCase()] ?? 0;
-        const pb = PLAN_RANK[(b.planType ?? "").toLowerCase()] ?? 0;
-        return pb - pa;
-      });
-    }
+    // Plan tier is ALWAYS the primary sort: Premium → Professional → Basic → unranked
+    list = [...list].sort((a, b) => {
+      const pa = PLAN_RANK[(a.planType ?? "").toLowerCase()] ?? 0;
+      const pb = PLAN_RANK[(b.planType ?? "").toLowerCase()] ?? 0;
+      if (pb !== pa) return pb - pa;
+      // Secondary sort within same tier
+      if (sortBy === "price_asc") return (a.hourlyRate ?? 9999) - (b.hourlyRate ?? 9999);
+      if (sortBy === "price_desc") return (b.hourlyRate ?? 0) - (a.hourlyRate ?? 0);
+      if (sortBy === "experience") return (b.yearsExperience ?? 0) - (a.yearsExperience ?? 0);
+      return 0;
+    });
 
     return list;
   }, [approved, searchTerm, activeServices, workerTypeFilter, cityFilter, sortBy]);

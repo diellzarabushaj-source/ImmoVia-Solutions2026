@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import type { ReactNode } from "react";
 import { useLanguage } from "@/lib/language-context";
-import { MapPin, Clock, FileText, Building2, User, Star, BadgeCheck, Crown, Shield, Sparkles } from "lucide-react";
+import { MapPin, Clock, FileText, Building2, User, Star, BadgeCheck, Crown, Shield } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import { resolvePhotoSrc, avatarGradient, initialsOf } from "@/lib/display";
 
@@ -37,8 +37,8 @@ interface ProviderCardProps {
 function PlanBadge({ plan }: { plan: string }) {
   if (plan === "premium") {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm shadow-amber-300/40 flex-shrink-0 uppercase">
-        <Crown className="w-2.5 h-2.5" />
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-white shadow-md shadow-amber-300/50 flex-shrink-0 uppercase border border-amber-300/40">
+        <Crown className="w-3 h-3" />
         Premium
       </span>
     );
@@ -47,7 +47,7 @@ function PlanBadge({ plan }: { plan: string }) {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-300/40 flex-shrink-0 uppercase">
         <Shield className="w-2.5 h-2.5" />
-        Pro
+        Professional
       </span>
     );
   }
@@ -82,42 +82,53 @@ export function ProviderCard({
   const isPremium = planBadge === "premium";
   const isPro = planBadge === "pro" || planBadge === "professional";
 
+  // Premium gets a dramatically different card — golden glow, gradient border effect
   const cardClass = isPremium
-    ? "bg-white border-2 border-amber-400/70 shadow-lg shadow-amber-100/60 ring-1 ring-amber-200/30 hover:shadow-2xl hover:shadow-amber-100/80 hover:border-amber-500 hover:-translate-y-1"
+    ? "bg-gradient-to-b from-amber-50/90 via-white to-white border-2 border-amber-400 shadow-xl shadow-amber-200/70 ring-2 ring-amber-300/30 hover:shadow-2xl hover:shadow-amber-200/90 hover:border-amber-500 hover:-translate-y-1.5"
     : isPro
       ? "bg-white border-2 border-blue-300/80 shadow-lg shadow-blue-100/50 ring-1 ring-blue-200/30 hover:shadow-2xl hover:shadow-blue-100/70 hover:border-blue-400 hover:-translate-y-1"
       : "bg-white border border-border/70 shadow-sm hover:shadow-xl hover:shadow-primary/8 hover:border-primary/25 hover:-translate-y-0.5";
 
+  const accentBarClass = isPremium
+    ? "h-[5px] bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500"
+    : isPro
+      ? "h-[3px] bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600"
+      : "h-[2px] bg-gradient-to-r from-primary/50 via-primary/30 to-primary/10";
+
   const headerBg = isPremium
-    ? "bg-gradient-to-br from-amber-50 via-orange-50/80 to-white"
+    ? "bg-gradient-to-br from-amber-50 via-yellow-50/60 to-white"
     : isPro
       ? "bg-gradient-to-br from-blue-50/80 via-indigo-50/60 to-white"
-      : "bg-gradient-to-br from-slate-50 via-blue-50/30 to-white";
-
-  const accentBar = isPremium
-    ? "bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500"
-    : isPro
-      ? "bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600"
-      : "bg-gradient-to-r from-primary/60 via-primary/40 to-primary/20";
+      : "bg-gradient-to-br from-slate-50 via-blue-50/20 to-white";
 
   const inner = (
-    <div className={`rounded-2xl transition-all duration-250 flex flex-col overflow-hidden cursor-pointer group h-full ${cardClass}`}>
+    <div className={`rounded-2xl transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group h-full relative ${cardClass}`}>
 
       {/* Top accent bar */}
-      <div className={`h-[3px] w-full flex-shrink-0 ${accentBar}`} />
+      <div className={`w-full flex-shrink-0 ${accentBarClass}`} />
 
-      {/* Header area */}
+      {/* Premium: "Empfohlen" ribbon */}
+      {isPremium && (
+        <div className="absolute top-3 right-0 z-10">
+          <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-black tracking-widest uppercase px-3 py-0.5 rounded-l-full shadow-md shadow-amber-300/50 flex items-center gap-1">
+            <Crown className="w-2.5 h-2.5" />
+            Featured
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <div className={`${headerBg} px-4 pt-4 pb-3`}>
         <div className="flex gap-3 items-start">
           {/* Avatar */}
           <div className="flex-shrink-0 relative">
             {avatar ? (
-              <div className={`w-14 h-14 rounded-2xl overflow-hidden border-2 ${isPremium ? "border-amber-300/60" : isPro ? "border-blue-300/60" : "border-border/50"} shadow-sm`}>
+              <div className={`w-14 h-14 rounded-2xl overflow-hidden border-2 shadow-sm ${isPremium ? "border-amber-400/60 shadow-amber-200/40" : isPro ? "border-blue-300/60" : "border-border/50"}`}>
                 <img src={avatar} alt={name} className="w-full h-full object-cover" />
               </div>
             ) : (
               <div
-                className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${avatarGradient(name)} flex items-center justify-center text-white font-bold text-base shadow-sm border-2 ${isPremium ? "border-amber-300/50" : isPro ? "border-blue-300/50" : "border-white"}`}
+                className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${avatarGradient(name)} flex items-center justify-center text-white font-bold text-base shadow-sm border-2 ${isPremium ? "border-amber-300/60 shadow-amber-200/40" : isPro ? "border-blue-300/50" : "border-white"}`}
               >
                 {initialsOf(name)}
               </div>
@@ -130,22 +141,21 @@ export function ProviderCard({
             )}
           </div>
 
-          {/* Name + meta */}
-          <div className="flex-1 min-w-0">
+          {/* Name + plan badge + meta */}
+          <div className="flex-1 min-w-0 pr-1">
             <div className="flex items-start justify-between gap-1.5">
               <h3 className={`font-bold text-sm leading-tight truncate group-hover:text-primary transition-colors ${isPremium ? "text-amber-900" : isPro ? "text-blue-900" : "text-foreground"}`}>
                 {name}
               </h3>
+            </div>
+            <div className="mt-1 flex items-center gap-1.5">
               {planBadge && <PlanBadge plan={planBadge} />}
             </div>
-
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              {/* Worker type */}
               <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${isIndividual ? "bg-primary/8 text-primary" : "bg-slate-100 text-slate-600"}`}>
                 {isIndividual ? <User className="h-2.5 w-2.5" /> : <Building2 className="h-2.5 w-2.5" />}
                 {isIndividual ? (t.companies?.individual ?? "Individual") : (t.companies?.company ?? "Company")}
               </span>
-              {/* City */}
               <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                 <MapPin className="h-3 w-3 flex-shrink-0" />
                 {provider.city ?? "—"}
@@ -154,7 +164,7 @@ export function ProviderCard({
           </div>
         </div>
 
-        {/* Rating row */}
+        {/* Rating */}
         {showRating && typeof rating === "number" && rating > 0 && (
           <div className="flex items-center gap-1 mt-2.5">
             {[1, 2, 3, 4, 5].map(i => (
@@ -172,11 +182,10 @@ export function ProviderCard({
       </div>
 
       {/* Divider */}
-      <div className={`h-px mx-4 ${isPremium ? "bg-amber-200/50" : isPro ? "bg-blue-200/40" : "bg-border/40"}`} />
+      <div className={`h-px mx-4 ${isPremium ? "bg-amber-200/60" : isPro ? "bg-blue-200/40" : "bg-border/40"}`} />
 
       {/* Body */}
       <div className="p-4 flex-1 flex flex-col gap-3">
-
         {/* Pricing */}
         {isIndividual && provider.hourlyRate ? (
           <div className="flex items-center gap-1.5">
@@ -204,7 +213,7 @@ export function ProviderCard({
                 key={svc}
                 className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
                   isPremium
-                    ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                    ? "bg-amber-50 text-amber-700 border border-amber-200/70"
                     : isPro
                       ? "bg-blue-50 text-blue-700 border border-blue-200/60"
                       : "bg-primary/6 text-primary border border-primary/12"
@@ -223,23 +232,18 @@ export function ProviderCard({
 
         {footer}
       </div>
-
-      {/* Premium shimmer overlay on hover */}
-      {isPremium && (
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400/0 via-transparent to-amber-400/0 group-hover:from-amber-400/3 group-hover:to-orange-300/5 transition-all duration-300 pointer-events-none" />
-      )}
     </div>
   );
 
   if (onClick) {
     return (
-      <div onClick={onClick} role="button" tabIndex={0} className="h-full text-left relative">
+      <div onClick={onClick} role="button" tabIndex={0} className="h-full text-left">
         {inner}
       </div>
     );
   }
   return (
-    <Link href={href ?? `/companies/${provider.id}`} className="h-full block relative">
+    <Link href={href ?? `/companies/${provider.id}`} className="h-full block">
       {inner}
     </Link>
   );
