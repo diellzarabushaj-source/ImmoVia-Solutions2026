@@ -795,7 +795,7 @@ function ChatWidgetInner() {
               onClick={() => { setExpanded(true); void fetchConversations(); }}
               whileTap={{ scale: 0.88 }}
               aria-label={m.title}
-              className="fixed bottom-5 left-5 z-[9998] w-14 h-14 rounded-full text-white shadow-2xl flex items-center justify-center"
+              className="fixed bottom-5 right-5 z-[9998] w-14 h-14 rounded-full text-white shadow-2xl flex items-center justify-center"
               style={{ background: GRADIENT }}
             >
               <MessageSquare className="h-6 w-6" />
@@ -873,7 +873,7 @@ function ChatWidgetInner() {
 
   /* ── DESKTOP layout ─────────────────────────────────────── */
   return (
-    <div className="fixed bottom-0 left-4 md:left-6 z-[9998] flex flex-col w-[320px] md:w-[360px]">
+    <div className="fixed bottom-0 right-4 md:right-6 z-[9998] flex flex-col w-[320px] md:w-[360px]">
       {/* Panel body — expands upward */}
       <AnimatePresence>
         {expanded && (

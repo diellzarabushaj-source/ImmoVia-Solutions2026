@@ -86,6 +86,36 @@
         (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="sCAJBcXM9vHhwBn_Wxh19";script.domain="immovia365.ch";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
       }
     </script>
+    <!-- Lift Chatbase bubble above our chat widget header (~80px tall at bottom-right) -->
+    <script>
+      (function () {
+        function liftChatbaseBubble() {
+          document.querySelectorAll('iframe').forEach(function (f) {
+            var src = f.src || '';
+            var id = f.id || '';
+            if (!src.includes('chatbase') && !id.includes('chatbase') && !id.includes('sCAJBcXM9vHhwBn_Wxh19')) return;
+            var h = parseInt(f.style.height || '0');
+            if (h > 0 && h <= 100) {
+              f.style.setProperty('bottom', '88px', 'important');
+              var p = f.parentElement;
+              var hops = 0;
+              while (p && p !== document.body && hops < 5) {
+                var pos = window.getComputedStyle(p).position;
+                if (pos === 'fixed' || pos === 'absolute') {
+                  p.style.setProperty('bottom', '88px', 'important');
+                }
+                p = p.parentElement; hops++;
+              }
+            }
+          });
+        }
+        var obs = new MutationObserver(function () { requestAnimationFrame(liftChatbaseBubble); });
+        window.addEventListener('load', function () {
+          obs.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
+          liftChatbaseBubble();
+        });
+      })();
+    </script>
     <!-- Chatbase mobile: constrain to bottom-sheet (partial screen), keep on RIGHT side -->
     <script>
       (function () {
