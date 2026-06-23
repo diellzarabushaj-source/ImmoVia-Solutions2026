@@ -164,9 +164,10 @@ function Avatar({ isProvider, size = "md" }: { isProvider: boolean; size?: "sm" 
 }
 
 /* ── Draft view ─────────────────────────────────────────────── */
-function DraftView({ draft, m, onCreated, onBack }: {
+function DraftView({ draft, m, onCreated, onBack, hideHeader, isMobile }: {
   draft: Draft; m: Record<string, string>;
   onCreated: (convId: number) => void; onBack: () => void;
+  hideHeader?: boolean; isMobile?: boolean;
 }) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -189,24 +190,30 @@ function DraftView({ draft, m, onCreated, onBack }: {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-border/60 bg-white flex-shrink-0">
-        <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-muted/60 text-muted-foreground transition-colors">
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <Avatar isProvider={false} size="sm" />
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] text-muted-foreground leading-none">{m.newConvTo}</p>
-          <p className="font-semibold text-sm text-foreground truncate">{draft.companyName}</p>
+      {!hideHeader && (
+        <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-border/60 bg-white flex-shrink-0">
+          <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-muted/60 text-muted-foreground transition-colors">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <Avatar isProvider={false} size="sm" />
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] text-muted-foreground leading-none">{m.newConvTo}</p>
+            <p className="font-semibold text-sm text-foreground truncate">{draft.companyName}</p>
+          </div>
         </div>
-      </div>
+      )}
       <div className="flex-1 bg-slate-50 p-3 flex items-end">
         <p className="text-xs text-muted-foreground text-center w-full py-8">{m.firstMsg}</p>
       </div>
-      <div className="border-t border-border/60 bg-white px-3 py-2.5 flex-shrink-0">
+      <div
+        className="border-t border-border/60 bg-white px-3 py-2.5 flex-shrink-0"
+        style={{ paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 10px)" : undefined }}
+      >
         {err && <p className="text-[10px] text-destructive mb-1">{err}</p>}
         <div className="flex items-end gap-2">
           <textarea
             className="flex-1 resize-none rounded-2xl border border-border bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 min-h-[38px] max-h-24 transition-colors"
+            style={{ fontSize: isMobile ? 16 : undefined }}
             placeholder={m.type} value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
@@ -215,7 +222,7 @@ function DraftView({ draft, m, onCreated, onBack }: {
           <button
             onClick={() => void send()}
             disabled={sending || !text.trim()}
-            className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 hover:bg-primary/90 disabled:opacity-40 transition-colors"
+            className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 hover:bg-primary/90 disabled:opacity-40 transition-colors"
           >
             {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </button>
@@ -226,9 +233,10 @@ function DraftView({ draft, m, onCreated, onBack }: {
 }
 
 /* ── Thread view ─────────────────────────────────────────────── */
-function ThreadView({ convId, myUserId, myCompanyId, m, onBack }: {
+function ThreadView({ convId, myUserId, myCompanyId, m, onBack, hideHeader, isMobile }: {
   convId: number; myUserId: number; myCompanyId: number | null;
   m: Record<string, string>; onBack: () => void;
+  hideHeader?: boolean; isMobile?: boolean;
 }) {
   void myUserId; void myCompanyId;
 
@@ -398,17 +406,19 @@ function ThreadView({ convId, myUserId, myCompanyId, m, onBack }: {
         </div>
       )}
 
-      {/* Thread header */}
-      <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-border/60 bg-white flex-shrink-0">
-        <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-muted/60 text-muted-foreground transition-colors">
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <Avatar isProvider={isProvider} size="sm" />
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm text-foreground truncate">{partnerName}</p>
-          {conv?.subject && <p className="text-[10px] text-muted-foreground truncate">{conv.subject}</p>}
+      {/* Thread header — hidden on mobile (nav bar handles it) */}
+      {!hideHeader && (
+        <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-border/60 bg-white flex-shrink-0">
+          <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-muted/60 text-muted-foreground transition-colors">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <Avatar isProvider={isProvider} size="sm" />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm text-foreground truncate">{partnerName}</p>
+            {conv?.subject && <p className="text-[10px] text-muted-foreground truncate">{conv.subject}</p>}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-1.5 bg-slate-50">
@@ -447,7 +457,10 @@ function ThreadView({ convId, myUserId, myCompanyId, m, onBack }: {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-border/60 bg-white px-3 py-2.5 flex-shrink-0">
+      <div
+        className="border-t border-border/60 bg-white px-3 py-2.5 flex-shrink-0"
+        style={{ paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 10px)" : undefined }}
+      >
         {/* Pending file chips */}
         {pendingFiles.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -479,15 +492,15 @@ function ThreadView({ convId, myUserId, myCompanyId, m, onBack }: {
         <div className="flex items-end gap-1.5">
           <button
             onClick={() => fileRef.current?.click()}
-            className="p-1.5 rounded-full hover:bg-muted/70 text-muted-foreground transition-colors flex-shrink-0"
+            className="p-2 rounded-full hover:bg-muted/70 text-muted-foreground transition-colors flex-shrink-0"
             title={m.attach}
           >
-            <Paperclip className="h-4 w-4" />
+            <Paperclip className="h-5 w-5" />
           </button>
           <textarea
             ref={textareaRef}
             className="flex-1 resize-none rounded-2xl border border-border bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors overflow-hidden"
-            style={{ minHeight: "38px", maxHeight: "120px" }}
+            style={{ minHeight: isMobile ? "44px" : "38px", maxHeight: "120px", fontSize: isMobile ? 16 : undefined }}
             placeholder={m.type}
             value={text}
             onChange={e => setText(e.target.value)}
@@ -499,7 +512,7 @@ function ThreadView({ convId, myUserId, myCompanyId, m, onBack }: {
             onClick={() => void send()}
             disabled={sending || (!text.trim() && pendingFiles.length === 0)}
             whileTap={{ scale: 0.9 }}
-            className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 hover:bg-primary/90 disabled:opacity-35 transition-colors shadow-sm"
+            className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 hover:bg-primary/90 disabled:opacity-35 transition-colors shadow-sm"
           >
             {sending
               ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -600,6 +613,15 @@ function ChatWidgetInner() {
   const { language } = useLanguage();
   const m = ML[language] ?? ML.en;
 
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" && window.innerWidth < 768
+  );
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", check, { passive: true });
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const [expanded, setExpanded] = useState(false);
   const [conversations, setConversations] = useState<ConvRow[]>([]);
   const [myCompanyId, setMyCompanyId] = useState<number | null>(null);
@@ -682,9 +704,174 @@ function ChatWidgetInner() {
     if (!expanded) { setActiveConvId(null); setDraft(null); }
   };
 
+  const closeAll = () => {
+    setExpanded(false);
+    setActiveConvId(null);
+    setDraft(null);
+  };
+
   const showThread = activeConvId !== null;
   const showDraft = draft !== null && !showThread;
 
+  const GRADIENT = "linear-gradient(135deg,#0d2151 0%,#1a3a6e 60%,#1e4b8a 100%)";
+
+  // Compute the partner name for the mobile nav bar title
+  const activeConv = conversations.find(c => c.id === activeConvId);
+  const mobileNavTitle = showThread && activeConv
+    ? ((myCompanyId && activeConv.companyId === myCompanyId)
+        ? (activeConv.customerName ?? m.title)
+        : (activeConv.companyName ?? m.title))
+    : showDraft && draft
+    ? draft.companyName
+    : m.title;
+
+  const mobilePanelContent = showThread ? (
+    <ThreadView
+      convId={activeConvId!}
+      myUserId={user.id}
+      myCompanyId={myCompanyId}
+      m={m}
+      onBack={handleBack}
+      hideHeader
+      isMobile
+    />
+  ) : showDraft ? (
+    <DraftView
+      draft={draft!}
+      m={m}
+      onBack={handleBack}
+      onCreated={(convId) => { setDraft(null); setActiveConvId(convId); void fetchConversations(); }}
+      hideHeader
+      isMobile
+    />
+  ) : (
+    <ConvList
+      conversations={conversations}
+      myCompanyId={myCompanyId}
+      loading={loading}
+      m={m}
+      onSelect={id => { setDraft(null); setActiveConvId(id); }}
+    />
+  );
+
+  const desktopPanelContent = showThread ? (
+    <ThreadView
+      convId={activeConvId!}
+      myUserId={user.id}
+      myCompanyId={myCompanyId}
+      m={m}
+      onBack={handleBack}
+    />
+  ) : showDraft ? (
+    <DraftView
+      draft={draft!}
+      m={m}
+      onBack={handleBack}
+      onCreated={(convId) => { setDraft(null); setActiveConvId(convId); void fetchConversations(); }}
+    />
+  ) : (
+    <ConvList
+      conversations={conversations}
+      myCompanyId={myCompanyId}
+      loading={loading}
+      m={m}
+      onSelect={id => { setDraft(null); setActiveConvId(id); }}
+    />
+  );
+
+  /* ── MOBILE layout ──────────────────────────────────────── */
+  if (isMobile) {
+    return (
+      <>
+        {/* FAB — shown when collapsed */}
+        <AnimatePresence>
+          {!expanded && (
+            <motion.button
+              key="fab"
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.7, opacity: 0 }}
+              transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+              onClick={() => { setExpanded(true); void fetchConversations(); }}
+              whileTap={{ scale: 0.88 }}
+              aria-label={m.title}
+              className="fixed bottom-5 right-5 z-[9998] w-14 h-14 rounded-full text-white shadow-2xl flex items-center justify-center"
+              style={{ background: GRADIENT }}
+            >
+              <MessageSquare className="h-6 w-6" />
+              {totalUnread > 0 && (
+                <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                  {totalUnread > 99 ? "99+" : totalUnread}
+                </span>
+              )}
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Full-screen panel — shown when expanded */}
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              key="mobile-panel"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+              className="fixed inset-0 z-[9999] flex flex-col bg-white"
+            >
+              {/* Mobile nav bar */}
+              <div
+                className="flex items-center gap-3 px-4 text-white flex-shrink-0"
+                style={{
+                  background: GRADIENT,
+                  paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
+                  paddingBottom: 12,
+                }}
+              >
+                {(showThread || showDraft) ? (
+                  <button
+                    onClick={handleBack}
+                    className="p-2 -ml-1.5 rounded-full hover:bg-white/20 active:bg-white/30 transition-colors"
+                    aria-label={m.back}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="h-5 w-5" />
+                  </div>
+                )}
+                <span className="font-semibold flex-1 text-left text-base truncate">{mobileNavTitle}</span>
+                {!showThread && !showDraft && (
+                  <button
+                    onClick={() => { setActiveConvId(null); setDraft(null); }}
+                    className="p-2 rounded-full hover:bg-white/20 active:bg-white/30 transition-colors"
+                    title="New message"
+                  >
+                    <Pencil className="h-4.5 w-4.5" />
+                  </button>
+                )}
+                <button
+                  onClick={closeAll}
+                  className="p-2 rounded-full hover:bg-white/20 active:bg-white/30 transition-colors"
+                  aria-label="Schließen"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Content — fills remaining height */}
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                {mobilePanelContent}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
+  /* ── DESKTOP layout ─────────────────────────────────────── */
   return (
     <div className="fixed bottom-0 right-4 md:right-6 z-[9998] flex flex-col w-[320px] md:w-[360px]">
       {/* Panel body — expands upward */}
@@ -698,30 +885,7 @@ function ChatWidgetInner() {
             transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
             className="bg-white border border-border/70 border-b-0 rounded-t-2xl shadow-2xl overflow-hidden flex flex-col"
           >
-            {showThread ? (
-              <ThreadView
-                convId={activeConvId!}
-                myUserId={user.id}
-                myCompanyId={myCompanyId}
-                m={m}
-                onBack={handleBack}
-              />
-            ) : showDraft ? (
-              <DraftView
-                draft={draft!}
-                m={m}
-                onBack={handleBack}
-                onCreated={(convId) => { setDraft(null); setActiveConvId(convId); void fetchConversations(); }}
-              />
-            ) : (
-              <ConvList
-                conversations={conversations}
-                myCompanyId={myCompanyId}
-                loading={loading}
-                m={m}
-                onSelect={id => { setDraft(null); setActiveConvId(id); }}
-              />
-            )}
+            {desktopPanelContent}
           </motion.div>
         )}
       </AnimatePresence>
@@ -733,24 +897,17 @@ function ChatWidgetInner() {
         onClick={handleHeaderClick}
         onKeyDown={e => { if (e.key === "Enter" || e.key === " ") handleHeaderClick(); }}
         className="flex items-center gap-3 px-4 py-3 rounded-t-2xl text-white shadow-lg transition-all hover:brightness-110 active:brightness-90 w-full cursor-pointer select-none"
-        style={{ background: "linear-gradient(135deg,#0d2151 0%,#1a3a6e 60%,#1e4b8a 100%)" }}
+        style={{ background: GRADIENT }}
       >
-        {/* Avatar / icon */}
         <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
           <MessageSquare className="h-4 w-4" />
         </div>
-
-        {/* Title */}
         <span className="font-semibold text-sm flex-1 text-left">{m.title}</span>
-
-        {/* Unread badge */}
         {totalUnread > 0 && !expanded && (
           <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-tight">
             {totalUnread > 99 ? "99+" : totalUnread}
           </span>
         )}
-
-        {/* Actions */}
         {expanded && (
           <button
             onClick={e => { e.stopPropagation(); setActiveConvId(null); setDraft(null); }}
