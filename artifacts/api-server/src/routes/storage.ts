@@ -10,12 +10,18 @@ import { requireAuth } from "../middlewares/requireAuth";
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
 
-const MAX_UPLOAD_BYTES = 8 * 1024 * 1024; // 8 MB
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_CONTENT_TYPES = new Set([
+  // Images
   "image/jpeg",
+  "image/jpg",
   "image/png",
   "image/webp",
   "image/gif",
+  // Documents
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 
 /**

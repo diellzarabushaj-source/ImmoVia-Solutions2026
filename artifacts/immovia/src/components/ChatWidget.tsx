@@ -121,25 +121,33 @@ async function uploadFile(file: File): Promise<string> {
   const { uploadURL, objectPath } = await r.json() as { uploadURL: string; objectPath: string };
   const put = await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
   if (!put.ok) throw new Error("upload");
-  return objectPath as string;
+  // Encode original filename so AttachPreview can show thumbnails + correct name
+  return `${objectPath}|${encodeURIComponent(file.name)}`;
 }
 
 /* ── Attachment preview ─────────────────────────────────────── */
 function AttachPreview({ path }: { path: string }) {
-  const isImg = /\.(jpe?g|png|webp|gif)$/i.test(path) || path.includes("image");
+  // Format stored: "/objects/uuid|encoded-filename.ext"  (legacy: just "/objects/uuid")
+  const pipeIdx = path.indexOf("|");
+  const storagePath = pipeIdx >= 0 ? path.slice(0, pipeIdx) : path;
+  const fileName = pipeIdx >= 0 ? decodeURIComponent(path.slice(pipeIdx + 1)) : (path.split("/").pop() ?? "file");
+  const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+  const isImg = ["jpg", "jpeg", "png", "webp", "gif"].includes(ext);
+  const isPdf = ext === "pdf";
+  const href = `/api/storage${storagePath}`;
+
   if (isImg) {
     return (
-      <a href={`/api/storage${path}`} target="_blank" rel="noopener noreferrer">
-        <img src={`/api/storage${path}`} alt="attachment" className="max-w-[160px] max-h-[160px] rounded-xl object-cover border border-white/20 mt-1" />
+      <a href={href} target="_blank" rel="noopener noreferrer">
+        <img src={href} alt={fileName} className="max-w-[160px] max-h-[160px] rounded-xl object-cover border border-white/20 mt-1" />
       </a>
     );
   }
-  const name = path.split("/").pop() ?? "file";
   return (
-    <a href={`/api/storage${path}`} target="_blank" rel="noopener noreferrer"
+    <a href={href} target="_blank" rel="noopener noreferrer"
       className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2 mt-1 hover:bg-white/20 text-xs">
-      <FileText className="h-4 w-4 flex-shrink-0" />
-      <span className="truncate max-w-[120px]">{name}</span>
+      {isPdf ? <FileText className="h-4 w-4 flex-shrink-0 text-red-300" /> : <FileText className="h-4 w-4 flex-shrink-0" />}
+      <span className="truncate max-w-[120px]">{fileName}</span>
     </a>
   );
 }
