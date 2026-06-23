@@ -304,9 +304,21 @@ export default function ClientDashboard() {
         <div className="flex justify-end mb-2">
           <NotificationBell />
         </div>
+        {/* Mobile nav strip — OUTSIDE flex row so it stacks above content */}
+        <div className="md:hidden w-full mb-4 -mx-1">
+          <div className="flex gap-2 overflow-x-auto pb-2 px-1">
+            {navItems.map(item => (
+              <button key={item.id} onClick={() => setActiveSection(item.id)} className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors border ${activeSection === item.id ? "bg-primary text-primary-foreground border-primary" : "bg-white border-border text-foreground/70"}`}>
+                {item.icon}{item.label}
+                {item.badge !== undefined && <span className="ml-1 text-[10px] font-bold">{item.badge}</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="flex gap-6">
 
-          {/* Sidebar */}
+          {/* Sidebar — desktop only */}
           <aside className="w-56 shrink-0 hidden md:block">
             <Card className="p-2 sticky top-24">
               <div className="px-3 py-2 mb-1">
@@ -328,18 +340,6 @@ export default function ClientDashboard() {
               </nav>
             </Card>
           </aside>
-
-          {/* Mobile nav strip */}
-          <div className="md:hidden w-full mb-4">
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {navItems.map(item => (
-                <button key={item.id} onClick={() => setActiveSection(item.id)} className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors border ${activeSection === item.id ? "bg-primary text-primary-foreground border-primary" : "bg-white border-border text-foreground/70"}`}>
-                  {item.icon}{item.label}
-                  {item.badge !== undefined && <span className="ml-1 text-[10px] font-bold">{item.badge}</span>}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Main content */}
           <main className="flex-1 min-w-0">

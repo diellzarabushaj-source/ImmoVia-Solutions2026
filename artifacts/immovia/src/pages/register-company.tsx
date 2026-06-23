@@ -350,13 +350,14 @@ export default function RegisterCompany() {
                             key={opt.value}
                             type="button"
                             onClick={() => field.onChange(opt.value)}
-                            className={`flex items-center justify-center gap-2 rounded-lg border-2 p-3 text-sm font-medium transition-all ${
+                            className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 px-2 py-3 text-xs font-medium text-center leading-tight transition-all min-h-[4.5rem] ${
                               field.value === opt.value
                                 ? "border-primary bg-primary/5 text-primary"
                                 : "border-border text-muted-foreground hover:border-primary/40"
                             }`}
                           >
-                            <opt.icon className="h-4 w-4" /> {opt.label}
+                            <opt.icon className="h-4 w-4 flex-shrink-0" />
+                            <span>{opt.label}</span>
                           </button>
                         ))}
                       </div>

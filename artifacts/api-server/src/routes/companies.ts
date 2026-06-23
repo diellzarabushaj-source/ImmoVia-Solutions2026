@@ -269,7 +269,7 @@ router.post("/companies/:id/registration-checkout", async (req, res): Promise<vo
   }
 
   const stripe = getStripeClient();
-  const origin = (req.headers.origin as string) || `https://${req.headers.host}`;
+  const origin = process.env.APP_URL || (req.headers.origin as string) || `https://${req.headers.host}`;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -360,7 +360,7 @@ router.post("/companies/:id/package-checkout", async (req, res): Promise<void> =
   }
 
   const stripe = getStripeClient();
-  const origin = (req.headers.origin as string) || `https://${req.headers.host}`;
+  const origin = process.env.APP_URL || (req.headers.origin as string) || `https://${req.headers.host}`;
 
   // Resolve the local user ID from Clerk so activateSubscription can link the subscription
   const auth = getAuth(req);

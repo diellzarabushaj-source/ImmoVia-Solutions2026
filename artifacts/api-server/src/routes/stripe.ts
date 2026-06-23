@@ -59,7 +59,7 @@ router.post("/stripe/checkout", requireProvider, async (req, res): Promise<void>
     return;
   }
 
-  const host = `${req.protocol}://${req.get("host")}`;
+  const host = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
   // {CHECKOUT_SESSION_ID} is substituted by Stripe so we can resolve the session on success.
   const successUrl = `${host}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${host}/pricing?payment=cancelled`;
@@ -82,7 +82,7 @@ router.post("/stripe/checkout", requireProvider, async (req, res): Promise<void>
 // POST /stripe/portal — Stripe Customer Portal (manage/cancel subscription)
 router.post("/stripe/portal", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;
-  const host = `${req.protocol}://${req.get("host")}`;
+  const host = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
   const returnUrl = `${host}/provider/billing`;
 
   try {
