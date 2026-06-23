@@ -86,46 +86,7 @@
         (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="sCAJBcXM9vHhwBn_Wxh19";script.domain="immovia365.ch";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
       }
     </script>
-    <!-- Move Chatbase bubble to bottom-LEFT to avoid overlap with our chat widget -->
-    <script>
-      (function () {
-        function moveChatbaseLeft() {
-          // Target the bubble button iframe (small, < 100px tall)
-          document.querySelectorAll('iframe').forEach(function (f) {
-            var src = f.src || '';
-            var id = f.id || '';
-            if (!src.includes('chatbase') && !id.includes('chatbase') && !id.includes('sCAJBcXM9vHhwBn_Wxh19')) return;
-            var h = parseInt(f.style.height || '0');
-            // Only target the small bubble button (not the open chat window)
-            if (h > 0 && h <= 100) {
-              f.style.setProperty('left', '20px', 'important');
-              f.style.setProperty('right', 'auto', 'important');
-              // Also fix any parent wrapper
-              var p = f.parentElement;
-              var hops = 0;
-              while (p && p !== document.body && hops < 5) {
-                var pos = window.getComputedStyle(p).position;
-                if (pos === 'fixed' || pos === 'absolute') {
-                  p.style.setProperty('left', '20px', 'important');
-                  p.style.setProperty('right', 'auto', 'important');
-                }
-                p = p.parentElement;
-                hops++;
-              }
-            }
-          });
-        }
-
-        var obs = new MutationObserver(function () {
-          requestAnimationFrame(moveChatbaseLeft);
-        });
-        window.addEventListener('load', function () {
-          obs.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
-          moveChatbaseLeft();
-        });
-      })();
-    </script>
-    <!-- Chatbase mobile: constrain to bottom-sheet (partial screen) -->
+    <!-- Chatbase mobile: constrain to bottom-sheet (partial screen), keep on RIGHT side -->
     <script>
       (function () {
         var mq = window.matchMedia('(max-width: 768px)');
@@ -139,8 +100,8 @@
           el.style.setProperty('max-width', 'calc(100vw - 24px)', 'important');
           el.style.setProperty('top', 'auto', 'important');
           el.style.setProperty('bottom', '88px', 'important');
-          el.style.setProperty('left', '12px', 'important');
           el.style.setProperty('right', '12px', 'important');
+          el.style.setProperty('left', 'auto', 'important');
           el.style.setProperty('border-radius', '20px', 'important');
           el.style.setProperty('box-shadow', '0 12px 48px rgba(0,0,0,0.22)', 'important');
           el.style.setProperty('pointer-events', 'auto', 'important');
