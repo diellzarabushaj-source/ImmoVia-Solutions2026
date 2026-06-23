@@ -173,7 +173,8 @@ export function ChatbaseRestoreButton() {
 
   const restore = () => {
     localStorage.removeItem(STORAGE_KEY);
-    window.location.reload();
+    setDismissed(false);
+    showAllChatbase();
   };
 
   return (
