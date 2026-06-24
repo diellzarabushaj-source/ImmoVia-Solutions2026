@@ -89,18 +89,18 @@ export async function canViewContactDetails(req: Request): Promise<boolean> {
 }
 
 /**
- * For a specific project: Premium always sees, owner always sees.
- * Basic/Pro see only if they have a persisted unlock row and remaining quota.
+ * For a specific project: only admins, Premium providers, and Basic/Pro providers
+ * with an existing unlock row can view contact details.
+ * Project owners do NOT get automatic access — the contact card is SP-only.
  */
 export async function canViewProjectContacts(
   req: Request,
   projectId: number,
-  ownerUserId: number | null,
 ): Promise<boolean> {
   if (isAdminSession(req)) return true;
   const userId = await getLocalUserId(req);
   if (!userId) return false;
-  if (ownerUserId !== null && userId === ownerUserId) return true;
+  // Project owners do NOT get automatic access — contacts are only for SP unlock flow
   const slug = await getProviderPlanSlug(userId);
   if (slug === "premium") return true;
   if (slug === "free") return false;

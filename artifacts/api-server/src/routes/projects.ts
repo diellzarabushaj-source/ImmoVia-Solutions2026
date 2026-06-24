@@ -206,7 +206,7 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
   }
 
   const authed = isAuthenticated(req);
-  const canContact = await canViewProjectContacts(req, params.data.id, row.project.ownerUserId ?? null);
+  const canContact = await canViewProjectContacts(req, params.data.id);
   const project = withPoster(row.project, row, authed);
   const payload = canContact ? project : redactContact(project);
   res.json(GetProjectResponse.parse(payload));
