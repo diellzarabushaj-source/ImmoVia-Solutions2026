@@ -449,8 +449,8 @@ export default function CompanyProfile() {
                   {t.publicProfile.about}
                 </h2>
                 {!user ? (
-                  <div className="relative">
-                    <p className="text-sm text-foreground/80 leading-relaxed pointer-events-none select-none" style={{ opacity: 0.5, filter: "blur(5px)" }} aria-hidden="true">
+                  <div className="relative min-h-[5rem]">
+                    <p className="text-sm text-foreground/80 leading-relaxed pointer-events-none select-none" style={{ opacity: 0.45, filter: "blur(4px)" }} aria-hidden="true">
                       {company.description}
                     </p>
                     <div className="absolute inset-0 flex items-center justify-center">
