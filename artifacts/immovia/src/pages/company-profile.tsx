@@ -486,12 +486,13 @@ export default function CompanyProfile() {
                       </div>
                     )}
                   </div>
-                  {/* Unlock hint — subtle, non-dominant */}
+                  {/* Unlock hint — plain inline hyperlinks only */}
                   <div className="absolute inset-0 flex items-center justify-center z-10">
-                    <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md border border-border/60 rounded-full px-4 py-2 shadow-sm">
-                      <LockIcon className="w-3.5 h-3.5 text-foreground/50 flex-shrink-0" />
-                      <span className="text-xs text-foreground/60 whitespace-nowrap">{t.publicProfile.galleryGateTitle}</span>
-                    </div>
+                    <p className="text-xs text-foreground/60 text-center">
+                      <Link href="/sign-in" className="text-primary underline underline-offset-2 hover:text-primary/70 transition-colors">{t.nav.signIn}</Link>
+                      <span className="mx-1.5 text-foreground/30">·</span>
+                      <Link href="/signup" className="text-primary underline underline-offset-2 hover:text-primary/70 transition-colors">{t.nav.register}</Link>
+                    </p>
                   </div>
                 </div>
               ) : validGallery.length === 0 ? (
