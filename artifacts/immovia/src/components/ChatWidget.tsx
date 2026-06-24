@@ -761,6 +761,7 @@ function ChatWidgetInner() {
       myCompanyId={myCompanyId}
       m={m}
       onBack={handleBack}
+      hideHeader
     />
   ) : showDraft ? (
     <DraftView
@@ -768,6 +769,7 @@ function ChatWidgetInner() {
       m={m}
       onBack={handleBack}
       onCreated={(convId) => { setDraft(null); setActiveConvId(convId); void fetchConversations(); }}
+      hideHeader
     />
   ) : (
     <ConvList
@@ -871,57 +873,70 @@ function ChatWidgetInner() {
     );
   }
 
-  /* ── DESKTOP layout ─────────────────────────────────────── */
+  /* ── DESKTOP layout — LinkedIn-style (header at top) ────── */
   return (
-    <div className="fixed bottom-0 right-4 md:right-6 z-[9998] flex flex-col w-[320px] md:w-[360px]">
-      {/* Panel body — expands upward */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            key="panel"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 480, opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-            className="bg-white border border-border/70 border-b-0 rounded-t-2xl shadow-2xl overflow-hidden flex flex-col"
-          >
-            {desktopPanelContent}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Header bar — always visible, click to expand/collapse */}
+    <motion.div
+      className="fixed bottom-0 right-4 md:right-6 z-[9998] flex flex-col w-[320px] md:w-[360px] rounded-t-2xl shadow-2xl overflow-hidden"
+      animate={{ height: expanded ? 480 : 56 }}
+      initial={false}
+      transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+    >
+      {/* Header — always at the top (LinkedIn style) */}
       <div
         role="button"
         tabIndex={0}
         onClick={handleHeaderClick}
         onKeyDown={e => { if (e.key === "Enter" || e.key === " ") handleHeaderClick(); }}
-        className="flex items-center gap-3 px-4 py-3 rounded-t-2xl text-white shadow-lg transition-all hover:brightness-110 active:brightness-90 w-full cursor-pointer select-none"
+        className="flex items-center gap-2.5 px-4 h-14 flex-shrink-0 text-white cursor-pointer select-none hover:brightness-110 active:brightness-90 transition-all"
         style={{ background: GRADIENT }}
       >
-        <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
-          <MessageSquare className="h-4 w-4" />
-        </div>
-        <span className="font-semibold text-sm flex-1 text-left">{m.title}</span>
+        {/* Back button (thread/draft) or icon (list) */}
+        {expanded && (showThread || showDraft) ? (
+          <button
+            onClick={e => { e.stopPropagation(); handleBack(); }}
+            className="p-1.5 -ml-1 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
+            aria-label={m.back}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+        ) : (
+          <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
+            <MessageSquare className="h-4 w-4" />
+          </div>
+        )}
+
+        {/* Dynamic title — partner name in thread, "Nachrichten" in list */}
+        <span className="font-semibold text-sm flex-1 text-left truncate">{mobileNavTitle}</span>
+
+        {/* Unread badge — only when collapsed */}
         {totalUnread > 0 && !expanded && (
           <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-tight">
             {totalUnread > 99 ? "99+" : totalUnread}
           </span>
         )}
-        {expanded && (
+
+        {/* Pencil — new message, only when expanded on list view */}
+        {expanded && !showThread && !showDraft && (
           <button
             onClick={e => { e.stopPropagation(); setActiveConvId(null); setDraft(null); }}
-            className="p-1 rounded-full hover:bg-white/20 transition-colors"
+            className="p-1.5 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
             title="New message"
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
         )}
-        <span className="p-1 rounded-full hover:bg-white/20 transition-colors">
-          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expanded ? "" : "rotate-180"}`} />
+
+        {/* Minimize / expand chevron */}
+        <span className="p-1 rounded-full hover:bg-white/20 transition-colors flex-shrink-0">
+          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} />
         </span>
       </div>
-    </div>
+
+      {/* Content area — fills remaining height, clipped when collapsed */}
+      <div className="flex-1 min-h-0 bg-white overflow-hidden flex flex-col">
+        {desktopPanelContent}
+      </div>
+    </motion.div>
   );
 }
 
