@@ -456,7 +456,7 @@ export default function CompanyProfile() {
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Link href="/sign-in" className="flex items-center gap-2 bg-white/80 backdrop-blur-md border border-border/60 rounded-full px-4 py-2 shadow-sm hover:bg-white/95 hover:shadow-md transition-all">
                         <LockIcon className="w-3.5 h-3.5 text-foreground/50 flex-shrink-0" />
-                        <span className="text-xs text-foreground/60 whitespace-nowrap">{t.publicProfile.galleryGateTitle}</span>
+                        <span className="text-xs text-foreground/60 whitespace-nowrap">{t.publicProfile.profileGateTitle}</span>
                       </Link>
                     </div>
                   </div>
@@ -504,7 +504,7 @@ export default function CompanyProfile() {
                   <div className="absolute inset-0 flex items-center justify-center z-10">
                     <Link href="/sign-in" className="flex items-center gap-2 bg-white/80 backdrop-blur-md border border-border/60 rounded-full px-4 py-2 shadow-sm hover:bg-white/95 hover:shadow-md transition-all">
                       <LockIcon className="w-3.5 h-3.5 text-foreground/50 flex-shrink-0" />
-                      <span className="text-xs text-foreground/60 whitespace-nowrap">{t.publicProfile.galleryGateTitle}</span>
+                      <span className="text-xs text-foreground/60 whitespace-nowrap">{t.publicProfile.profileGateTitle}</span>
                     </Link>
                   </div>
                 </div>
