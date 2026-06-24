@@ -429,6 +429,7 @@ export default function ClientDashboard() {
                     const Icon = CATEGORY_ICONS[cat.key] ?? HelpCircle;
                     const colors = CATEGORY_COLORS[cat.key] ?? DEFAULT_CATEGORY_COLORS;
                     const isSelected = selectedCategories.has(cat.key);
+                    const hasPhoto = !!cat.imageUrl;
                     return (
                       <button
                         key={cat.key}
@@ -441,7 +442,9 @@ export default function ClientDashboard() {
                             return next;
                           });
                         }}
-                        className={`relative group rounded-2xl border-2 p-4 sm:p-5 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                        className={`relative group rounded-2xl border-2 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 overflow-hidden ${
+                          hasPhoto ? "" : "p-4 sm:p-5"
+                        } ${
                           isSelected
                             ? `border-primary ring-4 ${colors.ring}`
                             : "border-border bg-white hover:border-primary/40 hover:shadow-md"
@@ -449,30 +452,55 @@ export default function ClientDashboard() {
                         data-testid={`button-category-${cat.key}`}
                       >
                         {/* Checkmark badge */}
-                        <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${
+                        <div className={`absolute top-3 right-3 z-10 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${
                           isSelected ? "bg-primary scale-100 opacity-100" : "bg-muted/60 scale-75 opacity-0 group-hover:opacity-40 group-hover:scale-90"
                         }`}>
                           <Check className="w-3 h-3 text-white" />
                         </div>
 
-                        {/* Icon */}
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-200 ${
-                          isSelected ? `${colors.icon} scale-110` : colors.icon
-                        }`}>
-                          <Icon className="w-6 h-6" />
-                        </div>
-
-                        {/* Label */}
-                        <span className={`font-semibold text-sm block leading-snug transition-colors ${isSelected ? "text-primary" : "text-foreground"}`}>
-                          {cat.label}
-                        </span>
-
-                        {/* Sub-count */}
-                        {cat.subcategories.length > 0 && (
-                          <span className="text-xs text-muted-foreground mt-1.5 block">
-                            {cat.subcategories.length}{" "}
-                            {language === "de" ? "Unterkategorien" : language === "fr" ? "sous-catégories" : language === "sq" ? "nënkategori" : "subcategories"}
-                          </span>
+                        {hasPhoto ? (
+                          <>
+                            {/* Photo mode: full-width cover image */}
+                            <div className="relative w-full h-28">
+                              <img
+                                src={cat.imageUrl!}
+                                alt={cat.label}
+                                className="w-full h-full object-cover"
+                              />
+                              {isSelected && (
+                                <div className="absolute inset-0 bg-primary/20" />
+                              )}
+                            </div>
+                            <div className="p-3">
+                              <span className={`font-semibold text-sm block leading-snug transition-colors ${isSelected ? "text-primary" : "text-foreground"}`}>
+                                {cat.label}
+                              </span>
+                              {cat.subcategories.length > 0 && (
+                                <span className="text-xs text-muted-foreground mt-1 block">
+                                  {cat.subcategories.length}{" "}
+                                  {language === "de" ? "Unterkategorien" : language === "fr" ? "sous-catégories" : language === "sq" ? "nënkategori" : "subcategories"}
+                                </span>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* Icon mode: colored icon square */}
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-200 ${
+                              isSelected ? `${colors.icon} scale-110` : colors.icon
+                            }`}>
+                              <Icon className="w-6 h-6" />
+                            </div>
+                            <span className={`font-semibold text-sm block leading-snug transition-colors ${isSelected ? "text-primary" : "text-foreground"}`}>
+                              {cat.label}
+                            </span>
+                            {cat.subcategories.length > 0 && (
+                              <span className="text-xs text-muted-foreground mt-1.5 block">
+                                {cat.subcategories.length}{" "}
+                                {language === "de" ? "Unterkategorien" : language === "fr" ? "sous-catégories" : language === "sq" ? "nënkategori" : "subcategories"}
+                              </span>
+                            )}
+                          </>
                         )}
                       </button>
                     );
@@ -485,7 +513,15 @@ export default function ClientDashboard() {
                     <div className="flex items-center gap-2.5">
                       <div className="flex gap-1">
                         {[...selectedCategories].slice(0, 3).map(key => {
+                          const cat = serviceCategories.find(c => c.key === key);
                           const Icon = CATEGORY_ICONS[key] ?? HelpCircle;
+                          if (cat?.imageUrl) {
+                            return (
+                              <div key={key} className="w-7 h-7 rounded-lg overflow-hidden flex-shrink-0">
+                                <img src={cat.imageUrl} alt="" className="w-full h-full object-cover" />
+                              </div>
+                            );
+                          }
                           return <div key={key} className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center"><Icon className="w-4 h-4" /></div>;
                         })}
                       </div>
