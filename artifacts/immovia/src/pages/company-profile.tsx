@@ -487,24 +487,49 @@ export default function CompanyProfile() {
                     )}
                   </div>
                   {/* Unlock overlay */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-white/30 backdrop-blur-[2px]">
-                    <div className="bg-white/95 backdrop-blur-sm border border-border rounded-2xl px-8 py-7 text-center shadow-xl max-w-xs mx-auto">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                        <LockIcon className="w-5 h-5 text-primary" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px] bg-white/20">
+                    <div
+                      className="rounded-2xl overflow-hidden shadow-2xl max-w-xs w-full mx-4 text-center"
+                      style={{ background: "linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 40%,#2563eb 70%,#3b82f6 100%)" }}
+                    >
+                      {/* Glow orb */}
+                      <div className="absolute top-0 right-0 w-40 h-40 rounded-full pointer-events-none"
+                        style={{ background: "radial-gradient(circle,rgba(147,197,253,0.2) 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
+                      <div className="px-6 pt-5 pb-4 border-b border-white/10">
+                        <img src="/logo-white.png" alt="ImmoVia365" className="h-6 w-auto object-contain mx-auto mb-3 opacity-90" />
+                        <h3 className="text-base font-extrabold text-white flex items-center justify-center gap-2">
+                          <Image className="w-4 h-4 text-blue-200 flex-shrink-0" />
+                          {t.publicProfile.gallery}
+                        </h3>
                       </div>
-                      <p className="text-sm font-bold text-foreground mb-1">{t.publicProfile.galleryGateTitle}</p>
-                      <p className="text-xs text-muted-foreground mb-5">{t.publicProfile.contactLoginPrompt}</p>
-                      <div className="flex flex-col gap-2">
-                        <Link href="/sign-in">
-                          <Button size="sm" className="w-full">
-                            {t.publicProfile.galleryGateCta}
-                          </Button>
-                        </Link>
-                        <Link href="/signup">
-                          <Button size="sm" variant="outline" className="w-full">
-                            {t.nav.register}
-                          </Button>
-                        </Link>
+                      <div className="p-5">
+                        {/* Pulsing lock */}
+                        <div className="relative flex items-center justify-center mx-auto mb-4 w-16 h-16">
+                          <motion.div
+                            className="absolute inset-0 rounded-full border-2 border-blue-300/40"
+                            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                          />
+                          <div className="w-12 h-12 rounded-full bg-white/15 border border-white/25 flex items-center justify-center backdrop-blur-sm">
+                            <LockIcon className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        <p className="text-xs text-blue-100/80 mb-5 leading-relaxed">{t.publicProfile.contactLoginPrompt}</p>
+                        <div className="flex flex-col gap-2">
+                          <Link href="/sign-in" className="block">
+                            <button
+                              className="w-full h-10 rounded-lg font-bold text-sm shadow-lg shadow-black/20 border border-white/20 transition-opacity hover:opacity-90"
+                              style={{ background: "linear-gradient(135deg,#ffffff 0%,#e0f2fe 100%)", color: "#1e3a8a" }}
+                            >
+                              {t.publicProfile.galleryGateCta}
+                            </button>
+                          </Link>
+                          <Link href="/signup" className="block">
+                            <button className="w-full h-10 rounded-lg font-semibold text-sm text-white border border-white/25 bg-white/10 hover:bg-white/20 transition-colors">
+                              {t.nav.register}
+                            </button>
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
