@@ -310,6 +310,17 @@ export function Navbar() {
                       <DropdownMenuSeparator />
                     </>
                   )}
+                  {isPoster && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/profile" className="cursor-pointer gap-2" data-testid="menu-profile-poster">
+                          <User className="w-4 h-4" />
+                          {t.nav.profile}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem onClick={() => void onLogout()} className="cursor-pointer gap-2 text-destructive" data-testid="menu-logout">
                     <LogOut className="w-4 h-4" />
                     {t.nav.logout}
@@ -393,7 +404,16 @@ export function Navbar() {
                           )}
                         </Link>
                       ))}
-                      <div className="border-t border-border mt-2 pt-2">
+                      <div className="border-t border-border mt-2 pt-2 flex flex-col gap-1">
+                        <Link
+                          href="/dashboard/profile"
+                          onClick={() => setMobileOpen(false)}
+                          className="flex items-center gap-2 text-base font-medium px-3 py-3 rounded-md text-foreground/70 hover:text-primary hover:bg-secondary/30"
+                          data-testid="mobile-nav-poster-profile"
+                        >
+                          <User className="w-4 h-4" />
+                          {t.nav.profile}
+                        </Link>
                         <button
                           onClick={() => { setMobileOpen(false); void onLogout(); }}
                           className="text-left w-full text-base font-medium px-3 py-3 rounded-md text-destructive hover:bg-destructive/10"
