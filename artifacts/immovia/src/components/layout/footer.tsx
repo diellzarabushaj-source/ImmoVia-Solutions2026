@@ -27,11 +27,16 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
           {/* Brand */}
           <div className="flex flex-col gap-4 md:col-span-1">
-            <Link href="/">
+            <Link href="/" className="flex items-center gap-3 group">
               <img
                 src="/icon-mark.png"
                 alt="ImmoVia365"
-                className="h-20 md:h-24 w-auto object-contain object-left"
+                className="h-10 w-10 object-contain flex-shrink-0"
+              />
+              <img
+                src="/logo-white.png"
+                alt="ImmoVia365"
+                className="h-8 w-auto object-contain object-left"
               />
             </Link>
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
