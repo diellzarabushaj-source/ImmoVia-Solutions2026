@@ -165,7 +165,7 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
   const allInvoices = await db.select().from(invoicesTable).orderBy(desc(invoicesTable.id));
   const regularInvoices = allInvoices.filter((i) => paymentIds.has(i.paymentId));
 
-  const result: Array<typeof regularInvoices[number] & { kind?: string; amountCents?: number; status?: string; receiptUrl?: string | null }> = [...regularInvoices];
+  const result: Array<typeof regularInvoices[number] & { kind?: string; amountCents?: number; status?: string; receiptUrl?: string | null; invoicePdfUrl?: string | null; invoiceHostedUrl?: string | null }> = [...regularInvoices];
 
   if (user) {
     const [company] = await db
@@ -175,6 +175,8 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
       .limit(1);
     if (company?.registrationFeePaid) {
       let receiptUrl: string | null = null;
+      let invoicePdfUrl: string | null = null;
+      let invoiceHostedUrl: string | null = null;
       try {
         const [companyFull] = await db
           .select({ stripeRegistrationSessionId: companiesTable.stripeRegistrationSessionId })
@@ -185,11 +187,20 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
           const stripe = getStripeClient();
           const session = await stripe.checkout.sessions.retrieve(
             companyFull.stripeRegistrationSessionId,
-            { expand: ["payment_intent.latest_charge"] }
+            { expand: ["payment_intent.latest_charge", "invoice"] }
           );
-          const pi = session.payment_intent as import("stripe").Stripe.PaymentIntent | null;
-          const charge = pi?.latest_charge as import("stripe").Stripe.Charge | null;
-          receiptUrl = charge?.receipt_url ?? null;
+          // Prefer real Stripe invoice PDF (available when invoice_creation was enabled)
+          const inv = session.invoice as import("stripe").Stripe.Invoice | null;
+          if (inv) {
+            invoicePdfUrl = inv.invoice_pdf ?? null;
+            invoiceHostedUrl = inv.hosted_invoice_url ?? null;
+          }
+          // Fallback: charge receipt URL
+          if (!invoicePdfUrl && !invoiceHostedUrl) {
+            const pi = session.payment_intent as import("stripe").Stripe.PaymentIntent | null;
+            const charge = pi?.latest_charge as import("stripe").Stripe.Charge | null;
+            receiptUrl = charge?.receipt_url ?? null;
+          }
         }
       } catch {
         // non-fatal — row still shown without receipt link
@@ -203,6 +214,8 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
         amountCents: 14900,
         status: "paid",
         receiptUrl,
+        invoicePdfUrl,
+        invoiceHostedUrl,
       });
     }
   }

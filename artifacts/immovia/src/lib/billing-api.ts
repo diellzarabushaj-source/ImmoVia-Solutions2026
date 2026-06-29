@@ -84,6 +84,8 @@ export interface InvoiceRow {
   amountCents?: number;
   status?: string;
   receiptUrl?: string | null;
+  invoicePdfUrl?: string | null;
+  invoiceHostedUrl?: string | null;
 }
 
 export interface UnlockedContact {

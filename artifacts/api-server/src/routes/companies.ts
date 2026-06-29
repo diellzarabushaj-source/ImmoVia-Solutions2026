@@ -277,6 +277,7 @@ router.post("/companies/:id/registration-checkout", async (req, res): Promise<vo
     customer_email: body.data.email,
     metadata: { companyId: String(company.id) },
     allow_promotion_codes: true,
+    invoice_creation: { enabled: true },
     success_url: `${origin}/registration-payment-success?company_id=${company.id}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/provider?cancelled=1`,
   });

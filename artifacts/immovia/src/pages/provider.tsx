@@ -2245,11 +2245,19 @@ export default function ProviderDashboard() {
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{formatCHF(inv.amountCents ?? 0)}</span>
                         <Badge className="text-[10px] bg-green-100 text-green-800 hover:bg-green-100">{l.paidStatus}</Badge>
-                        <Button size="sm" variant="ghost" asChild className="h-7 px-2">
-                          <a href={inv.receiptUrl ?? "/api/billing/registration-receipt"} target="_blank" rel="noopener noreferrer">
-                            <FileText className="w-3.5 h-3.5 mr-1" />{l.downloadPdf}
-                          </a>
-                        </Button>
+                        {(inv.invoicePdfUrl ?? inv.invoiceHostedUrl ?? inv.receiptUrl) ? (
+                          <Button size="sm" variant="ghost" asChild className="h-7 px-2">
+                            <a href={(inv.invoicePdfUrl ?? inv.invoiceHostedUrl ?? inv.receiptUrl)!} target="_blank" rel="noopener noreferrer">
+                              <FileText className="w-3.5 h-3.5 mr-1" />{l.downloadPdf}
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="ghost" asChild className="h-7 px-2">
+                            <a href="/api/billing/registration-receipt" target="_blank" rel="noopener noreferrer">
+                              <FileText className="w-3.5 h-3.5 mr-1" />{l.downloadPdf}
+                            </a>
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
