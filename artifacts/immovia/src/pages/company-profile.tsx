@@ -32,7 +32,7 @@ import {
 import { motion } from "framer-motion";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { ProviderProfilePDF, type ProviderPDFData } from "@/lib/pdf/ProviderProfilePDF";
-import { useLogoBase64 } from "@/lib/pdf/useLogoBase64";
+import { useLogoBase64, useBase64Images } from "@/lib/pdf/useLogoBase64";
 
 interface Company {
   id: number;
@@ -63,6 +63,7 @@ const GALLERY_PLACEHOLDERS = [
 
 function DownloadProviderPDF({ company }: { company: Company }) {
   const logo = useLogoBase64();
+  const profilePhotos = useBase64Images([company.profilePhoto]);
   const data: ProviderPDFData = {
     companyName: company.companyName,
     contactName: company.contactName,
@@ -73,15 +74,18 @@ function DownloadProviderPDF({ company }: { company: Company }) {
     yearsExperience: company.yearsExperience,
     hourlyRate: company.hourlyRate,
     licenseNumber: company.licenseNumber,
-    profilePhoto: null,
+    website: company.website,
+    profilePhotoBase64: profilePhotos[0] ?? null,
+    galleryPhotosBase64: [],
     logoBase64: logo,
     generatedAt: new Date().toLocaleDateString("de-CH"),
   };
   const filename = `${company.companyName.replace(/\s+/g, "-")}-ImmoVia365.pdf`;
+  const ready = logo !== null || profilePhotos.length > 0;
   return (
     <PDFDownloadLink document={<ProviderProfilePDF data={data} />} fileName={filename}>
       {({ loading }) => (
-        <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/8" disabled={loading} asChild={false}>
+        <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/8" disabled={loading || !ready} asChild={false}>
           <FileDown className="w-4 h-4 mr-2" />
           {loading ? "PDF…" : "PDF"}
         </Button>

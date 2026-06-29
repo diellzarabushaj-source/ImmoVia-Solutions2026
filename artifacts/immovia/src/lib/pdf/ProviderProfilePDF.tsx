@@ -1,13 +1,6 @@
 import {
-  Document, Page, View, Text, Image, StyleSheet, Font,
+  Document, Page, View, Text, Image, StyleSheet,
 } from "@react-pdf/renderer";
-
-Font.register({
-  family: "Helvetica",
-  fonts: [
-    { src: "https://fonts.gstatic.com/s/helveticaneue/v70/1Ptsg8zYS_SKggPNyC0IT4ttDfA.ttf" },
-  ],
-});
 
 const PRIMARY = "#1a3a6e";
 const LIGHT_BLUE = "#3b82f6";
@@ -16,11 +9,11 @@ const LIGHT_GRAY = "#f1f5f9";
 const BORDER = "#e2e8f0";
 
 const styles = StyleSheet.create({
-  page: { backgroundColor: "#ffffff", fontFamily: "Helvetica", fontSize: 10, color: "#1e293b", paddingBottom: 40 },
+  page: { backgroundColor: "#ffffff", fontSize: 10, color: "#1e293b", paddingBottom: 44 },
   header: { backgroundColor: PRIMARY, padding: "24 32 20 32", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   logo: { width: 120, height: 36, objectFit: "contain" },
   headerRight: { alignItems: "flex-end" },
-  headerTitle: { color: "#ffffff", fontSize: 18, fontWeight: "bold", letterSpacing: 0.5 },
+  headerTitle: { color: "#ffffff", fontSize: 18, fontWeight: "bold" },
   headerSub: { color: "rgba(255,255,255,0.7)", fontSize: 9, marginTop: 3 },
   accentBar: { height: 4, backgroundColor: LIGHT_BLUE },
   body: { padding: "24 32" },
@@ -37,13 +30,17 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: BORDER, marginVertical: 16 },
   section: { marginBottom: 18 },
   sectionTitle: { fontSize: 11, fontWeight: "bold", color: PRIMARY, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10, paddingBottom: 4, borderBottom: `1.5 solid ${LIGHT_BLUE}` },
-  twoCol: { flexDirection: "row", gap: 16 },
+  twoCol: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
+  threeCol: { flexDirection: "row", gap: 10 },
   infoBox: { flex: 1, backgroundColor: LIGHT_GRAY, borderRadius: 6, padding: "10 12", border: `1 solid ${BORDER}` },
   infoLabel: { fontSize: 8, color: GRAY, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 3 },
   infoValue: { fontSize: 11, fontWeight: "bold", color: "#1e293b" },
   descText: { fontSize: 10, color: "#374151", lineHeight: 1.6 },
   serviceTag: { backgroundColor: LIGHT_GRAY, color: PRIMARY, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, fontSize: 9, border: `1 solid ${BORDER}`, marginRight: 6, marginBottom: 6 },
   serviceRow: { flexDirection: "row", flexWrap: "wrap" },
+  galleryGrid: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  galleryPhoto: { width: 150, height: 100, borderRadius: 6, objectFit: "cover", border: `1 solid ${BORDER}` },
+  websiteText: { fontSize: 9, color: LIGHT_BLUE },
   footer: { position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: PRIMARY, padding: "10 32", flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   footerText: { color: "rgba(255,255,255,0.6)", fontSize: 8 },
   footerBrand: { color: "#ffffff", fontSize: 9, fontWeight: "bold" },
@@ -62,7 +59,9 @@ export interface ProviderPDFData {
   yearsExperience: number | null;
   hourlyRate: number | null;
   licenseNumber: string | null;
-  profilePhoto?: string | null;
+  website?: string | null;
+  profilePhotoBase64?: string | null;
+  galleryPhotosBase64?: (string | null)[];
   avgRating?: number | null;
   reviewCount?: number | null;
   logoBase64?: string | null;
@@ -73,6 +72,7 @@ export function ProviderProfilePDF({ data }: { data: ProviderPDFData }) {
   const initial = (data.companyName ?? data.contactName ?? "?").charAt(0).toUpperCase();
   const date = data.generatedAt ?? new Date().toLocaleDateString("de-CH");
   const stars = data.avgRating ? Math.round(data.avgRating) : 0;
+  const gallery = (data.galleryPhotosBase64 ?? []).filter((p): p is string => !!p).slice(0, 6);
 
   return (
     <Document title={`${data.companyName} — ImmoVia365 Profil`} author="ImmoVia365">
@@ -94,8 +94,8 @@ export function ProviderProfilePDF({ data }: { data: ProviderPDFData }) {
         <View style={styles.body}>
           {/* Profile row */}
           <View style={styles.profileRow}>
-            {data.profilePhoto ? (
-              <Image src={data.profilePhoto} style={styles.avatar} />
+            {data.profilePhotoBase64 ? (
+              <Image src={data.profilePhotoBase64} style={styles.avatar} />
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarInitial}>{initial}</Text>
@@ -109,9 +109,9 @@ export function ProviderProfilePDF({ data }: { data: ProviderPDFData }) {
               <View style={styles.badgeRow}>
                 <Text style={styles.badgePrimary}>{data.city}</Text>
                 <Text style={styles.badge}>{data.workerType === "company" ? "Unternehmen" : "Einzelperson"}</Text>
-                {data.yearsExperience && (
+                {data.yearsExperience ? (
                   <Text style={styles.badge}>{data.yearsExperience} Jahre Erfahrung</Text>
-                )}
+                ) : null}
               </View>
               {stars > 0 && (
                 <View style={styles.ratingRow}>
@@ -125,32 +125,38 @@ export function ProviderProfilePDF({ data }: { data: ProviderPDFData }) {
           <View style={styles.divider} />
 
           {/* Key info */}
-          <View style={[styles.section]}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Übersicht</Text>
-            <View style={styles.twoCol}>
-              {data.hourlyRate && (
-                <View style={styles.infoBox}>
-                  <Text style={styles.infoLabel}>Stundensatz</Text>
-                  <Text style={styles.infoValue}>CHF {data.hourlyRate}/h</Text>
-                </View>
-              )}
-              {data.yearsExperience && (
+            <View style={styles.threeCol}>
+              {data.yearsExperience ? (
                 <View style={styles.infoBox}>
                   <Text style={styles.infoLabel}>Berufserfahrung</Text>
                   <Text style={styles.infoValue}>{data.yearsExperience} Jahre</Text>
                 </View>
-              )}
-              {data.licenseNumber && (
+              ) : null}
+              {data.licenseNumber ? (
                 <View style={styles.infoBox}>
                   <Text style={styles.infoLabel}>Lizenznummer</Text>
                   <Text style={styles.infoValue}>{data.licenseNumber}</Text>
                 </View>
-              )}
+              ) : null}
+              {data.hourlyRate ? (
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoLabel}>Stundensatz</Text>
+                  <Text style={styles.infoValue}>CHF {data.hourlyRate}/h</Text>
+                </View>
+              ) : null}
               <View style={styles.infoBox}>
                 <Text style={styles.infoLabel}>Standort</Text>
                 <Text style={styles.infoValue}>{data.city}, Schweiz</Text>
               </View>
             </View>
+            {data.website ? (
+              <View style={{ marginTop: 8 }}>
+                <Text style={styles.infoLabel}>Website</Text>
+                <Text style={styles.websiteText}>{data.website}</Text>
+              </View>
+            ) : null}
           </View>
 
           {/* Services */}
@@ -166,10 +172,22 @@ export function ProviderProfilePDF({ data }: { data: ProviderPDFData }) {
           )}
 
           {/* Description */}
-          {data.description && (
+          {data.description ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Über uns</Text>
               <Text style={styles.descText}>{data.description}</Text>
+            </View>
+          ) : null}
+
+          {/* Gallery / portfolio photos */}
+          {gallery.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Portfolio</Text>
+              <View style={styles.galleryGrid}>
+                {gallery.map((src, i) => (
+                  <Image key={i} src={src} style={styles.galleryPhoto} />
+                ))}
+              </View>
             </View>
           )}
         </View>

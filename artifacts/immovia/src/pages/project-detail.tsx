@@ -40,7 +40,7 @@ import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { billingApi, type AppStats, type UnlockedByResponse } from "@/lib/billing-api";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { ProjectBriefPDF, type ProjectBriefData } from "@/lib/pdf/ProjectBriefPDF";
-import { useLogoBase64 } from "@/lib/pdf/useLogoBase64";
+import { useLogoBase64, useBase64Images } from "@/lib/pdf/useLogoBase64";
 
 interface Project {
   id: number;
@@ -81,7 +81,9 @@ const SIZE_COLORS: Record<string, string> = {
 
 function DownloadProjectPDF({ project, categoryLabels }: { project: Project; categoryLabels: string[] }) {
   const logo = useLogoBase64();
-  const photos: string[] = [];
+  const rawPhotos = (project.photos ?? []).filter(Boolean).slice(0, 6);
+  const photoBase64s = useBase64Images(rawPhotos);
+  const validPhotos = photoBase64s.filter((p): p is string => !!p);
   const data: ProjectBriefData = {
     title: project.title,
     projectType: project.projectType,
@@ -91,7 +93,7 @@ function DownloadProjectPDF({ project, categoryLabels }: { project: Project; cat
     timeline: project.timeline,
     size: project.size,
     status: project.status,
-    photos,
+    photos: validPhotos,
     categoryLabels,
     logoBase64: logo,
     generatedAt: new Date().toLocaleDateString("de-CH"),
