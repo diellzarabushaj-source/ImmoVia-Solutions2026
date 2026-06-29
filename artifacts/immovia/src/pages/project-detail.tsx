@@ -508,37 +508,6 @@ export default function ProjectDetail() {
 
           {/* Right — apply sidebar */}
           <div className="space-y-4">
-            {/* Poster identity — only populated by the API for authenticated users */}
-            {project.posterName && project.posterName.trim() && (
-              <motion.div
-                className="bg-white rounded-2xl border border-border shadow-sm p-5"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-              >
-                <h2 className="text-sm font-bold text-foreground mb-3">{t.projectDetail.postedBy}</h2>
-                <div className="flex items-center gap-3">
-                  {project.posterAvatarUrl ? (
-                    <img
-                      src={resolvePhotoSrc(project.posterAvatarUrl)}
-                      alt={project.posterName}
-                      className="w-11 h-11 rounded-full object-cover border border-border flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold flex-shrink-0">
-                      {project.posterName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm text-foreground truncate">{project.posterName}</p>
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      {project.posterType === "company" ? <Building2 className="w-3 h-3" /> : <User className="w-3 h-3" />}
-                      {project.posterType === "company" ? (t.companies?.company ?? "Company") : (t.companies?.individual ?? "Individual")}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
             {/* "Who unlocked your contact" — shown only to the project owner */}
             {unlockedBy !== null && (
               <motion.div
@@ -631,17 +600,6 @@ export default function ProjectDetail() {
               {hasContacts ? (
                 // Contacts visible — Premium or already-unlocked Professional
                 <div className="space-y-3">
-                  {project.fullName && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
-                        <User className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-medium text-white/50">{us.contactName}</p>
-                        <p className="text-sm font-semibold text-white">{project.fullName}</p>
-                      </div>
-                    </div>
-                  )}
                   {project.phone && (
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
