@@ -9,6 +9,7 @@ import {
 } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { requireAdmin } from "../middlewares/requireAdmin";
+import { sendReviewReceivedNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -101,6 +102,36 @@ router.post("/projects/:id/review", requireAuth, async (req, res): Promise<void>
       comment,
     })
     .returning();
+
+  // Notify the reviewed user (fire-and-forget)
+  void (async () => {
+    try {
+      const [author] = await db
+        .select({ fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+      const [target] = await db
+        .select({ email: usersTable.email, fullName: usersTable.fullName, accountType: usersTable.accountType, language: usersTable.language })
+        .from(usersTable)
+        .where(eq(usersTable.id, targetUserId))
+        .limit(1);
+      if (!target?.email) return;
+      await sendReviewReceivedNotification({
+        recipientEmail: target.email,
+        recipientName: target.fullName,
+        reviewerName: author?.fullName ?? null,
+        rating,
+        comment,
+        projectType: project.projectType,
+        city: project.city,
+        isProvider: target.accountType === "service_provider",
+        language: target.language,
+      });
+    } catch (err) {
+      req.log.error({ err }, "Failed to send review received notification");
+    }
+  })();
 
   res.status(201).json({ review });
 });

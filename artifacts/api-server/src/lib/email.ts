@@ -629,6 +629,83 @@ export async function sendProjectRejectedNotification(data: {
   else logger.info({ to: resolveRecipient(data.clientEmail), type: "project_rejected", lang }, "Project rejected notification sent");
 }
 
+// ── sendReviewReceivedNotification ────────────────────────────────────────────
+export async function sendReviewReceivedNotification(data: {
+  recipientEmail: string;
+  recipientName: string | null;
+  reviewerName: string | null;
+  rating: number;
+  comment: string | null;
+  projectType: string;
+  city: string;
+  isProvider: boolean;
+  language?: string | null;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.recipientEmail) return;
+  const lang = normLang(data.language);
+  const url = appUrl();
+  const stars = "★".repeat(data.rating) + "☆".repeat(5 - data.rating);
+  const reviewer = data.reviewerName ?? (data.isProvider ? "Klienti" : "Ofruesi");
+
+  const subjects: Record<Lang, string> = {
+    sq: `Keni marrë një vlerësim të ri — ${stars}`,
+    en: `You received a new review — ${stars}`,
+    de: `Sie haben eine neue Bewertung erhalten — ${stars}`,
+    fr: `Vous avez reçu un nouvel avis — ${stars}`,
+  };
+  const headings: Record<Lang, string> = {
+    sq: "ImmoVia365 — Vlerësim i Ri",
+    en: "ImmoVia365 — New Review",
+    de: "ImmoVia365 — Neue Bewertung",
+    fr: "ImmoVia365 — Nouvel avis",
+  };
+  const greetings: Record<Lang, string> = {
+    sq: `Përshëndetje ${data.recipientName ?? ""},`,
+    en: `Hi ${data.recipientName ?? ""},`,
+    de: `Hallo ${data.recipientName ?? ""},`,
+    fr: `Bonjour ${data.recipientName ?? ""},`,
+  };
+  const intros: Record<Lang, string> = {
+    sq: `<strong>${reviewer}</strong> ju la një vlerësim për projektin <strong>${data.projectType}</strong> në <strong>${data.city}</strong>:`,
+    en: `<strong>${reviewer}</strong> left you a review for the <strong>${data.projectType}</strong> project in <strong>${data.city}</strong>:`,
+    de: `<strong>${reviewer}</strong> hat eine Bewertung für das Projekt <strong>${data.projectType}</strong> in <strong>${data.city}</strong> hinterlassen:`,
+    fr: `<strong>${reviewer}</strong> vous a laissé un avis pour le projet <strong>${data.projectType}</strong> à <strong>${data.city}</strong> :`,
+  };
+  const ctas: Record<Lang, string> = {
+    sq: data.isProvider ? "Shiko Panelin" : "Shiko Vlerësimet",
+    en: data.isProvider ? "Open Dashboard" : "View Reviews",
+    de: data.isProvider ? "Dashboard öffnen" : "Bewertungen ansehen",
+    fr: data.isProvider ? "Ouvrir le tableau de bord" : "Voir les avis",
+  };
+  const ctaPath = data.isProvider ? "/provider" : "/dashboard";
+
+  const commentHtml = data.comment
+    ? `<blockquote style="border-left:3px solid #1a3a6e;padding:8px 16px;margin:12px 0;color:#374151;font-style:italic">${data.comment}</blockquote>`
+    : "";
+
+  const { error } = await client.emails.send({
+    from: fromAddress(),
+    to: resolveRecipient(data.recipientEmail),
+    subject: subjects[lang],
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${headings[lang]}</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">${greetings[lang]}</p>
+          <p style="margin:0 0 12px">${intros[lang]}</p>
+          <p style="margin:0 0 8px;font-size:24px;letter-spacing:2px;color:#f59e0b">${stars}</p>
+          ${commentHtml}
+          <div style="margin-top:24px"><a href="${url}${ctaPath}" style="${BTN_STYLE}">${ctas[lang]}</a></div>
+        </div>
+        ${footer(lang)}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send review received notification");
+  else logger.info({ to: resolveRecipient(data.recipientEmail), type: "review_received", lang }, "Review received notification sent");
+}
+
 // ── sendProviderApprovedNotification ─────────────────────────────────────────
 export async function sendProviderApprovedNotification(data: {
   providerEmail: string;
