@@ -457,7 +457,7 @@ export default function CompanyProfile() {
                   {isSaved ? t.publicProfile.savedProvider : t.publicProfile.saveProvider}
                 </Button>
               )}
-              <DownloadProviderPDF company={company} />
+              {user && !isServiceProvider(user) && <DownloadProviderPDF company={company} />}
               <Button asChild variant="outline" className="ml-auto border-primary/30 text-primary hover:bg-primary/8">
                 <Link href="/submit-project">
                   {t.publicProfile.submitProject}
