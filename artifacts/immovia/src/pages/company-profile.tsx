@@ -204,7 +204,7 @@ export default function CompanyProfile() {
   // Fetch viewer's plan — only SP users can access this endpoint
   useEffect(() => {
     if (!user || !isServiceProvider(user)) return;
-    fetch("/api/billing/provider/me")
+    fetch("/api/billing/provider/app-stats", { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
       .then((d: { planSlug?: string } | null) => { if (d?.planSlug) setViewerPlanSlug(d.planSlug); })
       .catch(() => {});
