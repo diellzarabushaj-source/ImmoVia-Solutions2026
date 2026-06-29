@@ -14,6 +14,19 @@ function adminEmail(): string {
   return process.env["ADMIN_EMAIL"] ?? "";
 }
 
+function fromAddress(): string {
+  return process.env["RESEND_FROM"] ?? "ImmoVia365 <onboarding@resend.dev>";
+}
+
+/**
+ * If RESEND_TO_OVERRIDE is set (e.g. "immovia.rd@gmail.com"), ALL outgoing
+ * emails are redirected there. Useful when Resend is in test mode and can
+ * only deliver to the account owner's address.
+ */
+function resolveRecipient(to: string): string {
+  return process.env["RESEND_TO_OVERRIDE"] ?? to;
+}
+
 function appUrl(): string {
   const domains = process.env["REPLIT_DOMAINS"];
   if (domains) return `https://${domains.split(",")[0]}`;
@@ -172,8 +185,8 @@ export async function sendNewProjectNotification(project: {
   }
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to,
+    from: fromAddress(),
+    to: resolveRecipient(to),
     subject: `New Project Request — ${project.projectType} in ${project.city}`,
     html: `
       <div style="${WRAP_STYLE}">
@@ -294,8 +307,8 @@ export async function sendProjectConfirmationToClient(project: {
 
   const s = steps[lang];
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: project.email,
+    from: fromAddress(),
+    to: resolveRecipient(project.email),
     subject: subjects[lang],
     html: `
       <div style="${WRAP_STYLE}">
@@ -328,7 +341,7 @@ export async function sendProjectConfirmationToClient(project: {
   if (error) {
     logger.error({ error }, "Failed to send project confirmation to client");
   } else {
-    logger.info({ to: project.email, type: "project_confirmation", lang }, "Project confirmation sent to client");
+    logger.info({ to: resolveRecipient(project.email), type: "project_confirmation", lang }, "Project confirmation sent to client");
   }
 }
 
@@ -353,8 +366,8 @@ export async function sendNewCompanyNotification(company: {
   }
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to,
+    from: fromAddress(),
+    to: resolveRecipient(to),
     subject: `New Company Registration — ${company.companyName}`,
     html: `
       <div style="${WRAP_STYLE}">
@@ -413,8 +426,8 @@ export async function sendNewOfferNotification(data: {
   const senderLabel = data.providerCompany ?? data.providerName;
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.clientEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.clientEmail),
     subject: t.subject[lang](senderLabel),
     html: `
       <div style="${WRAP_STYLE}">
@@ -438,7 +451,7 @@ export async function sendNewOfferNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send new offer notification");
-  else logger.info({ to: data.clientEmail, type: "new_offer", lang }, "New offer notification sent");
+  else logger.info({ to: resolveRecipient(data.clientEmail), type: "new_offer", lang }, "New offer notification sent");
 }
 
 // ── sendOfferAcceptedNotification ─────────────────────────────────────────────
@@ -460,8 +473,8 @@ export async function sendOfferAcceptedNotification(data: {
   const t = i18n.offerAccepted;
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.providerEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.providerEmail),
     subject: t.subject[lang](data.projectType, data.city),
     html: `
       <div style="${WRAP_STYLE}">
@@ -481,7 +494,7 @@ export async function sendOfferAcceptedNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send offer accepted notification");
-  else logger.info({ to: data.providerEmail, type: "offer_accepted", lang }, "Offer accepted notification sent");
+  else logger.info({ to: resolveRecipient(data.providerEmail), type: "offer_accepted", lang }, "Offer accepted notification sent");
 }
 
 // ── sendProjectPublishedNotification ─────────────────────────────────────────
@@ -527,8 +540,8 @@ export async function sendProjectPublishedNotification(data: {
   };
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.clientEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.clientEmail),
     subject: subjects[lang],
     html: `
       <div style="${WRAP_STYLE}">
@@ -543,7 +556,7 @@ export async function sendProjectPublishedNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send project published notification");
-  else logger.info({ to: data.clientEmail, type: "project_published", lang }, "Project published notification sent");
+  else logger.info({ to: resolveRecipient(data.clientEmail), type: "project_published", lang }, "Project published notification sent");
 }
 
 // ── sendProjectRejectedNotification ──────────────────────────────────────────
@@ -596,8 +609,8 @@ export async function sendProjectRejectedNotification(data: {
   };
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.clientEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.clientEmail),
     subject: subjects[lang],
     html: `
       <div style="${WRAP_STYLE}">
@@ -613,7 +626,7 @@ export async function sendProjectRejectedNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send project rejected notification");
-  else logger.info({ to: data.clientEmail, type: "project_rejected", lang }, "Project rejected notification sent");
+  else logger.info({ to: resolveRecipient(data.clientEmail), type: "project_rejected", lang }, "Project rejected notification sent");
 }
 
 // ── sendProviderApprovedNotification ─────────────────────────────────────────
@@ -651,8 +664,8 @@ export async function sendProviderApprovedNotification(data: {
   };
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.providerEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.providerEmail),
     subject: subjects[lang],
     html: `
       <div style="${WRAP_STYLE}">
@@ -667,7 +680,7 @@ export async function sendProviderApprovedNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send provider approved notification");
-  else logger.info({ to: data.providerEmail, type: "provider_approved", lang }, "Provider approved notification sent");
+  else logger.info({ to: resolveRecipient(data.providerEmail), type: "provider_approved", lang }, "Provider approved notification sent");
 }
 
 // ── sendProviderSuspendedNotification ─────────────────────────────────────────
@@ -701,8 +714,8 @@ export async function sendProviderSuspendedNotification(data: {
   };
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.providerEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.providerEmail),
     subject: subjects[lang],
     html: `
       <div style="${WRAP_STYLE}">
@@ -716,7 +729,7 @@ export async function sendProviderSuspendedNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send provider suspended notification");
-  else logger.info({ to: data.providerEmail, type: "provider_suspended", lang }, "Provider suspended notification sent");
+  else logger.info({ to: resolveRecipient(data.providerEmail), type: "provider_suspended", lang }, "Provider suspended notification sent");
 }
 
 // ── sendCompanyRejectedNotification ──────────────────────────────────────────
@@ -762,8 +775,8 @@ export async function sendCompanyRejectedNotification(data: {
   };
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.providerEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.providerEmail),
     subject: subjects[lang],
     html: `
       <div style="${WRAP_STYLE}">
@@ -779,7 +792,7 @@ export async function sendCompanyRejectedNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send company rejected notification");
-  else logger.info({ to: data.providerEmail, type: "company_rejected", lang }, "Company rejected notification sent");
+  else logger.info({ to: resolveRecipient(data.providerEmail), type: "company_rejected", lang }, "Company rejected notification sent");
 }
 
 // ── sendNewMessageNotification ────────────────────────────────────────────────
@@ -813,8 +826,8 @@ export async function sendNewMessageNotification(data: {
   const dashUrl = data.isProvider ? `${appUrl()}/provider` : `${appUrl()}/dashboard`;
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.recipientEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.recipientEmail),
     subject: t.subject[lang](data.senderName),
     html: `
       <div style="${WRAP_STYLE}">
@@ -834,7 +847,7 @@ export async function sendNewMessageNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send message notification");
-  else logger.info({ to: data.recipientEmail, type: "new_message", lang }, "Message notification sent");
+  else logger.info({ to: resolveRecipient(data.recipientEmail), type: "new_message", lang }, "Message notification sent");
 }
 
 // ── sendPremiumProjectNotification ────────────────────────────────────────────
@@ -887,8 +900,8 @@ export async function sendPremiumProjectNotification(data: {
   const projectUrl = `${appUrl()}/projects/${data.projectId}`;
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.recipientEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.recipientEmail),
     subject: subjects[lang],
     html: `
       <div style="${WRAP_STYLE}">
@@ -914,7 +927,7 @@ export async function sendPremiumProjectNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send premium project notification");
-  else logger.info({ to: data.recipientEmail, projectId: data.projectId }, "Premium project notification sent");
+  else logger.info({ to: resolveRecipient(data.recipientEmail), projectId: data.projectId }, "Premium project notification sent");
 }
 
 // ── sendOfferRejectedNotification ─────────────────────────────────────────────
@@ -961,8 +974,8 @@ export async function sendOfferRejectedNotification(data: {
   };
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.providerEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.providerEmail),
     subject: subjects[lang],
     html: `
       <div style="${WRAP_STYLE}">
@@ -978,7 +991,7 @@ export async function sendOfferRejectedNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send offer rejected notification");
-  else logger.info({ to: data.providerEmail, type: "offer_rejected", lang }, "Offer rejected notification sent");
+  else logger.info({ to: resolveRecipient(data.providerEmail), type: "offer_rejected", lang }, "Offer rejected notification sent");
 }
 
 // ── sendProjectInviteNotification ─────────────────────────────────────────────
@@ -1029,8 +1042,8 @@ export async function sendProjectInviteNotification(data: {
   };
 
   const { error } = await client.emails.send({
-    from: "ImmoVia365 <onboarding@resend.dev>",
-    to: data.providerEmail,
+    from: fromAddress(),
+    to: resolveRecipient(data.providerEmail),
     subject: subjects[lang],
     html: `
       <div style="${WRAP_STYLE}">
@@ -1045,5 +1058,5 @@ export async function sendProjectInviteNotification(data: {
     `,
   });
   if (error) logger.error({ error }, "Failed to send project invite notification");
-  else logger.info({ to: data.providerEmail, type: "project_invite", lang }, "Project invite notification sent");
+  else logger.info({ to: resolveRecipient(data.providerEmail), type: "project_invite", lang }, "Project invite notification sent");
 }

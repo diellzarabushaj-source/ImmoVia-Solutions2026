@@ -391,7 +391,7 @@ router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
               await createNotification({
                 recipientUserId: project.ownerUserId,
                 type: "project_published",
-                title: "Ihr Projekt wurde veröffentlicht",
+                title: "Ihr Projekt wurde freigeschaltet",
                 message: `Ihr Projekt (${project.projectType} in ${project.city}) ist jetzt aktiv. Dienstleister können nun Angebote einreichen.`,
                 relatedProjectId: project.id,
               });
