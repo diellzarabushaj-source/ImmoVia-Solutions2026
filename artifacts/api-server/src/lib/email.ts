@@ -51,10 +51,10 @@ function canSendMessageEmail(recipientUserId: number, offerId: number): boolean 
 const i18n = {
   newOffer: {
     subject: {
-      sq: (sender: string) => `Ofertë e re — ${sender}`,
-      en: (sender: string) => `New offer on your project — ${sender}`,
-      de: (sender: string) => `Neues Angebot für Ihr Projekt — ${sender}`,
-      fr: (sender: string) => `Nouvelle offre sur votre projet — ${sender}`,
+      sq: (_sender: string) => `Aplikim i ri për projektin tuaj — ImmoVia365`,
+      en: (_sender: string) => `New application for your project — ImmoVia365`,
+      de: (_sender: string) => `Neue Bewerbung für Ihr Projekt — ImmoVia365`,
+      fr: (_sender: string) => `Nouvelle candidature pour votre projet — ImmoVia365`,
     },
     heading: {
       sq: "ImmoVia365 — Ofertë e Re",
@@ -499,10 +499,10 @@ export async function sendProjectPublishedNotification(data: {
   const url = appUrl();
 
   const subjects: Record<Lang, string> = {
-    sq: `Projekti juaj u publikua — ImmoVia365`,
-    en: `Your project has been published — ImmoVia365`,
-    de: `Ihr Projekt wurde veröffentlicht — ImmoVia365`,
-    fr: `Votre projet a été publié — ImmoVia365`,
+    sq: `Projekti juaj u aktivizua — ImmoVia365`,
+    en: `Your project has been activated — ImmoVia365`,
+    de: `Ihr Projekt wurde freigeschaltet — ImmoVia365`,
+    fr: `Votre projet a été activé — ImmoVia365`,
   };
   const headings: Record<Lang, string> = {
     sq: "ImmoVia365 — Projekt i Publikuar",
@@ -979,4 +979,71 @@ export async function sendOfferRejectedNotification(data: {
   });
   if (error) logger.error({ error }, "Failed to send offer rejected notification");
   else logger.info({ to: data.providerEmail, type: "offer_rejected", lang }, "Offer rejected notification sent");
+}
+
+// ── sendProjectInviteNotification ─────────────────────────────────────────────
+export async function sendProjectInviteNotification(data: {
+  providerEmail: string;
+  providerName: string;
+  clientName: string;
+  subject?: string | null;
+  language?: string | null;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.providerEmail) {
+    logger.warn("Email not configured — skipping project invite notification");
+    return;
+  }
+  const lang = normLang(data.language);
+  const url = appUrl();
+
+  const subjects: Record<Lang, string> = {
+    sq: `Jeni ftuar në një projekt — ImmoVia365`,
+    en: `You have been invited to a project — ImmoVia365`,
+    de: `Sie wurden zu einem Projekt eingeladen — ImmoVia365`,
+    fr: `Vous avez été invité à un projet — ImmoVia365`,
+  };
+  const headings: Record<Lang, string> = {
+    sq: "ImmoVia365 — Ftesë Projekti",
+    en: "ImmoVia365 — Project Invitation",
+    de: "ImmoVia365 — Projekteinladung",
+    fr: "ImmoVia365 — Invitation au projet",
+  };
+  const greetings: Record<Lang, string> = {
+    sq: `Mirëdita <strong>${data.providerName}</strong>,`,
+    en: `Hello <strong>${data.providerName}</strong>,`,
+    de: `Hallo <strong>${data.providerName}</strong>,`,
+    fr: `Bonjour <strong>${data.providerName}</strong>,`,
+  };
+  const bodies: Record<Lang, string> = {
+    sq: `<strong>${data.clientName}</strong> ju ka kontaktuar dhe ju fton të dërgoni një ofertë për projektin e tyre${data.subject ? ` — <em>${data.subject}</em>` : ""}.`,
+    en: `<strong>${data.clientName}</strong> has contacted you and invites you to submit an offer for their project${data.subject ? ` — <em>${data.subject}</em>` : ""}.`,
+    de: `<strong>${data.clientName}</strong> hat Sie kontaktiert und lädt Sie ein, ein Angebot für ihr Projekt einzureichen${data.subject ? ` — <em>${data.subject}</em>` : ""}.`,
+    fr: `<strong>${data.clientName}</strong> vous a contacté et vous invite à soumettre une offre pour son projet${data.subject ? ` — <em>${data.subject}</em>` : ""}.`,
+  };
+  const ctas: Record<Lang, string> = {
+    sq: "Shiko Projektin",
+    en: "View Project",
+    de: "Projekt ansehen",
+    fr: "Voir le projet",
+  };
+
+  const { error } = await client.emails.send({
+    from: "ImmoVia365 <onboarding@resend.dev>",
+    to: data.providerEmail,
+    subject: subjects[lang],
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${headings[lang]}</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">${greetings[lang]}</p>
+          <p style="margin:0 0 20px">${bodies[lang]}</p>
+          <div style="margin-top:24px"><a href="${url}/provider" style="${BTN_STYLE}">${ctas[lang]}</a></div>
+        </div>
+        ${footer(lang)}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send project invite notification");
+  else logger.info({ to: data.providerEmail, type: "project_invite", lang }, "Project invite notification sent");
 }

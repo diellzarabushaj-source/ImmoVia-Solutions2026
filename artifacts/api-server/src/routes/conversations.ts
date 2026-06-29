@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { and, asc, desc, eq, or } from "drizzle-orm";
 import { db, companiesTable, conversationsTable, convMessagesTable, usersTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
-import { sendNewMessageNotification } from "../lib/email";
+import { sendNewMessageNotification, sendProjectInviteNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -115,7 +115,9 @@ router.post("/conversations", requireAuth, async (req, res): Promise<void> => {
     unreadCountProvider: 1,
   }).where(eq(conversationsTable.id, convId));
 
-  // Notify provider about new inquiry (fire-and-forget)
+  // Notify provider (fire-and-forget)
+  // New conversation → invite-style email; existing → generic new-message email
+  const isNewConversation = !existing[0];
   void (async () => {
     try {
       const [customer] = await db
@@ -134,16 +136,26 @@ router.post("/conversations", requireAuth, async (req, res): Promise<void> => {
         .from(usersTable)
         .where(eq(usersTable.email, co.email))
         .limit(1);
-      await sendNewMessageNotification({
-        recipientEmail: co.email,
-        recipientName: providerUser?.fullName ?? co.companyName ?? "Provider",
-        recipientUserId: providerUser?.id ?? 0,
-        senderName: customer?.fullName ?? "Customer",
-        preview: firstMessage,
-        offerId: convId,
-        isProvider: true,
-        language: providerUser?.language,
-      });
+      if (isNewConversation) {
+        await sendProjectInviteNotification({
+          providerEmail: co.email,
+          providerName: providerUser?.fullName ?? co.companyName ?? "Provider",
+          clientName: customer?.fullName ?? "Client",
+          subject: subject ?? undefined,
+          language: providerUser?.language,
+        });
+      } else {
+        await sendNewMessageNotification({
+          recipientEmail: co.email,
+          recipientName: providerUser?.fullName ?? co.companyName ?? "Provider",
+          recipientUserId: providerUser?.id ?? 0,
+          senderName: customer?.fullName ?? "Customer",
+          preview: firstMessage,
+          offerId: convId,
+          isProvider: true,
+          language: providerUser?.language,
+        });
+      }
     } catch (err) {
       req.log.error({ err }, "Failed to send new conversation notification");
     }
