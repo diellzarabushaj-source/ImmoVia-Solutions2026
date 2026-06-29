@@ -32,11 +32,15 @@ import {
   Star,
   Eye,
   ShieldCheck,
+  FileDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { resolvePhotoSrc } from "@/lib/display";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { billingApi, type AppStats, type UnlockedByResponse } from "@/lib/billing-api";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { ProjectBriefPDF, type ProjectBriefData } from "@/lib/pdf/ProjectBriefPDF";
+import { useLogoBase64 } from "@/lib/pdf/useLogoBase64";
 
 interface Project {
   id: number;
@@ -74,6 +78,43 @@ const SIZE_COLORS: Record<string, string> = {
   large: "bg-indigo-50 text-indigo-700",
   premium: "bg-primary/10 text-primary",
 };
+
+function DownloadProjectPDF({ project, categoryLabels }: { project: Project; categoryLabels: string[] }) {
+  const logo = useLogoBase64();
+  const photos: string[] = [];
+  const data: ProjectBriefData = {
+    title: project.title,
+    projectType: project.projectType,
+    description: project.description,
+    city: project.city,
+    budget: project.budget,
+    timeline: project.timeline,
+    size: project.size,
+    status: project.status,
+    photos,
+    categoryLabels,
+    logoBase64: logo,
+    generatedAt: new Date().toLocaleDateString("de-CH"),
+  };
+  const slug = (project.title ?? project.projectType).replace(/[\s,]+/g, "-").slice(0, 40);
+  const filename = `${slug}-ImmoVia365.pdf`;
+  return (
+    <PDFDownloadLink document={<ProjectBriefPDF data={data} />} fileName={filename}>
+      {({ loading }) => (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full border-primary/30 text-primary hover:bg-primary/8 justify-center"
+          disabled={loading}
+          asChild={false}
+        >
+          <FileDown className="w-4 h-4 mr-2" />
+          {loading ? "PDF…" : "Projektmappe herunterladen"}
+        </Button>
+      )}
+    </PDFDownloadLink>
+  );
+}
 
 function getPostedLabel(createdAt: string, listings: { today: string; yesterday: string; daysAgo: string }): string {
   const diffMs = Date.now() - new Date(createdAt).getTime();
@@ -523,6 +564,23 @@ export default function ProjectDetail() {
                 )}
               </motion.div>
             )}
+
+            {/* PDF download card */}
+            <motion.div
+              className="bg-white rounded-2xl border border-border shadow-sm p-4"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18 }}
+            >
+              <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Projektmappe</p>
+              <DownloadProjectPDF
+                project={project}
+                categoryLabels={project.projectType
+                  .split(",")
+                  .map(k => k.trim())
+                  .map(k => categories.find(c => c.key === k)?.label ?? k)}
+              />
+            </motion.div>
 
             <motion.div
               className="rounded-2xl overflow-hidden lg:sticky lg:top-24 shadow-xl shadow-primary/10"

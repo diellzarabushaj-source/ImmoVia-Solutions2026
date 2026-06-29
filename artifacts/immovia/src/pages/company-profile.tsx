@@ -27,8 +27,12 @@ import {
   MessageSquare,
   Heart,
   Lock as LockIcon,
+  FileDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { ProviderProfilePDF, type ProviderPDFData } from "@/lib/pdf/ProviderProfilePDF";
+import { useLogoBase64 } from "@/lib/pdf/useLogoBase64";
 
 interface Company {
   id: number;
@@ -56,6 +60,35 @@ const GALLERY_PLACEHOLDERS = [
   "/gallery-5.jpg",
   "/gallery-6.jpg",
 ];
+
+function DownloadProviderPDF({ company }: { company: Company }) {
+  const logo = useLogoBase64();
+  const data: ProviderPDFData = {
+    companyName: company.companyName,
+    contactName: company.contactName,
+    city: company.city,
+    workerType: company.workerType,
+    serviceTypes: company.serviceTypes,
+    description: company.description,
+    yearsExperience: company.yearsExperience,
+    hourlyRate: company.hourlyRate,
+    licenseNumber: company.licenseNumber,
+    profilePhoto: null,
+    logoBase64: logo,
+    generatedAt: new Date().toLocaleDateString("de-CH"),
+  };
+  const filename = `${company.companyName.replace(/\s+/g, "-")}-ImmoVia365.pdf`;
+  return (
+    <PDFDownloadLink document={<ProviderProfilePDF data={data} />} fileName={filename}>
+      {({ loading }) => (
+        <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/8" disabled={loading} asChild={false}>
+          <FileDown className="w-4 h-4 mr-2" />
+          {loading ? "PDF…" : "PDF"}
+        </Button>
+      )}
+    </PDFDownloadLink>
+  );
+}
 
 function StarRating({ value, size = "sm" }: { value: number; size?: "sm" | "md" }) {
   const cls = size === "md" ? "w-5 h-5" : "w-4 h-4";
@@ -420,6 +453,7 @@ export default function CompanyProfile() {
                   {isSaved ? t.publicProfile.savedProvider : t.publicProfile.saveProvider}
                 </Button>
               )}
+              <DownloadProviderPDF company={company} />
               <Button asChild variant="outline" className="ml-auto border-primary/30 text-primary hover:bg-primary/8">
                 <Link href="/submit-project">
                   {t.publicProfile.submitProject}
