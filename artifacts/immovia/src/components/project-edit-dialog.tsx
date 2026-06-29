@@ -66,10 +66,15 @@ export function ProjectEditDialog({ project, open, onOpenChange, onSaved }: Proj
   const [otherTagError, setOtherTagError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [typesError, setTypesError] = useState<string | null>(null);
+  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(() => {
+    const raw = project.projectType ?? "";
+    return raw ? new Set(raw.split(",").filter(Boolean)) : new Set();
+  });
 
   const formSchema = z.object({
     title: z.string().trim().min(3, { message: "Project title is required" }).max(120),
-    projectType: z.string().min(1, { message: "Project type is required" }),
+    projectType: z.string().optional(),
     subcategory: z.string().optional(),
     subcategoryOtherText: z.string().max(40).optional(),
     size: z.enum(["small", "medium", "large", "premium"]),
@@ -105,9 +110,14 @@ export function ProjectEditDialog({ project, open, onOpenChange, onSaved }: Proj
     icon: CATEGORY_ICONS[cat.key] ?? HelpCircle,
     label: cat.label,
   }));
-  const selectedCategoryData = categories.find((c) => c.key === form.watch("projectType"));
+  const selectedCategoryData = categories.find((c) => selectedTypes.has(c.key));
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (selectedTypes.size === 0) {
+      setTypesError(language === "sq" ? "Zgjidhni të paktën një lloj projekti" : language === "de" ? "Mindestens einen Projekttyp auswählen" : language === "fr" ? "Sélectionnez au moins un type de projet" : "Select at least one project type");
+      return;
+    }
+    setTypesError(null);
     if (values.subcategory === "other") {
       const result = validateOtherTag(values.subcategoryOtherText ?? "");
       if (!result.ok) {
@@ -123,7 +133,7 @@ export function ProjectEditDialog({ project, open, onOpenChange, onSaved }: Proj
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ ...values, photos: projectPhotos }),
+        body: JSON.stringify({ ...values, projectType: [...selectedTypes].join(","), photos: projectPhotos }),
       });
       if (!res.ok) throw new Error("Update failed");
       onSaved();
@@ -159,32 +169,37 @@ export function ProjectEditDialog({ project, open, onOpenChange, onSaved }: Proj
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="projectType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t.projectForm.step2}</FormLabel>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {categoryOptions.map((type) => (
-                      <div
-                        key={type.id}
-                        className={`cursor-pointer rounded-lg border-2 p-3 flex flex-col items-center justify-center gap-2 transition-all ${
-                          field.value === type.id
-                            ? "border-primary bg-secondary/50 text-foreground"
-                            : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                        }`}
-                        onClick={() => { field.onChange(type.id); form.setValue("subcategory", ""); }}
-                      >
-                        <type.icon className={`w-6 h-6 ${field.value === type.id ? "text-primary" : ""}`} />
-                        <span className="font-medium text-xs text-center">{type.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div>
+              <p className="text-sm font-medium mb-3">{t.projectForm.step2}</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {categoryOptions.map((type) => {
+                  const isSelected = selectedTypes.has(type.id);
+                  return (
+                    <div
+                      key={type.id}
+                      className={`cursor-pointer rounded-lg border-2 p-3 flex flex-col items-center justify-center gap-2 transition-all ${
+                        isSelected
+                          ? "border-primary bg-secondary/50 text-foreground"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                      }`}
+                      onClick={() => {
+                        setSelectedTypes(prev => {
+                          const next = new Set(prev);
+                          next.has(type.id) ? next.delete(type.id) : next.add(type.id);
+                          return next;
+                        });
+                        setTypesError(null);
+                        form.setValue("subcategory", "");
+                      }}
+                    >
+                      <type.icon className={`w-6 h-6 ${isSelected ? "text-primary" : ""}`} />
+                      <span className="font-medium text-xs text-center">{type.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {typesError && <p className="text-sm text-destructive mt-2">{typesError}</p>}
+            </div>
 
             {selectedCategoryData && (
               <div className="pt-2">

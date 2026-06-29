@@ -103,7 +103,7 @@ export default function Projects() {
         p.city.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q)
       )) return false;
-      if (typeFilter.size > 0 && !typeFilter.has(p.projectType)) return false;
+      if (typeFilter.size > 0 && !p.projectType.split(",").some(t => typeFilter.has(t.trim()))) return false;
       if (sizeFilter && p.size !== sizeFilter) return false;
       if (budgetFilter && p.budget !== budgetFilter) return false;
       if (c && !p.city.toLowerCase().includes(c)) return false;

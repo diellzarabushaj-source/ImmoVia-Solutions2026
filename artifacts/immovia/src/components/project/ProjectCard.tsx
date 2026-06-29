@@ -55,15 +55,18 @@ export function ProjectCard({
 }: ProjectCardProps) {
   const { t } = useLanguage();
   const { categories } = useCategories("project");
-  const Icon = SERVICE_ICONS[project.projectType] ?? Briefcase;
+  const projectTypes = project.projectType.split(",").map(k => k.trim()).filter(Boolean);
+  const primaryType = projectTypes[0] ?? "other";
+  const Icon = SERVICE_ICONS[primaryType] ?? Briefcase;
   const sz = project.size ?? "medium";
   const sizeKey =
     ({ small: "sizeSm", medium: "sizeMd", large: "sizeLg", premium: "sizePremium" } as Record<string, keyof typeof t.listings>)[sz] ??
     "sizeMd";
   const sizeLabel = t.listings[sizeKey] as string;
   const sizeColor = SIZE_COLORS[sz] ?? SIZE_COLORS.medium;
-  const typeLabel = categories.find(c => c.key === project.projectType)?.label ?? project.projectType;
-  const cardTitle = project.title ?? typeLabel;
+  const typeLabels = projectTypes.map(k => categories.find(c => c.key === k)?.label ?? k);
+  const typeLabel = typeLabels[0] ?? project.projectType;
+  const cardTitle = project.title ?? typeLabels.join(", ");
   const postedLabel = getPostedLabel(project.createdAt, t.listings);
   const firstPhoto = (project.photos ?? []).find(Boolean);
   const coverSrc = firstPhoto ? resolvePhotoSrc(firstPhoto) : null;
@@ -101,10 +104,15 @@ export function ProjectCard({
       <div className="px-5 pt-5 pb-4">
         <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 mb-3">{cardTitle}</h3>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-            <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-            {typeLabel}
-          </span>
+          {typeLabels.map((label, i) => {
+            const TypeIcon = SERVICE_ICONS[projectTypes[i] ?? "other"] ?? Briefcase;
+            return (
+              <span key={projectTypes[i]} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                {i === 0 && <TypeIcon className="w-3.5 h-3.5 flex-shrink-0" />}
+                {label}
+              </span>
+            );
+          })}
           {project.subcategory && (
             <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
               {categories.flatMap(c => c.subcategories).find(s => s.key === project.subcategory)?.label ?? project.subcategory}
