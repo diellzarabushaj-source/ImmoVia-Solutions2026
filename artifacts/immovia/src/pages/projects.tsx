@@ -50,7 +50,10 @@ export default function Projects() {
   const [, navigate] = useLocation();
 
   const [searchTerm, setSearchTerm] = useState(() => new URLSearchParams(search).get("q") ?? "");
-  const [typeFilter, setTypeFilter] = useState(() => new URLSearchParams(search).get("type") ?? "");
+  const [typeFilter, setTypeFilter] = useState<Set<string>>(() => {
+    const raw = new URLSearchParams(search).get("type") ?? "";
+    return raw ? new Set(raw.split(",").filter(Boolean)) : new Set();
+  });
   const [cityFilter, setCityFilter] = useState(() => new URLSearchParams(search).get("city") ?? "");
   const [sizeFilter, setSizeFilter] = useState(() => new URLSearchParams(search).get("size") ?? "");
   const [budgetFilter, setBudgetFilter] = useState(() => new URLSearchParams(search).get("budget") ?? "");
@@ -64,7 +67,8 @@ export default function Projects() {
   useEffect(() => {
     const p = new URLSearchParams(search);
     setSearchTerm(p.get("q") ?? "");
-    setTypeFilter(p.get("type") ?? "");
+    const raw = p.get("type") ?? "";
+    setTypeFilter(raw ? new Set(raw.split(",").filter(Boolean)) : new Set());
     setCityFilter(p.get("city") ?? "");
     setSizeFilter(p.get("size") ?? "");
     setBudgetFilter(p.get("budget") ?? "");
@@ -74,7 +78,7 @@ export default function Projects() {
   useEffect(() => {
     const p = new URLSearchParams();
     if (searchTerm) p.set("q", searchTerm);
-    if (typeFilter) p.set("type", typeFilter);
+    if (typeFilter.size > 0) p.set("type", [...typeFilter].join(","));
     if (cityFilter) p.set("city", cityFilter);
     if (sizeFilter) p.set("size", sizeFilter);
     if (budgetFilter) p.set("budget", budgetFilter);
@@ -99,7 +103,7 @@ export default function Projects() {
         p.city.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q)
       )) return false;
-      if (typeFilter && p.projectType !== typeFilter) return false;
+      if (typeFilter.size > 0 && !typeFilter.has(p.projectType)) return false;
       if (sizeFilter && p.size !== sizeFilter) return false;
       if (budgetFilter && p.budget !== budgetFilter) return false;
       if (c && !p.city.toLowerCase().includes(c)) return false;
@@ -112,12 +116,12 @@ export default function Projects() {
     );
   }, [open, searchTerm, typeFilter, cityFilter, sizeFilter, budgetFilter, sortBy]);
 
-  const hasFilters = !!(searchTerm || typeFilter || cityFilter || sizeFilter || budgetFilter);
-  const activeFiltersCount = [!!searchTerm, !!typeFilter, !!cityFilter, !!sizeFilter, !!budgetFilter].filter(Boolean).length;
+  const hasFilters = !!(searchTerm || typeFilter.size > 0 || cityFilter || sizeFilter || budgetFilter);
+  const activeFiltersCount = [!!searchTerm, typeFilter.size > 0, !!cityFilter, !!sizeFilter, !!budgetFilter].filter(Boolean).length;
 
   const clearFilters = () => {
     setSearchTerm("");
-    setTypeFilter("");
+    setTypeFilter(new Set());
     setCityFilter("");
     setSizeFilter("");
     setBudgetFilter("");
@@ -191,9 +195,9 @@ export default function Projects() {
           {/* Service type pills — edge-to-edge horizontal scroll */}
           <div className="mt-4 flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4">
             <button
-              onClick={() => setTypeFilter("")}
+              onClick={() => setTypeFilter(new Set())}
               className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                !typeFilter
+                typeFilter.size === 0
                   ? "bg-primary text-white border-primary shadow-md"
                   : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
               }`}
@@ -203,9 +207,13 @@ export default function Projects() {
             {categories.filter(cat => cat.key !== "other").map(cat => (
               <button
                 key={cat.key}
-                onClick={() => setTypeFilter(prev => prev === cat.key ? "" : cat.key)}
+                onClick={() => setTypeFilter(prev => {
+                  const next = new Set(prev);
+                  next.has(cat.key) ? next.delete(cat.key) : next.add(cat.key);
+                  return next;
+                })}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                  typeFilter === cat.key
+                  typeFilter.has(cat.key)
                     ? "bg-primary text-white border-primary shadow-md"
                     : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
                 }`}
@@ -329,7 +337,7 @@ export default function Projects() {
         {!isLoading && !isError && (
           <p className="text-sm text-muted-foreground mb-6">
             {displayList.length} {displayList.length === 1 ? (t.listings.result ?? "result") : (t.listings.results ?? "results")}
-            {typeFilter && <> · <span className="text-primary font-medium">{categories.find(c => c.key === typeFilter)?.label ?? typeFilter}</span></>}
+            {typeFilter.size > 0 && <> · <span className="text-primary font-medium">{[...typeFilter].map(k => categories.find(c => c.key === k)?.label ?? k).join(", ")}</span></>}
           </p>
         )}
 
