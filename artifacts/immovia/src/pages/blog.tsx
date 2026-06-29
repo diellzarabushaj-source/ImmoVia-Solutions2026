@@ -32,7 +32,7 @@ function PostCard({ post, language, t }: {
   language: string;
   t: ReturnType<typeof useLanguage>["t"];
 }) {
-  const imageUrl = post.mainImage
+  const imageUrl = post.mainImage && (post.mainImage as { asset?: { _ref?: string } }).asset?._ref
     ? urlFor(post.mainImage).width(720).height(400).fit("crop").url()
     : null;
 
