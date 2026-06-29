@@ -84,9 +84,10 @@ router.get("/projects", async (req, res): Promise<void> => {
   } else {
     const userId = await getLocalUserId(req);
     const planSlug = userId ? await getProviderPlanSlug(userId) : "free";
-    if (planSlug === "premium") {
-      payload = projectsList;
-    } else if (planSlug === "pro" && userId) {
+    // All paid plans (including premium) only reveal contacts for projects
+    // the provider has explicitly unlocked. Premium has unlimited unlocks
+    // but still requires an unlock row per project.
+    if (userId && ["basic", "pro", "professional", "starter", "premium"].includes(planSlug)) {
       const unlockedIds = await getUnlockedProjectIds(userId);
       payload = projectsList.map(p => (unlockedIds.has(p.id) ? p : redactContact(p)));
     } else {

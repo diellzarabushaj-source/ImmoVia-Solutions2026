@@ -191,7 +191,7 @@ export default function ProjectDetail() {
     upgradeTitle: string; upgradeText: string; upgradeBtn: string;
     contactName: string; contactPhone: string; contactEmail: string;
     registerOnly: string; remainingLabel: (u: number, l: number) => string; unlimitedLabel: string;
-    pdfLocked: string; pdfLoginRequired: string;
+    pdfLocked: string; pdfLoginRequired: string; unlockBtnPremium: string;
   }> = {
     sq: {
       unlockBtn: (r) => `Zhblloko Kontaktin (${r} mbetur)`, unlockingBtn: "Duke zhbllokuar...",
@@ -203,6 +203,7 @@ export default function ProjectDetail() {
       unlimitedLabel: "Zhbllokime të pakufizuara (Premium)",
       pdfLocked: "Zhblloko kontaktin fillimisht për të shkarkuar dosjen",
       pdfLoginRequired: "Kyçu në platformë për të shkarkuar dosjen",
+      unlockBtnPremium: "Zhblloko Kontaktin (Premium — i pakufizuar)",
     },
     en: {
       unlockBtn: (r) => `Unlock Contact (${r} remaining)`, unlockingBtn: "Unlocking...",
@@ -214,6 +215,7 @@ export default function ProjectDetail() {
       unlimitedLabel: "Unlimited unlocks (Premium)",
       pdfLocked: "Unlock the contact first to download the project brief",
       pdfLoginRequired: "Sign in to download the project brief",
+      unlockBtnPremium: "Unlock Contact (Premium — unlimited)",
     },
     de: {
       unlockBtn: (r) => `Kontakt freischalten (${r} verbleibend)`, unlockingBtn: "Wird freigeschaltet...",
@@ -225,6 +227,7 @@ export default function ProjectDetail() {
       unlimitedLabel: "Unbegrenzte Freischaltungen (Premium)",
       pdfLocked: "Kontakt zuerst freischalten, um die Projektmappe herunterzuladen",
       pdfLoginRequired: "Anmelden, um die Projektmappe herunterzuladen",
+      unlockBtnPremium: "Kontakt freischalten (Premium — unbegrenzt)",
     },
     fr: {
       unlockBtn: (r) => `Débloquer le contact (${r} restants)`, unlockingBtn: "Déverrouillage...",
@@ -236,6 +239,7 @@ export default function ProjectDetail() {
       unlimitedLabel: "Déblocages illimités (Premium)",
       pdfLocked: "Déverrouillez le contact d'abord pour télécharger le dossier",
       pdfLoginRequired: "Connectez-vous pour télécharger le dossier",
+      unlockBtnPremium: "Débloquer le contact (Premium — illimité)",
     },
   };
   const us = UNLOCK_STRINGS[language] ?? UNLOCK_STRINGS.en;
@@ -671,8 +675,8 @@ export default function ProjectDetail() {
                     </p>
                   )}
                 </div>
-              ) : isProvider && ["basic", "pro"].includes(planSlug) ? (
-                // Basic / Professional provider — unlock button
+              ) : isProvider && ["basic", "pro", "premium"].includes(planSlug) ? (
+                // Basic / Professional / Premium provider — unlock button
                 <div className="text-center">
                   <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
                     <Lock className="w-7 h-7 text-white" />
@@ -696,7 +700,13 @@ export default function ProjectDetail() {
                       <Button className="w-full bg-white text-foreground hover:bg-white/92 font-semibold shadow-lg" onClick={() => void handleUnlock()} disabled={unlockLoading}>
                         {unlockLoading
                           ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{us.unlockingBtn}</>
-                          : <><Unlock className="w-4 h-4 mr-2" />{stats && stats.contactUnlocksLimit !== -1 ? us.unlockBtn(stats.contactUnlocksLimit - stats.contactUnlocksUsed) : us.unlockBtn(50)}</>
+                          : <><Unlock className="w-4 h-4 mr-2" />{
+                              stats?.contactUnlocksLimit === -1
+                                ? us.unlockBtnPremium
+                                : stats && stats.contactUnlocksLimit !== -1
+                                  ? us.unlockBtn(stats.contactUnlocksLimit - stats.contactUnlocksUsed)
+                                  : us.unlockBtn(50)
+                            }</>
                         }
                       </Button>
                     </>
@@ -782,7 +792,7 @@ export default function ProjectDetail() {
       {!hasContacts && (
         <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur border-t border-border shadow-lg">
           <div className="container mx-auto px-4 py-3" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-            {isProvider && ["basic", "pro"].includes(planSlug) ? (
+            {isProvider && ["basic", "pro", "premium"].includes(planSlug) ? (
               <Button
                 className="w-full"
                 size="lg"
@@ -791,7 +801,13 @@ export default function ProjectDetail() {
               >
                 {unlockLoading
                   ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{us.unlockingBtn}</>
-                  : <><Unlock className="w-4 h-4 mr-2" />{stats && stats.contactUnlocksLimit !== -1 ? us.unlockBtn(stats.contactUnlocksLimit - stats.contactUnlocksUsed) : us.unlockBtn(50)}</>
+                  : <><Unlock className="w-4 h-4 mr-2" />{
+                      stats?.contactUnlocksLimit === -1
+                        ? us.unlockBtnPremium
+                        : stats && stats.contactUnlocksLimit !== -1
+                          ? us.unlockBtn(stats.contactUnlocksLimit - stats.contactUnlocksUsed)
+                          : us.unlockBtn(50)
+                    }</>
                 }
               </Button>
             ) : isProvider && stats && !["basic", "pro", "premium"].includes(planSlug) ? (

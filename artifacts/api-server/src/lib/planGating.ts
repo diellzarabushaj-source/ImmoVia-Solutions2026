@@ -89,8 +89,9 @@ export async function canViewContactDetails(req: Request): Promise<boolean> {
 }
 
 /**
- * For a specific project: only admins, Premium providers, and Basic/Pro providers
- * with an existing unlock row can view contact details.
+ * For a specific project: only admins and paid-plan providers (basic/pro/premium)
+ * WITH an existing unlock row can view contact details.
+ * Premium providers have unlimited unlocks but must still click Unlock once per project.
  * Project owners do NOT get automatic access — the contact card is SP-only.
  */
 export async function canViewProjectContacts(
@@ -100,11 +101,9 @@ export async function canViewProjectContacts(
   if (isAdminSession(req)) return true;
   const userId = await getLocalUserId(req);
   if (!userId) return false;
-  // Project owners do NOT get automatic access — contacts are only for SP unlock flow
   const slug = await getProviderPlanSlug(userId);
-  if (slug === "premium") return true;
-  if (slug === "free") return false;
-  // basic, pro, professional, starter — check for existing unlock row
+  // All plans (including premium) require an explicit unlock row
+  if (!["basic", "pro", "professional", "starter", "premium"].includes(slug)) return false;
   const [unlock] = await db
     .select({ id: contactUnlocksTable.id })
     .from(contactUnlocksTable)
