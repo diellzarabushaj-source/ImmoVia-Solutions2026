@@ -191,6 +191,7 @@ export default function ProjectDetail() {
     upgradeTitle: string; upgradeText: string; upgradeBtn: string;
     contactName: string; contactPhone: string; contactEmail: string;
     registerOnly: string; remainingLabel: (u: number, l: number) => string; unlimitedLabel: string;
+    pdfLocked: string;
   }> = {
     sq: {
       unlockBtn: (r) => `Zhblloko Kontaktin (${r} mbetur)`, unlockingBtn: "Duke zhbllokuar...",
@@ -200,6 +201,7 @@ export default function ProjectDetail() {
       registerOnly: "Vetëm ofruesit e shërbimit mund të shohin detajet e kontaktit.",
       remainingLabel: (u, l) => `${l - u} zhbllokime mbetur këtë muaj`,
       unlimitedLabel: "Zhbllokime të pakufizuara (Premium)",
+      pdfLocked: "Zhblloko kontaktin fillimisht për të shkarkuar dosjen",
     },
     en: {
       unlockBtn: (r) => `Unlock Contact (${r} remaining)`, unlockingBtn: "Unlocking...",
@@ -209,6 +211,7 @@ export default function ProjectDetail() {
       registerOnly: "Only service providers can view contact details.",
       remainingLabel: (u, l) => `${l - u} unlocks remaining this month`,
       unlimitedLabel: "Unlimited unlocks (Premium)",
+      pdfLocked: "Unlock the contact first to download the project brief",
     },
     de: {
       unlockBtn: (r) => `Kontakt freischalten (${r} verbleibend)`, unlockingBtn: "Wird freigeschaltet...",
@@ -218,6 +221,7 @@ export default function ProjectDetail() {
       registerOnly: "Nur Dienstleister können Kontaktdaten einsehen.",
       remainingLabel: (u, l) => `${l - u} Freischaltungen verbleibend`,
       unlimitedLabel: "Unbegrenzte Freischaltungen (Premium)",
+      pdfLocked: "Kontakt zuerst freischalten, um die Projektmappe herunterzuladen",
     },
     fr: {
       unlockBtn: (r) => `Débloquer le contact (${r} restants)`, unlockingBtn: "Déverrouillage...",
@@ -227,6 +231,7 @@ export default function ProjectDetail() {
       registerOnly: "Seuls les prestataires peuvent voir les coordonnées.",
       remainingLabel: (u, l) => `${l - u} déblocages restants ce mois`,
       unlimitedLabel: "Déblocages illimités (Premium)",
+      pdfLocked: "Déverrouillez le contact d'abord pour télécharger le dossier",
     },
   };
   const us = UNLOCK_STRINGS[language] ?? UNLOCK_STRINGS.en;
@@ -567,7 +572,7 @@ export default function ProjectDetail() {
               </motion.div>
             )}
 
-            {/* PDF download card */}
+            {/* PDF download card — gated for SPs: must unlock contact first */}
             <motion.div
               className="bg-white rounded-2xl border border-border shadow-sm p-4"
               initial={{ opacity: 0, y: 16 }}
@@ -575,13 +580,20 @@ export default function ProjectDetail() {
               transition={{ delay: 0.18 }}
             >
               <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Projektmappe</p>
-              <DownloadProjectPDF
-                project={project}
-                categoryLabels={project.projectType
-                  .split(",")
-                  .map(k => k.trim())
-                  .map(k => categories.find(c => c.key === k)?.label ?? k)}
-              />
+              {isProvider && !hasContacts ? (
+                <div className="flex items-center gap-2 w-full rounded-md border border-border bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground select-none">
+                  <Lock className="w-4 h-4 flex-shrink-0 text-muted-foreground/70" />
+                  <span>{us.pdfLocked}</span>
+                </div>
+              ) : (
+                <DownloadProjectPDF
+                  project={project}
+                  categoryLabels={project.projectType
+                    .split(",")
+                    .map(k => k.trim())
+                    .map(k => categories.find(c => c.key === k)?.label ?? k)}
+                />
+              )}
             </motion.div>
 
             <motion.div
