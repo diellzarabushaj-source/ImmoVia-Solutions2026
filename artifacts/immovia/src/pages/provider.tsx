@@ -603,6 +603,7 @@ export default function ProviderDashboard() {
   const [stripeInvoicesLoaded, setStripeInvoicesLoaded] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [syncLoading, setSyncLoading] = useState(false);
+  const syncAutoTriggered = useRef(false);
   const [detailProject, setDetailProject] = useState<ProviderProject | null>(null);
   const [offerProject, setOfferProject] = useState<ProviderProject | null>(null);
   const [offerMessage, setOfferMessage] = useState("");
@@ -706,6 +707,30 @@ export default function ProviderDashboard() {
   useEffect(() => {
     if (user && isServiceProvider(user)) void refreshAll();
   }, [user]);
+
+  // Auto-sync subscription silently when user opens My Plan tab.
+  // If payment was received but webhook was delayed, this activates the plan without manual action.
+  // Safe to call for genuine free users — sync returns synced:false quickly with no side effects.
+  useEffect(() => {
+    const planSlugNow = appStats?.planSlug ?? "";
+    if (
+      activeSection === "plan" &&
+      (!planSlugNow || planSlugNow === "free") &&
+      !syncAutoTriggered.current &&
+      user &&
+      isServiceProvider(user)
+    ) {
+      syncAutoTriggered.current = true;
+      setSyncLoading(true);
+      fetch("/api/stripe/subscription/sync")
+        .then(r => r.json() as Promise<{ synced: boolean; plan?: string }>)
+        .then(data => {
+          if (data.synced) void refreshAll();
+        })
+        .catch(() => { /* silent */ })
+        .finally(() => setSyncLoading(false));
+    }
+  }, [activeSection, appStats, user]);
 
   useEffect(() => {
     if (!user || !isServiceProvider(user)) return;
@@ -2021,23 +2046,12 @@ export default function ProviderDashboard() {
                     </div>
                   </Card>
 
-                  {/* Sync banner — shown only when payment succeeded but subscription wasn't activated */}
-                  {(!planSlug || planSlug === "free") && (
-                    <Card className="p-5 border-amber-300 bg-amber-50/60">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-                        <div className="flex items-start gap-3">
-                          <RefreshCw className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                          <div>
-                            <div className="font-semibold text-amber-900 text-sm">{l.syncPlan}</div>
-                            <div className="text-xs text-amber-700 mt-0.5">{l.syncPlanDesc}</div>
-                          </div>
-                        </div>
-                        <Button size="sm" variant="outline" className="border-amber-400 text-amber-800 hover:bg-amber-100 flex-shrink-0" onClick={() => void syncSubscription()} disabled={syncLoading}>
-                          {syncLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-                          {l.syncPlan}
-                        </Button>
-                      </div>
-                    </Card>
+                  {/* Silent auto-sync indicator — only visible while the background sync is running */}
+                  {syncLoading && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>{l.syncing ?? "Checking subscription…"}</span>
+                    </div>
                   )}
 
                   {/* Plan features */}
