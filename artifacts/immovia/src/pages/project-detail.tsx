@@ -191,7 +191,7 @@ export default function ProjectDetail() {
     upgradeTitle: string; upgradeText: string; upgradeBtn: string;
     contactName: string; contactPhone: string; contactEmail: string;
     registerOnly: string; remainingLabel: (u: number, l: number) => string; unlimitedLabel: string;
-    pdfLocked: string;
+    pdfLocked: string; pdfLoginRequired: string;
   }> = {
     sq: {
       unlockBtn: (r) => `Zhblloko Kontaktin (${r} mbetur)`, unlockingBtn: "Duke zhbllokuar...",
@@ -202,6 +202,7 @@ export default function ProjectDetail() {
       remainingLabel: (u, l) => `${l - u} zhbllokime mbetur këtë muaj`,
       unlimitedLabel: "Zhbllokime të pakufizuara (Premium)",
       pdfLocked: "Zhblloko kontaktin fillimisht për të shkarkuar dosjen",
+      pdfLoginRequired: "Kyçu në platformë për të shkarkuar dosjen",
     },
     en: {
       unlockBtn: (r) => `Unlock Contact (${r} remaining)`, unlockingBtn: "Unlocking...",
@@ -212,6 +213,7 @@ export default function ProjectDetail() {
       remainingLabel: (u, l) => `${l - u} unlocks remaining this month`,
       unlimitedLabel: "Unlimited unlocks (Premium)",
       pdfLocked: "Unlock the contact first to download the project brief",
+      pdfLoginRequired: "Sign in to download the project brief",
     },
     de: {
       unlockBtn: (r) => `Kontakt freischalten (${r} verbleibend)`, unlockingBtn: "Wird freigeschaltet...",
@@ -222,6 +224,7 @@ export default function ProjectDetail() {
       remainingLabel: (u, l) => `${l - u} Freischaltungen verbleibend`,
       unlimitedLabel: "Unbegrenzte Freischaltungen (Premium)",
       pdfLocked: "Kontakt zuerst freischalten, um die Projektmappe herunterzuladen",
+      pdfLoginRequired: "Anmelden, um die Projektmappe herunterzuladen",
     },
     fr: {
       unlockBtn: (r) => `Débloquer le contact (${r} restants)`, unlockingBtn: "Déverrouillage...",
@@ -232,6 +235,7 @@ export default function ProjectDetail() {
       remainingLabel: (u, l) => `${l - u} déblocages restants ce mois`,
       unlimitedLabel: "Déblocages illimités (Premium)",
       pdfLocked: "Déverrouillez le contact d'abord pour télécharger le dossier",
+      pdfLoginRequired: "Connectez-vous pour télécharger le dossier",
     },
   };
   const us = UNLOCK_STRINGS[language] ?? UNLOCK_STRINGS.en;
@@ -580,7 +584,12 @@ export default function ProjectDetail() {
               transition={{ delay: 0.18 }}
             >
               <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Projektmappe</p>
-              {isProvider && !hasContacts ? (
+              {!user ? (
+                <div className="flex items-center gap-2 w-full rounded-md border border-border bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground select-none">
+                  <Lock className="w-4 h-4 flex-shrink-0 text-muted-foreground/70" />
+                  <span>{us.pdfLoginRequired}</span>
+                </div>
+              ) : isProvider && !hasContacts ? (
                 <div className="flex items-center gap-2 w-full rounded-md border border-border bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground select-none">
                   <Lock className="w-4 h-4 flex-shrink-0 text-muted-foreground/70" />
                   <span>{us.pdfLocked}</span>
