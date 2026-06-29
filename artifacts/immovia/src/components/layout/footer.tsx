@@ -33,11 +33,6 @@ export function Footer() {
                 alt="ImmoVia365"
                 className="h-10 w-10 object-contain flex-shrink-0"
               />
-              <img
-                src="/logo-white.png"
-                alt="ImmoVia365"
-                className="h-8 w-auto object-contain object-left"
-              />
             </Link>
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
               {t.footer.tagline}
