@@ -508,46 +508,6 @@ export default function ProjectDetail() {
 
           {/* Right — apply sidebar */}
           <div className="space-y-4">
-            {/* "Who unlocked your contact" — shown only to the project owner */}
-            {unlockedBy !== null && (
-              <motion.div
-                className="bg-white rounded-2xl border border-border shadow-sm p-5"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-primary" />
-                  {ps.panelTitle(unlockedBy.total)}
-                </h2>
-                {unlockedBy.total === 0 ? (
-                  <p className="text-xs text-muted-foreground">{ps.noneYet}</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {unlockedBy.providers.map((p, i) => (
-                      <li key={i} className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          {p.isRevealed
-                            ? <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                            : <User className="w-3.5 h-3.5 text-primary/60" />
-                          }
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground truncate">
-                            {p.isRevealed ? p.name : ps.anonLabel}
-                          </p>
-                        </div>
-                        {p.isRevealed && (
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200 shrink-0">
-                            {ps.revealedBadge}
-                          </Badge>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </motion.div>
-            )}
 
             {/* PDF download card — gated for SPs: must unlock contact first */}
             <motion.div
