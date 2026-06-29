@@ -176,6 +176,8 @@ export default function ClientDashboard() {
   const [reviewModal, setReviewModal] = useState<{ offerId: number; projectId: number; providerName: string } | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [archiving, setArchiving] = useState<number | null>(null);
+  const [deletingProject, setDeletingProject] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [editingProject, setEditingProject] = useState<ProviderProject | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [selectedForCompare, setSelectedForCompare] = useState<number[]>([]);
@@ -265,6 +267,16 @@ export default function ClientDashboard() {
       await loadData();
     } catch { /* ignore */ }
     setArchiving(null);
+  };
+
+  const onDeleteProject = async (projectId: number) => {
+    setDeletingProject(projectId);
+    try {
+      await fetch(`/api/customer/projects/${projectId}`, { method: "DELETE", credentials: "include" });
+      await loadData();
+    } catch { /* ignore */ }
+    setDeletingProject(null);
+    setConfirmDeleteId(null);
   };
 
   const removeFavorite = async (companyId: number) => {
@@ -576,24 +588,48 @@ export default function ClientDashboard() {
                           offersLabel={applicationsLabel}
                           onClick={() => setLocation(`/projects/${p.id}`)}
                           footer={
-                            <div className="flex flex-wrap gap-2 pt-3 border-t border-border/40">
-                              <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setActiveSection("bewerbungen"); }}>
-                                <Users className="w-3.5 h-3.5 mr-1.5" />{l.viewApplications}
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setActiveSection("nachrichten"); }}>
-                                <MessageSquare className="w-3.5 h-3.5 mr-1.5" />{l.openMessages}
-                              </Button>
-                              {p.status !== "archived" && p.status !== "completed" && (
-                                <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setEditingProject(p); }}>
-                                  <Pencil className="w-3.5 h-3.5 mr-1.5" />{l.editProject}
-                                </Button>
+                            <div className="space-y-2 pt-3 border-t border-border/40">
+                              {/* Pending review notice */}
+                              {p.status === "pending" && (
+                                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 flex items-start gap-1.5">
+                                  <Eye className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                  {l.pendingReview}
+                                </p>
                               )}
-                              {p.status !== "archived" && p.status !== "completed" && (
-                                <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={(e) => { e.stopPropagation(); onArchive(p.id); }} disabled={isArchiving}>
-                                  {isArchiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5 mr-1.5" />}
-                                  {l.archiveProject}
+                              <div className="flex flex-wrap gap-2">
+                                <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setActiveSection("bewerbungen"); }}>
+                                  <Users className="w-3.5 h-3.5 mr-1.5" />{l.viewApplications}
                                 </Button>
-                              )}
+                                <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setActiveSection("nachrichten"); }}>
+                                  <MessageSquare className="w-3.5 h-3.5 mr-1.5" />{l.openMessages}
+                                </Button>
+                                {p.status !== "archived" && p.status !== "completed" && (
+                                  <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setEditingProject(p); }}>
+                                    <Pencil className="w-3.5 h-3.5 mr-1.5" />{l.editProject}
+                                  </Button>
+                                )}
+                                {p.status !== "archived" && p.status !== "completed" && (
+                                  <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={(e) => { e.stopPropagation(); onArchive(p.id); }} disabled={isArchiving}>
+                                    {isArchiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5 mr-1.5" />}
+                                    {l.archiveProject}
+                                  </Button>
+                                )}
+                                {/* Delete button — always available; shows confirm inline */}
+                                {confirmDeleteId === p.id ? (
+                                  <div className="flex items-center gap-1.5 w-full" onClick={(e) => e.stopPropagation()}>
+                                    <span className="text-xs text-destructive flex-1">{l.deleteProjectConfirm}</span>
+                                    <Button size="sm" variant="destructive" disabled={deletingProject === p.id} onClick={() => onDeleteProject(p.id)}>
+                                      {deletingProject === p.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5 mr-1" />}
+                                      {l.deleteProject}
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setConfirmDeleteId(null)}><X className="w-3.5 h-3.5" /></Button>
+                                  </div>
+                                ) : (
+                                  <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id); }}>
+                                    <Trash2 className="w-3.5 h-3.5 mr-1.5" />{l.deleteProject}
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           }
                         />

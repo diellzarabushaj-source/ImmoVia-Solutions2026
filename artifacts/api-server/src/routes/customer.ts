@@ -13,7 +13,7 @@ router.patch("/customer/projects/:id", requireAuth, async (req, res): Promise<vo
   if (isNaN(projectId)) { res.status(400).json({ error: "Invalid project id" }); return; }
 
   const [project] = await db
-    .select({ id: projectsTable.id, ownerUserId: projectsTable.ownerUserId })
+    .select({ id: projectsTable.id, ownerUserId: projectsTable.ownerUserId, status: projectsTable.status })
     .from(projectsTable)
     .where(eq(projectsTable.id, projectId));
 
@@ -51,6 +51,13 @@ router.patch("/customer/projects/:id", requireAuth, async (req, res): Promise<vo
     res.status(400).json({ error: "No valid fields to update" }); return;
   }
 
+  // If the poster edits content fields on a live ("open") project, reset to pending for admin re-approval.
+  const CONTENT_FIELDS = ["title", "description", "projectType", "subcategory", "subcategoryOtherText", "city", "budget", "timeline", "size", "photos"];
+  const editingContent = CONTENT_FIELDS.some((f) => f in updateData);
+  if (editingContent && project.status === "open" && !("status" in updateData)) {
+    updateData.status = "pending";
+  }
+
   const [updated] = await db
     .update(projectsTable)
     .set(updateData)
@@ -58,6 +65,25 @@ router.patch("/customer/projects/:id", requireAuth, async (req, res): Promise<vo
     .returning();
 
   res.json({ ok: true, project: updated });
+});
+
+// DELETE /customer/projects/:id — customer permanently deletes their own project
+router.delete("/customer/projects/:id", requireAuth, async (req, res): Promise<void> => {
+  const userId = req.userId!;
+  const projectId = parseInt(String(req.params.id), 10);
+  if (isNaN(projectId)) { res.status(400).json({ error: "Invalid project id" }); return; }
+
+  const [project] = await db
+    .select({ id: projectsTable.id, ownerUserId: projectsTable.ownerUserId })
+    .from(projectsTable)
+    .where(eq(projectsTable.id, projectId));
+
+  if (!project || project.ownerUserId !== userId) {
+    res.status(403).json({ error: "Forbidden" }); return;
+  }
+
+  await db.delete(projectsTable).where(and(eq(projectsTable.id, projectId), eq(projectsTable.ownerUserId, userId)));
+  res.sendStatus(204);
 });
 
 // GET /customer/favorites — list saved providers

@@ -66,11 +66,11 @@ export default function Profile() {
     if (!file) return;
     setAvatarError(null);
     if (!file.type.startsWith("image/")) {
-      setAvatarError(t.publicProfile.errorImageOnly);
+      setAvatarError(t.portfolio.errorImageOnly);
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
-      setAvatarError(t.publicProfile.errorTooLarge);
+      setAvatarError(t.portfolio.errorTooLarge);
       return;
     }
     setAvatarUploading(true);
