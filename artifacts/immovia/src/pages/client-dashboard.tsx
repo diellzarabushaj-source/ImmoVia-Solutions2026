@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Loader2, Star, X, MessageSquare, ChevronDown, ChevronUp,
   LayoutDashboard, PlusCircle, FolderOpen, Users, Send,
-  Search, Heart, File, Award, Settings, Briefcase,
+  Search, Heart, Award, Settings, Briefcase,
   MapPin, Calendar, ArrowRight, Flame, ShieldCheck,
   Archive, CheckCircle2, Eye, Trash2, Building2,
   BarChart3, Scale, Pencil,
@@ -68,7 +68,6 @@ type Section =
   | "angebote"
   | "finden"
   | "favoriten"
-  | "dateien"
   | "bewertungen"
   | "einstellungen";
 
@@ -153,7 +152,7 @@ export default function ClientDashboard() {
 
   // ── State ─────────────────────────────────────────────────────────────────
 
-  const VALID_POSTER_SECTIONS: Section[] = ["uebersicht","erstellen","projekte","bewerbungen","nachrichten","angebote","finden","favoriten","dateien","bewertungen","einstellungen"];
+  const VALID_POSTER_SECTIONS: Section[] = ["uebersicht","erstellen","projekte","bewerbungen","nachrichten","angebote","finden","favoriten","bewertungen","einstellungen"];
   const [activeSection, setActiveSection] = useState<Section>(() => {
     const tab = new URLSearchParams(search).get("tab") as Section | null;
     return (tab && VALID_POSTER_SECTIONS.includes(tab)) ? tab : "uebersicht";
@@ -312,7 +311,6 @@ export default function ClientDashboard() {
     { id: "angebote", label: l.navOffers, icon: <Send className="w-4 h-4" />, badge: allOffers.length || undefined },
     { id: "finden", label: l.navFind, icon: <Search className="w-4 h-4" /> },
     { id: "favoriten", label: l.navFavorites, icon: <Heart className="w-4 h-4" />, badge: favorites.length || undefined },
-    { id: "dateien", label: l.navFiles, icon: <File className="w-4 h-4" /> },
     { id: "bewertungen", label: l.navReviews, icon: <Award className="w-4 h-4" /> },
     { id: "einstellungen", label: l.navSettings, icon: <Settings className="w-4 h-4" /> },
   ];
@@ -916,39 +914,6 @@ export default function ClientDashboard() {
                         }
                       />
                     ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ── DATEIEN ── */}
-            {activeSection === "dateien" && (
-              <div>
-                <h2 className="text-xl font-serif font-bold mb-4">{l.navFiles}</h2>
-                {projects.every(p => (p.photos ?? []).length === 0) ? (
-                  <Card className="p-10 text-center">
-                    <File className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
-                    <p className="text-sm text-muted-foreground mb-4">{l.noFiles}</p>
-                    <Button onClick={() => setActiveSection("erstellen")}><PlusCircle className="w-4 h-4 mr-2" />{l.navCreate}</Button>
-                  </Card>
-                ) : (
-                  <div className="space-y-6">
-                    {projects.map(p => {
-                      const photos = p.photos ?? [];
-                      if (photos.length === 0) return null;
-                      return (
-                        <div key={p.id}>
-                          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">{p.title ?? p.projectType} · {p.city}</h3>
-                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                            {photos.map((ph, i) => (
-                              <a key={i} href={`/api/storage${ph}`} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-lg overflow-hidden bg-muted border hover:opacity-90 transition-opacity">
-                                <img src={`/api/storage${ph}`} alt="" className="w-full h-full object-cover" />
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
                   </div>
                 )}
               </div>
