@@ -1060,3 +1060,89 @@ export async function sendProjectInviteNotification(data: {
   if (error) logger.error({ error }, "Failed to send project invite notification");
   else logger.info({ to: resolveRecipient(data.providerEmail), type: "project_invite", lang }, "Project invite notification sent");
 }
+
+// ── sendWelcomeEmail ──────────────────────────────────────────────────────────
+export async function sendWelcomeEmail(data: {
+  name: string;
+  email: string;
+  accountType: "project_poster" | "service_provider";
+  language?: string | null;
+}): Promise<void> {
+  const client = getResend();
+  if (!client) {
+    logger.warn("Email not configured — skipping welcome email (set RESEND_API_KEY)");
+    return;
+  }
+  const lang = normLang(data.language);
+  const url = appUrl();
+
+  const isPoster = data.accountType === "project_poster";
+
+  const subject: Record<Lang, string> = {
+    sq: isPoster
+      ? `Mirë se erdhe në ImmoVia365 — Posti i Projektit`
+      : `Mirë se erdhe në ImmoVia365 — Ofruesi i Shërbimit`,
+    en: isPoster
+      ? `Welcome to ImmoVia365 — Project Poster`
+      : `Welcome to ImmoVia365 — Service Provider`,
+    de: isPoster
+      ? `Willkommen bei ImmoVia365 — Projektanfrage`
+      : `Willkommen bei ImmoVia365 — Dienstleister`,
+    fr: isPoster
+      ? `Bienvenue sur ImmoVia365 — Déposant de projet`
+      : `Bienvenue sur ImmoVia365 — Prestataire`,
+  };
+
+  const heading: Record<Lang, string> = {
+    sq: "Mirë se erdhe në ImmoVia365",
+    en: "Welcome to ImmoVia365",
+    de: "Willkommen bei ImmoVia365",
+    fr: "Bienvenue sur ImmoVia365",
+  };
+
+  const hi: Record<Lang, string> = {
+    sq: `Përshëndetje ${data.name},`,
+    en: `Hi ${data.name},`,
+    de: `Hallo ${data.name},`,
+    fr: `Bonjour ${data.name},`,
+  };
+
+  const intro: Record<Lang, string> = isPoster
+    ? {
+        sq: "Llogaria juaj është krijuar me sukses. Tani mund të postoni projektin tuaj të rinovimit dhe të merrni oferta nga profesionistë të verifikuar.",
+        en: "Your account has been successfully created. You can now post your renovation project and receive offers from vetted professionals.",
+        de: "Ihr Konto wurde erfolgreich erstellt. Sie können jetzt Ihr Renovierungsprojekt veröffentlichen und Angebote von geprüften Fachleuten erhalten.",
+        fr: "Votre compte a été créé avec succès. Vous pouvez maintenant publier votre projet de rénovation et recevoir des offres de professionnels vérifiés.",
+      }
+    : {
+        sq: "Llogaria juaj si ofrues shërbimi është krijuar me sukses. Filloni të plotësoni profilin tuaj dhe merrni kërkesa nga klientë në zonën tuaj.",
+        en: "Your service provider account has been successfully created. Start completing your profile and receive project requests from clients in your area.",
+        de: "Ihr Dienstleisterkonto wurde erfolgreich erstellt. Vervollständigen Sie Ihr Profil und erhalten Sie Projektanfragen von Kunden in Ihrer Region.",
+        fr: "Votre compte prestataire a été créé avec succès. Complétez votre profil et recevez des demandes de projets de clients dans votre région.",
+      };
+
+  const cta: Record<Lang, string> = isPoster
+    ? { sq: "Posto Projektin", en: "Post a Project", de: "Projekt erstellen", fr: "Publier un projet" }
+    : { sq: "Shiko Panelin", en: "Open Dashboard", de: "Dashboard öffnen", fr: "Ouvrir le tableau de bord" };
+
+  const ctaPath = isPoster ? "/submit-project" : "/provider";
+
+  const { error } = await client.emails.send({
+    from: fromAddress(),
+    to: resolveRecipient(data.email),
+    subject: subject[lang],
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${heading[lang]}</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">${hi[lang]}</p>
+          <p style="margin:0 0 20px">${intro[lang]}</p>
+          <div style="margin-top:24px"><a href="${url}${ctaPath}" style="${BTN_STYLE}">${cta[lang]}</a></div>
+        </div>
+        ${footer(lang)}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send welcome email");
+  else logger.info({ to: resolveRecipient(data.email), type: "welcome", lang, accountType: data.accountType }, "Welcome email sent");
+}

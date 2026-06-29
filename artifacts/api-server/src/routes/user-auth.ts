@@ -11,6 +11,7 @@ import {
 } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { generateUniqueSlug } from "../lib/slug";
+import { sendWelcomeEmail } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -257,6 +258,16 @@ router.post("/auth/sync", async (req, res): Promise<void> => {
     } catch (err) {
       req.log.warn({ err }, "Failed to auto-create companies row for new service provider");
     }
+  }
+
+  // Send welcome email to the new user (fire-and-forget)
+  if (accountType === "project_poster" || accountType === "service_provider") {
+    void sendWelcomeEmail({
+      name: fullName,
+      email: clerkEmail,
+      accountType,
+      language,
+    });
   }
 
   res.json({ user: toPublicUser(newUser) });
