@@ -247,3 +247,12 @@ div[style*="z-index: 2147483647"]:has(> iframe[src*="chatbase"]) {
   0% { transform: translateX(-150%) skewX(-12deg); }
   100% { transform: translateX(350%) skewX(-12deg); }
 }
+
+/* Hide scrollbar on pill/chip rows while keeping scroll functional */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

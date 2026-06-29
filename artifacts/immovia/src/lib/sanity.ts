@@ -1,5 +1,5 @@
 import { createClient } from "@sanity/client";
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 
 export type SanityImageRef = {
   _type: "image";
@@ -19,12 +19,12 @@ const API_VERSION = (import.meta.env.VITE_SANITY_API_VERSION as string | undefin
 export const isSanityConfigured = Boolean(PROJECT_ID);
 
 // Client used ONLY for building image URLs (no API calls made).
-let _imageBuilder: ReturnType<typeof imageUrlBuilder> | null = null;
+let _imageBuilder: ReturnType<typeof createImageUrlBuilder> | null = null;
 
 function getImageBuilder() {
   if (!_imageBuilder && PROJECT_ID) {
     const client = createClient({ projectId: PROJECT_ID, dataset: DATASET, apiVersion: API_VERSION, useCdn: true });
-    _imageBuilder = imageUrlBuilder(client);
+    _imageBuilder = createImageUrlBuilder(client);
   }
   return _imageBuilder;
 }
