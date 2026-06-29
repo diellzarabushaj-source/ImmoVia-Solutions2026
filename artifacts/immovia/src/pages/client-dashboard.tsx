@@ -269,6 +269,15 @@ export default function ClientDashboard() {
     setArchiving(null);
   };
 
+  const onUnarchive = async (projectId: number) => {
+    setArchiving(projectId);
+    try {
+      await fetch(`/api/customer/projects/${projectId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ status: "open" }) });
+      await loadData();
+    } catch { /* ignore */ }
+    setArchiving(null);
+  };
+
   const onDeleteProject = async (projectId: number) => {
     setDeletingProject(projectId);
     try {
@@ -612,6 +621,12 @@ export default function ClientDashboard() {
                                   <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={(e) => { e.stopPropagation(); onArchive(p.id); }} disabled={isArchiving}>
                                     {isArchiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5 mr-1.5" />}
                                     {l.archiveProject}
+                                  </Button>
+                                )}
+                                {p.status === "archived" && (
+                                  <Button size="sm" variant="outline" className="text-primary border-primary/30 hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); onUnarchive(p.id); }} disabled={isArchiving}>
+                                    {isArchiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />}
+                                    {l.unarchiveProject}
                                   </Button>
                                 )}
                                 {/* Delete button — always available; shows confirm inline */}

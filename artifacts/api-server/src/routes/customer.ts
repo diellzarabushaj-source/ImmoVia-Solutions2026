@@ -26,7 +26,7 @@ router.patch("/customer/projects/:id", requireAuth, async (req, res): Promise<vo
     title, description, status, projectType, subcategory,
     subcategoryOtherText, city, budget, timeline, size, photos,
   } = body;
-  const allowedStatus = ["archived", "completed", "pending"];
+  const allowedStatus = ["archived", "completed", "pending", "open"];
   const allowedSize = ["small", "medium", "large", "premium"];
 
   const updateData: Record<string, unknown> = {};
