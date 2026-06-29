@@ -598,17 +598,29 @@ export default function Companies() {
                 })}
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-                <div className="bg-white/95 backdrop-blur-sm border border-border rounded-2xl px-8 py-8 text-center shadow-lg max-w-sm mx-auto">
+                <motion.div
+                  className="bg-white/95 backdrop-blur-sm border border-border rounded-2xl px-8 py-8 text-center shadow-lg max-w-sm mx-auto"
+                  initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  whileHover={{ y: -4, boxShadow: "0 20px 48px -8px rgba(26,58,110,0.22)", borderColor: "rgba(26,58,110,0.3)" }}
+                  transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                >
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <Lock className="w-6 h-6 text-primary" />
                   </div>
                   <p className="text-sm font-medium text-foreground mb-5">{t.professionals.gateLabel}</p>
                   <Link href="/signup?account_type=project_poster">
-                    <Button size="lg" className="w-full" data-testid="companies-gate-cta">
-                      {t.professionals.gateCta}
-                    </Button>
+                    <motion.div
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                    >
+                      <Button size="lg" className="w-full" data-testid="companies-gate-cta">
+                        {t.professionals.gateCta}
+                      </Button>
+                    </motion.div>
                   </Link>
-                </div>
+                </motion.div>
               </div>
             </div>
           )}
