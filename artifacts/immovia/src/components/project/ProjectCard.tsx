@@ -48,7 +48,7 @@ export function ProjectCard({
   href,
   onClick,
   showStatus = false,
-  showPoster = true,
+  showPoster = false,
   offersLabel,
   footer,
   disableLink = false,
