@@ -7,8 +7,9 @@ import {
   recordInvoice,
 } from "./stripeActivation";
 import { logger } from "./logger";
-import { db, companiesTable } from "@workspace/db";
+import { db, companiesTable, usersTable, subscriptionsTable, subscriptionPlansTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { sendSubscriptionPaymentSuccessEmail, sendSubscriptionPaymentFailedEmail } from "./email";
 
 export class WebhookHandlers {
   static async processWebhook(payload: Buffer, signature: string): Promise<void> {
@@ -62,6 +63,35 @@ export class WebhookHandlers {
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
         await recordInvoice(invoice, "succeeded");
+        // Send payment confirmation email (fire-and-forget)
+        void (async () => {
+          try {
+            const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+            if (!customerId) return;
+            const [user] = await db
+              .select({ id: usersTable.id, email: usersTable.email, fullName: usersTable.fullName, language: usersTable.language })
+              .from(usersTable)
+              .where(eq(usersTable.stripeCustomerId, customerId))
+              .limit(1);
+            if (!user?.email) return;
+            const [sub] = await db
+              .select({ planName: subscriptionPlansTable.name })
+              .from(subscriptionsTable)
+              .innerJoin(subscriptionPlansTable, eq(subscriptionsTable.planId, subscriptionPlansTable.id))
+              .where(eq(subscriptionsTable.userId, user.id))
+              .limit(1);
+            await sendSubscriptionPaymentSuccessEmail({
+              recipientEmail: user.email,
+              recipientName: user.fullName,
+              planName: sub?.planName ?? "Subscription",
+              amountCents: invoice.amount_paid || invoice.amount_due || 0,
+              currency: invoice.currency ?? "CHF",
+              language: user.language,
+            });
+          } catch (err) {
+            logger.error({ err }, "Failed to send payment success email");
+          }
+        })();
         break;
       }
 
@@ -69,6 +99,33 @@ export class WebhookHandlers {
         const invoice = event.data.object as Stripe.Invoice;
         await recordInvoice(invoice, "failed");
         await markSubscriptionPastDue(invoice.customer);
+        // Send payment failed warning email (fire-and-forget)
+        void (async () => {
+          try {
+            const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+            if (!customerId) return;
+            const [user] = await db
+              .select({ id: usersTable.id, email: usersTable.email, fullName: usersTable.fullName, language: usersTable.language })
+              .from(usersTable)
+              .where(eq(usersTable.stripeCustomerId, customerId))
+              .limit(1);
+            if (!user?.email) return;
+            const [sub] = await db
+              .select({ planName: subscriptionPlansTable.name })
+              .from(subscriptionsTable)
+              .innerJoin(subscriptionPlansTable, eq(subscriptionsTable.planId, subscriptionPlansTable.id))
+              .where(eq(subscriptionsTable.userId, user.id))
+              .limit(1);
+            await sendSubscriptionPaymentFailedEmail({
+              recipientEmail: user.email,
+              recipientName: user.fullName,
+              planName: sub?.planName ?? "Subscription",
+              language: user.language,
+            });
+          } catch (err) {
+            logger.error({ err }, "Failed to send payment failed email");
+          }
+        })();
         break;
       }
 

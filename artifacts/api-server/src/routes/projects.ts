@@ -13,10 +13,11 @@ import {
   UpdateProjectResponse,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/requireAdmin";
-import { sendNewProjectNotification, sendProjectConfirmationToClient, sendProjectPublishedNotification, sendProjectRejectedNotification, sendPremiumProjectNotification } from "../lib/email";
+import { sendNewProjectNotification, sendProjectConfirmationToClient, sendProjectPublishedNotification, sendProjectRejectedNotification, sendPremiumProjectNotification, sendMatchingProjectNotification } from "../lib/email";
 import { createNotification, getUserEmail } from "../lib/notify";
 import { isAuthenticated, isAdminSession, canViewProjectContacts, getLocalUserId, getUnlockStats, getProviderPlanSlug, getUnlockedProjectIds, PRO_UNLOCK_LIMIT } from "../lib/planGating";
 import { requireProvider } from "../middlewares/requireProvider";
+import { companiesTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -181,6 +182,46 @@ router.post("/projects", async (req, res): Promise<void> => {
       }
     } catch (notifyErr) {
       req.log.warn({ notifyErr }, "Failed to send premium new-project notifications");
+    }
+  })();
+
+  // Notify all other approved providers whose service types and city match (non-premium)
+  void (async () => {
+    try {
+      const premiumEmails = new Set((await db
+        .select({ email: usersTable.email })
+        .from(subscriptionsTable)
+        .innerJoin(subscriptionPlansTable, eq(subscriptionsTable.planId, subscriptionPlansTable.id))
+        .innerJoin(usersTable, eq(subscriptionsTable.userId, usersTable.id))
+        .where(and(eq(subscriptionsTable.status, "active"), eq(subscriptionPlansTable.slug, "premium")))
+      ).map(r => r.email).filter(Boolean));
+
+      const matchingCompanies = await db
+        .select({ email: companiesTable.email, companyName: companiesTable.companyName, language: usersTable.language })
+        .from(companiesTable)
+        .leftJoin(usersTable, eq(companiesTable.email, usersTable.email))
+        .where(
+          and(
+            eq(companiesTable.status, "approved"),
+            sql`${companiesTable.serviceTypes} @> ARRAY[${project.projectType}]::text[]`,
+            ilike(companiesTable.city, `%${project.city.trim()}%`)
+          )
+        );
+
+      for (const co of matchingCompanies) {
+        if (!co.email) continue;
+        if (premiumEmails.has(co.email)) continue; // already notified above
+        await sendMatchingProjectNotification({
+          recipientEmail: co.email,
+          recipientName: co.companyName ?? "Provider",
+          projectType: project.projectType,
+          city: project.city,
+          projectId: project.id,
+          language: co.language,
+        });
+      }
+    } catch (notifyErr) {
+      req.log.warn({ notifyErr }, "Failed to send matching project notifications");
     }
   })();
 

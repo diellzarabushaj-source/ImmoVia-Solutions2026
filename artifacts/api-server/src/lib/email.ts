@@ -1007,6 +1007,181 @@ export async function sendPremiumProjectNotification(data: {
   else logger.info({ to: resolveRecipient(data.recipientEmail), projectId: data.projectId }, "Premium project notification sent");
 }
 
+// ── sendMatchingProjectNotification ───────────────────────────────────────────
+export async function sendMatchingProjectNotification(data: {
+  recipientEmail: string;
+  recipientName: string;
+  projectType: string;
+  city: string;
+  projectId: number;
+  language?: string | null;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.recipientEmail) return;
+  const lang = normLang(data.language);
+  const projectUrl = `${appUrl()}/projects/${data.projectId}`;
+
+  const subjects: Record<Lang, string> = {
+    sq: `Projekt i ri që përputhet me shërbimet tuaja — ${data.projectType} në ${data.city}`,
+    en: `New matching project — ${data.projectType} in ${data.city}`,
+    de: `Neues passendes Projekt — ${data.projectType} in ${data.city}`,
+    fr: `Nouveau projet correspondant — ${data.projectType} à ${data.city}`,
+  };
+  const headings: Record<Lang, string> = {
+    sq: "ImmoVia365 — Projekt i Ri",
+    en: "ImmoVia365 — New Matching Project",
+    de: "ImmoVia365 — Neues Projekt",
+    fr: "ImmoVia365 — Nouveau Projet",
+  };
+  const intros: Record<Lang, (t: string, c: string) => string> = {
+    sq: (t, c) => `Një projekt i ri <strong>${t}</strong> sapo u postua në <strong>${c}</strong> dhe përputhet me shërbimet tuaja. Aplikoni para se ta marrin të tjerët!`,
+    en: (t, c) => `A new <strong>${t}</strong> project was posted in <strong>${c}</strong> matching your services. Apply before others do!`,
+    de: (t, c) => `Ein neues <strong>${t}</strong>-Projekt wurde in <strong>${c}</strong> veröffentlicht und passt zu Ihren Leistungen. Bewerben Sie sich jetzt!`,
+    fr: (t, c) => `Un nouveau projet <strong>${t}</strong> vient d'être publié à <strong>${c}</strong> et correspond à vos services. Postulez avant les autres !`,
+  };
+  const ctas: Record<Lang, string> = {
+    sq: "Shiko & Apliko", en: "View & Apply", de: "Ansehen & Bewerben", fr: "Voir & Postuler",
+  };
+
+  const { error } = await client.emails.send({
+    from: fromAddress(),
+    to: resolveRecipient(data.recipientEmail),
+    subject: subjects[lang],
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${headings[lang]}</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">${{ sq: "Mirëdita", en: "Hello", de: "Hallo", fr: "Bonjour" }[lang]} <strong>${data.recipientName}</strong>,</p>
+          <p style="margin:0 0 20px">${intros[lang](data.projectType, data.city)}</p>
+          <div style="background:#f1f5f9;border-radius:8px;padding:16px;margin:0 0 20px">
+            <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#0f2044">${data.projectType}</p>
+            <p style="margin:0;font-size:13px;color:#475569">${data.city}</p>
+          </div>
+          <div><a href="${projectUrl}" style="${BTN_STYLE}">${ctas[lang]}</a></div>
+        </div>
+        ${footer(lang)}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send matching project notification");
+  else logger.info({ to: resolveRecipient(data.recipientEmail), projectId: data.projectId }, "Matching project notification sent");
+}
+
+// ── sendSubscriptionPaymentSuccessEmail ───────────────────────────────────────
+export async function sendSubscriptionPaymentSuccessEmail(data: {
+  recipientEmail: string;
+  recipientName: string | null;
+  planName: string;
+  amountCents: number;
+  currency: string;
+  language?: string | null;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.recipientEmail) return;
+  const lang = normLang(data.language);
+  const url = appUrl();
+  const amount = (data.amountCents / 100).toFixed(2);
+  const cur = data.currency.toUpperCase();
+
+  const subjects: Record<Lang, string> = {
+    sq: `Pagesa u konfirmua — ${data.planName} ${amount} ${cur}`,
+    en: `Payment confirmed — ${data.planName} ${amount} ${cur}`,
+    de: `Zahlung bestätigt — ${data.planName} ${amount} ${cur}`,
+    fr: `Paiement confirmé — ${data.planName} ${amount} ${cur}`,
+  };
+  const headings: Record<Lang, string> = {
+    sq: "ImmoVia365 — Pagesë e Konfirmuar",
+    en: "ImmoVia365 — Payment Confirmed",
+    de: "ImmoVia365 — Zahlung bestätigt",
+    fr: "ImmoVia365 — Paiement confirmé",
+  };
+  const bodies: Record<Lang, (plan: string, amt: string, cur: string) => string> = {
+    sq: (p, a, c) => `Rinovimi i abonamentit tuaj <strong>${p}</strong> u procesua me sukses. Suma e paguar: <strong>${a} ${c}</strong>. Qasja juaj vazhdojë normalisht.`,
+    en: (p, a, c) => `Your <strong>${p}</strong> subscription has been renewed successfully. Amount charged: <strong>${a} ${c}</strong>. Your access continues uninterrupted.`,
+    de: (p, a, c) => `Ihr <strong>${p}</strong>-Abonnement wurde erfolgreich verlängert. Belasteter Betrag: <strong>${a} ${c}</strong>. Ihr Zugang läuft weiter.`,
+    fr: (p, a, c) => `Votre abonnement <strong>${p}</strong> a été renouvelé avec succès. Montant prélevé : <strong>${a} ${c}</strong>. Votre accès continue normalement.`,
+  };
+  const ctas: Record<Lang, string> = {
+    sq: "Hap Panelin", en: "Open Dashboard", de: "Dashboard öffnen", fr: "Ouvrir le tableau de bord",
+  };
+
+  const { error } = await client.emails.send({
+    from: fromAddress(),
+    to: resolveRecipient(data.recipientEmail),
+    subject: subjects[lang],
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${headings[lang]}</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">${{ sq: "Mirëdita", en: "Hello", de: "Hallo", fr: "Bonjour" }[lang]} <strong>${data.recipientName ?? ""}</strong>,</p>
+          <p style="margin:0 0 20px">${bodies[lang](data.planName, amount, cur)}</p>
+          <div><a href="${url}/provider" style="${BTN_STYLE}">${ctas[lang]}</a></div>
+        </div>
+        ${footer(lang)}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send subscription payment success email");
+  else logger.info({ to: resolveRecipient(data.recipientEmail), type: "payment_success" }, "Subscription payment success email sent");
+}
+
+// ── sendSubscriptionPaymentFailedEmail ────────────────────────────────────────
+export async function sendSubscriptionPaymentFailedEmail(data: {
+  recipientEmail: string;
+  recipientName: string | null;
+  planName: string;
+  language?: string | null;
+}): Promise<void> {
+  const client = getResend();
+  if (!client || !data.recipientEmail) return;
+  const lang = normLang(data.language);
+  const url = appUrl();
+
+  const subjects: Record<Lang, string> = {
+    sq: `Pagesa dështoi — Abonamenti juaj rrezikohet`,
+    en: `Payment failed — Your subscription is at risk`,
+    de: `Zahlung fehlgeschlagen — Ihr Abonnement ist gefährdet`,
+    fr: `Échec du paiement — Votre abonnement est en danger`,
+  };
+  const headings: Record<Lang, string> = {
+    sq: "ImmoVia365 — Pagesë e Dështuar",
+    en: "ImmoVia365 — Payment Failed",
+    de: "ImmoVia365 — Zahlung fehlgeschlagen",
+    fr: "ImmoVia365 — Échec du paiement",
+  };
+  const bodies: Record<Lang, (plan: string) => string> = {
+    sq: (p) => `Nuk mundëm të procesojmë pagesën e rinovimit për abonimentin tuaj <strong>${p}</strong>. Nëse nuk përditësohet mënyra e pagesës, qasja juaj mund të ndërpritet.`,
+    en: (p) => `We were unable to process the renewal payment for your <strong>${p}</strong> subscription. If your payment method is not updated, your access may be interrupted.`,
+    de: (p) => `Die Verlängerungszahlung für Ihr <strong>${p}</strong>-Abonnement konnte nicht verarbeitet werden. Wenn Ihre Zahlungsmethode nicht aktualisiert wird, kann Ihr Zugang unterbrochen werden.`,
+    fr: (p) => `Nous n'avons pas pu traiter le paiement de renouvellement de votre abonnement <strong>${p}</strong>. Si votre mode de paiement n'est pas mis à jour, votre accès pourrait être interrompu.`,
+  };
+  const ctas: Record<Lang, string> = {
+    sq: "Përditëso Pagesën", en: "Update Payment Method", de: "Zahlungsmethode aktualisieren", fr: "Mettre à jour le paiement",
+  };
+
+  const { error } = await client.emails.send({
+    from: fromAddress(),
+    to: resolveRecipient(data.recipientEmail),
+    subject: subjects[lang],
+    html: `
+      <div style="${WRAP_STYLE}">
+        <div style="${NAV_STYLE}" style="background:#dc2626"><h1 style="color:#fff;margin:0;font-size:20px;font-weight:700">${headings[lang]}</h1></div>
+        <div style="${BODY_STYLE}">
+          <p style="margin:0 0 12px">${{ sq: "Mirëdita", en: "Hello", de: "Hallo", fr: "Bonjour" }[lang]} <strong>${data.recipientName ?? ""}</strong>,</p>
+          <p style="margin:0 0 16px">${bodies[lang](data.planName)}</p>
+          <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:10px 14px;margin:0 0 20px">
+            <p style="margin:0;font-size:13px;color:#991b1b">${{ sq: "Ju lutemi veproni menjëherë për të shmangur humbjen e qasjes.", en: "Please act immediately to avoid losing access.", de: "Bitte handeln Sie sofort, um den Zugang nicht zu verlieren.", fr: "Veuillez agir immédiatement pour éviter de perdre l'accès." }[lang]}</p>
+          </div>
+          <div><a href="${url}/provider/billing" style="${BTN_STYLE}">${ctas[lang]}</a></div>
+        </div>
+        ${footer(lang)}
+      </div>
+    `,
+  });
+  if (error) logger.error({ error }, "Failed to send subscription payment failed email");
+  else logger.info({ to: resolveRecipient(data.recipientEmail), type: "payment_failed" }, "Subscription payment failed email sent");
+}
+
 // ── sendOfferRejectedNotification ─────────────────────────────────────────────
 export async function sendOfferRejectedNotification(data: {
   providerEmail: string;
