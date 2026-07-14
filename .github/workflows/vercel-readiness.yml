@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -33,10 +33,33 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck frontend and API
-        run: |
-          pnpm --filter @workspace/immovia run typecheck
-          pnpm --filter @workspace/api-server run typecheck
+      - name: Typecheck frontend
+        run: pnpm --filter @workspace/immovia run typecheck
 
       - name: Build Vercel frontend output
         run: pnpm --filter @workspace/immovia run build
+
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck API
+        run: pnpm --filter @workspace/api-server run typecheck
