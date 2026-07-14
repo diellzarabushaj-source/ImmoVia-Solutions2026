@@ -1,4 +1,5 @@
 import { Storage, File } from "@google-cloud/storage";
+import type { JWTInput } from "google-auth-library";
 import { Readable } from "stream";
 import { randomUUID } from "crypto";
 import {
@@ -11,23 +12,57 @@ import {
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
-export const objectStorageClient = new Storage({
-  credentials: {
-    audience: "replit",
-    subject_token_type: "access_token",
-    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
-    type: "external_account",
-    credential_source: {
-      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
-      format: {
-        type: "json",
-        subject_token_field_name: "access_token",
+function parseGoogleCredentials(): JWTInput | undefined {
+  const raw = process.env.GOOGLE_CLOUD_CREDENTIALS_JSON;
+  if (!raw) return undefined;
+
+  try {
+    const credentials = JSON.parse(raw) as JWTInput;
+    if (typeof credentials.private_key === "string") {
+      credentials.private_key = credentials.private_key.replace(/\\n/g, "\n");
+    }
+    return credentials;
+  } catch (error) {
+    throw new Error(
+      `GOOGLE_CLOUD_CREDENTIALS_JSON is not valid JSON: ${
+        error instanceof Error ? error.message : "unknown parsing error"
+      }`,
+    );
+  }
+}
+
+function createObjectStorageClient(): Storage {
+  // Preserve Replit Object Storage support when the project is run there.
+  if (process.env.REPL_ID) {
+    return new Storage({
+      credentials: {
+        audience: "replit",
+        subject_token_type: "access_token",
+        token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
+        type: "external_account",
+        credential_source: {
+          url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
+          format: {
+            type: "json",
+            subject_token_field_name: "access_token",
+          },
+        },
+        universe_domain: "googleapis.com",
       },
-    },
-    universe_domain: "googleapis.com",
-  },
-  projectId: "",
-});
+      projectId: "",
+    });
+  }
+
+  // Vercel and other hosts use a normal Google Cloud service account. Store the
+  // complete service-account JSON as a secret named
+  // GOOGLE_CLOUD_CREDENTIALS_JSON and set GOOGLE_CLOUD_PROJECT_ID.
+  return new Storage({
+    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+    credentials: parseGoogleCredentials(),
+  });
+}
+
+export const objectStorageClient = createObjectStorageClient();
 
 export class ObjectNotFoundError extends Error {
   constructor() {
@@ -47,13 +82,12 @@ export class ObjectStorageService {
         pathsStr
           .split(",")
           .map((path) => path.trim())
-          .filter((path) => path.length > 0)
-      )
+          .filter((path) => path.length > 0),
+      ),
     );
     if (paths.length === 0) {
       throw new Error(
-        "PUBLIC_OBJECT_SEARCH_PATHS not set. Create a bucket in 'Object Storage' " +
-          "tool and set PUBLIC_OBJECT_SEARCH_PATHS env var (comma-separated paths)."
+        "PUBLIC_OBJECT_SEARCH_PATHS is not set. Provide comma-separated Google Cloud Storage paths such as /bucket/public.",
       );
     }
     return paths;
@@ -63,8 +97,7 @@ export class ObjectStorageService {
     const dir = process.env.PRIVATE_OBJECT_DIR || "";
     if (!dir) {
       throw new Error(
-        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
-          "tool and set PRIVATE_OBJECT_DIR env var."
+        "PRIVATE_OBJECT_DIR is not set. Provide a Google Cloud Storage path such as /bucket/private.",
       );
     }
     return dir;
@@ -108,12 +141,6 @@ export class ObjectStorageService {
 
   async getObjectEntityUploadURL(): Promise<string> {
     const privateObjectDir = this.getPrivateObjectDir();
-    if (!privateObjectDir) {
-      throw new Error(
-        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
-          "tool and set PRIVATE_OBJECT_DIR env var."
-      );
-    }
 
     const objectId = randomUUID();
     const fullPath = `${privateObjectDir}/uploads/${objectId}`;
@@ -177,7 +204,7 @@ export class ObjectStorageService {
 
   async trySetObjectEntityAclPolicy(
     rawPath: string,
-    aclPolicy: ObjectAclPolicy
+    aclPolicy: ObjectAclPolicy,
   ): Promise<string> {
     const normalizedPath = this.normalizeObjectEntityPath(rawPath);
     if (!normalizedPath.startsWith("/")) {
@@ -238,30 +265,47 @@ async function signObjectURL({
   method: "GET" | "PUT" | "DELETE" | "HEAD";
   ttlSec: number;
 }): Promise<string> {
-  const request = {
-    bucket_name: bucketName,
-    object_name: objectName,
-    method,
-    expires_at: new Date(Date.now() + ttlSec * 1000).toISOString(),
-  };
-  const response = await fetch(
-    `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+  if (process.env.REPL_ID) {
+    const request = {
+      bucket_name: bucketName,
+      object_name: objectName,
+      method,
+      expires_at: new Date(Date.now() + ttlSec * 1000).toISOString(),
+    };
+    const response = await fetch(
+      `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+        signal: AbortSignal.timeout(30_000),
       },
-      body: JSON.stringify(request),
-      signal: AbortSignal.timeout(30_000),
-    }
-  );
-  if (!response.ok) {
-    throw new Error(
-      `Failed to sign object URL, errorcode: ${response.status}, ` +
-        `make sure you're running on Replit`
     );
+    if (!response.ok) {
+      throw new Error(`Failed to sign object URL through Replit (${response.status}).`);
+    }
+
+    const data = (await response.json()) as { signed_url: string };
+    return data.signed_url;
   }
 
-  const data = (await response.json()) as { signed_url: string };
-  return data.signed_url;
+  const action =
+    method === "PUT"
+      ? "write"
+      : method === "DELETE"
+        ? "delete"
+        : "read";
+
+  const [signedUrl] = await objectStorageClient
+    .bucket(bucketName)
+    .file(objectName)
+    .getSignedUrl({
+      version: "v4",
+      action,
+      expires: Date.now() + ttlSec * 1000,
+    });
+
+  return signedUrl;
 }

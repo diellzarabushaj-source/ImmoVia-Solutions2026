@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @workspace/immovia run build",
+  "outputDirectory": "artifacts/immovia/dist/public",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 60
+    }
+  },
+  "routes": [
+    {
+      "src": "/api(?:/(.*))?",
+      "dest": "/api/index?__path=$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/.*",
+      "dest": "/index.html"
+    }
+  ]
+}
