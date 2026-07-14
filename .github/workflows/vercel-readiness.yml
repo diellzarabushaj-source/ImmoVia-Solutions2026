@@ -75,10 +75,26 @@ jobs:
       - name: Typecheck API
         run: pnpm --filter @workspace/api-server run typecheck 2>&1 | tee api-typecheck.log
 
+      - name: Typecheck Vercel API entry
+        if: always()
+        run: >-
+          pnpm exec tsc api/index.ts
+          --noEmit
+          --target ES2022
+          --module NodeNext
+          --moduleResolution NodeNext
+          --esModuleInterop
+          --allowSyntheticDefaultImports
+          --skipLibCheck
+          --strict
+          2>&1 | tee vercel-api-typecheck.log
+
       - name: Upload API diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: api-diagnostics
-          path: api-typecheck.log
+          path: |
+            api-typecheck.log
+            vercel-api-typecheck.log
           if-no-files-found: ignore
