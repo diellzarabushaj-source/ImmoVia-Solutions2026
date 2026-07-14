@@ -39,6 +39,8 @@ const router: IRouter = Router();
 router.use(seedDemoRouter);
 router.use(healthRouter);
 router.use(projectsRouter);
+// Payment compatibility routes must run before the old company checkout routes.
+router.use(paymentsRouter);
 router.use(companiesRouter);
 router.use(authRouter);
 router.use(userAuthRouter);
@@ -69,6 +71,5 @@ router.use(conversationsRouter);
 router.use(customerRouter);
 router.use(notificationsRouter);
 router.use(aiRouter);
-router.use(paymentsRouter);
 
 export default router;
