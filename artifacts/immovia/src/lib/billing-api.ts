@@ -156,17 +156,17 @@ export const billingApi = {
   payments: () => jsonFetch<PaymentRow[]>("/billing/payments"),
   invoices: () => jsonFetch<InvoiceRow[]>("/billing/invoices"),
   stripeCheckout: (planId: number) =>
-    jsonFetch<{ url: string }>("/stripe/checkout", {
+    jsonFetch<{ url: string }>("/payments/checkout", {
       method: "POST",
       body: JSON.stringify({ planId }),
     }),
   stripePortal: () =>
-    jsonFetch<{ url: string }>("/stripe/portal", { method: "POST" }),
+    jsonFetch<{ url: string }>("/payments/portal", { method: "POST" }),
   stripeSync: (sessionId?: string) =>
     jsonFetch<{ synced: boolean; plan?: string; reason?: string }>(
       sessionId
-        ? `/stripe/subscription/sync?session_id=${encodeURIComponent(sessionId)}`
-        : "/stripe/subscription/sync",
+        ? `/payments/subscription/sync?session_id=${encodeURIComponent(sessionId)}`
+        : "/payments/subscription/sync",
     ),
   cancel: () => jsonFetch<{ ok: boolean }>("/billing/cancel", { method: "POST" }),
   unlockedContacts: (page = 1) =>

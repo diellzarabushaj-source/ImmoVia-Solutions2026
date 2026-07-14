@@ -16,7 +16,6 @@ import { getUnlockStats } from "../lib/planGating";
 import { requireProvider } from "../middlewares/requireProvider";
 import { paymentProvider } from "../payments";
 import { rollSubscriptionCycle } from "../lib/credits";
-import { getStripeClient } from "../lib/stripeClient";
 
 const router: IRouter = Router();
 
@@ -174,50 +173,18 @@ router.get("/billing/invoices", requireProvider, async (req, res): Promise<void>
       .where(eq(companiesTable.email, user.email))
       .limit(1);
     if (company?.registrationFeePaid) {
-      let receiptUrl: string | null = null;
-      let invoicePdfUrl: string | null = null;
-      let invoiceHostedUrl: string | null = null;
-      try {
-        const [companyFull] = await db
-          .select({ stripeRegistrationSessionId: companiesTable.stripeRegistrationSessionId })
-          .from(companiesTable)
-          .where(eq(companiesTable.email, user.email))
-          .limit(1);
-        if (companyFull?.stripeRegistrationSessionId) {
-          const stripe = getStripeClient();
-          const session = await stripe.checkout.sessions.retrieve(
-            companyFull.stripeRegistrationSessionId,
-            { expand: ["payment_intent.latest_charge", "invoice"] }
-          );
-          // Prefer real Stripe invoice PDF (available when invoice_creation was enabled)
-          const inv = session.invoice as import("stripe").Stripe.Invoice | null;
-          if (inv) {
-            invoicePdfUrl = inv.invoice_pdf ?? null;
-            invoiceHostedUrl = inv.hosted_invoice_url ?? null;
-          }
-          // Fallback: charge receipt URL
-          if (!invoicePdfUrl && !invoiceHostedUrl) {
-            const pi = session.payment_intent as import("stripe").Stripe.PaymentIntent | null;
-            const charge = pi?.latest_charge as import("stripe").Stripe.Charge | null;
-            receiptUrl = charge?.receipt_url ?? null;
-          }
-        }
-      } catch {
-        // non-fatal — row still shown without receipt link
-      }
-      result.unshift({
-        id: 0,
-        paymentId: 0,
-        number: "REG-001",
-        issuedAt: company.createdAt instanceof Date ? company.createdAt : new Date(company.createdAt as string),
-        kind: "registration",
-        amountCents: 14900,
-        status: "paid",
-        receiptUrl,
-        invoicePdfUrl,
-        invoiceHostedUrl,
-      });
-    }
+    result.unshift({
+      id: 0,
+      paymentId: 0,
+      number: "REG-001",
+      issuedAt: company.createdAt instanceof Date ? company.createdAt : new Date(company.createdAt as string),
+      kind: "registration",
+      amountCents: 14900,
+      status: "paid",
+      receiptUrl: null,
+      invoicePdfUrl: null,
+      invoiceHostedUrl: null,
+    });
   }
 
   res.json(result);
@@ -335,29 +302,6 @@ router.get("/billing/registration-receipt", requireProvider, async (req, res): P
   res.send(html);
 });
 
-router.get("/billing/stripe-invoices", requireProvider, async (req, res): Promise<void> => {
-  const userId = req.userId!;
-  const [user] = await db.select({ stripeCustomerId: usersTable.stripeCustomerId }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-  if (!user?.stripeCustomerId) { res.json([]); return; }
-  try {
-    const stripe = getStripeClient();
-    const invoiceList = await stripe.invoices.list({ customer: user.stripeCustomerId, limit: 24, status: "paid" });
-    const result = invoiceList.data.map((inv) => ({
-      stripeId: inv.id,
-      number: inv.number ?? inv.id,
-      date: inv.created,
-      amountCents: inv.amount_paid,
-      currency: inv.currency,
-      pdfUrl: inv.invoice_pdf ?? null,
-      hostedUrl: inv.hosted_invoice_url ?? null,
-      status: inv.status ?? "paid",
-    }));
-    res.json(result);
-  } catch {
-    res.json([]);
-  }
-});
-
 router.get("/billing/unlocked-contacts", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;
   const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
@@ -394,7 +338,7 @@ router.get("/billing/unlocked-contacts", requireProvider, async (req, res): Prom
 
 // NOTE: The legacy POST /billing/subscribe endpoint was removed before launch.
 // It activated paid plans via a mock provider without a real charge. Paid plans
-// now activate ONLY through verified Stripe Checkout + webhook (see routes/stripe.ts).
+// will activate through the future Kosovo bank integration after verified payment.
 
 router.post("/billing/cancel", requireProvider, async (req, res): Promise<void> => {
   const userId = req.userId!;

@@ -32,7 +32,7 @@ import conversationsRouter from "./conversations";
 import customerRouter from "./customer";
 import notificationsRouter from "./notifications";
 import aiRouter from "./ai";
-import stripeRouter from "./stripe";
+import paymentsRouter from "./payments";
 
 const router: IRouter = Router();
 
@@ -69,6 +69,6 @@ router.use(conversationsRouter);
 router.use(customerRouter);
 router.use(notificationsRouter);
 router.use(aiRouter);
-router.use(stripeRouter);
+router.use(paymentsRouter);
 
 export default router;

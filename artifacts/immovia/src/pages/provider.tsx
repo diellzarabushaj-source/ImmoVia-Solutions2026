@@ -197,8 +197,8 @@ const L: Record<string, Record<string, string>> = {
     syncPlanFail: "Sinkronizimi dështoi. Kontaktoni mbështetjen.",
     cancelSub: "Anulo abonementin",
     portalOpening: "Duke hapur...",
-    stripeInvoices: "Faturat Stripe",
-    noStripeInvoices: "Asnjë faturë Stripe ende.",
+    stripeInvoices: "Faturat Online payment",
+    noOnline paymentInvoices: "Asnjë faturë Online payment ende.",
     registrationFeeLabel: "Tarifë regjistrimi",
     paidStatus: "Paguar",
     nextBilling: "Faturimi tjetër",
@@ -209,7 +209,7 @@ const L: Record<string, Record<string, string>> = {
     gateFeat2: "Klientët mund t'ju kontaktojnë drejtpërdrejt",
     gateFeat3: "Merrni njoftime për projekte të reja",
     gateBtn: "Paguaj CHF\u00a0149 tani",
-    gateSecure: "Pagesë e sigurt me Stripe",
+    gateSecure: "Pagesë e sigurt me Online payment",
     gateOpening: "Duke hapur...",
     gateError: "Ndodhi një gabim. Ju lutemi provoni përsëri.",
     offerStatusSent: "Në pritje",
@@ -313,8 +313,8 @@ const L: Record<string, Record<string, string>> = {
     syncPlanFail: "Sync failed. Please contact support.",
     cancelSub: "Cancel subscription",
     portalOpening: "Opening...",
-    stripeInvoices: "Stripe invoices",
-    noStripeInvoices: "No Stripe invoices yet.",
+    stripeInvoices: "Online payment invoices",
+    noOnline paymentInvoices: "No Online payment invoices yet.",
     registrationFeeLabel: "Registration fee",
     paidStatus: "Paid",
     nextBilling: "Next billing",
@@ -325,7 +325,7 @@ const L: Record<string, Record<string, string>> = {
     gateFeat2: "Clients can contact you directly",
     gateFeat3: "Receive notifications for new projects",
     gateBtn: "Pay CHF\u00a0149 now",
-    gateSecure: "Secure payment via Stripe",
+    gateSecure: "Secure payment via Online payment",
     gateOpening: "Opening...",
     gateError: "An error occurred. Please try again.",
     offerStatusSent: "Pending",
@@ -429,8 +429,8 @@ const L: Record<string, Record<string, string>> = {
     syncPlanFail: "Synchronisierung fehlgeschlagen. Bitte kontaktieren Sie den Support.",
     cancelSub: "Abonnement kündigen",
     portalOpening: "Öffnet...",
-    stripeInvoices: "Stripe-Rechnungen",
-    noStripeInvoices: "Noch keine Stripe-Rechnungen.",
+    stripeInvoices: "Online payment-Rechnungen",
+    noOnline paymentInvoices: "Noch keine Online payment-Rechnungen.",
     registrationFeeLabel: "Registrierungsgebühr",
     paidStatus: "Bezahlt",
     nextBilling: "Nächste Abrechnung",
@@ -441,7 +441,7 @@ const L: Record<string, Record<string, string>> = {
     gateFeat2: "Kunden können Sie direkt kontaktieren",
     gateFeat3: "Benachrichtigungen über neue Projekte erhalten",
     gateBtn: "Jetzt CHF\u00a0149 bezahlen",
-    gateSecure: "Sichere Zahlung über Stripe",
+    gateSecure: "Sichere Zahlung über Online payment",
     gateOpening: "Öffnet...",
     gateError: "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
     offerStatusSent: "Ausstehend",
@@ -545,8 +545,8 @@ const L: Record<string, Record<string, string>> = {
     syncPlanFail: "Échec de la synchronisation. Veuillez contacter le support.",
     cancelSub: "Résilier l'abonnement",
     portalOpening: "Ouverture...",
-    stripeInvoices: "Factures Stripe",
-    noStripeInvoices: "Pas encore de factures Stripe.",
+    stripeInvoices: "Factures Online payment",
+    noOnline paymentInvoices: "Pas encore de factures Online payment.",
     registrationFeeLabel: "Frais d'inscription",
     paidStatus: "Payé",
     nextBilling: "Prochaine facturation",
@@ -557,7 +557,7 @@ const L: Record<string, Record<string, string>> = {
     gateFeat2: "Les clients peuvent vous contacter directement",
     gateFeat3: "Recevez des notifications pour les nouveaux projets",
     gateBtn: "Payer CHF\u00a0149 maintenant",
-    gateSecure: "Paiement sécurisé via Stripe",
+    gateSecure: "Paiement sécurisé via Online payment",
     gateOpening: "Ouverture...",
     gateError: "Une erreur s'est produite. Veuillez réessayer.",
     offerStatusSent: "En attente",
@@ -599,8 +599,8 @@ export default function ProviderDashboard() {
   const [offers, setOffers] = useState<ProviderOffer[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
-  const [stripeInvoices, setStripeInvoices] = useState<Array<{ stripeId: string; number: string; date: number; amountCents: number; currency: string; pdfUrl: string | null; hostedUrl: string | null; status: string }>>([]);
-  const [stripeInvoicesLoaded, setStripeInvoicesLoaded] = useState(false);
+  const [stripeInvoices, setOnline paymentInvoices] = useState<Array<{ stripeId: string; number: string; date: number; amountCents: number; currency: string; pdfUrl: string | null; hostedUrl: string | null; status: string }>>([]);
+  const [stripeInvoicesLoaded, setOnline paymentInvoicesLoaded] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [syncLoading, setSyncLoading] = useState(false);
   const syncAutoTriggered = useRef(false);
@@ -722,7 +722,7 @@ export default function ProviderDashboard() {
     ) {
       syncAutoTriggered.current = true;
       setSyncLoading(true);
-      fetch("/api/stripe/subscription/sync")
+      fetch("/api/payments/subscription/sync")
         .then(r => r.json() as Promise<{ synced: boolean; plan?: string }>)
         .then(data => {
           if (data.synced) void refreshAll();
@@ -812,7 +812,7 @@ export default function ProviderDashboard() {
   const openPortal = async () => {
     setPortalLoading(true);
     try {
-      const r = await fetch("/api/stripe/portal", { method: "POST", headers: { "Content-Type": "application/json" } });
+      const r = await fetch("/api/payments/portal", { method: "POST", headers: { "Content-Type": "application/json" } });
       if (!r.ok) throw new Error();
       const { url } = await r.json() as { url: string };
       window.open(url, "_blank", "noopener");
@@ -824,7 +824,7 @@ export default function ProviderDashboard() {
   const syncSubscription = async () => {
     setSyncLoading(true);
     try {
-      const r = await fetch("/api/stripe/subscription/sync");
+      const r = await fetch("/api/payments/subscription/sync");
       const data = await r.json() as { synced: boolean; plan?: string; reason?: string };
       if (data.synced) {
         setSuccess(l.syncPlanSuccess);
@@ -839,14 +839,14 @@ export default function ProviderDashboard() {
     }
   };
 
-  const loadStripeInvoices = async () => {
+  const loadOnline paymentInvoices = async () => {
     if (stripeInvoicesLoaded) return;
     try {
-      const r = await fetch("/api/billing/stripe-invoices");
+      const r = await fetch("/api/billing/provider-invoices");
       if (!r.ok) return;
       const data = await r.json() as typeof stripeInvoices;
-      setStripeInvoices(data);
-      setStripeInvoicesLoaded(true);
+      setOnline paymentInvoices(data);
+      setOnline paymentInvoicesLoaded(true);
     } catch { /* ignore */ }
   };
 
@@ -2155,7 +2155,7 @@ export default function ProviderDashboard() {
           )}
 
           {/* ── RECHNUNGEN ── */}
-          {activeSection === "rechnungen" && (() => { void loadStripeInvoices(); return null; })()}
+          {activeSection === "rechnungen" && (() => { void loadOnline paymentInvoices(); return null; })()}
           {activeSection === "rechnungen" && (
             <div>
               <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
@@ -2221,7 +2221,7 @@ export default function ProviderDashboard() {
                       </div>
                     ))}
                     {stripeInvoices.length === 0 && stripeInvoicesLoaded && (
-                      <p className="text-sm text-muted-foreground py-4">{l.noStripeInvoices}</p>
+                      <p className="text-sm text-muted-foreground py-4">{l.noOnline paymentInvoices}</p>
                     )}
                     {!stripeInvoicesLoaded && (
                       <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">

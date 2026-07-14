@@ -28,7 +28,7 @@ At minimum, the API requires:
 - `CLERK_PUBLISHABLE_KEY`
 - `CLERK_SECRET_KEY`
 
-The frontend build also requires `VITE_CLERK_PUBLISHABLE_KEY`. Features such as Stripe, OpenAI, Resend, Sanity, and file uploads require their corresponding variables from `.env.example`.
+The frontend build also requires `VITE_CLERK_PUBLISHABLE_KEY`. Features such as OpenAI, Resend, Sanity, and file uploads require their corresponding variables from `.env.example`.
 
 Use a different `VITE_APP_URL` and `VITE_CLERK_PROXY_URL` for Preview and Production when appropriate.
 
@@ -55,13 +55,6 @@ Add the Vercel preview/production domains to the Clerk application's allowed ori
 
 `https://YOUR_DOMAIN/api/__clerk`
 
-### Stripe
-
-After production deployment, configure the Stripe webhook endpoint as:
-
-`https://YOUR_DOMAIN/api/stripe/webhook`
-
-Then save the webhook signing secret as `STRIPE_WEBHOOK_SECRET` in Vercel.
 
 ## 4. Verify after deployment
 

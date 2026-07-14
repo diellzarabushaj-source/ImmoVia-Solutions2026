@@ -25,7 +25,6 @@ import { sendNewCompanyNotification, sendProviderApprovedNotification, sendProvi
 import { createNotification } from "../lib/notify";
 import { usersTable } from "@workspace/db";
 import type { Request } from "express";
-import { getStripeClient, getRegistrationFeePriceId, priceIdForSlug } from "../lib/stripeClient";
 
 const router: IRouter = Router();
 
@@ -233,212 +232,26 @@ router.patch("/companies/:id", requireAdmin, async (req, res): Promise<void> => 
   res.json(UpdateCompanyResponse.parse(company));
 });
 
-router.post("/companies/:id/registration-checkout", async (req, res): Promise<void> => {
-  const params = CreateRegistrationCheckoutParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-
-  const body = CreateRegistrationCheckoutBody.safeParse(req.body);
-  if (!body.success) {
-    res.status(400).json({ error: body.error.message });
-    return;
-  }
-
-  const [company] = await db
-    .select()
-    .from(companiesTable)
-    .where(eq(companiesTable.id, params.data.id));
-
-  if (!company) {
-    res.status(404).json({ error: "Company not found" });
-    return;
-  }
-
-  if (company.registrationFeePaid) {
-    res.status(400).json({ error: "Registration fee already paid" });
-    return;
-  }
-
-  const priceId = getRegistrationFeePriceId();
-  if (!priceId) {
-    req.log.error("STRIPE_REGISTRATION_FEE_PRICE_ID is not set");
-    res.status(500).json({ error: "Payment not configured" });
-    return;
-  }
-
-  const stripe = getStripeClient();
-  const origin = process.env.APP_URL || (req.headers.origin as string) || `https://${req.headers.host}`;
-
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: [{ price: priceId, quantity: 1 }],
-    customer_email: body.data.email,
-    metadata: { companyId: String(company.id) },
-    allow_promotion_codes: true,
-    invoice_creation: { enabled: true },
-    success_url: `${origin}/registration-payment-success?company_id=${company.id}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/provider?cancelled=1`,
+router.post("/companies/:id/registration-checkout", (_req, res): void => {
+  res.status(503).json({
+    error: "Online payments are temporarily unavailable while a Kosovo bank integration is being prepared.",
+    code: "PAYMENTS_DISABLED",
   });
-
-  await db
-    .update(companiesTable)
-    .set({ stripeRegistrationSessionId: session.id })
-    .where(eq(companiesTable.id, company.id));
-
-  res.json({ url: session.url });
 });
 
-router.post("/companies/:id/registration-payment/verify", async (req, res): Promise<void> => {
-  const params = VerifyRegistrationPaymentParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-
-  const body = VerifyRegistrationPaymentBody.safeParse(req.body);
-  if (!body.success) {
-    res.status(400).json({ error: body.error.message });
-    return;
-  }
-
-  const [company] = await db
-    .select()
-    .from(companiesTable)
-    .where(eq(companiesTable.id, params.data.id));
-
-  if (!company) {
-    res.status(404).json({ error: "Company not found" });
-    return;
-  }
-
-  if (company.registrationFeePaid) {
-    res.json({ paid: true });
-    return;
-  }
-
-  try {
-    const stripe = getStripeClient();
-    const session = await stripe.checkout.sessions.retrieve(body.data.sessionId);
-    if (session.payment_status === "paid" && session.metadata?.companyId === String(company.id)) {
-      await db
-        .update(companiesTable)
-        .set({ registrationFeePaid: true, stripeRegistrationSessionId: session.id })
-        .where(eq(companiesTable.id, company.id));
-      res.json({ paid: true });
-      return;
-    }
-    res.json({ paid: false, reason: session.payment_status });
-  } catch (err) {
-    req.log.error({ err }, "Failed to verify registration payment");
-    res.json({ paid: false, reason: "verification_error" });
-  }
+router.post("/companies/:id/registration-payment/verify", (_req, res): void => {
+  res.json({ paid: false, reason: "payments_disabled" });
 });
 
-router.post("/companies/:id/package-checkout", async (req, res): Promise<void> => {
-  const params = CreatePackageCheckoutParams.safeParse(req.params);
-  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
-
-  const body = CreatePackageCheckoutBody.safeParse(req.body);
-  if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
-
-  const [company] = await db
-    .select()
-    .from(companiesTable)
-    .where(eq(companiesTable.id, params.data.id));
-
-  if (!company) { res.status(404).json({ error: "Company not found" }); return; }
-
-  if (company.packagePaid) { res.status(400).json({ error: "Package already paid" }); return; }
-
-  const slug = body.data.planType.toLowerCase().replace("professional", "pro");
-  const priceId = priceIdForSlug(slug);
-  if (!priceId) {
-    req.log.error({ slug }, "No Stripe price ID configured for plan slug");
-    res.status(500).json({ error: "Package payment not configured for this plan. Contact support." });
-    return;
-  }
-
-  const stripe = getStripeClient();
-  const origin = process.env.APP_URL || (req.headers.origin as string) || `https://${req.headers.host}`;
-
-  // Resolve the local user ID from Clerk so activateSubscription can link the subscription
-  const auth = getAuth(req);
-  let userIdForMeta: string | undefined;
-  if (auth.userId) {
-    const [u] = await db
-      .select({ id: usersTable.id })
-      .from(usersTable)
-      .where(eq(usersTable.clerkUserId, auth.userId));
-    if (u) userIdForMeta = String(u.id);
-  }
-
-  const regFeePrice = process.env.STRIPE_REGISTRATION_FEE_PRICE_ID;
-  const lineItems: { price: string; quantity: number }[] = [
-    { price: priceId, quantity: 1 },
-  ];
-  if (regFeePrice) lineItems.push({ price: regFeePrice, quantity: 1 });
-
-  const sessionMeta: Record<string, string> = { companyId: String(company.id) };
-  if (userIdForMeta) sessionMeta["userId"] = userIdForMeta;
-
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    line_items: lineItems,
-    allow_promotion_codes: true,
-    customer_email: body.data.email,
-    metadata: sessionMeta,
-    // Mirror userId into subscription_data.metadata so the webhook can activate
-    // the subscription even when the post-checkout sync route isn't reachable.
-    subscription_data: userIdForMeta
-      ? { metadata: { userId: userIdForMeta, companyId: String(company.id) } }
-      : { metadata: { companyId: String(company.id) } },
-    success_url: `${origin}/package-payment-success?company_id=${company.id}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/provider?cancelled=1`,
+router.post("/companies/:id/package-checkout", (_req, res): void => {
+  res.status(503).json({
+    error: "Online payments are temporarily unavailable while a Kosovo bank integration is being prepared.",
+    code: "PAYMENTS_DISABLED",
   });
-
-  await db
-    .update(companiesTable)
-    .set({ stripePackageSessionId: session.id })
-    .where(eq(companiesTable.id, company.id));
-
-  res.json({ url: session.url });
 });
 
-router.post("/companies/:id/package-payment/verify", async (req, res): Promise<void> => {
-  const params = VerifyPackagePaymentParams.safeParse(req.params);
-  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
-
-  const body = VerifyPackagePaymentBody.safeParse(req.body);
-  if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
-
-  const [company] = await db
-    .select()
-    .from(companiesTable)
-    .where(eq(companiesTable.id, params.data.id));
-
-  if (!company) { res.status(404).json({ error: "Company not found" }); return; }
-
-  if (company.packagePaid) { res.json({ paid: true }); return; }
-
-  try {
-    const stripe = getStripeClient();
-    const session = await stripe.checkout.sessions.retrieve(body.data.sessionId);
-    const isPaid = session.status === "complete" || session.payment_status === "paid";
-    if (isPaid && session.metadata?.companyId === String(company.id)) {
-      await db
-        .update(companiesTable)
-        .set({ packagePaid: true, registrationFeePaid: true, stripePackageSessionId: session.id })
-        .where(eq(companiesTable.id, company.id));
-      res.json({ paid: true });
-      return;
-    }
-    res.json({ paid: false, reason: session.payment_status ?? session.status });
-  } catch (err) {
-    req.log.error({ err }, "Failed to verify package payment");
-    res.json({ paid: false, reason: "verification_error" });
-  }
+router.post("/companies/:id/package-payment/verify", (_req, res): void => {
+  res.json({ paid: false, reason: "payments_disabled" });
 });
 
 router.delete("/companies/:id", requireAdmin, async (req, res): Promise<void> => {
