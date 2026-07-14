@@ -1,78 +1,74 @@
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import path from "path";
+import path from "node:path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-const rawPort = process.env.PORT;
-
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
+function resolvePort(): number {
+  const parsed = Number(process.env.PORT ?? 5173);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 5173;
 }
 
-const port = Number(rawPort);
-
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
+function resolveBasePath(): string {
+  const value = process.env.BASE_PATH?.trim();
+  if (!value) return "/";
+  return value.endsWith("/") ? value : `${value}/`;
 }
 
-const basePath = process.env.BASE_PATH;
+export default defineConfig(async ({ mode }) => {
+  const plugins: PluginOption[] = [react(), tailwindcss({ optimize: false })];
 
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
-}
+  // Replit-only development helpers must never be required for production or
+  // Vercel builds. Keeping them behind this guard allows the same repository to
+  // remain usable in Replit without coupling the production build to Replit.
+  if (mode !== "production" && process.env.REPL_ID) {
+    const [{ cartographer }, { devBanner }] = await Promise.all([
+      import("@replit/vite-plugin-cartographer"),
+      import("@replit/vite-plugin-dev-banner"),
+    ]);
 
-export default defineConfig({
-  base: basePath,
-  plugins: [
-    react(),
-    tailwindcss({ optimize: false }),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer({
-              root: path.resolve(import.meta.dirname, ".."),
-            }),
-          ),
-          await import("@replit/vite-plugin-dev-banner").then((m) =>
-            m.devBanner(),
-          ),
-        ]
-      : []),
-  ],
-  define: {
-    global: "globalThis",
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "src"),
-      "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+    plugins.push(
+      runtimeErrorOverlay(),
+      cartographer({
+        root: path.resolve(import.meta.dirname, ".."),
+      }),
+      devBanner(),
+    );
+  }
+
+  const port = resolvePort();
+
+  return {
+    base: resolveBasePath(),
+    plugins,
+    define: {
+      global: "globalThis",
     },
-    dedupe: ["react", "react-dom"],
-  },
-  root: path.resolve(import.meta.dirname),
-  build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
-    emptyOutDir: true,
-  },
-  server: {
-    port,
-    strictPort: true,
-    host: "0.0.0.0",
-    allowedHosts: true,
-    fs: {
-      strict: true,
+    resolve: {
+      alias: {
+        "@": path.resolve(import.meta.dirname, "src"),
+        "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+      },
+      dedupe: ["react", "react-dom"],
     },
-  },
-  preview: {
-    port,
-    host: "0.0.0.0",
-    allowedHosts: true,
-  },
+    root: path.resolve(import.meta.dirname),
+    build: {
+      outDir: path.resolve(import.meta.dirname, "dist/public"),
+      emptyOutDir: true,
+    },
+    server: {
+      port,
+      strictPort: true,
+      host: "0.0.0.0",
+      allowedHosts: true,
+      fs: {
+        strict: true,
+      },
+    },
+    preview: {
+      port,
+      host: "0.0.0.0",
+      allowedHosts: true,
+    },
+  };
 });
