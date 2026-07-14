@@ -1,3 +1,3 @@
-Trigger production deployment after Vercel API emit fix.
+Trigger production deployment after Vercel API emit diagnostics fix.
 Retry created: 2026-07-14
-Target commit base: 52a463a
+Target commit base: 823df8c
