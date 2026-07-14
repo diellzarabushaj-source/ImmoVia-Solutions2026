@@ -19,7 +19,10 @@ router.get("/provider/profile", requireContractor, async (req, res): Promise<voi
     .orderBy(asc(portfolioItemsTable.sortOrder), asc(portfolioItemsTable.id));
 
   const { passwordHash: _ph, clerkUserId: _ck, ...publicUser } = user;
-  res.json({ user: publicUser, company: company ?? null, portfolio });
+  const companyForClient = company
+    ? { ...company, registrationFeePaid: true, packagePaid: true }
+    : null;
+  res.json({ user: publicUser, company: companyForClient, portfolio });
 });
 
 router.patch("/provider/profile", requireContractor, async (req, res): Promise<void> => {

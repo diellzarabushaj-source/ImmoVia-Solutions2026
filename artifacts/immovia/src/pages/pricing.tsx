@@ -114,30 +114,15 @@ export default function Pricing() {
     pt === "professional" ? "pro" : pt;
 
   const handleConfirm = async () => {
-    if (!selectedPlanType || loading) return;
-    setError(null);
-
-    if (!user) {
-      setLocation("/signup");
-      return;
-    }
-    if (!isProvider) {
-      setError(t.pricing.errorClient);
-      return;
-    }
-
-    const dbSlug = slugForPlanType(selectedPlanType);
-    const plan = plans.find(p => p.slug === dbSlug);
-    if (!plan) return;
-
-    setLoading(true);
-    try {
-      const { url } = await billingApi.stripeCheckout(plan.id);
-      window.location.href = url;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Checkout failed");
-      setLoading(false);
-    }
+    setError(
+      language === "sq"
+        ? "Pagesat online janë përkohësisht të çaktivizuara. Integrimi me një bankë të Kosovës është në përgatitje."
+        : language === "de"
+          ? "Online-Zahlungen sind vorübergehend deaktiviert. Eine Integration mit einer Bank im Kosovo wird vorbereitet."
+          : language === "fr"
+            ? "Les paiements en ligne sont temporairement désactivés. Une intégration avec une banque du Kosovo est en préparation."
+            : "Online payments are temporarily disabled while a Kosovo bank integration is being prepared.",
+    );
   };
 
   const pageTitle = PAGE_TITLE[language] ?? PAGE_TITLE.en;

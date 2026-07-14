@@ -128,27 +128,6 @@ app.use(
   }),
 );
 
-// ── Stripe webhook (MUST be before express.json — needs raw body) ─────────────
-app.post(
-  "/api/stripe/webhook",
-  express.raw({ type: "application/json" }),
-  async (req, res): Promise<void> => {
-    const sig = req.headers["stripe-signature"];
-    if (!sig || typeof sig !== "string") {
-      res.status(400).send("Missing stripe-signature header");
-      return;
-    }
-    try {
-      const { WebhookHandlers } = await import("./lib/webhookHandlers.js");
-      await WebhookHandlers.processWebhook(req.body as Buffer, sig);
-      res.json({ received: true });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Webhook error";
-      res.status(400).send(`Webhook error: ${msg}`);
-    }
-  },
-);
-
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

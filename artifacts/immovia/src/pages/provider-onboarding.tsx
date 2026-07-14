@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth, isServiceProvider } from "@/contexts/AuthContext";
 import { useLanguage } from "@/lib/language-context";
-import { useCreateCompany, useCreatePackageCheckout } from "@workspace/api-client-react";
+import { useCreateCompany } from "@workspace/api-client-react";
 import { useCategories } from "@/hooks/useCategories";
 import { PLAN_CONFIG } from "@/components/PlanCards";
 import type { PlanType } from "@/components/PlanCards";
@@ -54,7 +54,7 @@ const L = {
     servicesLabel: "Shërbimet (zgjidhni të paktën një)",
     descLabel: "Përshkrim i shkurtër (opsional)",
     nextBtn: "Vazhdo",
-    submitBtn: "Krijoni Profilin dhe Paguani",
+    submitBtn: "Krijoni Profilin",
     submitting: "Duke krijuar profilin...",
     backBtn: "Kthehu",
     stepOf: (a: number, b: number) => `Hapi ${a} nga ${b}`,
@@ -64,7 +64,7 @@ const L = {
     errorSubmit: "Ndodhi një gabim. Ju lutemi provoni përsëri.",
     planLabel: "Paketa juaj",
     perMonth: "/muaj",
-    setupFee: "Tarifa njëherë: CHF 149",
+    setupFee: "Pagesat online aktivizohen më vonë",
     totalFirst: "Pagesa e parë",
     workerTypeLabel: "Lloji i aktivitetit",
   },
@@ -92,7 +92,7 @@ const L = {
     servicesLabel: "Services (select at least one)",
     descLabel: "Short description (optional)",
     nextBtn: "Continue",
-    submitBtn: "Create Profile & Pay",
+    submitBtn: "Create Profile",
     submitting: "Creating profile...",
     backBtn: "Back",
     stepOf: (a: number, b: number) => `Step ${a} of ${b}`,
@@ -102,7 +102,7 @@ const L = {
     errorSubmit: "An error occurred. Please try again.",
     planLabel: "Your plan",
     perMonth: "/month",
-    setupFee: "One-time setup fee: CHF 149",
+    setupFee: "Online payments will be activated later",
     totalFirst: "First payment",
     workerTypeLabel: "Business type",
   },
@@ -130,7 +130,7 @@ const L = {
     servicesLabel: "Dienstleistungen (mindestens eine wählen)",
     descLabel: "Kurzbeschreibung (optional)",
     nextBtn: "Weiter",
-    submitBtn: "Profil erstellen & Bezahlen",
+    submitBtn: "Profil erstellen",
     submitting: "Profil wird erstellt...",
     backBtn: "Zurück",
     stepOf: (a: number, b: number) => `Schritt ${a} von ${b}`,
@@ -140,7 +140,7 @@ const L = {
     errorSubmit: "Ein Fehler ist aufgetreten. Bitte erneut versuchen.",
     planLabel: "Ihr Paket",
     perMonth: "/Monat",
-    setupFee: "Einmalige Einrichtungsgebühr: CHF 149",
+    setupFee: "Online-Zahlungen werden später aktiviert",
     totalFirst: "Erste Zahlung",
     workerTypeLabel: "Unternehmenstyp",
   },
@@ -168,7 +168,7 @@ const L = {
     servicesLabel: "Services (sélectionnez au moins un)",
     descLabel: "Brève description (optionnel)",
     nextBtn: "Continuer",
-    submitBtn: "Créer le profil & Payer",
+    submitBtn: "Créer le profil",
     submitting: "Création du profil...",
     backBtn: "Retour",
     stepOf: (a: number, b: number) => `Étape ${a} sur ${b}`,
@@ -178,7 +178,7 @@ const L = {
     errorSubmit: "Une erreur s'est produite. Veuillez réessayer.",
     planLabel: "Votre forfait",
     perMonth: "/mois",
-    setupFee: "Frais d'activation uniques : CHF 149",
+    setupFee: "Les paiements en ligne seront activés ultérieurement",
     totalFirst: "Premier paiement",
     workerTypeLabel: "Type d'activité",
   },
@@ -205,7 +205,6 @@ export default function ProviderOnboarding() {
   const [submitting, setSubmitting] = useState(false);
 
   const createCompany = useCreateCompany();
-  const createPackageCheckout = useCreatePackageCheckout();
   const { categories } = useCategories("service");
 
   const planType = (typeof localStorage !== "undefined" ? localStorage.getItem(PENDING_PLAN_KEY) : null) ?? "basic";
@@ -278,16 +277,7 @@ export default function ProviderOnboarding() {
 
       localStorage.removeItem(PENDING_PLAN_KEY);
 
-      const checkout = await createPackageCheckout.mutateAsync({
-        id: company.id,
-        data: { email: user?.email ?? "", planType },
-      });
-
-      if (checkout.url) {
-        window.location.href = checkout.url;
-      } else {
-        setLocation("/provider");
-      }
+      setLocation("/provider");
     } catch {
       setErrors({ general: l.errorSubmit });
       setSubmitting(false);
