@@ -1,0 +1,15 @@
+.git
+.github
+.agents
+.canvas
+.config
+.local
+.replit
+.replitignore
+replit.md
+sanity-studio
+seo_strategy.md
+threat_model.md
+**/.cache
+**/node_modules
+**/dist
