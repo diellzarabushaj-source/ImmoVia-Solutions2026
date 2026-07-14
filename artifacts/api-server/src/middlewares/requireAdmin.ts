@@ -1,7 +1,7 @@
 import { clerkClient, getAuth } from "@clerk/express";
 import type { Request, Response, NextFunction } from "express";
 
-const DEFAULT_ADMIN_EMAIL = "immovia.rd@gmail.com";
+const DEFAULT_ADMIN_EMAIL = "diellzarabushaj@gmail.com";
 
 function getAllowedAdminEmails(): Set<string> {
   const configured = [process.env.ADMIN_EMAILS, process.env.ADMIN_EMAIL]
