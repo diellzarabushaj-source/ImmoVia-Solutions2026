@@ -1,4 +1,7 @@
-import express, { type Express, type Request, type Response, type NextFunction } from "express";
+import express, {
+  type Application,
+  type ErrorRequestHandler,
+} from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
@@ -14,7 +17,7 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 
-const app: Express = express();
+const app: Application = express();
 
 const sessionSecret = process.env["SESSION_SECRET"];
 if (!sessionSecret) {
@@ -136,7 +139,7 @@ app.post(
       return;
     }
     try {
-      const { WebhookHandlers } = await import("./lib/webhookHandlers");
+      const { WebhookHandlers } = await import("./lib/webhookHandlers.js");
       await WebhookHandlers.processWebhook(req.body as Buffer, sig);
       res.json({ received: true });
     } catch (err) {
@@ -162,27 +165,27 @@ app.use(
 
 app.use("/api", router);
 
-// Global error handler
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err: unknown, req: Request, res: Response, _next: NextFunction): void => {
-  logger.error({ err }, "Unhandled route error");
+function isDbError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const text = `${error.message} ${error.cause instanceof Error ? error.cause.message : ""}`;
+  return (
+    text.includes("ENOTFOUND") ||
+    text.includes("ECONNREFUSED") ||
+    text.includes("getaddrinfo") ||
+    text.includes("ETIMEDOUT")
+  );
+}
 
-  function isDbError(e: unknown): boolean {
-    if (!(e instanceof Error)) return false;
-    const text = `${e.message} ${e.cause instanceof Error ? e.cause.message : ""}`;
-    return (
-      text.includes("ENOTFOUND") ||
-      text.includes("ECONNREFUSED") ||
-      text.includes("getaddrinfo") ||
-      text.includes("ETIMEDOUT")
-    );
-  }
+const errorHandler: ErrorRequestHandler = (err, _req, res, _next): void => {
+  logger.error({ err }, "Unhandled route error");
 
   if (isDbError(err)) {
     res.status(503).json({ error: "Service temporarily unavailable. Please try again later." });
   } else {
     res.status(500).json({ error: "An unexpected error occurred. Please try again." });
   }
-});
+};
+
+app.use(errorHandler);
 
 export default app;
