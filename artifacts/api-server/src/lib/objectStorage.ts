@@ -1,4 +1,5 @@
 import { Storage, File } from "@google-cloud/storage";
+import type { JWTInput } from "google-auth-library";
 import { Readable } from "stream";
 import { randomUUID } from "crypto";
 import {
@@ -11,15 +12,14 @@ import {
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
-function parseGoogleCredentials(): Record<string, unknown> | undefined {
+function parseGoogleCredentials(): JWTInput | undefined {
   const raw = process.env.GOOGLE_CLOUD_CREDENTIALS_JSON;
   if (!raw) return undefined;
 
   try {
-    const credentials = JSON.parse(raw) as Record<string, unknown>;
-    const privateKey = credentials.private_key;
-    if (typeof privateKey === "string") {
-      credentials.private_key = privateKey.replace(/\\n/g, "\n");
+    const credentials = JSON.parse(raw) as JWTInput;
+    if (typeof credentials.private_key === "string") {
+      credentials.private_key = credentials.private_key.replace(/\\n/g, "\n");
     }
     return credentials;
   } catch (error) {
