@@ -34,10 +34,21 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Typecheck frontend
-        run: pnpm --filter @workspace/immovia run typecheck
+        run: pnpm --filter @workspace/immovia run typecheck 2>&1 | tee frontend-typecheck.log
 
       - name: Build Vercel frontend output
-        run: pnpm --filter @workspace/immovia run build
+        if: always()
+        run: pnpm --filter @workspace/immovia run build 2>&1 | tee frontend-build.log
+
+      - name: Upload frontend diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-diagnostics
+          path: |
+            frontend-typecheck.log
+            frontend-build.log
+          if-no-files-found: ignore
 
   api:
     runs-on: ubuntu-latest
@@ -62,4 +73,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Typecheck API
-        run: pnpm --filter @workspace/api-server run typecheck
+        run: pnpm --filter @workspace/api-server run typecheck 2>&1 | tee api-typecheck.log
+
+      - name: Upload API diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-diagnostics
+          path: api-typecheck.log
+          if-no-files-found: ignore
