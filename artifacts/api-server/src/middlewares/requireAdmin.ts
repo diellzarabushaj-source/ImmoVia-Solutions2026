@@ -1,22 +1,7 @@
 import { clerkClient, getAuth } from "@clerk/express";
 import type { Request, Response, NextFunction } from "express";
 
-const DEFAULT_ADMIN_EMAIL = "diellzarabushaj@gmail.com";
-
-function getAllowedAdminEmails(): Set<string> {
-  const configured = [process.env.ADMIN_EMAILS, process.env.ADMIN_EMAIL]
-    .filter((value): value is string => Boolean(value?.trim()))
-    .join(",");
-
-  const source = configured || DEFAULT_ADMIN_EMAIL;
-
-  return new Set(
-    source
-      .split(",")
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean),
-  );
-}
+const ADMIN_EMAIL = "diellzarabushaj@gmail.com";
 
 export async function requireAdmin(
   req: Request,
@@ -37,13 +22,11 @@ export async function requireAdmin(
         ? user.publicMetadata.role.toLowerCase()
         : "";
 
-    const allowedEmails = getAllowedAdminEmails();
     const userEmails = user.emailAddresses.map((entry) =>
       entry.emailAddress.trim().toLowerCase(),
     );
 
-    const isAdmin =
-      role === "admin" || userEmails.some((email) => allowedEmails.has(email));
+    const isAdmin = role === "admin" || userEmails.includes(ADMIN_EMAIL);
 
     if (!isAdmin) {
       res.status(403).json({ error: "Administrator access required" });
