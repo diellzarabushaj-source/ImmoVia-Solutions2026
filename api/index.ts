@@ -1,4 +1,4 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
+import type { IncomingMessage, RequestListener, ServerResponse } from "node:http";
 import app from "../artifacts/api-server/src/app";
 
 /**
@@ -18,10 +18,12 @@ function restoreApiUrl(rawUrl: string | undefined): string {
   return query ? `${pathname}?${query}` : pathname;
 }
 
+const expressHandler = app as unknown as RequestListener;
+
 export default function handler(
   request: IncomingMessage,
   response: ServerResponse,
-): ReturnType<typeof app> {
+): void {
   request.url = restoreApiUrl(request.url);
-  return app(request, response);
+  expressHandler(request, response);
 }
